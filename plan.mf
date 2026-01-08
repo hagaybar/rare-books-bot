@@ -1,0 +1,60 @@
+# plan.mf — Proof of Concept Phase 1 (Inventory Subset Engine)
+
+## Milestone M0 — Repo Setup (Done when:)
+- Project scaffolding created
+- Pre-commit / ruff / mypy configured
+- Basic CI runs unit tests
+
+## Milestone M1 — Canonical Record Extraction
+Goal: MARC XML -> canonical JSONL (one record per bib record)
+Done when:
+- `scripts/marc/parse.py` parses the provided MARC XML file
+- Outputs `data/canonical/records.jsonl`
+- Each JSON has: record_id, title, imprint(publisher/place/date raw), language codes, subjects raw, agents raw, notes raw
+- A `provenance` object exists per record mapping field tags -> extracted values
+
+Artifacts:
+- records.jsonl
+- extraction_report.json (counts, missing fields)
+
+## Milestone M2 — SQLite Bibliographic Index
+Goal: deterministic fielded filtering (no embeddings)
+Done when:
+- `scripts/index/build_index.py` builds `data/index/biblio.sqlite`
+- Tables: records, agents, subjects (at minimum)
+- Indexed columns: date_start, date_end, place_norm, publisher_norm, agent_norm, subject_norm, language
+
+Artifacts:
+- biblio.sqlite
+- schema.sql
+
+## Milestone M3 — Normalization v1
+Done when:
+- Dates: parse common forms -> date_start/date_end + confidence
+- Places/publishers/agents: normalize via rule-based pipeline (casefolding, punctuation, diacritics) + alias table
+- Unparsed values preserved with explicit reason
+
+Artifacts:
+- normalization_report.json (coverage + examples)
+
+## Milestone M4 — QueryPlan + CandidateSet (Primary Success Condition)
+Goal: NL -> QueryPlan -> SQL -> CandidateSet + Evidence
+Done when:
+- `scripts/query/compile.py` produces a JSON QueryPlan (schema-validated)
+- `scripts/query/execute.py` runs plan -> CandidateSet with evidence per record
+- CLI command works:
+  `python -m app.query "All books published by X between 1500 and 1599"`
+- Output includes:
+  - plan.json
+  - sql.txt
+  - candidates.json (record_ids + match_rationale)
+
+## Milestone M5 — Complex Q&A over CandidateSet (Secondary)
+Done when:
+- Given a record_id or a CandidateSet, the system can answer:
+  "What is the cultural significance of X relative to Y?"
+- Answer prompt is constrained to use only evidence from CandidateSet + curated DB
+- If external info is needed, it must say so explicitly (no silent web)
+
+Artifacts:
+- answer.md including citations to MARC evidence fields used

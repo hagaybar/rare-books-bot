@@ -86,8 +86,11 @@ This project started from a multi-source RAG platform template. The core structu
 - **`scripts/`**: Core library organized by function (ingestion, chunking, embeddings, retrieval, etc.)
 - **`configs/`**: YAML configurations (currently chunk_rules.yaml from template)
 - **`tests/`**: Pytest suite
+- **`archive/`**: Reference materials and documentation from the RAG template (kept for reference only, not active code)
 
 **Current state**: The repo is largely a shell template. Development will focus on MARC-specific components while leveraging the modular architecture (e.g., using the utils, logging, and project management patterns).
+
+**Transformation status**: Actively removing RAG-specific components and building MARC XML functionality. See `plan.mf` for milestone roadmap.
 
 ## Common Commands
 
