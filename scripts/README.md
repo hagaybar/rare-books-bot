@@ -1,33 +1,125 @@
 # Scripts
 
-This directory contains the core Python scripts that power the RAG platform. It is organized into several subdirectories, each responsible for a specific part of the data processing and retrieval pipeline.
+This directory contains the core Python modules for the rare books bot bibliographic discovery system.
 
-## Subdirectories
+## Mission
 
-- **`agents`**: Contains AI agents that perform specialized tasks, such as the `ImageInsightAgent` which generates textual descriptions for images. For more details, see `scripts/agents/README.md`.
-- **`api_clients`**: Provides clients for interacting with external APIs, such as the OpenAI API for embeddings and completions.
-- **`chunking`**: Responsible for splitting raw documents into smaller, more manageable chunks based on a set of configurable rules. For more details, see `scripts/chunking/README.md`.
-- **`core`**: Contains the `ProjectManager`, a central class for managing the project's configuration and directory structure. For more details, see `scripts/core/README.md`.
-- **`embeddings`**: Handles the generation of vector embeddings for both text and image content. It includes a registry for different embedding models and orchestrators for the embedding process. For more details, see `scripts/embeddings/README.md`.
-- **`index`**: Contains scripts for managing and inspecting the vector indexes (e.g., FAISS) used for efficient retrieval. For more details, see `scripts/index/README.md`.
-- **`ingestion`**: Provides a suite of loaders for ingesting various file formats, including PDFs, DOCX, XLSX, PPTX, and emails. For more details, see `scripts/ingestion/README.md`.
-- **`interface`**: Contains the `AskInterface`, which provides a high-level, unified interface for asking questions to the RAG system.
-- **`pipeline`**: Includes the `PipelineRunner`, which orchestrates the entire RAG pipeline, from ingestion to chunking, embedding, and retrieval.
-- **`prompting`**: Contains the `PromptBuilder`, which is responsible for constructing the final prompts that are sent to the LLM, incorporating the retrieved context.
-- **`retrieval`**: Implements the retrieval system, which finds the most relevant text and image chunks from the indexes based on a user's query. For more details, see `scripts/retrieval/README.md`.
-- **`ui`**: Contains the Streamlit-based user interfaces for interacting with the RAG platform.
-- **`utils`**: A collection of utility modules that provide helper functions for tasks such as logging, configuration loading, and file conversions. For more details, see `scripts/utils/README.md`.
+Build a structured, deterministic bibliographic engine: **MARC XML → canonical → SQLite → CandidateSet**, with optional LLM planning for query compilation.
 
-## Overall Workflow
+## Architecture
 
-These scripts work together to form a complete RAG pipeline:
+The system follows a clear pipeline:
 
-1.  The **`ingestion`** scripts load raw documents from various sources.
-2.  The **`chunking`** scripts split these documents into smaller chunks.
-3.  The **`agents`** (e.g., the `ImageInsightAgent`) can then be used to enrich these chunks with additional information.
-4.  The **`embeddings`** scripts generate vector embeddings for the chunks.
-5.  These embeddings are stored in a vector **`index`**.
-6.  When a user asks a question, the **`retrieval`** scripts find the most relevant chunks from the index.
-7.  The **`prompting`** script constructs a prompt that includes the user's question and the retrieved context.
-8.  This prompt is sent to a large language model to generate an answer.
-9.  The **`pipeline`** and **`interface`** scripts orchestrate this entire process, and the **`ui`** scripts provide a user-friendly way to interact with the system.
+1. **Parse** MARC XML to canonical JSONL (preserving raw values)
+2. **Normalize** dates, places, agents with confidence tracking
+3. **Index** into SQLite for fielded queries (not embeddings)
+4. **Query** via QueryPlan → SQL → CandidateSet with evidence
+5. **Answer** complex questions over CandidateSet only
+
+## Directory Structure
+
+### MARC-Specific Modules (New)
+
+- **`marc/`** - MARC XML parsing and canonical record extraction (Milestone M1)
+  - Parse MARC XML to canonical JSONL format
+  - Extract record_id, title, imprint, subjects, agents, notes
+  - Track provenance (MARC fields → values mapping)
+
+- **`normalization/`** - Normalize bibliographic data with confidence (Milestone M3)
+  - Date normalization (→ date_start/date_end + confidence)
+  - Place/publisher/agent normalization (rule-based)
+  - Preserve raw values with explicit reasoning for unparsed data
+
+- **`query/`** - Query compilation and execution (Milestone M4)
+  - Compile natural language → QueryPlan (JSON schema validated)
+  - Execute QueryPlan → SQL → CandidateSet with evidence
+  - Track which MARC fields caused record inclusion
+
+- **`schemas/`** - JSON schemas for validation
+  - QueryPlan schema
+  - CanonicalRecord schema
+  - CandidateSet schema
+
+- **`fixtures/`** - Test data and sample MARC XML
+  - Small MARC XML snippets for unit tests
+  - Sample canonical records
+
+### Infrastructure (Preserved from RAG Template)
+
+- **`core/`** - Project management and configuration
+  - `project_manager.py` - Central class for config, paths, logging
+  - Handles project-level setup and directory structure
+
+- **`utils/`** - Core utilities
+  - `logger.py` - Structured JSON logging
+  - `task_paths.py` - Per-run artifact paths management
+  - `config_loader.py` - YAML configuration loading
+  - `run_logger.py` - Run-level logging
+  - `logger_context.py` - Logger context management
+
+- **`api_clients/`** - External API clients
+  - `openai/completer.py` - LLM completion for query planning (M4/M5)
+
+- **`index/`** - Storage and indexing (Milestone M2)
+  - SQLite schema definition
+  - Index builders for bibliographic data
+  - *To be populated in M2*
+
+- **`pipeline/`** - Workflow orchestration
+  - Step execution framework
+  - Per-run artifact management
+  - *To be repurposed for MARC workflow*
+
+## Data Flow
+
+```
+MARC XML
+   ↓ (M1: parse)
+Canonical JSONL (raw values preserved)
+   ↓ (M3: normalize)
+Normalized data (+ confidence, method)
+   ↓ (M2: index)
+SQLite database (fielded queries)
+   ↓ (M4: query)
+QueryPlan → SQL → CandidateSet + Evidence
+   ↓ (M5: answer)
+LLM-generated answer (grounded in evidence)
+```
+
+## Key Principles
+
+1. **Raw values always preserved** - Normalization is never destructive
+2. **Deterministic operations** - Parsing/normalization testable without LLM
+3. **Evidence-based answers** - Every result must show which MARC fields matched
+4. **Confidence tracking** - All normalization includes method + confidence score
+5. **Per-run artifacts** - Logs, plans, SQL, and results saved for debugging
+
+## Development Workflow
+
+See `plan.mf` in project root for milestone roadmap (M0-M5).
+
+### Milestones
+
+- **M0**: Repo setup (done)
+- **M1**: MARC XML → canonical JSONL (`scripts/marc/`)
+- **M2**: SQLite bibliographic index (`scripts/index/`)
+- **M3**: Normalization v1 (`scripts/normalization/`)
+- **M4**: QueryPlan → CandidateSet (`scripts/query/`)
+- **M5**: Complex Q&A over CandidateSet
+
+## Testing
+
+Unit tests should mirror this structure in `tests/scripts/`:
+- `tests/scripts/marc/` - MARC parsing tests
+- `tests/scripts/normalization/` - Normalization tests
+- `tests/scripts/query/` - Query compilation/execution tests
+
+## What Was Removed
+
+This codebase started as a RAG (Retrieval-Augmented Generation) platform. The following were removed as they're not needed for MARC bibliographic discovery:
+
+- **Removed**: Vector embeddings, FAISS retrieval, document chunking
+- **Removed**: PDF/DOCX/email loaders, image processing, Streamlit UI
+- **Removed**: Email orchestration agents, categorization, connectors
+
+**Preserved**: Core infrastructure (logging, config, paths, project management) that provides value regardless of domain.
