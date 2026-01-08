@@ -328,14 +328,14 @@ scripts/
 
 ## Templates
 
-Templates are available in `assets/` (to be adapted for MARC XML):
+MARC-specific templates will be created in `assets/` as the project develops:
 
 - **marc_parser_template.py** - MARC field parser structure
 - **normalizer_template.py** - Normalizer with confidence tracking
 - **query_component_template.py** - Query plan compiler structure
 - **test_template.py** - Test structure for MARC components
 
-**Note**: These templates need to be created. Current templates are AlmaAPITK-specific.
+These will be added once we establish patterns through initial implementations.
 
 ## Common Anti-Patterns to Avoid
 
