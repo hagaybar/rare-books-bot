@@ -1,58 +1,53 @@
 ---
 name: python-dev-expert
-description: Python development expertise for rare-books-bot project. Use this skill when (1) Writing new Python code for MARC parsing, normalization, or query execution, (2) Refactoring existing code to improve maintainability or reduce duplication, (3) Making architectural decisions about file organization, class structure, or module design, (4) Reviewing code quality for PEP 8 compliance, type hints, or documentation, (5) Generating code from templates for parsers, normalizers, or query compilers, (6) Ensuring functions are single-purpose and under 50 lines with emphasis on logic density, deterministic outputs, and testability without LLM.
+description: General Python development best practices and patterns. Use this skill when (1) Writing new Python code with emphasis on clean architecture, (2) Refactoring existing code to improve maintainability or reduce duplication, (3) Making architectural decisions about file organization, class structure, or module design, (4) Reviewing code quality for PEP 8 compliance, type hints, or documentation, (5) Ensuring functions are single-purpose and under 50 lines with emphasis on logic density and composition over inheritance, (6) Writing testable, deterministic code.
 ---
 
-# Python Development Expert for rare-books-bot
+# Python Development Expert
 
-Expert guidance for Python coding, refactoring, and architectural decisions in the rare-books-bot project.
+Expert guidance for Python coding, refactoring, and architectural decisions following industry best practices.
 
-**Mission Alignment**: All code must support deterministic, evidence-based bibliographic discovery from MARC XML.
+## Core Principles
 
-## Project-Specific Principles
+### Code Quality Standards
 
-### Data Model Requirements
+**Readability First**:
+- Code is read 10x more than written
+- Clear names > clever tricks
+- Explicit > implicit
+- Simple > complex
 
-**Always preserve raw MARC values**:
-- Never destructively normalize
-- Store raw alongside normalized
-- Track normalization method and confidence
+**Testability**:
+- Write deterministic code (same input → same output)
+- Avoid side effects where possible
+- Separate I/O from logic
+- Pure functions are easier to test
 
-**Testability without LLM**:
-- All parsing/normalization must be deterministic
-- Use pure functions where possible
-- LLM is planner/explainer, not authority
-
-**Answer Contract**:
-- QueryPlan → CandidateSet → Evidence
-- No narrative before CandidateSet exists
+**Maintainability**:
+- Functions should do one thing well
+- Maximum 50 lines per function
+- DRY (Don't Repeat Yourself) - extract after 3rd duplication
+- Composition over inheritance
 
 ## Quick Decision Trees
 
 ### Should I Create a New File?
 
-**New Parser/Loader** → Create in `scripts/ingestion/` when:
-- Adding MARC XML parser or new bibliographic format support
-- Building loader for canonical JSONL format
-- Follow modular ingestion patterns
+**New Module** → Create when:
+- Grouping related functionality (e.g., date utilities, file operations)
+- Code is reused across 3+ places
+- Module has clear, single responsibility
+- Creating a new domain concept or abstraction
 
-**New Normalizer** → Create in `scripts/normalization/` when:
-- Adding date normalization (MARC dates → date_start/date_end)
-- Building place/publisher/agent string normalization
-- Implementing reversible normalization logic
-
-**New Query Component** → Create in `scripts/query/` when:
-- Building QueryPlan compiler (NL → JSON)
-- Implementing SQL generator from QueryPlan
-- Creating CandidateSet executor with evidence tracking
-
-**New Utility Module** → Create in `scripts/utils/` when:
-- Code is reused across 3+ components
-- Provides general-purpose functionality (MARC field extraction, confidence scoring, etc.)
+**New Package** → Create when:
+- Multiple related modules form a cohesive unit
+- Clear hierarchy emerges (e.g., parsers, validators, formatters)
+- Need to organize growing codebase
 
 **DO NOT create new file** when:
-- Function belongs in existing parser or normalizer
+- Function belongs in existing module
 - Code is used in only 1-2 places (inline it or extract to method)
+- Creating file just to "organize" without clear responsibility
 
 ### Should I Refactor This Code?
 
@@ -60,347 +55,505 @@ Expert guidance for Python coding, refactoring, and architectural decisions in t
 - Function exceeds 50 lines
 - Same logic appears in 3+ places
 - Function does multiple unrelated things
-- Complex nested conditions (>3 levels)
-- Non-deterministic behavior (random, time-dependent, LLM-dependent)
+- Complex nested conditions (>3 levels deep)
+- Variable names are cryptic (x, data, temp, etc.)
 
 **MAYBE - Consider refactoring** when:
-- Variable names are unclear (e.g., `x`, `data`, `temp`)
 - Missing type hints or docstrings
-- Magic numbers or hardcoded MARC field codes without constants
-- Normalization without confidence tracking
+- Magic numbers or hardcoded values
+- Function has >5 parameters
+- Deep inheritance hierarchy (>3 levels)
 
 **NO - Leave as-is** when:
 - Code is clear and works correctly
 - Refactoring would not improve readability
-- One-time use code in scripts
-
-## Core Workflows
-
-### Workflow 1: Creating a MARC Parser Component
-
-1. **Verify necessity**: Confirm new MARC field group needs dedicated parser
-2. **Design interface**:
-   ```python
-   def parse_marc_field(field: Element) -> Dict[str, Any]:
-       """Parse MARC field preserving raw values.
-
-       Returns:
-           Dict with 'raw' and 'parsed' keys, never destructive
-       """
-   ```
-3. **Implement core logic**:
-   - Extract field/subfield values from XML
-   - Preserve all raw values in output
-   - Return structured dict with raw + parsed
-4. **Add type hints**: All parameters and return values (use Pydantic/dataclasses)
-5. **Write docstrings**: Purpose, parameters, returns, MARC field references
-6. **Ensure deterministic**: Same input always produces same output
-7. **Add unit tests**: Test without requiring LLM or external services
-
-### Workflow 2: Creating a Normalizer
-
-1. **Design for reversibility**:
-   ```python
-   def normalize_date(raw_date: str) -> NormalizedDate:
-       """Normalize MARC date to date range with confidence.
-
-       Args:
-           raw_date: Raw MARC date string (e.g., "1580-1599", "c1500")
-
-       Returns:
-           NormalizedDate with date_start, date_end, method, confidence, raw
-       """
-       return NormalizedDate(
-           raw=raw_date,
-           date_start=start,
-           date_end=end,
-           method="range_parse",
-           confidence=0.95
-       )
-   ```
-2. **Core requirements**:
-   - Always include `raw` field in output
-   - Track `method` used for normalization
-   - Include `confidence` score (0.0-1.0)
-   - If uncertain: return null/range + explicit reason
-   - Never invent data
-3. **Add comprehensive tests**: Edge cases, malformed input, uncertain dates
-4. **Document assumptions**: Which MARC conventions are supported
-
-### Workflow 3: Creating a Query Component
-
-1. **Design QueryPlan schema**:
-   ```python
-   class QueryPlan(BaseModel):
-       """Structured query plan validated by JSON schema."""
-       query_type: str  # "date_range", "place", "subject", etc.
-       filters: Dict[str, Any]
-       evidence_fields: List[str]  # MARC fields to include in evidence
-   ```
-2. **Implement SQL generation**:
-   - QueryPlan → SQL query
-   - Include EXPLAIN in debug mode
-   - Return SQL string + parameters separately (prevent SQL injection)
-3. **Execute with evidence**:
-   ```python
-   def execute_plan(plan: QueryPlan, db: Path) -> ExecutionResult:
-       """Execute query plan and return candidate set with evidence.
-
-       Returns:
-           ExecutionResult with:
-           - candidate_set: List[str] (record IDs)
-           - evidence: Dict[str, List[Dict]] (field values per record)
-           - sql: str (executed SQL for transparency)
-       """
-   ```
-4. **Validation**: JSON schema validation with retry logic (1 repair attempt)
-
-### Workflow 4: Code Quality Review
-
-Use this checklist before committing code:
-
-1. **Data Model Compliance**:
-   - [ ] Raw values always preserved
-   - [ ] Normalization is reversible
-   - [ ] Confidence scores included where applicable
-   - [ ] No invented data (null/range + reason instead)
-
-2. **Testability**:
-   - [ ] Functions are deterministic (same input → same output)
-   - [ ] No LLM dependencies in core logic
-   - [ ] Unit tests cover edge cases
-   - [ ] Tests run without external services
-
-3. **Code Quality**:
-   - [ ] All functions <50 lines and single-purpose
-   - [ ] Type hints on all functions (Pydantic/dataclasses preferred)
-   - [ ] Docstrings on all public methods
-   - [ ] Imports organized (stdlib → third-party → local)
-   - [ ] No commented-out code
-   - [ ] No hardcoded API keys or secrets
-
-4. **Logging**:
-   - [ ] Logging for all parsing/normalization operations
-   - [ ] Per-run artifacts written to `data/runs/<run_id>/`
-   - [ ] Use LoggerManager from `scripts/utils/logger.py`
+- One-time use code (scripts, migrations)
+- Optimization would be premature
 
 ## Logic Density Principles
 
-**Keep functions focused and concise:**
+### Keep Functions Focused and Concise
 
+**Core Rules**:
 - **Maximum 50 lines** per function
 - **Single purpose** - One function = One clear responsibility
 - **Composition over inheritance** - Prefer composing objects over deep inheritance
 - **Extract early** - If you think "this could be extracted," do it now
-- **Deterministic** - No randomness, no time-dependent behavior in core logic
 
-**Example of good logic density:**
+**Example of good logic density**:
 
 ```python
-# GOOD - Single purpose, under 50 lines, deterministic
-def extract_publication_date(record: Dict[str, Any]) -> Optional[str]:
-    """Extract raw publication date from MARC 260$c or 264$c."""
-    for field in record.get('fields', []):
-        if '260' in field:
-            for subfield in field['260'].get('subfields', []):
-                if 'c' in subfield:
-                    return subfield['c'].strip()
-        if '264' in field:
-            for subfield in field['264'].get('subfields', []):
-                if 'c' in subfield:
-                    return subfield['c'].strip()
-    return None
+# GOOD - Single purpose, under 50 lines, clear responsibility
+def validate_email(email: str) -> bool:
+    """Validate email format."""
+    if not email or '@' not in email:
+        return False
+    local, domain = email.rsplit('@', 1)
+    return bool(local) and '.' in domain
 
-def normalize_century_date(raw_date: str) -> NormalizedDate:
-    """Normalize '16th century' or 'XVI century' to date range."""
-    # 15 lines of parsing logic
-    return NormalizedDate(
-        raw=raw_date,
-        date_start=start_year,
-        date_end=end_year,
-        method="century_parse",
-        confidence=0.9
-    )
+def filter_valid_emails(emails: list[str]) -> list[str]:
+    """Filter list to only valid email addresses."""
+    return [email for email in emails if validate_email(email)]
 
-# BAD - Multiple purposes, >50 lines, non-deterministic
-def extract_and_normalize_date(record: Dict[str, Any]) -> Optional[Tuple[int, int]]:
-    """Extract date and normalize."""  # Doing two things!
-    # 20 lines of MARC field extraction
-    # 25 lines of date normalization
-    # 10 lines of logging and error handling
-    # Total: 55+ lines doing multiple things
-    return (start, end)  # Lost raw value, method, confidence!
+def send_notifications(emails: list[str], message: str) -> dict[str, bool]:
+    """Send email notifications and return success status."""
+    valid_emails = filter_valid_emails(emails)
+    results = {}
+    for email in valid_emails:
+        results[email] = _send_email(email, message)
+    return results
+
+# BAD - Multiple purposes, >50 lines, does everything
+def process_and_send_emails(emails: list[str], message: str) -> dict[str, bool]:
+    """Validate, filter, and send emails."""  # Too many responsibilities!
+    results = {}
+    for email in emails:
+        # 10 lines of email validation
+        # 15 lines of filtering logic
+        # 20 lines of sending logic
+        # Total: 45+ lines doing multiple things
+    return results
 ```
 
-## MARC-Specific Patterns
+## Code Organization Patterns
 
-### Working with MARC Fields
+### Module Structure
 
 ```python
-# Define constants for MARC fields
-TITLE_FIELDS = ['245']
-DATE_FIELDS = ['260', '264']
-PLACE_FIELDS = ['260', '264']
-SUBJECT_FIELDS = ['600', '610', '630', '650', '651']
+"""Module docstring explaining purpose.
 
-def extract_field_value(record: Dict, field: str, subfield: str) -> List[str]:
-    """Extract all occurrences of field$subfield from MARC record."""
-    values = []
-    for field_data in record.get('fields', []):
-        if field in field_data:
-            for sub in field_data[field].get('subfields', []):
-                if subfield in sub:
-                    values.append(sub[subfield])
-    return values
+This module provides utilities for [specific functionality].
+Common use cases include [examples].
+"""
+
+# Standard library imports
+import json
+import os
+from pathlib import Path
+from typing import Dict, List, Optional
+
+# Third-party imports
+import requests
+from pydantic import BaseModel
+
+# Local imports
+from .models import User
+from .utils import logger
+
+# Module-level constants
+MAX_RETRIES = 3
+DEFAULT_TIMEOUT = 30
+
+# Public API (optional - what should be imported with `from module import *`)
+__all__ = ['function_name', 'ClassName']
+
+
+class ClassName:
+    """Class for [purpose]."""
+
+    def __init__(self, param: str):
+        """Initialize with parameters."""
+        self.param = param
+
+    def public_method(self) -> str:
+        """Public API method."""
+        return self._private_method()
+
+    def _private_method(self) -> str:
+        """Internal helper (underscore prefix)."""
+        return self.param
+
+
+def public_function(arg: str) -> str:
+    """Public function with clear docstring."""
+    return _helper_function(arg)
+
+
+def _helper_function(arg: str) -> str:
+    """Private helper function (underscore prefix)."""
+    return arg.upper()
 ```
 
-### Confidence Scoring
+### Type Hints Best Practices
 
 ```python
-def calculate_confidence(raw_value: str, method: str) -> float:
-    """Calculate confidence score for normalization.
+from typing import Dict, List, Optional, Union, Tuple, Any
+from pathlib import Path
 
-    Args:
-        raw_value: Original MARC value
-        method: Normalization method used
+# Basic types
+def process_text(text: str, count: int = 10) -> str:
+    """Process text with type hints."""
+    pass
 
-    Returns:
-        Confidence score 0.0-1.0
-    """
-    if method == "exact_match":
-        return 1.0
-    elif method == "regex_parse":
-        return 0.95
-    elif method == "century_parse":
-        return 0.9
-    elif method == "circa_estimate":
-        return 0.7
-    elif method == "fallback_guess":
-        return 0.5
+# Optional parameters
+def load_config(path: Optional[Path] = None) -> Dict[str, Any]:
+    """Load config file, path is optional."""
+    pass
+
+# Union types
+def parse_input(value: Union[str, int, float]) -> float:
+    """Accept multiple input types."""
+    return float(value)
+
+# Complex return types
+def get_user_data(user_id: str) -> Tuple[str, int, List[str]]:
+    """Return tuple of (name, age, tags)."""
+    return ("Alice", 30, ["admin", "user"])
+
+# Accepting callables
+from typing import Callable
+
+def apply_transform(data: List[int], func: Callable[[int], int]) -> List[int]:
+    """Apply transformation function to each element."""
+    return [func(x) for x in data]
+```
+
+### Dataclasses and Models
+
+```python
+from dataclasses import dataclass, field
+from typing import List, Optional
+from datetime import datetime
+
+# Simple dataclass
+@dataclass
+class User:
+    """User data model."""
+    id: str
+    name: str
+    email: str
+    created_at: datetime = field(default_factory=datetime.now)
+    tags: List[str] = field(default_factory=list)
+    metadata: Optional[dict] = None
+
+# With validation (using Pydantic)
+from pydantic import BaseModel, validator
+
+class UserModel(BaseModel):
+    """User model with validation."""
+    id: str
+    name: str
+    email: str
+    age: int
+
+    @validator('email')
+    def validate_email(cls, v):
+        if '@' not in v:
+            raise ValueError('Invalid email')
+        return v
+
+    @validator('age')
+    def validate_age(cls, v):
+        if v < 0 or v > 150:
+            raise ValueError('Invalid age')
+        return v
+```
+
+## Common Refactoring Patterns
+
+### Extract Method
+
+**Before**:
+```python
+def process_order(order: dict) -> dict:
+    # Calculate total
+    total = 0
+    for item in order['items']:
+        price = item['price']
+        quantity = item['quantity']
+        discount = item.get('discount', 0)
+        total += (price * quantity) * (1 - discount)
+
+    # Apply shipping
+    if total > 100:
+        shipping = 0
+    elif total > 50:
+        shipping = 5
+    else:
+        shipping = 10
+
+    return {'total': total, 'shipping': shipping, 'final': total + shipping}
+```
+
+**After**:
+```python
+def calculate_item_price(item: dict) -> float:
+    """Calculate price for single item with discount."""
+    price = item['price']
+    quantity = item['quantity']
+    discount = item.get('discount', 0)
+    return (price * quantity) * (1 - discount)
+
+def calculate_shipping(total: float) -> float:
+    """Calculate shipping cost based on order total."""
+    if total > 100:
+        return 0
+    elif total > 50:
+        return 5
+    return 10
+
+def process_order(order: dict) -> dict:
+    """Process order and calculate final price."""
+    total = sum(calculate_item_price(item) for item in order['items'])
+    shipping = calculate_shipping(total)
+    return {'total': total, 'shipping': shipping, 'final': total + shipping}
+```
+
+### Replace Magic Numbers with Constants
+
+**Before**:
+```python
+def calculate_tax(amount: float) -> float:
+    return amount * 0.07  # What is 0.07?
+
+def is_premium(score: int) -> bool:
+    return score > 850  # What is 850?
+```
+
+**After**:
+```python
+TAX_RATE = 0.07
+PREMIUM_THRESHOLD = 850
+
+def calculate_tax(amount: float) -> float:
+    """Calculate sales tax."""
+    return amount * TAX_RATE
+
+def is_premium(score: int) -> bool:
+    """Check if score qualifies for premium tier."""
+    return score > PREMIUM_THRESHOLD
+```
+
+### Simplify Conditionals
+
+**Before**:
+```python
+def get_discount(user: dict) -> float:
+    if user.get('is_member'):
+        if user.get('years') > 5:
+            if user.get('purchases') > 100:
+                return 0.25
+            else:
+                return 0.15
+        else:
+            return 0.10
     else:
         return 0.0
 ```
 
-### Evidence Tracking
+**After**:
+```python
+def get_discount(user: dict) -> float:
+    """Calculate user discount based on membership status."""
+    if not user.get('is_member'):
+        return 0.0
+
+    years = user.get('years', 0)
+    purchases = user.get('purchases', 0)
+
+    if years > 5 and purchases > 100:
+        return 0.25
+    elif years > 5:
+        return 0.15
+    else:
+        return 0.10
+```
+
+## Error Handling Best Practices
+
+### Be Specific with Exceptions
 
 ```python
-class Evidence(BaseModel):
-    """Evidence for why a record was included in CandidateSet."""
-    record_id: str
-    matched_fields: Dict[str, Any]  # field → value that matched
-    normalization_applied: Dict[str, Dict]  # field → normalization details
+# GOOD - Specific exceptions
+def load_file(path: Path) -> str:
+    """Load file content."""
+    if not path.exists():
+        raise FileNotFoundError(f"File not found: {path}")
 
-def build_evidence(record: Dict, query_plan: QueryPlan) -> Evidence:
-    """Build evidence dict showing which MARC fields caused inclusion."""
-    matched = {}
-    for field in query_plan.evidence_fields:
-        value = extract_field_value(record, field, 'a')
-        if value:
-            matched[field] = value
+    if not path.is_file():
+        raise ValueError(f"Path is not a file: {path}")
 
-    return Evidence(
-        record_id=record['001'],
-        matched_fields=matched,
-        normalization_applied={}
-    )
+    try:
+        return path.read_text()
+    except PermissionError as e:
+        raise PermissionError(f"Cannot read file {path}: {e}")
+
+# BAD - Generic exceptions
+def load_file(path: Path) -> str:
+    try:
+        return path.read_text()
+    except Exception as e:  # Too broad!
+        raise Exception(f"Error: {e}")
 ```
 
-## Directory Structure Patterns
+### Context Managers for Resource Management
 
-Your project uses this structure:
+```python
+from contextlib import contextmanager
 
+@contextmanager
+def database_connection(db_url: str):
+    """Context manager for database connection."""
+    conn = create_connection(db_url)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+# Usage
+with database_connection("postgresql://...") as conn:
+    result = conn.execute("SELECT * FROM users")
 ```
-scripts/
-  ingestion/         # MARC XML loaders, parsers
-  normalization/     # Date, place, agent normalizers (to be created)
-  query/             # QueryPlan compiler, SQL generator (to be created)
-  core/              # ProjectManager, shared classes
-  utils/             # Reusable utilities, logging
-  chunking/          # (inherited from template, may not need)
-  embeddings/        # (inherited from template, may not need)
-  retrieval/         # (inherited from template, may not need)
+
+## Testing Best Practices
+
+### Write Testable Code
+
+```python
+# HARD TO TEST - Embedded dependencies
+def send_report():
+    db = DatabaseConnection()  # Hard to mock
+    users = db.get_users()
+    email = EmailService()  # Hard to mock
+    for user in users:
+        email.send(user.email, "Report")
+
+# EASY TO TEST - Dependency injection
+def send_report(users: List[User], email_service: EmailService):
+    """Send report to users via email service."""
+    for user in users:
+        email_service.send(user.email, "Report")
+
+# Test example
+def test_send_report():
+    users = [User(email="test@example.com")]
+    mock_email = MockEmailService()
+    send_report(users, mock_email)
+    assert mock_email.sent_count == 1
 ```
 
-**For MARC XML project:**
-- Focus on `ingestion/`, `normalization/`, `query/`
-- Leverage existing `core/` and `utils/`
-- May deprecate RAG-specific components (embeddings, retrieval)
+### Keep Tests Simple and Focused
 
-## Templates
+```python
+import pytest
 
-MARC-specific templates will be created in `assets/` as the project develops:
+def test_validate_email_with_valid_email():
+    """Test email validation with valid input."""
+    assert validate_email("user@example.com") is True
 
-- **marc_parser_template.py** - MARC field parser structure
-- **normalizer_template.py** - Normalizer with confidence tracking
-- **query_component_template.py** - Query plan compiler structure
-- **test_template.py** - Test structure for MARC components
+def test_validate_email_with_invalid_email():
+    """Test email validation with invalid input."""
+    assert validate_email("invalid") is False
 
-These will be added once we establish patterns through initial implementations.
+def test_validate_email_with_empty_string():
+    """Test email validation with empty input."""
+    assert validate_email("") is False
+
+@pytest.mark.parametrize("email,expected", [
+    ("user@example.com", True),
+    ("invalid", False),
+    ("", False),
+    ("user@", False),
+    ("@example.com", False),
+])
+def test_validate_email_parametrized(email: str, expected: bool):
+    """Test email validation with various inputs."""
+    assert validate_email(email) == expected
+```
 
 ## Common Anti-Patterns to Avoid
 
-### ❌ Destructive Normalization
+### ❌ Mutable Default Arguments
 
 ```python
-# BAD - Loses raw value
-def normalize_date(date_str: str) -> int:
-    return int(date_str[:4])  # Lost "c1580", "1580-1599", etc.
+# BAD - Mutable default
+def add_item(item: str, items: list = []):
+    items.append(item)
+    return items
 
-# GOOD - Preserves raw value
-def normalize_date(date_str: str) -> NormalizedDate:
-    return NormalizedDate(
-        raw=date_str,
-        date_start=1580,
-        date_end=1580,
-        method="year_extract",
-        confidence=0.8
-    )
+# GOOD - None default
+def add_item(item: str, items: list = None) -> list:
+    if items is None:
+        items = []
+    items.append(item)
+    return items
 ```
 
-### ❌ Non-Deterministic Logic
+### ❌ Catching and Ignoring Exceptions
 
 ```python
-# BAD - Time-dependent
-def parse_date(date_str: str) -> int:
-    if "modern" in date_str:
-        return datetime.now().year  # Changes every execution!
+# BAD - Silent failures
+try:
+    result = risky_operation()
+except:
+    pass  # Error lost!
 
-# GOOD - Deterministic
-def parse_date(date_str: str) -> Optional[NormalizedDate]:
-    if "modern" in date_str:
-        return None  # Or return range with explicit reasoning
+# GOOD - Handle or re-raise
+try:
+    result = risky_operation()
+except SpecificError as e:
+    logger.error(f"Operation failed: {e}")
+    raise  # Re-raise if caller should know
 ```
 
-### ❌ LLM in Core Logic
+### ❌ Using `isinstance` for Type Checking When Not Needed
 
 ```python
-# BAD - LLM in parser
-def extract_place(record: Dict) -> str:
-    raw = extract_field_value(record, '260', 'a')
-    return llm.normalize(raw)  # Non-deterministic!
+# BAD - Explicit type checking
+def process(value):
+    if isinstance(value, str):
+        return value.upper()
+    elif isinstance(value, int):
+        return str(value)
+    else:
+        raise TypeError("Unsupported type")
 
-# GOOD - LLM only for planning
-def compile_query(nl_query: str) -> QueryPlan:
-    # LLM can help here (planning phase)
-    plan_dict = llm.generate_plan(nl_query)
-    # But validate with schema
-    return QueryPlan.parse_obj(plan_dict)
+# GOOD - Duck typing
+def process(value):
+    """Process value - expects str-like object."""
+    return str(value).upper()
 ```
 
-## When NOT to Use This Skill
+## Code Quality Checklist
 
-This skill focuses on Python code quality and MARC-specific architecture. Do NOT use for:
+Before committing code, verify:
 
-- Git operations (commits, branches, merges) → Use `git-expert` skill
-- General questions about MARC standards → Consult MARC documentation
-- Test execution → Run tests directly with pytest
-- Package management → Use poetry commands directly
+**Function Design**:
+- [ ] Functions are <50 lines
+- [ ] Each function has single, clear purpose
+- [ ] Function names are descriptive verbs (get_, calculate_, validate_)
+- [ ] No more than 5 parameters per function
+
+**Type Hints & Documentation**:
+- [ ] Type hints on all function signatures
+- [ ] Docstrings on all public functions/classes
+- [ ] Complex logic has inline comments
+- [ ] Module has descriptive docstring
+
+**Code Organization**:
+- [ ] Imports organized (stdlib → third-party → local)
+- [ ] No commented-out code
+- [ ] No debug print statements
+- [ ] Constants are UPPERCASE
+- [ ] Private functions/methods use underscore prefix
+
+**Error Handling**:
+- [ ] Specific exceptions (not bare except)
+- [ ] Meaningful error messages
+- [ ] Resources properly closed (use context managers)
+
+**Testing**:
+- [ ] Functions are deterministic where possible
+- [ ] Side effects are isolated
+- [ ] Dependencies can be injected/mocked
 
 ## Summary
 
-This skill ensures Python code in rare-books-bot:
-- Preserves raw MARC values (reversible normalization)
-- Is deterministic and testable without LLM
-- Follows logic density principles (<50 lines, single-purpose)
-- Tracks confidence and evidence
-- Aligns with the Answer Contract (QueryPlan → CandidateSet → Evidence)
+This skill ensures Python code follows best practices:
+- Write clear, maintainable code with single-purpose functions
+- Use type hints and comprehensive docstrings
+- Follow DRY principle and extract duplicated logic
+- Handle errors explicitly with specific exceptions
+- Write testable, deterministic code
+- Organize imports and modules logically
+- Avoid common anti-patterns
