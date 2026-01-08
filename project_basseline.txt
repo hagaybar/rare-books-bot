@@ -1,0 +1,203 @@
+I’d begin by turning your 5 bullets into a minimal, testable vertical slice that proves “subset first, then reasoning”, while laying the rails for normalization + curated authority DB.
+
+0) Define the “contract” for every answer
+
+Every query response should carry these artifacts:
+
+QueryPlan (structured filters you inferred)
+
+CandidateSet (record IDs + why included/excluded)
+
+Evidence (which MARC fields were used)
+
+NormalizedView (raw → normalized mapping + confidence)
+
+Answer (only after CandidateSet exists)
+
+This one decision prevents the project from drifting into “LLM vibes”.
+
+1) Build the Source-of-Truth ingestion into a canonical record model
+
+Goal: MARC XML → CanonicalRecord JSON (one per inventory record).
+
+Start small: only extract fields needed for your priority queries.
+
+Minimum fields (first iteration):
+
+record_id (001)
+
+title (245)
+
+imprint_place_raw, publisher_raw, date_raw (260/264)
+
+language_codes (008/041)
+
+subjects_raw (6XX)
+
+names_raw + roles (1XX/7XX)
+
+notes_raw (5XX)
+
+raw_marc_snippets (for provenance display)
+
+Output both:
+
+a JSONL of canonical records
+
+a “provenance map” per record: field → extracted value(s)
+
+Success criterion: round-trip auditable (“show me exactly where this came from in MARC”).
+
+2) Create the “Inventory Subset Engine” (this is your first success condition)
+
+Goal: from a natural language inventory query, produce a deterministic CandidateSet.
+
+Do it in two layers:
+
+2.1 Structured index (SQLite is perfect)
+
+Create tables like:
+
+records(record_id, title, date_start, date_end, place_norm, publisher_norm, language, fulltext)
+
+record_subjects(record_id, subject_norm, subject_raw)
+
+record_agents(record_id, agent_norm, role, agent_raw)
+
+Add indexes on:
+
+date_start/date_end, place_norm, publisher_norm, agent_norm, subject_norm, language
+
+2.2 Query planner (NL → structured filters)
+
+Use the LLM only to produce a JSON query plan like:
+
+{
+  "filters": [
+    {"field":"publisher", "op":"EQUALS", "value":"X"},
+    {"field":"date", "op":"RANGE", "start":1500, "end":1599}
+  ],
+  "soft_filters":[
+    {"field":"subject", "op":"CONTAINS", "value":"topic X"}
+  ],
+  "notes":"..."
+}
+
+
+Then execute that plan deterministically in SQLite.
+
+Success criterion: for each inventory query, you can output:
+
+the SQL (or equivalent)
+
+the list of record IDs (CandidateSet)
+
+counts and top facets (places, years, languages)
+
+3) Start normalization as a rule engine, not a one-off cleanup
+
+Normalization should be:
+
+explicit rules
+
+reversible (keep raw)
+
+confidence-scored
+
+incrementally extensible
+
+3.1 Date normalization v1 (believable and safe)
+
+Implement a normalize_date(date_raw) -> {date_start, date_end, method, confidence, note} with:
+
+ISO years / ranges / “ca.” / brackets
+
+Roman numerals when clearly used for years
+
+Hebrew calendar only if you can robustly detect it; otherwise store as “unparsed” with low confidence
+
+Key: if uncertain, do not invent—store a range or null + explanation.
+
+3.2 Place & name normalization v1 (cheap wins)
+
+Start with:
+
+string cleanup (casefolding, punctuation, diacritics)
+
+known alias maps (you will curate these over time)
+
+Then later:
+
+authority matching (VIAF/GeoNames/Wikidata/etc.) only as enrichment.
+
+4) Build the curated “Authority DB” as a separate layer
+
+This maps exactly to your point (4): publishing houses, locations, historical figures.
+
+Design it as:
+
+authority_entities(id, type, label, normalized_label, external_ids, description, sources, confidence)
+
+authority_aliases(entity_id, alias, alias_norm, scope_note)
+
+authority_links(entity_id, record_id, role, evidence)
+
+Crucial: link back to MARC evidence so it’s “validated”.
+
+How to populate it initially:
+
+bootstrap from the inventory: extract unique publisher_raw, imprint_place_raw, agent_raw with frequency counts
+
+let the librarian curate high-frequency ones first
+
+write back approved normal forms and aliases
+
+This becomes your “validated enrichment backbone”.
+
+5) Only after subset works: add complex Q&A over the CandidateSet
+
+Your #3 (“cultural significance…”) should run only on:
+
+the CandidateSet records + their notes/subjects
+
+plus optionally curated authority descriptions
+
+plus optional web enrichment when asked
+
+This keeps reasoning grounded.
+
+A good default prompt pattern is:
+
+“Use only the provided evidence. If you need external context, say what and why.”
+
+6) What to implement first (a 7-step starter backlog)
+
+If you want a clean start that pays off fast:
+
+Parse MARC XML → canonical JSONL + provenance map
+
+SQLite schema + indexes
+
+Date normalization v1 + tests (20–50 real date strings from your data)
+
+Publisher/place normalization v1 + alias table (manual seed)
+
+NL → QueryPlan → SQL → CandidateSet (with explainability)
+
+Results renderer: table output + facets + “why matched”
+
+“Ask over CandidateSet” prompt + strict citation to MARC fields (no web yet)
+
+That gives you a working product where your first condition of success is met.
+
+A quick sanity metric to keep you honest
+
+For every inventory query, you should be able to measure:
+
+Recall proxy: does the subset include all obvious matches? (manual spot check early)
+
+Determinism: same query → same CandidateSet
+
+Explainability: every record has a match rationale referencing MARC fields
+
+Normalization coverage: % of records with parsed date_start/date_end, place_norm, publisher_norm

@@ -1,0 +1,5 @@
+{
+  "name": "rare-books-bot",
+  "version": "1.0.0",
+  "description": "Bibliographic discovery system for rare books using MARC XML as source of truth"
+}
