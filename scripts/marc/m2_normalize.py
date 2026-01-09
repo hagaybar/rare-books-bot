@@ -99,8 +99,12 @@ def main():
     """Main CLI entry point."""
     if len(sys.argv) < 3:
         print("Usage: python -m scripts.marc.m2_normalize <input_m1.jsonl> <output_m1m2.jsonl> [place_alias.json] [publisher_alias.json]")
-        print("\nExample:")
-        print("  python -m scripts.marc.m2_normalize data/canonical/records.jsonl data/m2/records_m1m2.jsonl")
+        print()
+        print("Example with place alias map:")
+        print("  python -m scripts.marc.m2_normalize \\")
+        print("    data/canonical/records.jsonl \\")
+        print("    data/m2/records_m1m2.jsonl \\")
+        print("    data/normalization/place_aliases/place_alias_map.json")
         sys.exit(1)
 
     input_path = Path(sys.argv[1])

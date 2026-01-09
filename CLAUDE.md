@@ -37,6 +37,53 @@ Every response—even internal ones—must be grounded in:
 - Normalized fields must be **reversible**: store raw alongside normalized
 - If uncertain: store `null`/range + **explicit reason**; never invent data
 
+## Data Normalization Pipeline
+
+The M2 normalization layer enriches M1 canonical records with normalized fields for querying and analysis:
+
+### Place Normalization
+- **Input:** Raw place strings from M1 imprints (e.g., "Paris :", "אמשטרדם", "[Berlin]")
+- **Mapping:** `data/normalization/place_aliases/place_alias_map.json` (production, version-controlled)
+- **Process:** Basic cleaning (casefold, strip punctuation, remove brackets) + optional alias map lookup
+- **Output:** Canonical English keys (e.g., "paris", "amsterdam", "berlin") with confidence scores
+- **Confidence:** 0.80 (base cleaning) or 0.95 (with alias map)
+- **Documentation:** `docs/pipelines/place_normalization.md`
+
+### Publisher Normalization
+- **Input:** Raw publisher strings from M1 imprints (e.g., "C. Fosset,", "Elsevier:")
+- **Process:** Same cleaning pipeline as place normalization
+- **Output:** Canonical keys with confidence scores
+- **Confidence:** 0.80 (base) or 0.95 (with optional alias map)
+
+### Date Normalization
+- **Input:** Raw date strings from M1 imprints (e.g., "[1680]", "c. 1650", "1500-1599")
+- **Rules:** 6 deterministic patterns (exact, bracketed, circa ±5 years, range, embedded, unparsed)
+- **Output:** Start/end years with method tag and confidence
+- **Confidence:** 0.95-0.99 (high certainty), 0.80-0.85 (medium), 0.0 (unparsed)
+- **Specification:** `docs/specs/m2_normalization_spec.md`
+
+### Key Files
+```
+data/normalization/place_aliases/
+├── place_alias_map.json         # Production mapping (tracked in git)
+├── place_alias_cache.jsonl      # LLM cache (gitignored)
+└── place_alias_proposed.csv     # Human review file (gitignored)
+```
+
+### Usage Example
+```bash
+# Generate place alias map (one-time, LLM-assisted)
+python scripts/normalization/generate_place_alias_map.py \
+  --input data/frequency/places_freq.csv \
+  --output data/normalization/place_aliases/place_alias_map.json
+
+# Enrich M1 records with M2 normalization
+python -m scripts.marc.m2_normalize \
+  data/canonical/records.jsonl \
+  data/m2/records_m1m2.jsonl \
+  data/normalization/place_aliases/place_alias_map.json
+```
+
 ## Code Style
 
 - Prefer small, pure functions with unit tests

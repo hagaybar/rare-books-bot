@@ -98,9 +98,15 @@ $RECYCLE.BIN/
 #  Project-specific ignores                                                   #
 ###############################################################################
 # Local data and generated artefacts; not part of the source code
+# Exception: Track production place alias map (curated, reviewed mapping)
+!data/normalization/
+!data/normalization/place_aliases/
+!data/normalization/place_aliases/place_alias_map.json
+
 data/
 outputs/
 archived/
+
 # FAISS / index binaries that may appear elsewhere
 *.faiss
 *.index
