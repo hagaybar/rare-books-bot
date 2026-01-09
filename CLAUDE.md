@@ -44,6 +44,30 @@ Every response—even internal ones—must be grounded in:
 - Use type hints, Pydantic/dataclasses, and deterministic outputs
 - Write logs/artifacts per run to support debugging
 
+## Available Skills
+
+This project has specialized skills in `.claude/skills/` that extend Claude's capabilities:
+
+### python-dev-expert
+Python development best practices aligned with this project's requirements:
+- Single-purpose functions (<50 lines, one responsibility)
+- Deterministic, testable code with dependency injection
+- Type hints and comprehensive docstrings
+- Composition over inheritance
+- Extract logic after 3rd duplication (DRY principle)
+
+**Use for**: Writing new Python code, refactoring, architectural decisions, code reviews
+
+### git-expert
+Git and GitHub workflow management:
+- Granular commits with clear messages
+- Safe operations (never destructive without explicit request)
+- Branch management and PR creation
+
+**Use for**: Committing changes, creating PRs, managing git workflow
+
+**Note**: Claude should proactively use these skills when relevant rather than waiting for explicit invocation.
+
 ## Directory Conventions
 
 ```
