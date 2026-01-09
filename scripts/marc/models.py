@@ -12,21 +12,53 @@ class SourcedValue(BaseModel):
 
 
 class ImprintData(BaseModel):
-    """Raw imprint/publication data from MARC 260/264 with provenance."""
+    """Raw imprint/publication data from MARC 260/264 with provenance.
+
+    Note: Rare books can have multiple imprints. This represents one imprint statement.
+    """
 
     place: Optional[SourcedValue] = Field(None, description="Place of publication with source")
     publisher: Optional[SourcedValue] = Field(None, description="Publisher name with source")
     date: Optional[SourcedValue] = Field(None, description="Publication date with source")
     manufacturer: Optional[SourcedValue] = Field(None, description="Manufacturer with source")
+    source_tags: List[str] = Field(..., description="MARC tags used (e.g., ['260'] or ['264'])")
 
 
 class AgentData(BaseModel):
-    """Author/contributor data with provenance."""
+    """Author/contributor data with provenance.
+
+    Separates structural role (main/added entry) from bibliographic function (printer, editor, etc.).
+    """
 
     name: SourcedValue = Field(..., description="Agent name with source")
-    role: Optional[str] = Field(None, description="Role (main_entry, added_entry)")
+    entry_role: str = Field(..., description="Structural role: 'main' or 'added'")
+    function: Optional[SourcedValue] = Field(None, description="Bibliographic function from relator (printer, editor, etc.)")
     dates: Optional[SourcedValue] = Field(None, description="Life dates with source")
-    relator: Optional[SourcedValue] = Field(None, description="Relator term/code with source")
+    source_tags: List[str] = Field(..., description="MARC tags used (e.g., ['100'] or ['700'])")
+
+
+class SubjectData(BaseModel):
+    """Subject heading with display string and structured parts."""
+
+    value: str = Field(..., description="Display string (e.g., 'Rare books -- Bibliography -- Catalogs')")
+    source: List[str] = Field(..., description="MARC field$subfield sources")
+    parts: Dict[str, Any] = Field(..., description="Structured parts by subfield code (e.g., {'a':'Rare books', 'v':['Bibliography','Catalogs']})")
+    source_tag: str = Field(..., description="MARC tag (e.g., '650', '651')")
+
+
+class NoteData(BaseModel):
+    """Note with explicit tag for easier filtering."""
+
+    tag: str = Field(..., description="MARC tag (e.g., '500', '590')")
+    value: str = Field(..., description="Note text")
+    source: List[str] = Field(..., description="MARC field$subfield sources")
+
+
+class SourceMetadata(BaseModel):
+    """Record-level source metadata for traceability."""
+
+    source_file: Optional[str] = Field(None, description="Source MARC XML filename")
+    control_number: SourcedValue = Field(..., description="MARC 001 control number")
 
 
 class CanonicalRecord(BaseModel):
@@ -34,90 +66,127 @@ class CanonicalRecord(BaseModel):
 
     All values are RAW - no normalization at this stage.
     Each value includes its MARC source (field$subfield).
+    Structure is optimized for queryability in later stages (M2 SQLite, M3 normalization).
     """
 
-    record_id: SourcedValue = Field(..., description="Record identifier with source (001)")
+    source: SourceMetadata = Field(..., description="Record-level source metadata")
+
     title: Optional[SourcedValue] = Field(None, description="Full title with sources (245$a$b$c)")
 
-    imprint: Optional[ImprintData] = Field(
-        None,
-        description="Publication info with sources (260/264)"
+    imprints: List[ImprintData] = Field(
+        default_factory=list,
+        description="Publication info with sources (260/264). Array to support multiple imprints in rare books."
     )
 
     languages: List[SourcedValue] = Field(
         default_factory=list,
-        description="Language codes with sources (041$a or 008/35-37)"
+        description="Language codes from 041$a"
     )
 
-    subjects: List[SourcedValue] = Field(
+    language_fixed: Optional[SourcedValue] = Field(
+        None,
+        description="Fixed language code from 008/35-37 (when used as fallback or for consistency check)"
+    )
+
+    subjects: List[SubjectData] = Field(
         default_factory=list,
-        description="Subject headings with sources (6XX$a$x$y$z)"
+        description="Subject headings with display + structured parts (6XX)"
     )
 
     agents: List[AgentData] = Field(
         default_factory=list,
-        description="Authors/contributors with sources (1XX/7XX)"
+        description="Authors/contributors with separated structural/bibliographic roles (1XX/7XX)"
     )
 
-    notes: List[SourcedValue] = Field(
+    notes: List[NoteData] = Field(
         default_factory=list,
-        description="Notes with sources (5XX$a)"
+        description="Notes with explicit tags (5XX)"
     )
 
     class Config:
         """Pydantic config."""
         json_schema_extra = {
             "example": {
-                "record_id": {
-                    "value": "990014605730204146",
-                    "source": ["001"]
+                "source": {
+                    "source_file": "BIBLIOGRAPHIC_2026_01.xml",
+                    "control_number": {
+                        "value": "990014605730204146",
+                        "source": ["001"]
+                    }
                 },
                 "title": {
                     "value": "Ferreira's falconry : being a translation...",
                     "source": ["245$a", "245$b", "245$c"]
                 },
-                "imprint": {
-                    "place": {
-                        "value": "[S.l.] :",
-                        "source": ["260$a"]
-                    },
-                    "publisher": {
-                        "value": "A. Jack,",
-                        "source": ["260$b"]
-                    },
-                    "date": {
-                        "value": "c1996",
-                        "source": ["260$c"]
-                    },
-                    "manufacturer": {
-                        "value": "Signet press",
-                        "source": ["260$f"]
+                "imprints": [
+                    {
+                        "place": {
+                            "value": "[S.l.] :",
+                            "source": ["260$a"]
+                        },
+                        "publisher": {
+                            "value": "A. Jack,",
+                            "source": ["260$b"]
+                        },
+                        "date": {
+                            "value": "c1996",
+                            "source": ["260$c"]
+                        },
+                        "manufacturer": {
+                            "value": "Signet press",
+                            "source": ["260$f"]
+                        },
+                        "source_tags": ["260"]
                     }
-                },
+                ],
                 "languages": [
                     {"value": "eng", "source": ["041$a"]}
                 ],
+                "language_fixed": {
+                    "value": "eng",
+                    "source": ["008/35-37"]
+                },
                 "subjects": [
-                    {"value": "Falconry -- Early works to 1800", "source": ["650$a", "650$v"]},
-                    {"value": "Hunting -- Early works to 1800", "source": ["650$a", "650$v"]}
+                    {
+                        "value": "Falconry -- Early works to 1800",
+                        "source": ["650$a", "650$v"],
+                        "parts": {
+                            "a": "Falconry",
+                            "v": ["Early works to 1800"]
+                        },
+                        "source_tag": "650"
+                    }
                 ],
                 "agents": [
                     {
                         "name": {"value": "Fernandes Ferreira, Diogo", "source": ["100$a"]},
-                        "role": "main_entry",
+                        "entry_role": "main",
+                        "function": None,
                         "dates": None,
-                        "relator": None
+                        "source_tags": ["100"]
                     },
                     {
                         "name": {"value": "Jack, Anthony", "source": ["700$a"]},
-                        "role": "added_entry",
+                        "entry_role": "added",
+                        "function": {
+                            "value": "translator",
+                            "source": ["700$e"]
+                        },
                         "dates": None,
-                        "relator": None
+                        "source_tags": ["700"]
                     }
                 ],
                 "notes": [
-                    {"value": "Limited ed. of 100 copies; copy no. 86", "source": ["500$a"]},
-                    {"value": "MP/TT", "source": ["590$a"]}
+                    {
+                        "tag": "500",
+                        "value": "Limited ed. of 100 copies; copy no. 86",
+                        "source": ["500$a"]
+                    },
+                    {
+                        "tag": "590",
+                        "value": "MP/TT",
+                        "source": ["590$a"]
+                    }
                 ]
             }
         }
@@ -126,14 +195,16 @@ class CanonicalRecord(BaseModel):
 class ExtractionReport(BaseModel):
     """Summary report of MARC XML extraction."""
 
+    source_file: str = Field(..., description="Source MARC XML filename")
     total_records: int = Field(..., description="Total records processed")
     successful_extractions: int = Field(..., description="Records successfully extracted")
     failed_extractions: int = Field(0, description="Records that failed to extract")
 
     # Field coverage stats
     records_with_title: int = Field(0, description="Records with title field")
-    records_with_imprint: int = Field(0, description="Records with imprint data")
-    records_with_languages: int = Field(0, description="Records with language codes")
+    records_with_imprints: int = Field(0, description="Records with imprint data")
+    records_with_languages: int = Field(0, description="Records with language codes (041$a)")
+    records_with_language_fixed: int = Field(0, description="Records with fixed language (008/35-37)")
     records_with_subjects: int = Field(0, description="Records with subject headings")
     records_with_agents: int = Field(0, description="Records with agents/authors")
     records_with_notes: int = Field(0, description="Records with notes")
@@ -143,7 +214,7 @@ class ExtractionReport(BaseModel):
         default_factory=list,
         description="Record IDs missing title"
     )
-    records_missing_imprint: List[str] = Field(
+    records_missing_imprints: List[str] = Field(
         default_factory=list,
         description="Record IDs missing imprint"
     )
@@ -158,17 +229,19 @@ class ExtractionReport(BaseModel):
         """Pydantic config."""
         json_schema_extra = {
             "example": {
+                "source_file": "BIBLIOGRAPHIC_2026_01.xml",
                 "total_records": 100,
                 "successful_extractions": 98,
                 "failed_extractions": 2,
                 "records_with_title": 98,
-                "records_with_imprint": 95,
+                "records_with_imprints": 95,
                 "records_with_languages": 90,
+                "records_with_language_fixed": 98,
                 "records_with_subjects": 85,
                 "records_with_agents": 92,
                 "records_with_notes": 70,
                 "records_missing_title": ["990014605730204146"],
-                "records_missing_imprint": ["990014605730204146", "990014614110204146"],
+                "records_missing_imprints": ["990014605730204146", "990014614110204146"],
                 "field_usage_counts": {
                     "245$a": 98,
                     "245$b": 95,
@@ -176,6 +249,7 @@ class ExtractionReport(BaseModel):
                     "260$b": 85,
                     "260$c": 95,
                     "041$a": 90,
+                    "008/35-37": 98,
                     "650$a": 120
                 }
             }

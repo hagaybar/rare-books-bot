@@ -12,7 +12,10 @@ from collections import Counter
 import pymarc
 from pymarc import parse_xml_to_array
 
-from .models import CanonicalRecord, ImprintData, AgentData, SourcedValue, ExtractionReport
+from .models import (
+    CanonicalRecord, ImprintData, AgentData, SubjectData, NoteData,
+    SourcedValue, SourceMetadata, ExtractionReport
+)
 
 
 def extract_record_id(record: pymarc.Record) -> Optional[SourcedValue]:
@@ -53,42 +56,41 @@ def extract_title(record: pymarc.Record) -> Optional[SourcedValue]:
     return None
 
 
-def extract_imprint(record: pymarc.Record) -> Optional[ImprintData]:
-    """Extract imprint/publication data from MARC 260 or 264 fields with subfield provenance."""
+def extract_imprints(record: pymarc.Record) -> List[ImprintData]:
+    """Extract imprint/publication data from MARC 260 or 264 fields with subfield provenance.
+
+    Returns array to support rare books with multiple imprints.
+    """
+    imprints = []
+
     # Try 260 first (older MARC), then 264 (newer RDA)
-    field = None
-    try:
-        field = record['260']
-    except KeyError:
+    # In rare books, there can be multiple imprints, so we check for multiple fields
+    for tag in ['260', '264']:
         try:
-            field = record['264']
+            fields = record.get_fields(tag)
+            for field in fields:
+                # Extract each subfield with its source
+                place_vals = field.get_subfields('a')
+                publisher_vals = field.get_subfields('b')
+                date_vals = field.get_subfields('c')
+                manufacturer_vals = field.get_subfields('f')
+
+                imprint = ImprintData(
+                    place=SourcedValue(value=place_vals[0], source=[f"{tag}$a"]) if place_vals else None,
+                    publisher=SourcedValue(value=publisher_vals[0], source=[f"{tag}$b"]) if publisher_vals else None,
+                    date=SourcedValue(value=date_vals[0], source=[f"{tag}$c"]) if date_vals else None,
+                    manufacturer=SourcedValue(value=manufacturer_vals[0], source=[f"{tag}$f"]) if manufacturer_vals else None,
+                    source_tags=[tag]
+                )
+                imprints.append(imprint)
         except KeyError:
             pass
 
-    if not field:
-        return None
-
-    field_tag = field.tag
-
-    # Extract each subfield with its source
-    place_vals = field.get_subfields('a')
-    publisher_vals = field.get_subfields('b')
-    date_vals = field.get_subfields('c')
-    manufacturer_vals = field.get_subfields('f')
-
-    imprint = ImprintData(
-        place=SourcedValue(value=place_vals[0], source=[f"{field_tag}$a"]) if place_vals else None,
-        publisher=SourcedValue(value=publisher_vals[0], source=[f"{field_tag}$b"]) if publisher_vals else None,
-        date=SourcedValue(value=date_vals[0], source=[f"{field_tag}$c"]) if date_vals else None,
-        manufacturer=SourcedValue(value=manufacturer_vals[0], source=[f"{field_tag}$f"]) if manufacturer_vals else None
-    )
-
-    return imprint
+    return imprints
 
 
 def extract_languages(record: pymarc.Record) -> List[SourcedValue]:
-    """Extract language codes from MARC 041 field, with 008 fallback."""
-    # First try field 041 (for translations and multilingual works)
+    """Extract language codes from MARC 041 field (for multilingual works)."""
     try:
         field_041 = record['041']
         if field_041:
@@ -98,49 +100,74 @@ def extract_languages(record: pymarc.Record) -> List[SourcedValue]:
                 return [SourcedValue(value=code, source=["041$a"]) for code in lang_codes]
     except KeyError:
         pass
+    return []
 
-    # Fallback to field 008 positions 35-37 (mandatory field)
+
+def extract_language_fixed(record: pymarc.Record) -> Optional[SourcedValue]:
+    """Extract fixed language code from MARC 008 positions 35-37.
+
+    This is the primary language of the item (mandatory field).
+    Captured separately even if 041 is present for consistency checking.
+    """
     try:
         field_008 = record['008']
         if field_008 and hasattr(field_008, 'data') and len(field_008.data) >= 38:
             # Positions 35-37 contain 3-character language code
             lang_code = field_008.data[35:38].strip()
             if lang_code and lang_code != '   ':  # Check it's not just spaces
-                return [SourcedValue(value=lang_code, source=["008/35-37"])]
+                return SourcedValue(value=lang_code, source=["008/35-37"])
     except (KeyError, AttributeError):
         pass
+    return None
 
-    return []
 
-
-def extract_subjects(record: pymarc.Record) -> List[SourcedValue]:
-    """Extract subject headings from MARC 6XX fields with subfield provenance."""
+def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
+    """Extract subject headings from MARC 6XX fields with display string and structured parts."""
     subjects = []
 
     # Get all 6XX fields (600-699)
     subject_fields = record.get_fields('600', '610', '630', '650', '651')
 
     for field in subject_fields:
-        # Combine all subfields except control subfields (2, 9, etc.)
-        parts = []
+        # Build both display string and structured parts
+        display_parts = []
         sources = []
+        parts_dict = {}
+
         for subfield in field.subfields:
             code = subfield[0]
             value = subfield[1]
             # Skip control subfields
             if code not in ['2', '9', '0']:
-                parts.append(value)
+                display_parts.append(value)
                 sources.append(f"{field.tag}${code}")
 
-        if parts:
-            subject_str = ' -- '.join(parts)
-            subjects.append(SourcedValue(value=subject_str, source=sources))
+                # Add to parts dictionary (some subfields can repeat, so use lists)
+                if code in parts_dict:
+                    # Convert to list if not already
+                    if not isinstance(parts_dict[code], list):
+                        parts_dict[code] = [parts_dict[code]]
+                    parts_dict[code].append(value)
+                else:
+                    parts_dict[code] = value
+
+        if display_parts:
+            subject_str = ' -- '.join(display_parts)
+            subjects.append(SubjectData(
+                value=subject_str,
+                source=sources,
+                parts=parts_dict,
+                source_tag=field.tag
+            ))
 
     return subjects
 
 
 def extract_agents(record: pymarc.Record) -> List[AgentData]:
-    """Extract authors/contributors from MARC 1XX and 7XX fields with subfield provenance."""
+    """Extract authors/contributors from MARC 1XX and 7XX fields.
+
+    Separates structural role (main/added entry) from bibliographic function (printer, editor, etc.).
+    """
     agents = []
 
     # Main entry (100-130)
@@ -152,9 +179,10 @@ def extract_agents(record: pymarc.Record) -> List[AgentData]:
 
             agent = AgentData(
                 name=SourcedValue(value=name_vals[0], source=[f"{field.tag}$a"]),
-                role='main_entry',
+                entry_role='main',
                 dates=SourcedValue(value=dates_vals[0], source=[f"{field.tag}$d"]) if dates_vals else None,
-                relator=None
+                function=None,  # Main entries typically don't have relator terms
+                source_tags=[field.tag]
             )
             agents.append(agent)
 
@@ -165,26 +193,27 @@ def extract_agents(record: pymarc.Record) -> List[AgentData]:
         if name_vals:
             dates_vals = field.get_subfields('d')
 
-            # Relator can be in subfield e (term) or 4 (code)
-            relator_vals = field.get_subfields('e')
-            relator_source = f"{field.tag}$e"
-            if not relator_vals:
-                relator_vals = field.get_subfields('4')
-                relator_source = f"{field.tag}$4"
+            # Function/relator can be in subfield e (term) or 4 (code)
+            function_vals = field.get_subfields('e')
+            function_source = f"{field.tag}$e"
+            if not function_vals:
+                function_vals = field.get_subfields('4')
+                function_source = f"{field.tag}$4"
 
             agent = AgentData(
                 name=SourcedValue(value=name_vals[0], source=[f"{field.tag}$a"]),
-                role='added_entry',
+                entry_role='added',
                 dates=SourcedValue(value=dates_vals[0], source=[f"{field.tag}$d"]) if dates_vals else None,
-                relator=SourcedValue(value=relator_vals[0], source=[relator_source]) if relator_vals else None
+                function=SourcedValue(value=function_vals[0], source=[function_source]) if function_vals else None,
+                source_tags=[field.tag]
             )
             agents.append(agent)
 
     return agents
 
 
-def extract_notes(record: pymarc.Record) -> List[SourcedValue]:
-    """Extract notes from MARC 5XX fields with subfield provenance."""
+def extract_notes(record: pymarc.Record) -> List[NoteData]:
+    """Extract notes from MARC 5XX fields with explicit tag for filtering."""
     notes = []
 
     # Get all 5XX fields (500-599)
@@ -204,39 +233,52 @@ def extract_notes(record: pymarc.Record) -> List[SourcedValue]:
 
         if parts:
             note_str = ' '.join(parts)
-            notes.append(SourcedValue(value=note_str, source=sources))
+            notes.append(NoteData(
+                tag=field.tag,
+                value=note_str,
+                source=sources
+            ))
 
     return notes
 
 
-def parse_marc_record(record: pymarc.Record) -> Optional[CanonicalRecord]:
+def parse_marc_record(record: pymarc.Record, source_file: Optional[str] = None) -> Optional[CanonicalRecord]:
     """Parse a single MARC record into CanonicalRecord with embedded provenance.
 
     Args:
         record: pymarc.Record object
+        source_file: Optional source MARC XML filename for traceability
 
     Returns:
         CanonicalRecord or None if record_id missing
     """
-    # Must have record ID
-    record_id = extract_record_id(record)
-    if not record_id:
+    # Must have record ID (control number)
+    control_number = extract_record_id(record)
+    if not control_number:
         return None
+
+    # Build source metadata
+    source = SourceMetadata(
+        source_file=source_file,
+        control_number=control_number
+    )
 
     # Extract all fields (each with embedded provenance)
     title = extract_title(record)
-    imprint = extract_imprint(record)
+    imprints = extract_imprints(record)
     languages = extract_languages(record)
+    language_fixed = extract_language_fixed(record)
     subjects = extract_subjects(record)
     agents = extract_agents(record)
     notes = extract_notes(record)
 
     # Build canonical record
     canonical = CanonicalRecord(
-        record_id=record_id,
+        source=source,
         title=title,
-        imprint=imprint,
+        imprints=imprints,
         languages=languages,
+        language_fixed=language_fixed,
         subjects=subjects,
         agents=agents,
         notes=notes
@@ -264,16 +306,20 @@ def parse_marc_xml_file(
     failed_records = []
     field_usage = Counter()
 
+    # Extract source filename for traceability
+    source_file = marc_xml_path.name
+
     # Stats for report
     stats = {
         'with_title': 0,
-        'with_imprint': 0,
+        'with_imprints': 0,
         'with_languages': 0,
+        'with_language_fixed': 0,
         'with_subjects': 0,
         'with_agents': 0,
         'with_notes': 0,
         'missing_title': [],
-        'missing_imprint': []
+        'missing_imprints': []
     }
 
     # Parse MARC XML file
@@ -285,7 +331,7 @@ def parse_marc_xml_file(
 
     for record in records:
         try:
-            canonical = parse_marc_record(record)
+            canonical = parse_marc_record(record, source_file=source_file)
 
             if canonical:
                 canonical_records.append(canonical)
@@ -294,15 +340,17 @@ def parse_marc_xml_file(
                 if canonical.title:
                     stats['with_title'] += 1
                 else:
-                    stats['missing_title'].append(canonical.record_id.value)
+                    stats['missing_title'].append(canonical.source.control_number.value)
 
-                if canonical.imprint:
-                    stats['with_imprint'] += 1
+                if canonical.imprints:
+                    stats['with_imprints'] += 1
                 else:
-                    stats['missing_imprint'].append(canonical.record_id.value)
+                    stats['missing_imprints'].append(canonical.source.control_number.value)
 
                 if canonical.languages:
                     stats['with_languages'] += 1
+                if canonical.language_fixed:
+                    stats['with_language_fixed'] += 1
                 if canonical.subjects:
                     stats['with_subjects'] += 1
                 if canonical.agents:
@@ -311,8 +359,8 @@ def parse_marc_xml_file(
                     stats['with_notes'] += 1
 
                 # Count field$subfield usage from embedded sources
-                # Record ID
-                for source in canonical.record_id.source:
+                # Control number
+                for source in canonical.source.control_number.source:
                     field_usage[source] += 1
 
                 # Title
@@ -320,24 +368,29 @@ def parse_marc_xml_file(
                     for source in canonical.title.source:
                         field_usage[source] += 1
 
-                # Imprint
-                if canonical.imprint:
-                    if canonical.imprint.place:
-                        for source in canonical.imprint.place.source:
+                # Imprints
+                for imprint in canonical.imprints:
+                    if imprint.place:
+                        for source in imprint.place.source:
                             field_usage[source] += 1
-                    if canonical.imprint.publisher:
-                        for source in canonical.imprint.publisher.source:
+                    if imprint.publisher:
+                        for source in imprint.publisher.source:
                             field_usage[source] += 1
-                    if canonical.imprint.date:
-                        for source in canonical.imprint.date.source:
+                    if imprint.date:
+                        for source in imprint.date.source:
                             field_usage[source] += 1
-                    if canonical.imprint.manufacturer:
-                        for source in canonical.imprint.manufacturer.source:
+                    if imprint.manufacturer:
+                        for source in imprint.manufacturer.source:
                             field_usage[source] += 1
 
                 # Languages
                 for lang in canonical.languages:
                     for source in lang.source:
+                        field_usage[source] += 1
+
+                # Language fixed
+                if canonical.language_fixed:
+                    for source in canonical.language_fixed.source:
                         field_usage[source] += 1
 
                 # Subjects
@@ -352,8 +405,8 @@ def parse_marc_xml_file(
                     if agent.dates:
                         for source in agent.dates.source:
                             field_usage[source] += 1
-                    if agent.relator:
-                        for source in agent.relator.source:
+                    if agent.function:
+                        for source in agent.function.source:
                             field_usage[source] += 1
 
                 # Notes
@@ -382,17 +435,19 @@ def parse_marc_xml_file(
 
     # Build extraction report
     report = ExtractionReport(
+        source_file=source_file,
         total_records=len(canonical_records) + len(failed_records),
         successful_extractions=len(canonical_records),
         failed_extractions=len(failed_records),
         records_with_title=stats['with_title'],
-        records_with_imprint=stats['with_imprint'],
+        records_with_imprints=stats['with_imprints'],
         records_with_languages=stats['with_languages'],
+        records_with_language_fixed=stats['with_language_fixed'],
         records_with_subjects=stats['with_subjects'],
         records_with_agents=stats['with_agents'],
         records_with_notes=stats['with_notes'],
         records_missing_title=stats['missing_title'][:10],  # Limit to 10 examples
-        records_missing_imprint=stats['missing_imprint'][:10],
+        records_missing_imprints=stats['missing_imprints'][:10],
         field_usage_counts=dict(field_usage)
     )
 
@@ -421,13 +476,15 @@ if __name__ == "__main__":
     report = parse_marc_xml_file(input_file, output_file, report_file)
 
     print(f"\nExtraction Report:")
+    print(f"  Source file: {report.source_file}")
     print(f"  Total records: {report.total_records}")
     print(f"  Successful: {report.successful_extractions}")
     print(f"  Failed: {report.failed_extractions}")
     print(f"\nField Coverage:")
     print(f"  With title: {report.records_with_title}")
-    print(f"  With imprint: {report.records_with_imprint}")
-    print(f"  With languages: {report.records_with_languages}")
+    print(f"  With imprints: {report.records_with_imprints}")
+    print(f"  With languages (041$a): {report.records_with_languages}")
+    print(f"  With language_fixed (008): {report.records_with_language_fixed}")
     print(f"  With subjects: {report.records_with_subjects}")
     print(f"  With agents: {report.records_with_agents}")
     print(f"  With notes: {report.records_with_notes}")
