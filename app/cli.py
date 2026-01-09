@@ -21,37 +21,33 @@ import json, csv
 from collections import defaultdict
 from pathlib import Path
 
-from scripts.ingestion.manager import IngestionManager
-from scripts.chunking.chunker_v3 import split as chunker_split
-from scripts.chunking.models import Chunk
-
-# from scripts.embeddings.chunk_embedder import ChunkEmbedder
-from scripts.embeddings.unified_embedder import UnifiedEmbedder
-from scripts.utils.logger import LoggerManager
-from scripts.utils.task_paths import TaskPaths
-from scripts.core.project_manager import ProjectManager
-from scripts.retrieval.retrieval_manager import RetrievalManager
-from scripts.prompting.prompt_builder import PromptBuilder  # Added for ask command
-from scripts.api_clients.openai.completer import (
-    OpenAICompleter,  # Added for ask command
-)
-from scripts.agents.image_insight_agent import (
-    ImageInsightAgent,  # Added for index_images command
-)
-from scripts.utils.run_logger import RunLogger
+# Note: Most imports commented out as corresponding modules were removed during RAG->MARC transformation
+# TODO: Clean up or remove old RAG commands (ingest, embed, retrieve, ask, etc.)
+# from scripts.ingestion.manager import IngestionManager
+# from scripts.chunking.chunker_v3 import split as chunker_split
+# from scripts.chunking.models import Chunk
+# from scripts.embeddings.unified_embedder import UnifiedEmbedder
+# from scripts.utils.logger import LoggerManager
+# from scripts.utils.task_paths import TaskPaths
+# from scripts.core.project_manager import ProjectManager
+# from scripts.retrieval.retrieval_manager import RetrievalManager
+# from scripts.prompting.prompt_builder import PromptBuilder
+# from scripts.api_clients.openai.completer import OpenAICompleter
+# from scripts.agents.image_insight_agent import ImageInsightAgent
+# from scripts.utils.run_logger import RunLogger
 
 app = typer.Typer()
 
 # Setup basic logging for the CLI
-paths = TaskPaths()
-
-cli_logger = LoggerManager.get_logger(
-    name="cli",             # or "ui", "retrieval", "pipeline", etc.
-    level="DEBUG",
-    task_paths=paths,
-    run_id=None,            # leave None for long-lived processes
-    use_json=True           # JSON for file logs, color for console
-)
+# TODO: Re-enable when needed for new commands
+# paths = TaskPaths()
+# cli_logger = LoggerManager.get_logger(
+#     name="cli",
+#     level="DEBUG",
+#     task_paths=paths,
+#     run_id=None,
+#     use_json=True
+# )
 
 
 @app.command()
@@ -640,6 +636,66 @@ def index_images(
     typer.echo(
         f"✅ Indexed {len(image_chunks)} image chunks into FAISS and metadata JSONL."
     )
+
+
+@app.command()
+def parse_marc(
+    input_file: Path = typer.Argument(
+        ...,
+        help="Path to MARC XML file to parse"
+    ),
+    output_file: Path = typer.Option(
+        None,
+        "--output", "-o",
+        help="Path to output JSONL file (default: data/canonical/records.jsonl)"
+    ),
+    report_file: Path = typer.Option(
+        None,
+        "--report", "-r",
+        help="Path to extraction report JSON file (default: data/canonical/extraction_report.json)"
+    ),
+):
+    """
+    Parse MARC XML file and output canonical JSONL records.
+
+    This implements M1: MARC XML → Canonical JSONL
+    """
+    from scripts.marc.parse import parse_marc_xml_file
+
+    # Set defaults if not provided
+    if output_file is None:
+        output_file = Path("data/canonical/records.jsonl")
+    if report_file is None:
+        report_file = Path("data/canonical/extraction_report.json")
+
+    typer.echo(f"Parsing MARC XML file: {input_file}")
+
+    if not input_file.exists():
+        typer.echo(f"Error: Input file does not exist: {input_file}")
+        raise typer.Exit(code=1)
+
+    # Run the parser
+    report = parse_marc_xml_file(
+        marc_xml_path=input_file,
+        output_path=output_file,
+        report_path=report_file
+    )
+
+    # Print summary
+    typer.echo(f"\n✅ Parsing complete!")
+    typer.echo(f"\nExtraction Report:")
+    typer.echo(f"  Total records: {report.total_records}")
+    typer.echo(f"  Successful: {report.successful_extractions}")
+    typer.echo(f"  Failed: {report.failed_extractions}")
+    typer.echo(f"\nField Coverage:")
+    typer.echo(f"  With title: {report.records_with_title}")
+    typer.echo(f"  With imprint: {report.records_with_imprint}")
+    typer.echo(f"  With languages: {report.records_with_languages}")
+    typer.echo(f"  With subjects: {report.records_with_subjects}")
+    typer.echo(f"  With agents: {report.records_with_agents}")
+    typer.echo(f"  With notes: {report.records_with_notes}")
+    typer.echo(f"\nOutput: {output_file}")
+    typer.echo(f"Report: {report_file}")
 
 
 if __name__ == "__main__":
