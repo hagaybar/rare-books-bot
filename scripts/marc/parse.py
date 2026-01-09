@@ -18,6 +18,22 @@ from .models import (
 )
 
 
+def _make_source_ref(tag: str, occurrence: int, subfield: str) -> str:
+    """Create source reference with occurrence indexing.
+
+    Args:
+        tag: MARC tag (e.g., '500', '260')
+        occurrence: Zero-based occurrence index for this tag
+        subfield: Subfield code (e.g., 'a', 'b') or special notation (e.g., '35-37')
+
+    Returns:
+        Source reference string (e.g., '500[0]$a', '260[1]$b', '008/35-37')
+    """
+    if '/' in subfield:  # Special case for control fields like 008/35-37
+        return f"{tag}/{subfield}"
+    return f"{tag}[{occurrence}]${subfield}"
+
+
 def extract_record_id(record: pymarc.Record) -> Optional[SourcedValue]:
     """Extract record ID from MARC 001 field."""
     try:
@@ -57,7 +73,7 @@ def extract_title(record: pymarc.Record) -> Optional[SourcedValue]:
 
 
 def extract_imprints(record: pymarc.Record) -> List[ImprintData]:
-    """Extract imprint/publication data from MARC 260 or 264 fields with subfield provenance.
+    """Extract imprint/publication data from MARC 260 or 264 fields with occurrence indexing.
 
     Returns array to support rare books with multiple imprints.
     """
@@ -68,18 +84,18 @@ def extract_imprints(record: pymarc.Record) -> List[ImprintData]:
     for tag in ['260', '264']:
         try:
             fields = record.get_fields(tag)
-            for field in fields:
-                # Extract each subfield with its source
+            for occ, field in enumerate(fields):
+                # Extract each subfield with occurrence-indexed source
                 place_vals = field.get_subfields('a')
                 publisher_vals = field.get_subfields('b')
                 date_vals = field.get_subfields('c')
                 manufacturer_vals = field.get_subfields('f')
 
                 imprint = ImprintData(
-                    place=SourcedValue(value=place_vals[0], source=[f"{tag}$a"]) if place_vals else None,
-                    publisher=SourcedValue(value=publisher_vals[0], source=[f"{tag}$b"]) if publisher_vals else None,
-                    date=SourcedValue(value=date_vals[0], source=[f"{tag}$c"]) if date_vals else None,
-                    manufacturer=SourcedValue(value=manufacturer_vals[0], source=[f"{tag}$f"]) if manufacturer_vals else None,
+                    place=SourcedValue(value=place_vals[0], source=[_make_source_ref(tag, occ, 'a')]) if place_vals else None,
+                    publisher=SourcedValue(value=publisher_vals[0], source=[_make_source_ref(tag, occ, 'b')]) if publisher_vals else None,
+                    date=SourcedValue(value=date_vals[0], source=[_make_source_ref(tag, occ, 'c')]) if date_vals else None,
+                    manufacturer=SourcedValue(value=manufacturer_vals[0], source=[_make_source_ref(tag, occ, 'f')]) if manufacturer_vals else SourcedValue(value=None, source=[]),
                     source_tags=[tag]
                 )
                 imprints.append(imprint)
@@ -122,34 +138,61 @@ def extract_language_fixed(record: pymarc.Record) -> Optional[SourcedValue]:
 
 
 def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
-    """Extract subject headings from MARC 6XX fields with display string and structured parts."""
+    """Extract subject headings from MARC 6XX fields with occurrence indexing and scheme/lang."""
     subjects = []
+
+    # Track occurrence count per tag
+    tag_occurrences = {}
 
     # Get all 6XX fields (600-699)
     subject_fields = record.get_fields('600', '610', '630', '650', '651')
 
     for field in subject_fields:
+        # Get occurrence index for this tag
+        tag = field.tag
+        occ = tag_occurrences.get(tag, 0)
+        tag_occurrences[tag] = occ + 1
+
         # Build both display string and structured parts
         display_parts = []
         sources = []
         parts_dict = {}
+        scheme_val = None
+        heading_lang_val = None
+
+        # Subdivision subfields that should always be arrays
+        subdivision_codes = {'v', 'x', 'y', 'z'}
 
         for subfield in field.subfields:
             code = subfield[0]
             value = subfield[1]
-            # Skip control subfields
-            if code not in ['2', '9', '0']:
-                display_parts.append(value)
-                sources.append(f"{field.tag}${code}")
 
-                # Add to parts dictionary (some subfields can repeat, so use lists)
-                if code in parts_dict:
-                    # Convert to list if not already
-                    if not isinstance(parts_dict[code], list):
-                        parts_dict[code] = [parts_dict[code]]
-                    parts_dict[code].append(value)
+            # Capture scheme ($2) and heading language ($9)
+            if code == '2':
+                scheme_val = value
+            elif code == '9':
+                heading_lang_val = value
+            # Skip other control subfields
+            elif code not in ['0', '6', '8']:
+                display_parts.append(value)
+                sources.append(_make_source_ref(tag, occ, code))
+
+                # Add to parts dictionary
+                # v/x/y/z are always arrays (subdivisions can repeat)
+                if code in subdivision_codes:
+                    if code in parts_dict:
+                        parts_dict[code].append(value)
+                    else:
+                        parts_dict[code] = [value]
                 else:
-                    parts_dict[code] = value
+                    # Non-subdivision codes stored as single values
+                    if code in parts_dict:
+                        # Handle unexpected repetition by converting to list
+                        if not isinstance(parts_dict[code], list):
+                            parts_dict[code] = [parts_dict[code]]
+                        parts_dict[code].append(value)
+                    else:
+                        parts_dict[code] = value
 
         if display_parts:
             subject_str = ' -- '.join(display_parts)
@@ -157,55 +200,68 @@ def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
                 value=subject_str,
                 source=sources,
                 parts=parts_dict,
-                source_tag=field.tag
+                source_tag=tag,
+                scheme=SourcedValue(value=scheme_val, source=[_make_source_ref(tag, occ, '2')]) if scheme_val else None,
+                heading_lang=SourcedValue(value=heading_lang_val, source=[_make_source_ref(tag, occ, '9')]) if heading_lang_val else None
             ))
 
     return subjects
 
 
 def extract_agents(record: pymarc.Record) -> List[AgentData]:
-    """Extract authors/contributors from MARC 1XX and 7XX fields.
+    """Extract authors/contributors from MARC 1XX and 7XX fields with occurrence indexing.
 
     Separates structural role (main/added entry) from bibliographic function (printer, editor, etc.).
     """
     agents = []
 
+    # Track occurrence count per tag
+    tag_occurrences = {}
+
     # Main entry (100-130)
     main_fields = record.get_fields('100', '110', '111', '130')
     for field in main_fields:
+        tag = field.tag
+        occ = tag_occurrences.get(tag, 0)
+        tag_occurrences[tag] = occ + 1
+
         name_vals = field.get_subfields('a')
         if name_vals:
             dates_vals = field.get_subfields('d')
 
             agent = AgentData(
-                name=SourcedValue(value=name_vals[0], source=[f"{field.tag}$a"]),
+                name=SourcedValue(value=name_vals[0], source=[_make_source_ref(tag, occ, 'a')]),
                 entry_role='main',
-                dates=SourcedValue(value=dates_vals[0], source=[f"{field.tag}$d"]) if dates_vals else None,
+                dates=SourcedValue(value=dates_vals[0], source=[_make_source_ref(tag, occ, 'd')]) if dates_vals else None,
                 function=None,  # Main entries typically don't have relator terms
-                source_tags=[field.tag]
+                source_tags=[tag]
             )
             agents.append(agent)
 
     # Added entries (700-730)
     added_fields = record.get_fields('700', '710', '711', '730')
     for field in added_fields:
+        tag = field.tag
+        occ = tag_occurrences.get(tag, 0)
+        tag_occurrences[tag] = occ + 1
+
         name_vals = field.get_subfields('a')
         if name_vals:
             dates_vals = field.get_subfields('d')
 
             # Function/relator can be in subfield e (term) or 4 (code)
             function_vals = field.get_subfields('e')
-            function_source = f"{field.tag}$e"
+            function_subfield = 'e'
             if not function_vals:
                 function_vals = field.get_subfields('4')
-                function_source = f"{field.tag}$4"
+                function_subfield = '4'
 
             agent = AgentData(
-                name=SourcedValue(value=name_vals[0], source=[f"{field.tag}$a"]),
+                name=SourcedValue(value=name_vals[0], source=[_make_source_ref(tag, occ, 'a')]),
                 entry_role='added',
-                dates=SourcedValue(value=dates_vals[0], source=[f"{field.tag}$d"]) if dates_vals else None,
-                function=SourcedValue(value=function_vals[0], source=[function_source]) if function_vals else None,
-                source_tags=[field.tag]
+                dates=SourcedValue(value=dates_vals[0], source=[_make_source_ref(tag, occ, 'd')]) if dates_vals else None,
+                function=SourcedValue(value=function_vals[0], source=[_make_source_ref(tag, occ, function_subfield)]) if function_vals else None,
+                source_tags=[tag]
             )
             agents.append(agent)
 
@@ -213,13 +269,20 @@ def extract_agents(record: pymarc.Record) -> List[AgentData]:
 
 
 def extract_notes(record: pymarc.Record) -> List[NoteData]:
-    """Extract notes from MARC 5XX fields with explicit tag for filtering."""
+    """Extract notes from MARC 5XX fields with occurrence indexing."""
     notes = []
+
+    # Track occurrence count per tag
+    tag_occurrences = {}
 
     # Get all 5XX fields (500-599)
     note_fields = record.get_fields('500', '501', '502', '504', '505', '520', '590')
 
     for field in note_fields:
+        tag = field.tag
+        occ = tag_occurrences.get(tag, 0)
+        tag_occurrences[tag] = occ + 1
+
         # Combine all subfields
         parts = []
         sources = []
@@ -229,17 +292,92 @@ def extract_notes(record: pymarc.Record) -> List[NoteData]:
             # Skip control subfields
             if code not in ['2', '6', '8', '9']:
                 parts.append(value)
-                sources.append(f"{field.tag}${code}")
+                sources.append(_make_source_ref(tag, occ, code))
 
         if parts:
             note_str = ' '.join(parts)
             notes.append(NoteData(
-                tag=field.tag,
+                tag=tag,
                 value=note_str,
                 source=sources
             ))
 
     return notes
+
+
+def extract_uniform_title(record: pymarc.Record) -> Optional[SourcedValue]:
+    """Extract uniform title from MARC 240 field."""
+    try:
+        field_240 = record['240']
+        if field_240:
+            # Combine all subfields for uniform title
+            title_parts = []
+            sources = []
+            for subfield in field_240.subfields:
+                code = subfield[0]
+                value = subfield[1]
+                # Skip control subfields
+                if code not in ['0', '6', '8', '9']:
+                    title_parts.append(value)
+                    sources.append(_make_source_ref('240', 0, code))
+
+            if title_parts:
+                return SourcedValue(value=' '.join(title_parts), source=sources)
+    except KeyError:
+        pass
+    return None
+
+
+def extract_variant_titles(record: pymarc.Record) -> List[SourcedValue]:
+    """Extract variant titles from MARC 246 field (access points)."""
+    variant_titles = []
+
+    try:
+        fields_246 = record.get_fields('246')
+        for occ, field in enumerate(fields_246):
+            # Combine all subfields for variant title
+            title_parts = []
+            sources = []
+            for subfield in field.subfields:
+                code = subfield[0]
+                value = subfield[1]
+                # Skip control subfields
+                if code not in ['6', '8']:
+                    title_parts.append(value)
+                    sources.append(_make_source_ref('246', occ, code))
+
+            if title_parts:
+                variant_titles.append(SourcedValue(value=' '.join(title_parts), source=sources))
+    except KeyError:
+        pass
+
+    return variant_titles
+
+
+def extract_acquisition(record: pymarc.Record) -> List[SourcedValue]:
+    """Extract acquisition/provenance events from MARC 541 field."""
+    acquisitions = []
+
+    try:
+        fields_541 = record.get_fields('541')
+        for occ, field in enumerate(fields_541):
+            # Combine all subfields for acquisition info
+            acq_parts = []
+            sources = []
+            for subfield in field.subfields:
+                code = subfield[0]
+                value = subfield[1]
+                # Skip control subfields
+                if code not in ['6', '8']:
+                    acq_parts.append(value)
+                    sources.append(_make_source_ref('541', occ, code))
+
+            if acq_parts:
+                acquisitions.append(SourcedValue(value=' '.join(acq_parts), source=sources))
+    except KeyError:
+        pass
+
+    return acquisitions
 
 
 def parse_marc_record(record: pymarc.Record, source_file: Optional[str] = None) -> Optional[CanonicalRecord]:
@@ -265,23 +403,29 @@ def parse_marc_record(record: pymarc.Record, source_file: Optional[str] = None) 
 
     # Extract all fields (each with embedded provenance)
     title = extract_title(record)
+    uniform_title = extract_uniform_title(record)
+    variant_titles = extract_variant_titles(record)
     imprints = extract_imprints(record)
     languages = extract_languages(record)
     language_fixed = extract_language_fixed(record)
     subjects = extract_subjects(record)
     agents = extract_agents(record)
     notes = extract_notes(record)
+    acquisition = extract_acquisition(record)
 
     # Build canonical record
     canonical = CanonicalRecord(
         source=source,
         title=title,
+        uniform_title=uniform_title,
+        variant_titles=variant_titles,
         imprints=imprints,
         languages=languages,
         language_fixed=language_fixed,
         subjects=subjects,
         agents=agents,
-        notes=notes
+        notes=notes,
+        acquisition=acquisition
     )
 
     return canonical

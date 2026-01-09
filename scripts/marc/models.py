@@ -41,9 +41,11 @@ class SubjectData(BaseModel):
     """Subject heading with display string and structured parts."""
 
     value: str = Field(..., description="Display string (e.g., 'Rare books -- Bibliography -- Catalogs')")
-    source: List[str] = Field(..., description="MARC field$subfield sources")
+    source: List[str] = Field(..., description="MARC field$subfield sources with occurrence (e.g., ['650[0]$a', '650[0]$v'])")
     parts: Dict[str, Any] = Field(..., description="Structured parts by subfield code (e.g., {'a':'Rare books', 'v':['Bibliography','Catalogs']})")
     source_tag: str = Field(..., description="MARC tag (e.g., '650', '651')")
+    scheme: Optional[SourcedValue] = Field(None, description="Subject scheme from $2 (e.g., 'nli', 'lcsh')")
+    heading_lang: Optional[SourcedValue] = Field(None, description="Heading language from $9 (e.g., 'lat', 'eng')")
 
 
 class NoteData(BaseModel):
@@ -72,6 +74,11 @@ class CanonicalRecord(BaseModel):
     source: SourceMetadata = Field(..., description="Record-level source metadata")
 
     title: Optional[SourcedValue] = Field(None, description="Full title with sources (245$a$b$c)")
+    uniform_title: Optional[SourcedValue] = Field(None, description="Uniform title from 240 field")
+    variant_titles: List[SourcedValue] = Field(
+        default_factory=list,
+        description="Variant titles from 246 field (access points)"
+    )
 
     imprints: List[ImprintData] = Field(
         default_factory=list,
@@ -101,6 +108,11 @@ class CanonicalRecord(BaseModel):
     notes: List[NoteData] = Field(
         default_factory=list,
         description="Notes with explicit tags (5XX)"
+    )
+
+    acquisition: List[SourcedValue] = Field(
+        default_factory=list,
+        description="Acquisition/provenance events from 541 field"
     )
 
     class Config:
