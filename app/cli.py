@@ -78,5 +78,108 @@ def parse_marc(
     typer.echo(f"Report: {report_file}")
 
 
+@app.command()
+def query(
+    query_text: str = typer.Argument(
+        ...,
+        help="Natural language query (e.g., 'books by Oxford between 1500 and 1599')"
+    ),
+    db: Path = typer.Option(
+        Path("data/index/bibliographic.db"),
+        "--db",
+        help="Path to SQLite database"
+    ),
+    out: Path = typer.Option(
+        None,
+        "--out",
+        help="Output directory (default: data/runs/query_YYYYMMDD_HHMMSS/)"
+    ),
+    limit: int = typer.Option(
+        None,
+        "--limit",
+        help="Limit number of results"
+    ),
+):
+    """
+    Execute bibliographic query (M4).
+
+    Compiles natural language query to QueryPlan, executes against database,
+    and returns CandidateSet with evidence.
+    """
+    from datetime import datetime
+    from scripts.query.compile import compile_query, write_plan_to_file
+    from scripts.query.execute import execute_plan_from_file
+
+    # Validate database exists
+    if not db.exists():
+        typer.echo(f"Error: Database not found: {db}")
+        typer.echo("\nHint: Have you run M3 indexing yet?")
+        typer.echo("  python -m scripts.marc.m3_index data/m2/records_m1m2.jsonl data/index/bibliographic.db scripts/marc/m3_schema.sql")
+        raise typer.Exit(code=1)
+
+    # Generate output directory if not provided
+    if out is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out = Path(f"data/runs/query_{timestamp}")
+
+    # Create output directory
+    out.mkdir(parents=True, exist_ok=True)
+
+    typer.echo(f"Query: {query_text}")
+    typer.echo(f"Database: {db}")
+    typer.echo(f"Output: {out}")
+    typer.echo()
+
+    # Step 1: Compile query to plan
+    typer.echo("Step 1/2: Compiling query to plan...")
+    try:
+        plan = compile_query(query_text, limit=limit)
+        plan_path = out / "plan.json"
+        write_plan_to_file(plan, plan_path)
+        typer.echo(f"  ✓ Plan generated: {len(plan.filters)} filters")
+        if plan.debug and "patterns_matched" in plan.debug:
+            typer.echo(f"  ✓ Patterns matched: {', '.join(plan.debug['patterns_matched'])}")
+    except Exception as e:
+        typer.echo(f"  ✗ Error compiling query: {e}")
+        raise typer.Exit(code=1)
+
+    # Step 2: Execute plan
+    typer.echo("\nStep 2/2: Executing query...")
+    try:
+        candidate_set = execute_plan_from_file(plan_path, db, out)
+        typer.echo(f"  ✓ Query executed successfully")
+        typer.echo(f"  ✓ SQL written to: sql.txt")
+        typer.echo(f"  ✓ Results written to: candidates.json")
+    except Exception as e:
+        typer.echo(f"  ✗ Error executing query: {e}")
+        import traceback
+        traceback.print_exc()
+        raise typer.Exit(code=1)
+
+    # Print summary
+    typer.echo(f"\n{'='*60}")
+    typer.echo(f"Query Results Summary")
+    typer.echo(f"{'='*60}")
+    typer.echo(f"Query: {query_text}")
+    typer.echo(f"Candidates found: {candidate_set.total_count}")
+    typer.echo(f"Plan hash: {candidate_set.plan_hash[:16]}...")
+    typer.echo(f"\nOutput directory: {out}")
+    typer.echo(f"  - plan.json     (QueryPlan)")
+    typer.echo(f"  - sql.txt       (Executed SQL)")
+    typer.echo(f"  - candidates.json (CandidateSet with evidence)")
+    typer.echo(f"{'='*60}")
+
+    # Show sample of results if any
+    if candidate_set.candidates:
+        typer.echo(f"\nSample results (showing first 3):")
+        for i, candidate in enumerate(candidate_set.candidates[:3], 1):
+            typer.echo(f"\n{i}. Record ID: {candidate.record_id}")
+            typer.echo(f"   Match: {candidate.match_rationale}")
+            typer.echo(f"   Evidence fields: {len(candidate.evidence)}")
+    else:
+        typer.echo("\n⚠ No matching records found.")
+        typer.echo("Hint: Try a different query or check if your database has indexed records.")
+
+
 if __name__ == "__main__":
     app()
