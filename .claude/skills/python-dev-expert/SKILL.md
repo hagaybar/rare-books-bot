@@ -29,6 +29,11 @@ Expert guidance for Python coding, refactoring, and architectural decisions foll
 - DRY (Don't Repeat Yourself) - extract after 3rd duplication
 - Composition over inheritance
 
+## Research & Documentation Skill
+- When asked about Python libraries (e.g., pymarc, pandas, rdflib), always trigger `context7` to fetch current documentation.
+- Prioritize memory-efficient streaming patterns for MARC record processing.
+- Verify all Angular component syntax against latest documentation before writing code.
+
 ## Quick Decision Trees
 
 ### Should I Create a New File?
