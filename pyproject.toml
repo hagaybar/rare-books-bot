@@ -29,6 +29,7 @@ dependencies = [
     # Code quality (in main deps for convenience)
     "pylint>=3.3.7,<4.0.0",
     "black>=25.1.0,<26.0.0",
+    "streamlit (>=1.52.2,<2.0.0)",
 ]
 
 [tool.ruff]
