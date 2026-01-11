@@ -139,7 +139,7 @@ class TestQueryPlan:
         assert plan.filters == []
         assert plan.soft_filters == []
         assert plan.limit is None
-        assert plan.debug is None
+        assert plan.debug == {}  # debug defaults to empty dict
 
     def test_plan_with_single_filter(self):
         """Plan with one filter should validate."""
@@ -208,7 +208,7 @@ class TestQueryPlan:
             ],
             "soft_filters": [],
             "limit": None,
-            "debug": None
+            "debug": {}  # debug is now a required field with default empty dict
         }
         plan = QueryPlan(**json_data)
         assert plan.query_text == "books by oxford"

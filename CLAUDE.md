@@ -137,8 +137,34 @@ execute_plan(plan: QueryPlan, sqlite_db: Path) -> CandidateSet + Evidence
 ## LLM Usage Rules
 
 - LLM is a **planner/explainer**, not the authority
-- LLM output must be validated against a JSON schema
-- If schema validation fails: retry once with a repair prompt, else **fail fast**
+- LLM output must be validated against a JSON schema (using OpenAI Responses API for structured output)
+- If schema validation fails: return empty plan with error in debug, don't retry (fail-closed pattern)
+
+### Query Planning (M4/M5)
+
+The query compiler now uses **LLM-based parsing** via OpenAI's Responses API:
+
+- **Implementation**: `scripts/query/llm_compiler.py`
+- **Model**: gpt-4o (default, configurable)
+- **Schema enforcement**: Pydantic models via OpenAI Responses API (`client.responses.parse()`)
+- **Caching**: JSONL cache at `data/query_plan_cache.jsonl` (query_text → QueryPlan)
+- **API key**: Set `OPENAI_API_KEY` environment variable
+
+**Pattern**:
+```python
+from scripts.query.compile import compile_query
+
+# With API key in environment
+plan = compile_query("books published by Oxford between 1500 and 1599")
+
+# Or pass explicitly
+plan = compile_query("...", api_key="sk-...", model="gpt-4o")
+```
+
+**Cache behavior**:
+- Cache hits return immediately (no API call)
+- Cache misses call LLM and write to cache
+- Cache is append-only JSONL for inspection and debugging
 
 ## Acceptance Tests (POC)
 
@@ -169,21 +195,25 @@ This project started from a multi-source RAG platform template. The core structu
 # Install dependencies
 poetry install
 
+# Set up environment (for LLM query planning)
+export OPENAI_API_KEY="sk-..."  # Required for query compilation
+
 # Run tests
 pytest                          # all tests
 pytest tests/path/to/test.py    # specific test file
 pytest -k "test_name"           # specific test by name
 pytest -m "not legacy_chunker"  # skip legacy chunker tests
+pytest --run-integration        # run integration tests (requires OPENAI_API_KEY)
 
 # Code quality
 ruff check .                    # linting
 ruff format .                   # formatting
 pylint scripts/                 # additional linting
 
-# Once MARC parsing is implemented:
+# MARC pipeline commands:
 python -m app.cli parse <marc_xml_path>      # parse MARC XML to JSONL
 python -m app.cli index <canonical_dir>      # build SQLite index
-python -m app.cli query "<nl_query>"         # execute query
+python -m app.cli query "<nl_query>"         # execute query (requires OPENAI_API_KEY)
 ```
 
 ## Key Architecture Notes

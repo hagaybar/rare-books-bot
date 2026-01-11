@@ -5,8 +5,8 @@ All filters use AND semantics. Soft filters are optional (ignored in M4).
 """
 
 from enum import Enum
-from typing import List, Optional, Union
-from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import List, Optional, Union, Dict, Any
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 
 
 class FilterField(str, Enum):
@@ -17,7 +17,10 @@ class FilterField(str, Enum):
     LANGUAGE = "language"
     TITLE = "title"
     SUBJECT = "subject"
-    AGENT = "agent"
+    AGENT = "agent"  # Legacy - kept for backward compatibility
+    AGENT_NORM = "agent_norm"  # Stage 5: Query normalized agent names
+    AGENT_ROLE = "agent_role"  # Stage 5: Query by role (printer, translator, etc.)
+    AGENT_TYPE = "agent_type"  # Stage 5: Query by type (personal, corporate, meeting)
 
 
 class FilterOp(str, Enum):
@@ -36,6 +39,8 @@ class Filter(BaseModel):
     - IN: requires value (list of strings)
     - RANGE: requires start and end (integers)
     """
+    model_config = ConfigDict(extra='forbid')  # For OpenAI Responses API compatibility
+
     field: FilterField
     op: FilterOp
     value: Optional[Union[str, List[str]]] = None  # For EQUALS/CONTAINS/IN
@@ -77,12 +82,15 @@ class QueryPlan(BaseModel):
     This is the validated intermediate representation between NL query and SQL.
     All normalization and validation happens here before SQL generation.
     """
+    model_config = ConfigDict(extra='forbid')  # For OpenAI Responses API compatibility
+
     version: str = "1.0"
     query_text: str
     filters: List[Filter] = Field(default_factory=list)
     soft_filters: List[Filter] = Field(default_factory=list)  # Optional, ignored in M4
     limit: Optional[int] = Field(None, gt=0)
-    debug: Optional[dict] = None
+    # Debug field - added programmatically after LLM generation, not part of LLM schema
+    debug: Dict[str, Any] = Field(default_factory=dict)
 
     @field_validator('filters', 'soft_filters')
     @classmethod

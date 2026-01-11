@@ -22,6 +22,7 @@ dependencies = [
 
     # LLM client (for M4/M5 query planning)
     "litellm>=1.73.0,<2.0.0",         # LLM API client (completer.py)
+    "openai>=1.58.1,<2.0.0",          # OpenAI Responses API for structured output
 
     # Data manipulation (optional, may be useful)
     "pandas>=2.3.0,<3.0.0",           # Data manipulation
