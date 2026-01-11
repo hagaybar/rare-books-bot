@@ -1,0 +1,438 @@
+Detailed Implementation Instructions: Guided QA Sessions UI (Streamlit)
+Objective
+
+Add a Guided QA Sessions mode to the existing Streamlit QA UI so QA becomes structured and repeatable:
+
+A user clicks “Begin test”
+
+Chooses a test type
+
+The UI guides them step-by-step:
+
+create/select a query
+
+run it
+
+verify plan
+
+label candidates
+
+(optionally) find missing records
+
+save a session summary
+
+Everything is persisted and can be resumed later.
+
+This must remain deterministic; no LLM.
+
+0) Prerequisites / Hard Requirements
+A. Persistence clarity (must fix)
+
+Any label-changing action (including bulk actions) must produce:
+
+a write to the QA DB, and
+
+a visible confirmation (“Saved N labels at HH:MM:SS”).
+
+No ambiguous “maybe saved” state is acceptable.
+
+B. Stable candidate schema for review
+
+Each candidate shown in the UI must have:
+
+record_id
+
+match_rationale (string)
+
+evidence (list; can be empty but should exist)
+
+If evidence lacks some keys, the UI should still render with blanks.
+
+1) Data Model Changes (SQLite)
+
+Create/extend data/qa/qa.db.
+
+Table: qa_sessions
+
+Columns:
+
+id INTEGER PK
+
+created_at TEXT (ISO)
+
+updated_at TEXT (ISO)
+
+session_type TEXT CHECK IN ("SMOKE","RECALL")
+
+status TEXT CHECK IN ("IN_PROGRESS","DONE","ABORTED")
+
+instructions_version TEXT (e.g. "v1")
+
+current_step INTEGER (1..N)
+
+query_id INTEGER NULL (FK to qa_queries once created)
+
+session_config_json TEXT (JSON: thresholds, defaults, etc.)
+
+summary_json TEXT NULL (JSON: computed stats + user notes)
+
+verdict TEXT NULL CHECK IN ("PASS","NEEDS_WORK","INCONCLUSIVE")
+
+note TEXT NULL
+
+Modify existing qa_queries
+
+Add:
+
+session_id INTEGER NULL
+
+Modify existing qa_candidate_labels
+
+Add:
+
+session_id INTEGER NULL
+
+Important: Labels created inside a session should store session_id so you can aggregate outcomes per session.
+
+2) New Navigation + Pages
+
+Add a new page: “QA Sessions” (Streamlit multipage).
+
+Page: QA Sessions (Landing)
+
+Display:
+
+Begin test button
+
+If there is an IN_PROGRESS session: Continue last session
+
+Table of last 20 sessions:
+
+created_at
+
+session_type
+
+status
+
+completion % (computed from step gating criteria)
+
+verdict
+
+link/button: “Open”
+
+Buttons:
+
+“Begin test” → goes to the wizard page with new session creation
+
+“Continue” → loads the existing session into wizard state
+
+3) Wizard State Machine (Guided Flow)
+
+Implement a wizard UI with:
+
+a stepper indicator (e.g. “Step 1/5”)
+
+short instruction text for each step
+
+“Back” and “Next” buttons
+
+Next is enabled only when the step’s requirement is met
+
+Every Next/Back updates qa_sessions.current_step and updated_at
+
+Common rule: step completion must be verified from DB
+
+Don’t gate “Next” based only on Streamlit session state.
+Gate using persisted rows in qa_queries / qa_candidate_labels.
+
+4) Session Types + Steps
+Session Type A: SMOKE (Precision-focused)
+
+Goal: validate parser + candidate precision quickly and consistently.
+
+Step 1 — Setup Query
+
+UI elements:
+
+Dropdown “Choose a canonical test query” (predefined list)
+
+Text input “Or type your own”
+
+Numeric input “Limit” (default 30)
+
+DB path (default data/index/bibliographic.db)
+
+Button: Create session query
+
+Behavior:
+
+On create:
+
+store chosen query_text + limit in qa_sessions.session_config_json
+
+do NOT run yet
+
+Next enabled when query_text is non-empty
+
+Step 2 — Run + Plan Check
+
+UI elements:
+
+Button: Run query now
+
+Show Plan JSON (expanded by default)
+
+Show SQL (collapsed)
+
+Checkbox: “Plan matches intent” (required)
+
+Optional: small text “What’s wrong with plan?” if unchecked
+
+Behavior:
+
+On Run:
+
+call compile + execute
+
+persist a new qa_queries row linked to this session (session_id)
+
+store plan/sql snapshots in qa_queries
+
+store query_id back in qa_sessions.query_id
+
+Next enabled when:
+
+session has query_id
+
+checkbox “Plan matches intent” is checked
+
+query run status is OK
+
+Step 3 — Label Candidates (Minimum labels)
+
+UI elements:
+
+Candidates table + candidate detail pane (existing)
+
+Show counters:
+
+total candidates
+
+labeled in this session (TP+FP+UNK)
+
+required minimum (e.g. 10)
+
+Bulk buttons:
+
+Mark all TP
+
+Mark all FP
+
+Clear labels
+
+IMPORTANT: after bulk action show “Saved N labels …”
+
+Gating requirement (default):
+
+At least 10 candidates have a saved label (TP or FP) for this query_id + session_id
+
+No “pending/unsaved changes” (if you choose explicit save model)
+
+Next enabled when requirement met.
+
+Step 4 — Evidence Spot Check (3 items)
+
+UI elements:
+
+Auto-select 3 labeled candidates at random (prefer mix of TP/FP)
+
+For each, show:
+
+record_id
+
+match_rationale
+
+evidence table
+
+Checkbox: “Evidence supports rationale”
+
+Button: “Reshuffle” (optional, max 2 times)
+
+Gating:
+
+All 3 checkboxes checked OR user clicks “Skip with reason” and provides reason (stored in summary_json)
+
+Step 5 — Session Summary (Finalize)
+
+Auto-compute and display:
+
+TP count, FP count, TP rate
+
+Top issue tags (if used)
+
+Query text + limit
+User inputs:
+
+Verdict: PASS / NEEDS_WORK / INCONCLUSIVE
+
+Notes textarea
+Buttons:
+
+Finish session (sets status DONE)
+
+Abort session (sets status ABORTED)
+
+On finish:
+
+Write qa_sessions.summary_json with computed stats + user text
+
+status DONE
+
+updated_at
+
+Session Type B: RECALL (False Negative Hunt)
+
+Goal: for a query likely to have known matches, actively search and mark missing records.
+
+Steps 1–3 same as SMOKE, except:
+
+Step 3 minimum labels can be smaller (e.g. 5) because focus is on FN.
+
+Step 4 — Find Missing (Guided)
+
+UI elements:
+
+Show instruction: “Search for likely matches that did not appear and mark them as FN.”
+
+Provide helper search form:
+
+year range inputs
+
+place contains
+
+publisher contains
+
+language dropdown
+
+title contains (optional)
+
+Button: Search DB
+
+Results table:
+
+record_id
+
+key imprint fields (if available)
+
+checkbox “Mark as FN”
+
+Behavior:
+
+When marking FN:
+
+upsert into qa_candidate_labels with label="FN", session_id, query_id, record_id
+
+show confirmation “Saved FN label …”
+
+Also indicate if the record is already in CandidateSet (“Already returned: yes/no”)
+
+Gating:
+
+At least one FN marked OR user checks “No missing found” with note.
+
+Step 5 — Summary
+
+Same as SMOKE, but include FN count and optional “suspected root causes” multi-select.
+
+5) Canonical Query Set (seed list)
+
+Hardcode a small starter list (can be moved to JSON later). Example 12–15 queries:
+
+“books between 1500 and 1599”
+
+“books between 1550 and 1560”
+
+“books printed in Venice between 1550 and 1575”
+
+“books printed in Paris between 1500 and 1550”
+
+“books published by Oxford between 1500 and 1600”
+
+“books in Latin between 1500 and 1600”
+
+“books from the 16th century”
+
+etc.
+
+These should be shown in the dropdown in Step 1.
+
+6) Persistence + Save Semantics (explicit requirements)
+Bulk labeling
+
+When user clicks “Mark all as TP”:
+
+perform one DB transaction
+
+upsert (session_id, query_id, record_id) rows for all candidates
+
+update updated_at
+
+show toast/message:
+
+“Saved 51 labels (TP) at 14:33:12”
+
+Same for FP and Clear.
+
+Per-record labeling
+
+Save button persists immediately.
+
+After save, show confirmation and refresh counters.
+
+Session resume
+
+If a session is IN_PROGRESS:
+
+loading it must restore:
+
+session_type
+
+current_step
+
+query_text/limit
+
+query_id
+
+existing labels and counts
+
+7) Minimal APIs / Functions needed
+
+Expose (or refactor) deterministic core so UI can call it without subprocess:
+
+compile_query(query_text: str, limit: int|None) -> dict(plan)
+
+plan_to_sql(plan: dict) -> str
+
+execute_plan(plan: dict, db_path: str, limit: int|None) -> list[candidate]
+
+Also provide helper:
+
+search_records(db_path, year_start, year_end, place_contains, publisher_contains, language, title_contains, limit=50) -> list[record_stub]
+
+8) Acceptance criteria (tests you can run manually)
+
+Begin SMOKE session → complete all steps → session marked DONE and summary stored.
+
+Close browser mid-session → reopen → Continue session works and step gating still correct.
+
+Bulk label all TP → refresh page → labels persist and counters correct.
+
+RECALL session → mark FN from Find Missing → FN persists and appears in summary.
+
+Dashboard/landing shows correct completion % and verdict.
+
+9) Nice-to-have (only if trivial)
+
+“Diff vs previous run for same query_text” (record_id set comparison)
+
+Export session summary as JSON

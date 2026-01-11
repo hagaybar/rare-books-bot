@@ -1,0 +1,390 @@
+Milestone M4 — QueryPlan + CandidateSet
+Objective (Primary Success Condition)
+
+Implement a deterministic vertical slice:
+
+Natural Language query → QueryPlan (JSON, schema-validated) → SQL → CandidateSet (with per-record evidence)
+
+Done when:
+
+scripts/query/compile.py produces a schema-validated JSON QueryPlan
+
+scripts/query/execute.py runs plan → SQL → CandidateSet with evidence per record
+
+CLI works:
+
+python -m app.query "All books published by X between 1500 and 1599"
+
+Output directory includes:
+
+plan.json
+
+sql.txt
+
+candidates.json (record_ids + match_rationale + evidence)
+
+Non-negotiable design rules (guardrails)
+
+Subset first, then reasoning: M4 ends at CandidateSet. No narrative answering layer.
+
+Deterministic execution: given the same plan + DB snapshot, CandidateSet must be identical.
+
+Evidence is mandatory: every included record must cite which field(s)/columns matched.
+
+LLM (if used) can only produce QueryPlan, never filter candidates directly.
+
+Schema validation is hard-fail: invalid plan JSON must stop the run with a clear error.
+
+Assumed inputs / existing state
+
+There is (or will be) a SQLite DB that holds extracted/normalized bibliographic fields.
+
+If schema is not finalized yet, implement against a minimal assumed schema (see “DB contract” below) and isolate in one module so it can be adapted later.
+
+Deliverables (files to implement / modify)
+1) scripts/query/schemas/query_plan.schema.json
+
+Define the QueryPlan JSON schema.
+
+Minimum fields
+
+version: string (e.g., "1.0")
+
+query_text: original NL query string
+
+filters: array of filter objects (AND semantics)
+
+soft_filters: optional array (ignored in SQL for M4 unless trivial)
+
+limit: optional int
+
+debug: optional object
+
+Filter object
+
+field: enum: publisher, imprint_place, year, language, title, subject, agent
+
+op: enum: EQUALS, CONTAINS, RANGE, IN
+
+value: string (for EQUALS/CONTAINS) OR array (for IN)
+
+start, end: int (for RANGE)
+
+negate: optional boolean
+
+confidence: optional 0..1
+
+notes: optional string
+
+Validation rules (schema-level or post-validate):
+
+RANGE requires start and end (integers).
+
+EQUALS/CONTAINS requires value (string).
+
+IN requires value (array of strings).
+
+start <= end.
+
+2) scripts/query/schemas/candidates.schema.json
+
+Define CandidateSet output schema.
+
+Top-level
+
+query_text
+
+plan_hash (sha256 of canonicalized plan JSON)
+
+sql (string, exactly what was executed)
+
+generated_at (ISO timestamp)
+
+candidates: array of candidate records
+
+Candidate record
+
+record_id: string
+
+match_rationale: short string (human-readable, deterministic)
+
+evidence: array of evidence items
+
+Evidence item
+
+field: string (e.g., "publisher_norm", "pub_year_start")
+
+value: string/int (the record’s value used)
+
+operator: string (e.g. "=", "BETWEEN", "LIKE")
+
+matched_against: string/int (the plan value(s))
+
+source: string (e.g. "db.records.publisher_norm" or "marc:264$b" if available)
+
+DB contract (minimal for M4)
+
+Implement execution assuming a SQLite table like:
+
+records:
+
+record_id TEXT PRIMARY KEY
+
+publisher_norm TEXT
+
+publisher_raw TEXT
+
+pub_year_start INT
+
+pub_year_end INT
+
+imprint_place_norm TEXT
+
+imprint_place_raw TEXT
+
+language TEXT
+
+title TEXT
+
+If your current DB differs, create a single adapter module:
+
+scripts/query/db.py with functions like:
+
+get_connection()
+
+build_where_clause(plan) -> (sql_where, params, evidence_fields)
+
+fetch_candidates(where_sql, params, limit) -> rows
+
+Keep all SQL column names centralized there.
+
+scripts/query/compile.py — NL → QueryPlan (validated)
+Responsibilities
+
+Accept raw query text.
+
+Produce a QueryPlan dict (either:
+
+a simple heuristic parser for M4, or
+
+an LLM call that outputs JSON strictly matching schema).
+
+Validate against query_plan.schema.json.
+
+Write plan.json.
+
+Implementation approach (recommended for M4)
+
+Start with heuristics for the milestone query types (fast + deterministic), and optionally add LLM behind a flag later.
+
+Minimum heuristics to support:
+
+Publisher pattern:
+
+published by X
+
+publisher X
+
+Year range:
+
+between 1500 and 1599
+
+1500-1599
+
+from 1500 to 1599
+
+Language (optional, if easy):
+
+in Latin, in Hebrew, etc.
+
+Example output for:
+All books published by X between 1500 and 1599
+
+Filters:
+
+{"field":"publisher","op":"EQUALS","value":"x"}
+
+{"field":"year","op":"RANGE","start":1500,"end":1599}
+
+Normalization rules for M4 (simple and explicit):
+
+Publisher value normalization: strip quotes/brackets, trim, lowercase.
+
+Year extraction: integers only; if missing or ambiguous → do not fabricate; omit year filter and add debug.notes.
+
+Hard requirements
+
+Output is JSON only, no prose.
+
+Must pass schema validation or fail with a clear error.
+
+Save artifacts:
+
+out/plan.json
+
+scripts/query/execute.py — QueryPlan → SQL → CandidateSet (+ evidence)
+Responsibilities
+
+Load plan.json.
+
+Validate it again (defensive).
+
+Compile to SQL WHERE clause + params.
+
+Execute query against SQLite.
+
+For each returned row, produce:
+
+record_id
+
+match_rationale (deterministic template)
+
+evidence[] (field/value/operator/matched_against/source)
+
+Write:
+
+out/sql.txt
+
+out/candidates.json (schema-validated)
+
+SQL compilation rules (deterministic mapping)
+
+Map plan filters to SQL:
+
+publisher EQUALS → LOWER(publisher_norm) = :publisher
+
+publisher CONTAINS → LOWER(publisher_norm) LIKE :publisher_like
+
+year RANGE → overlap match:
+
+(pub_year_start <= :end AND pub_year_end >= :start)
+
+If your DB stores single year only, use pub_year BETWEEN :start AND :end
+
+imprint_place EQUALS → LOWER(imprint_place_norm) = :place
+
+language EQUALS → language = :lang
+
+Also implement:
+
+negate: true by wrapping clause with NOT(...)
+
+Write the final SQL into sql.txt exactly as executed:
+
+include the SELECT, FROM, WHERE, ORDER/LIMIT.
+
+Prefer stable ordering: ORDER BY record_id to keep deterministic output.
+
+Evidence generation (per record)
+
+For each filter, attach an evidence item using returned row values. For example:
+
+Filter: publisher equals “x”
+
+Evidence: field="publisher_norm", value=row.publisher_norm, operator="=", matched_against="x", source="db.records.publisher_norm"
+
+Filter: year range 1500–1599
+
+Evidence includes both pub_year_start and pub_year_end values (or a combined item), with operator "OVERLAPS" or "BETWEEN".
+
+match_rationale (deterministic)
+
+Use a stable string template, e.g.:
+
+Matched publisher_norm="venice press" AND pub_year_start=1510..pub_year_end=1510 overlaps 1500..1599
+
+No LLM.
+
+CLI: python -m app.query "..."
+
+Implement a minimal CLI module:
+
+1) app/query.py (or app/__main__.py depending on your structure)
+
+Parse argv into:
+
+query_text
+
+optional --db path
+
+optional --out out_dir
+
+optional --limit N
+
+Run:
+
+scripts/query/compile.py (as imported function, not shelling out)
+
+scripts/query/execute.py
+
+Print a short console summary:
+
+count of candidates
+
+output directory path
+
+Output layout
+
+Write artifacts to a run folder, e.g.:
+
+runs/query_<YYYYMMDD_HHMMSS>/plan.json
+
+runs/query_<...>/sql.txt
+
+runs/query_<...>/candidates.json
+
+(If you already have a run structure, follow it—just ensure the 3 files exist.)
+
+Validation & tests (must include)
+Unit tests
+
+QueryPlan schema validation:
+
+valid plan passes
+
+missing required keys fails
+
+RANGE with start>end fails
+
+SQL compilation:
+
+given plan → expected SQL snippet + params
+
+Evidence:
+
+evidence list length equals number of filters applied
+
+evidence contains correct field names
+
+Golden test (acceptance)
+
+Create a tiny SQLite fixture DB with ~5 records:
+
+publisher_norm variations (including “x”)
+
+year ranges and single years
+
+verify that query:
+
+All books published by X between 1500 and 1599
+returns correct record_ids and evidence.
+
+Definition of “complete” for M4 (agent checklist)
+
+ compile.py produces plan.json and validates it against schema
+
+ execute.py produces sql.txt and candidates.json
+
+ candidates.json includes evidence per record and passes schema validation
+
+ CLI python -m app.query "...“ runs end-to-end and writes the 3 files
+
+ Deterministic output ordering and stable rationale strings
+
+ Tests pass locally
+
+Stretch (optional, do NOT block M4)
+
+Add --explain to print why each record matched to stdout.
+
+Add soft_filters support as post-filter scoring (but keep CandidateSet deterministic and explainable).

@@ -1,0 +1,384 @@
+UI QA Tool Plan (M4 Query QA + Labeling)
+Goals
+
+Provide a fast way to run NL queries against the existing M4 pipeline.
+
+Make it easy to inspect Plan / SQL / Candidates / Evidence per run.
+
+Enable efficient labeling (TP/FP/FN + issue tags + notes).
+
+Persist QA data to a small SQLite QA DB.
+
+Export reviewed queries into a gold regression set and run regression checks in CI.
+
+Non-goals (keep it simple)
+
+No auth, no multi-user permissions.
+
+No LLM usage.
+
+No fancy charts beyond minimal counts/filters.
+
+Architecture
+Tech choice
+
+Streamlit app in app/ui_qa/ (or scripts/ui_qa/), run via:
+
+poetry run streamlit run app/ui_qa/main.py
+
+Reuse deterministic core:
+
+Call scripts/query/compile.py and scripts/query/execute.py as Python functions (preferred), not subprocess.
+
+If not currently structured as importable functions, refactor into:
+
+app/query/compile_plan(query_text, limit, ...) -> (plan_dict, sql_text)
+
+app/query/execute_plan(plan_dict, db_path, limit, ...) -> candidates_list
+
+Data stores
+
+Existing bibliographic DB (read-only): data/index/bibliographic.db
+
+New QA DB (write): data/qa/qa.db
+
+Data model (SQLite)
+
+Create data/qa/qa.db with these tables:
+
+qa_queries
+
+id INTEGER PK
+
+created_at TEXT (ISO)
+
+query_text TEXT
+
+db_path TEXT
+
+limit INTEGER NULL
+
+out_dir TEXT NULL (optional pointer to run dir)
+
+plan_json TEXT (snapshot)
+
+sql_text TEXT (snapshot)
+
+parser_debug TEXT NULL (snapshot of plan["debug"] if exists)
+
+status TEXT (e.g., "OK", "ERROR")
+
+error_message TEXT NULL
+
+qa_candidate_labels
+
+Row per (query_id, record_id)
+
+id INTEGER PK
+
+query_id INTEGER FK → qa_queries.id
+
+record_id TEXT
+
+label TEXT CHECK IN ("TP","FP","FN","UNK") (UNK default)
+
+issue_tags TEXT (JSON array of strings)
+
+note TEXT NULL
+
+created_at TEXT
+
+updated_at TEXT
+
+qa_query_gold
+
+Optional convenience table (can also be derived)
+
+query_id INTEGER PK
+
+expected_includes TEXT (JSON list of record_ids)
+
+expected_excludes TEXT (JSON list)
+
+min_expected INTEGER NULL (optional: at least N results)
+
+UI Pages (Streamlit multipage)
+Page 1: Run + Review
+
+Layout
+
+Top: Query input + options
+
+Text input: query_text
+
+--limit numeric input
+
+--db path input (default to data/index/bibliographic.db)
+
+Buttons:
+
+Run Query
+
+Load last run
+
+Save as gold (after labeling)
+
+On Run
+
+Call compile + execute.
+
+Persist snapshot to qa_queries (plan_json + sql_text + status).
+
+Display:
+
+Plan viewer (JSON pretty)
+
+SQL viewer (monospace)
+
+Candidates table
+
+Candidates table
+
+Columns:
+
+record_id
+
+match_rationale
+
+evidence_count
+
+current_label (TP/FP/UNK)
+
+Selecting a row opens a detail pane:
+
+Candidate detail pane
+
+Show:
+
+record_id
+
+match_rationale
+
+Evidence items list (table):
+
+field, value, op, matched_against, source, confidence
+
+Label controls:
+
+Radio: TP / FP / UNK
+
+Multi-select issue tags (only enabled if FP):
+
+PARSER_MISSED_FILTER
+
+PARSER_WRONG_FILTER
+
+NORM_PLACE_BAD
+
+NORM_PUBLISHER_BAD
+
+DATE_PARSE_BAD
+
+SQL_LOGIC_BAD
+
+EVIDENCE_INSUFFICIENT
+
+OTHER
+
+Note textarea
+
+Save label button (upsert into qa_candidate_labels)
+
+Fast labeling mode
+
+A “bulk labeling” section above table:
+
+“Mark all as TP” button
+
+“Mark selected as FP” button
+
+“Clear labels” button
+(Implement as convenience; still allow per-record tagging in details.)
+
+Page 2: Find Missing (False Negatives)
+
+Purpose: help you record FNs without heavy tooling.
+
+Inputs
+
+Pick an existing qa_query (dropdown by created_at + query_text)
+
+Quick search controls (simple, deterministic):
+
+Year overlap: start/end
+
+Place contains (raw or normalized)
+
+Publisher contains
+
+Language equals
+
+Free text “contains” on title (if available in DB)
+
+Button: Search DB
+
+Results
+
+Table of record_ids found by search (limit 50)
+
+For each row:
+
+Checkbox “Should have matched this query” → when checked:
+
+create label row with label="FN" and optional issue tag + note
+
+Also show “Already in candidate set?” boolean so you don’t double mark.
+
+Implementation note
+This search does NOT need to reuse the QueryPlan. It’s just a helper to surface likely misses.
+
+Page 3: Issues Dashboard
+
+Filters
+
+Date range
+
+Issue tag
+
+Label type (FP/FN)
+
+Outputs
+
+Counts:
+
+#queries reviewed
+
+#labels TP/FP/FN
+
+Top issue tags (bar-ish, can be a simple table)
+
+“Worst queries”:
+
+queries sorted by FP+FN count
+
+Click query → open a “Query Summary” detail:
+
+Plan snapshot
+
+Candidate list with labels
+
+FN list
+
+Notes
+
+Page 4: Gold Set + Regression
+
+Gold export
+
+Button: Export gold.json
+
+For each query_id with any TP/FP/FN labels:
+
+expected_includes: all labeled TP + all labeled FN (both represent “should match”)
+
+expected_excludes: all labeled FP
+
+Save to data/qa/gold.json
+
+Regression runner
+
+Button: Run regression
+
+For each query in gold.json:
+
+run deterministic pipeline
+
+check:
+
+all expected_includes are present
+
+none of expected_excludes are present
+
+show failures in table + store a run log in data/qa/regress_runs/<timestamp>.json
+
+Also implement CLI:
+
+poetry run python -m app.qa regress --gold data/qa/gold.json --db data/index/bibliographic.db
+This is what you’ll put in CI later.
+
+Core integration points (must-haves)
+1) Make compile/execute importable
+
+Refactor to avoid relying on CLI-only codepaths.
+
+app/query/compile.py
+
+compile_query(query_text: str, limit: int | None) -> dict (QueryPlan)
+
+plan_to_sql(plan: dict) -> str (or compile returns both)
+
+app/query/execute.py
+
+execute(plan: dict, db_path: str, limit: int | None) -> list[dict] (CandidateSet)
+
+Candidates must include:
+
+record_id
+
+match_rationale
+
+evidence: list of evidence items with field/value/op/matched_against/source/confidence
+
+2) Stable evidence schema
+
+UI depends on stable keys; if not present, define them now.
+
+If some are missing, fill with nulls (don’t omit keys).
+
+3) Deterministic run directory (optional)
+
+If you already create data/runs/query_<timestamp>/, store it as out_dir in QA DB, so UI can link to the artifact files.
+
+UX details that matter (small but high impact)
+
+Always show absolute dates and the run timestamp.
+
+Make it easy to jump:
+
+“Open plan.json”
+
+“Open candidates.json”
+
+In candidate detail, show evidence sorted by:
+
+confidence desc, then field name
+
+Implementation milestones (agent checklist)
+
+Create qa.db schema + a tiny DB helper module:
+
+app/ui_qa/db.py with init_db(), insert_query_run(), upsert_label(), get_query_runs(), etc.
+
+Implement Page 1 (Run + Review) end-to-end with persistence.
+
+Implement Page 2 (Find Missing) with a minimal DB search query set.
+
+Implement Page 3 (Issues Dashboard) with filters + query drilldown.
+
+Implement gold export + regression runner page.
+
+Add CLI regression command.
+
+Acceptance criteria
+
+Running a query from the UI creates a qa_queries row with plan/sql snapshots.
+
+You can label candidates TP/FP with tags/notes and it persists.
+
+You can mark FNs from the “Find Missing” page.
+
+Dashboard correctly aggregates issues.
+
+Exported gold.json can be used by CLI regression runner.
+
+No LLM calls; fully deterministic.
