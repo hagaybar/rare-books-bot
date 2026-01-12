@@ -154,14 +154,14 @@ class TestBuildWhereClause:
         assert "historia" in params.values()
 
     def test_subject_contains(self):
-        """Subject CONTAINS filter should use FTS5."""
+        """Subject CONTAINS filter should use FTS5 without joining subjects table."""
         plan = QueryPlan(
             query_text="books about philosophy",
             filters=[Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="philosophy")]
         )
         where, params, joins = build_where_clause(plan)
         assert "subjects_fts MATCH" in where
-        assert "subjects" in joins
+        assert "subjects" not in joins  # FTS5 query is self-contained, no join needed
         assert "philosophy" in params.values()
 
     def test_agent_contains(self):

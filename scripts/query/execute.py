@@ -298,13 +298,6 @@ def execute_plan(
     # Build SQL from plan
     sql, params = build_full_query(plan)
 
-    # DEBUG: Print query details
-    print(f"\n=== DEBUG: Query Execution ===")
-    print(f"Filters: {[(f.field, f.op, f.value) for f in plan.filters]}")
-    print(f"SQL:\n{sql}")
-    print(f"Params: {params}")
-    print("=" * 50 + "\n")
-
     # Connect to database
     conn = get_connection(db_path)
 

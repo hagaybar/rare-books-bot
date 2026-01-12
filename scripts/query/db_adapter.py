@@ -183,9 +183,15 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             elif filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
+                # FTS5 content table is 'titles', so we need to join through titles to records
                 param_name = f"{param_prefix}_title"
-                # FTS5 MATCH query
-                condition = f"EXISTS (SELECT 1 FROM {M3Tables.TITLES_FTS} WHERE {M3Tables.TITLES_FTS}.{M3Columns.Records.MMS_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.MMS_ID} AND {M3Tables.TITLES_FTS} MATCH :{param_name})"
+                condition = f"""EXISTS (
+                    SELECT 1
+                    FROM {M3Tables.TITLES_FTS}
+                    JOIN {M3Tables.TITLES} ON {M3Tables.TITLES_FTS}.rowid = {M3Tables.TITLES}.{M3Columns.Titles.ID}
+                    WHERE {M3Tables.TITLES}.{M3Columns.Titles.RECORD_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.ID}
+                    AND {M3Tables.TITLES_FTS} MATCH :{param_name}
+                )"""
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for title")
@@ -195,11 +201,17 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.SUBJECT:
-            needed_joins.add(M3Tables.SUBJECTS)
             if filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
+                # FTS5 content table is 'subjects', so we need to join through subjects to records
                 param_name = f"{param_prefix}_subject"
-                condition = f"EXISTS (SELECT 1 FROM {M3Tables.SUBJECTS_FTS} WHERE {M3Tables.SUBJECTS_FTS}.{M3Columns.Records.MMS_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.MMS_ID} AND {M3Tables.SUBJECTS_FTS} MATCH :{param_name})"
+                condition = f"""EXISTS (
+                    SELECT 1
+                    FROM {M3Tables.SUBJECTS_FTS}
+                    JOIN {M3Tables.SUBJECTS} ON {M3Tables.SUBJECTS_FTS}.rowid = {M3Tables.SUBJECTS}.{M3Columns.Subjects.ID}
+                    WHERE {M3Tables.SUBJECTS}.{M3Columns.Subjects.RECORD_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.ID}
+                    AND {M3Tables.SUBJECTS_FTS} MATCH :{param_name}
+                )"""
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for subject")
