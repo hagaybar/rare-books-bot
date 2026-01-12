@@ -1,0 +1,395 @@
+Goal
+
+Replace the current heuristic/regex parser with an LLM Query Planner that always produces a validated QueryPlan JSON. The rest of the pipeline stays deterministic:
+
+NL query → (LLM) QueryPlan JSON → (deterministic) SQL → CandidateSet + Evidence
+
+Non-negotiable constraints
+
+LLM never outputs SQL.
+
+LLM output must conform to a strict JSON schema.
+
+If schema validation fails → no SQL runs. Return a structured planning error.
+
+All results must include Evidence (which DB fields matched) and match rationale.
+
+Work items
+1) Define the QueryPlan schema (single source of truth)
+
+Create/Update: scripts/schemas/query_plan.py
+
+Add a schema that is expressive enough to cover your current query types and the agent/role needs.
+
+Recommended fields (minimum viable, extensible):
+
+version: "1.0"
+
+query_text: original user query
+
+filters: list of hard filters (must match)
+
+soft_filters: list of optional / ranking hints (may match)
+
+limit: default 50
+
+sort: optional (e.g., relevance, date_asc, date_desc)
+
+debug: contains planner metadata (model, confidence summary, warnings)
+
+Filter object (proposed):
+
+field: enum
+
+IMPRINT_PLACE, PUBLISHER, DATE_RANGE, LANGUAGE, AGENT, TITLE, SUBJECT, NOTE
+
+op: enum
+
+EQUALS, CONTAINS, PREFIX, BETWEEN, IN, FTS
+
+value: string/list/obj
+
+role: optional (only for AGENT)
+
+author, printer, publisher, editor, translator, illustrator, other, any
+
+confidence: float 0–1
+
+evidence_hint: optional string (what phrase triggered it)
+
+Date value object (for DATE_RANGE):
+
+start_year: int | null
+
+end_year: int | null
+
+approx: bool
+
+raw: string (original phrase)
+
+Important: make filters and soft_filters default to empty lists, but do not consider an empty plan “valid for execution” unless user intent is clearly “show all records” (see section 6).
+
+2) Add an LLM planner module (replaces heuristics completely)
+
+Create: scripts/query/llm_planner.py
+
+Responsibilities:
+
+Build prompts (system + user)
+
+Call LLM via your existing client (litellm/openai wrapper)
+
+Enforce JSON-only output
+
+Parse + validate against QueryPlan Pydantic model
+
+Return (query_plan, planner_debug) or a structured error
+
+Key functions:
+
+plan_query(query_text: str) -> QueryPlanResult
+
+QueryPlanResult includes:
+
+ok: bool
+
+plan: QueryPlan | None
+
+error: PlanningError | None
+
+raw_model_output: str (store for QA/debugging)
+
+model_name, latency_ms, token_usage (if available)
+
+3) Write the planner prompt with hard guardrails
+
+Create: scripts/query/prompts.py (or embed in llm_planner.py)
+
+System prompt (strict)
+
+“You are a query planner for a bibliographic database.”
+
+“Output ONLY valid JSON matching the schema.”
+
+“Never output SQL.”
+
+“If uncertain, use soft_filters and/or set low confidence.”
+
+“Do not invent facts; only interpret the user’s query.”
+
+User prompt structure
+
+Include:
+
+The user’s query text
+
+The allowed fields + ops + roles list
+
+A few short examples (2–4) covering:
+
+place + century
+
+“printed by X” → agent role=printer
+
+“published by Oxford” → publisher (not place)
+
+ambiguous “by X” → agent role=any + lower confidence, or add warning
+
+Example snippet inside prompt (keep short but clear):
+
+If query contains “printed by {NAME}” → AGENT role=printer
+
+If query contains “published by {ORG}” → PUBLISHER
+
+If query contains “printed in {PLACE}” → IMPRINT_PLACE
+
+If query contains “16th century” → DATE_RANGE 1500–1599
+
+Output format: exactly one JSON object.
+
+4) Update the compile stage to call the LLM planner
+
+Modify: scripts/query/compile.py
+
+Change behavior:
+
+Remove all heuristic parsing logic
+
+Call llm_planner.plan_query(query_text)
+
+If ok: return QueryPlan
+
+If not ok: raise/return a QueryPlanError object (no SQL generated)
+
+Also:
+
+Store planner metadata under plan.debug, e.g.:
+
+planner: "llm"
+
+model: "gpt-4o-mini" (or chosen model)
+
+warnings: [...]
+
+5) Keep SQL generation deterministic, but make it support the new fields
+
+Modify: scripts/query/execute.py (and/or the SQL builder module you already have)
+
+Requirements:
+
+Convert each Filter into deterministic SQL fragments
+
+Use parameterized queries only (no string concatenation)
+
+Always return:
+
+the SQL string
+
+bound parameters
+
+candidates
+
+evidence per candidate (which columns matched which filters)
+
+Implement mapping rules, for example:
+
+IMPRINT_PLACE + EQUALS → LOWER(i.place_norm)=LOWER(:p0)
+
+PUBLISHER + CONTAINS → LOWER(i.publisher_norm) LIKE '%'||LOWER(:p0)||'%'
+
+DATE_RANGE + BETWEEN → overlap logic on [date_start,date_end]
+
+LANGUAGE → join languages table
+
+AGENT → join agents table, filter by agent_name_norm and agent_role
+
+SUBJECT/TITLE:
+
+If you have FTS tables, use FTS op mapped to MATCH
+
+Else fallback to LIKE (deterministic)
+
+Evidence:
+
+For each candidate, record which filter(s) matched which row/column values.
+
+Keep it in the schema you already designed (field/value/operator/matched_against).
+
+6) Decide how to handle “empty filters” (and implement it)
+
+Since you want LLM planning for all cases, you still need a deterministic rule for this:
+
+If user intent is clearly “show all” (e.g., “list all records”, “show everything”)
+→ Allow empty filters and execute a safe default query with limit.
+
+Otherwise:
+→ Treat empty filters as PLANNING_FAILED (don’t run SQL). Return:
+
+“I couldn’t extract any searchable constraints”
+
+include planner warnings + raw LLM output in debug logs (not necessarily UI)
+
+Implement:
+
+is_browse_query(query_text) -> bool deterministic keyword check (this is not query parsing; it’s just a safety gate). If you truly want zero heuristics at all, you can instead require the LLM to set debug.intent = "BROWSE_ALL" explicitly.
+
+Recommended: require the LLM to set:
+
+debug.intent: "FILTERED_QUERY" | "BROWSE_ALL" | "AMBIGUOUS"
+and then enforce:
+
+BROWSE_ALL allowed with empty filters
+
+others require at least one filter or soft_filter
+
+7) Add a “planner regression” test suite
+
+Create: tests/scripts/query/test_llm_planner.py
+
+Because LLM output can drift, you must pin behavior. Do this in two layers:
+
+A) “Schema-only” tests (fast, offline)
+
+Use recorded LLM outputs as fixtures (JSON strings)
+
+Validate they parse into QueryPlan
+
+Validate expected fields exist
+
+B) Live planner tests (optional, marked slow)
+
+Run a small set of canonical queries against the real model
+
+Assert the plan contains required filters and fields
+
+Run only in CI when you explicitly enable it (or nightly)
+
+Add canonical test cases:
+
+“books printed by Pagliarini, Marco”
+
+“books printed in Paris in the 16th century”
+
+“Hebrew books on philosophy”
+
+“books published by Oxford between 1500 and 1599”
+
+“books by Avicenna” (should be AGENT role=author or any, depending on your role mapping rules)
+
+8) Update the QA UI to display planner output and failures cleanly
+
+Modify: Streamlit QA pages that currently show parser debug.
+
+Add:
+
+“Planner: LLM”
+
+“Model name”
+
+“Warnings”
+
+Show the exact QueryPlan JSON
+
+If planning failed:
+
+show error state clearly
+
+do not show candidates list
+
+allow user to label the query as “planning failure” (new issue tag)
+
+Add issue tags:
+
+PLANNER_BAD_JSON
+
+PLANNER_SCHEMA_FAIL
+
+PLANNER_MISSED_FILTER
+
+PLANNER_WRONG_ROLE
+
+PLANNER_AMBIGUOUS
+
+9) Add caching (strongly recommended)
+
+LLM planning is the only non-deterministic/costly part, so cache it.
+
+Create: data/runs/plans_cache.jsonl (or SQLite table)
+
+Cache key:
+
+hash of (query_text + schema_version + prompt_version + model_name)
+
+On cache hit:
+
+skip LLM call
+
+return cached plan (fully deterministic)
+
+This also helps QA reproducibility.
+
+10) Operational safety & observability
+
+Add structured logs for:
+
+query_text
+
+plan_hash
+
+model
+
+raw_output length
+
+validation errors
+
+time and token usage (if available)
+
+When validation fails:
+
+store raw output in run artifacts for debugging
+
+return a clean error to the UI
+
+Model choice (practical default)
+
+Use a model that’s strong at structured output. If cost matters, start with a “mini” model, but expect role resolution errors.
+
+Implementation should support configurable model in config, e.g.:
+
+QUERY_PLANNER_MODEL=gpt-4o-mini (cheap)
+
+allow switching to a stronger one if needed
+
+Acceptance criteria (what “done” means)
+
+Heuristic/regex code path removed or fully disabled.
+
+Every query goes through LLM planner and yields:
+
+either a valid QueryPlan OR a planning error (no silent “return all”).
+
+SQL is generated deterministically from the plan.
+
+CandidateSet includes evidence per record.
+
+QA UI shows QueryPlan + planner debug.
+
+Regression tests exist for planner schema + key query intents.
+
+Planning cache implemented.
+
+Deliverables list for the coding agent
+
+ scripts/schemas/query_plan.py updated schema (fields/ops/roles/confidence/debug.intent)
+
+ scripts/query/llm_planner.py implemented (prompting, validation, errors, caching)
+
+ scripts/query/compile.py rewritten to call LLM planner only
+
+ scripts/query/execute.py updated SQL builder to support AGENT role filters + subject/title FTS
+
+ QA UI updated to show planner output + planning failure states
+
+ Tests: schema fixtures + optional live tests
+
+ Config: model name, prompt version, cache path
