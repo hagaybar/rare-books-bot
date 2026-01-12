@@ -176,8 +176,8 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.TITLE:
-            needed_joins.add(M3Tables.TITLES)
             if filter.op == FilterOp.EQUALS:
+                needed_joins.add(M3Tables.TITLES)
                 param_name = f"{param_prefix}_title"
                 condition = f"LOWER({M3Aliases.TITLES}.{M3Columns.Titles.VALUE}) = LOWER(:{param_name})"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
