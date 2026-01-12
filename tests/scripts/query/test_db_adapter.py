@@ -131,6 +131,17 @@ class TestBuildWhereClause:
         assert "lat" in params.values()
         assert "heb" in params.values()
 
+    def test_title_equals(self):
+        """Title EQUALS filter should use direct comparison."""
+        plan = QueryPlan(
+            query_text="Does a title The descent of man exist in this collection?",
+            filters=[Filter(field=FilterField.TITLE, op=FilterOp.EQUALS, value="The descent of man")]
+        )
+        where, params, joins = build_where_clause(plan)
+        assert "LOWER(t.value) = LOWER(" in where
+        assert "titles" in joins
+        assert "the descent of man" in params.values()
+
     def test_title_contains(self):
         """Title CONTAINS filter should use FTS5."""
         plan = QueryPlan(

@@ -177,7 +177,11 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
 
         elif filter.field == FilterField.TITLE:
             needed_joins.add(M3Tables.TITLES)
-            if filter.op == FilterOp.CONTAINS:
+            if filter.op == FilterOp.EQUALS:
+                param_name = f"{param_prefix}_title"
+                condition = f"LOWER({M3Aliases.TITLES}.{M3Columns.Titles.VALUE}) = LOWER(:{param_name})"
+                params[param_name] = normalize_filter_value(filter.field, filter.value)
+            elif filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
                 param_name = f"{param_prefix}_title"
                 # FTS5 MATCH query
