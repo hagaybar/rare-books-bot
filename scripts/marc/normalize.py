@@ -1,16 +1,19 @@
 """M2 normalization functions.
 
-Deterministic, rule-based normalization for dates, places, and publishers.
+Deterministic, rule-based normalization for dates, places, publishers, and agents.
 No LLM calls. No web calls. All normalization is reversible and confidence-scored.
 """
 
 import re
 import unicodedata
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Tuple
 
 from .m2_models import (
     DateNormalization, PlaceNormalization, PublisherNormalization,
-    ImprintNormalization, M2Enrichment
+    ImprintNormalization, M2Enrichment, AgentNormalization, RoleNormalization
+)
+from scripts.normalization.normalize_agent import (
+    normalize_agent_with_alias_map, normalize_role_base
 )
 
 
@@ -289,10 +292,83 @@ def normalize_publisher(
     )
 
 
+def normalize_agents(
+    agents: List[dict],
+    agent_alias_map: Optional[Dict[str, dict]] = None
+) -> List[Tuple[int, AgentNormalization, RoleNormalization]]:
+    """Normalize all agents from M1 record.
+
+    Args:
+        agents: List of agent dicts from M1 record
+        agent_alias_map: Optional dict mapping normalized agent keys to canonical forms
+            Expected structure: {
+                "normalized_key": {
+                    "decision": "KEEP" | "MAP" | "AMBIGUOUS",
+                    "canonical": "canonical_form",
+                    "confidence": 0.0-1.0,
+                    "notes": "..."
+                }
+            }
+
+    Returns:
+        List of tuples: (agent_index, AgentNormalization, RoleNormalization)
+
+    Note:
+        This function does NOT modify the M1 agents. It only creates
+        normalized representations to be appended as M2 enrichment.
+    """
+    results = []
+
+    for agent_dict in agents:
+        # Get agent_index (should always be present from Stage 2 extraction)
+        agent_index = agent_dict.get('agent_index')
+        if agent_index is None:
+            # Skip agents without index (shouldn't happen with Stage 2 extraction)
+            continue
+
+        # Get raw agent name
+        agent_raw = agent_dict.get('name', {}).get('value', '')
+        if not agent_raw:
+            # Skip agents without names
+            continue
+
+        # Normalize agent name
+        agent_norm_str, agent_conf, agent_method, agent_notes = normalize_agent_with_alias_map(
+            agent_raw,
+            agent_alias_map
+        )
+
+        agent_norm = AgentNormalization(
+            agent_raw=agent_raw,
+            agent_norm=agent_norm_str,
+            agent_confidence=agent_conf,
+            agent_method=agent_method,
+            agent_notes=agent_notes
+        )
+
+        # Normalize role
+        function_dict = agent_dict.get('function')
+        role_raw = function_dict.get('value') if function_dict else None
+
+        role_norm_str, role_conf, role_method = normalize_role_base(role_raw)
+
+        role_norm = RoleNormalization(
+            role_raw=role_raw,
+            role_norm=role_norm_str,
+            role_confidence=role_conf,
+            role_method=role_method
+        )
+
+        results.append((agent_index, agent_norm, role_norm))
+
+    return results
+
+
 def enrich_m2(
     m1_record: dict,
     place_alias_map: Optional[Dict[str, str]] = None,
-    publisher_alias_map: Optional[Dict[str, str]] = None
+    publisher_alias_map: Optional[Dict[str, str]] = None,
+    agent_alias_map: Optional[Dict[str, dict]] = None
 ) -> M2Enrichment:
     """Enrich M1 canonical record with M2 normalized fields.
 
@@ -300,9 +376,10 @@ def enrich_m2(
         m1_record: M1 canonical record (dict)
         place_alias_map: Optional place normalization alias map
         publisher_alias_map: Optional publisher normalization alias map
+        agent_alias_map: Optional agent normalization alias map (Stage 3)
 
     Returns:
-        M2Enrichment object with normalized imprints
+        M2Enrichment object with normalized imprints and agents
 
     Note:
         This function does NOT modify the M1 record. It only creates
@@ -332,4 +409,11 @@ def enrich_m2(
         )
         imprints_norm.append(imprint_norm)
 
-    return M2Enrichment(imprints_norm=imprints_norm)
+    # Normalize agents (Stage 3)
+    agents = m1_record.get('agents', [])
+    agents_norm = normalize_agents(agents, agent_alias_map)
+
+    return M2Enrichment(
+        imprints_norm=imprints_norm,
+        agents_norm=agents_norm
+    )

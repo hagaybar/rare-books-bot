@@ -1,0 +1,318 @@
+Below is a concrete integration plan to add agents (people/corporate bodies) + roles (author, printer, publisher, editor, etc.) as first-class, queryable metadata across the whole pipeline (M1→M4 + QA/UI), with clear “AI tool” prompts for the few places you’ll want LLM help. 
+
+PROJECT_DESCRIPTION
+
+ 
+
+project_basseline
+
+Target outcome
+
+After this work, a query like:
+
+“books printed by Aldus Manutius in Venice between 1500–1520”
+
+“books translated by X”
+
+“books published by Oxford” (as agent role publisher)
+
+…should compile deterministically into a QueryPlan and SQL that hits an agents table (and still returns Evidence explaining which MARC fields/values caused the match). 
+
+PROJECT_DESCRIPTION
+
+Stage 1 — Data contract: what “agent” looks like everywhere
+1.1 Canonical agent object (M1 output)
+
+In each record, keep agents as an array of occurrences, each with raw string, role, and provenance pointer(s).
+
+Recommended M1 shape (conceptual):
+
+agent_raw: exact string from MARC (e.g., “Manutius, Aldus, 1450?-1515”)
+
+role_raw: what MARC implies (from relator code/term OR field type)
+
+marc_path: like 100[0]$a, 700[1]$e, 710[0]$a
+
+agent_index: stable ordering for repeatability
+
+This keeps extraction deterministic + auditable. 
+
+PROJECT_DESCRIPTION
+
+1.2 Normalized agent fields (M2 output)
+
+Add an agent_norm and role_norm, each with confidence + method tags.
+
+agent_norm: canonical string for faceting/search (e.g., aldus manutius)
+
+role_norm: controlled vocabulary (e.g., author, printer, publisher, translator, editor, illustrator, commentator, scribe, former_owner, etc.)
+
+confidence: 0–1
+
+Key principle remains: raw values preserved. 
+
+PROJECT_DESCRIPTION
+
+Stage 2 — M1 extraction changes (deterministic)
+2.1 Expand extraction rules (no LLM)
+
+Extract agents from:
+
+1XX / 7XX (personal names and added entries)
+
+110/710 (corporate bodies)
+
+111/711 (meetings, if present)
+
+260/264 $b (publisher statement) — store as imprint publisher already exists, but also optionally as an agent occurrence with role publisher (this is useful for “agent queries” that unify name variants across imprint and access points)
+
+Role sources (deterministic priority):
+
+$4 relator code (best)
+
+$e relator term (if present)
+
+fallback by tag type: 100 → author-ish (but mark role_confidence lower if inferred)
+
+Provenance: store the exact tag/subfield pointers for each agent occurrence. 
+
+PROJECT_DESCRIPTION
+
+Stage 3 — M2 normalization for agents (mostly deterministic + optional AI assist)
+3.1 Deterministic base normalization (must-have)
+
+Implement a normalize_agent_base() that:
+
+casefolds, trims, collapses whitespace
+
+strips trailing punctuation
+
+optionally removes bracket wrappers
+
+does NOT invent expansions
+
+keeps diacritics handling consistent with your place normalization policy
+
+And normalize_role_base() that maps obvious variants:
+
+prt, printer, impr. → printer
+
+pub, publisher → publisher
+
+trl, translator → translator
+…and so on, with a small, explicit mapping table + tests.
+
+3.2 Authority/alias mapping layer (recommended)
+
+Just like places, create agent alias map (versioned, reversible):
+
+agent_alias_map.json:
+
+key: agent_norm_base
+
+value: { decision: KEEP|MAP|AMBIGUOUS, canonical: "...", confidence, notes }
+
+This mirrors your place pipeline, and fits your “canonical + aliases” UI idea. 
+
+PROJECT_DESCRIPTION
+
+3.3 Where the AI tool helps (LLM-assisted, guarded)
+
+Use LLM only to propose canonical forms + detect ambiguity when your deterministic normalization can’t unify variants.
+
+AI Prompt 1 — Agent canonicalization (strict JSON, no prose)
+
+Use this prompt in your alias-generation script.
+
+SYSTEM:
+You normalize bibliographic agent strings into ONE canonical key for faceting.
+Follow the JSON schema exactly. No prose. Never invent facts (e.g., dates, places, identities).
+If uncertain whether two forms are the same person/body, output decision="AMBIGUOUS".
+
+Constraints:
+- canonical must be lowercase ASCII
+- only letters/digits/spaces (no punctuation)
+- do NOT include life dates, titles, honorifics, or qualifiers
+- if input already fits canonical constraints, decision="KEEP" and canonical must equal input
+
+USER:
+Task: Map one agent key to ONE canonical key.
+
+Input agent_norm_base: "<VALUE>"
+Count in collection: <N>
+Raw examples (optional): <JSON array of raw strings>
+
+Return JSON:
+{
+  "decision": "KEEP" | "MAP" | "AMBIGUOUS",
+  "canonical": "<lowercase ascii>",
+  "confidence": 0.0-1.0,
+  "reason": "<very short>"
+}
+
+
+Guardrails you should enforce in code:
+
+reject outputs not matching schema
+
+reject canonical with punctuation/non-ascii
+
+if decision=KEEP then canonical must equal input
+
+if AMBIGUOUS then canonical must be "ambiguous"
+
+store model name + prompt hash in cache row for traceability
+
+AI Prompt 2 — Role normalization (even stricter; usually you won’t need it)
+
+Only if your MARC role strings are messy.
+
+SYSTEM:
+Normalize MARC relator terms/codes to a controlled role list.
+No prose. If unknown, output "other".
+
+USER:
+role_raw: "<VALUE>"
+
+Return JSON:
+{
+  "role_norm": "author"|"printer"|"publisher"|"translator"|"editor"|"illustrator"|"commentator"|"scribe"|"former_owner"|"dedicatee"|"bookseller"|"other",
+  "confidence": 0.0-1.0
+}
+
+Stage 4 — M3 SQLite schema updates (queryable + indexed)
+
+Add / update tables:
+
+4.1 agents table (first-class)
+
+Minimum columns:
+
+id
+
+record_id
+
+agent_raw
+
+agent_norm
+
+agent_confidence
+
+role_raw
+
+role_norm
+
+role_confidence
+
+agent_index
+
+provenance_json (or normalized pointers)
+
+Indexes:
+
+(agent_norm)
+
+(role_norm)
+
+(record_id)
+
+optionally (agent_norm, role_norm) for fast “printer X” queries
+
+This aligns with your existing schema style. 
+
+PROJECT_DESCRIPTION
+
+4.2 Optional: unify imprint publisher as agent
+
+If you do this, keep it explicit:
+
+source = "imprint_260_264_b" vs source = "7xx_access_point"
+So Evidence can show where it came from.
+
+Stage 5 — M4 QueryPlan + SQL compiler support (integrated at all levels)
+5.1 QueryPlan: add filter fields
+
+Add fields like:
+
+AGENT_NORM
+
+AGENT_ROLE
+Support patterns:
+
+“by <name>” → agent (but could also mean publisher/printer—store ambiguity in debug)
+
+“printed by <name>” → agent_role=printer + agent_norm=<name>
+
+“published by <name>” → agent_role=publisher OR publisher_norm (you can do both as an OR group)
+
+5.2 SQL generation
+
+Join agents when needed:
+
+JOIN agents a ON a.record_id = r.id
+
+filter LOWER(a.agent_norm) = LOWER(:agent)
+
+and/or a.role_norm = :role
+
+5.3 Evidence output
+
+For each candidate match, add Evidence entries like:
+
+field: "agents.agent_norm"
+
+value: <agent_norm>
+
+matched_against: <filter>
+
+plus provenance pointer(s) back to MARC tag/subfield
+
+This preserves your “contract” (QueryPlan → CandidateSet → Evidence). 
+
+PROJECT_DESCRIPTION
+
+Stage 6 — QA/UI integration
+
+Add to the DB Explorer page:
+
+agents table browsing (you already planned table exposure—this becomes immediately useful)
+
+Add to Run+Review candidate sidebar:
+
+show agent matches as part of “match rationale” (e.g., “agent_norm=aldus manutius, role=printer”)
+
+show provenance (which 7XX/1XX/260/264 it came from)
+
+Add QA issue tags:
+
+NORM_AGENT_BAD
+
+ROLE_MAP_BAD
+
+PARSER_AGENT_MISSED
+
+PARSER_AGENT_WRONG
+
+This makes agent integration testable the same way you test places/publishers. 
+
+PROJECT_DESCRIPTION
+
+Stage 7 — Minimal “vertical slice” backlog (fast, testable)
+
+M1: extract agents + role_raw + provenance pointers
+
+M2: base normalization for agent + role (no LLM yet)
+
+M3: add agents table + indexes; re-index
+
+M4: support “printed by X” query → QueryPlan → SQL join agents
+
+Evidence: show which MARC field matched
+
+UI: DB Explorer shows agents; Run+Review shows agent evidence
+
+LLM utility: add optional agent alias map generator (Prompt 1) for later refinement
+
+That gives you full integration with deterministic core behavior, and a safe place to apply AI only where it adds value. 
+
+PROJECT_DESCRIPTION

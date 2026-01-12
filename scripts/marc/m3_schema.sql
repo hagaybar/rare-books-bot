@@ -102,20 +102,40 @@ CREATE INDEX idx_subjects_scheme ON subjects(scheme);
 -- AGENT TABLES (Authors, Contributors, etc.)
 -- ==============================================================================
 
--- Agents table
+-- Enhanced agents table with M1 raw + M2 normalized fields (Stage 4)
 CREATE TABLE agents (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     record_id INTEGER NOT NULL,
-    value TEXT NOT NULL,  -- Display name
-    role TEXT NOT NULL,  -- 'author', 'contributor', etc.
-    relator_code TEXT,  -- MARC relator code (e.g., 'aut', 'pbl')
-    source TEXT NOT NULL,  -- JSON array of MARC sources with occurrence
+    agent_index INTEGER NOT NULL,  -- Stable ordering within record
+
+    -- M1 raw fields
+    agent_raw TEXT NOT NULL,  -- Original agent name from MARC
+    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),
+    role_raw TEXT,  -- Raw role from MARC (may be NULL)
+    role_source TEXT,  -- 'relator_code', 'relator_term', 'inferred_from_tag', 'unknown'
+
+    -- M2 normalized fields
+    agent_norm TEXT NOT NULL,  -- Canonical normalized name
+    agent_confidence REAL NOT NULL CHECK(agent_confidence BETWEEN 0 AND 1),
+    agent_method TEXT NOT NULL,  -- 'base_clean', 'alias_map', 'ambiguous'
+    agent_notes TEXT,  -- Warnings or ambiguity flags
+
+    role_norm TEXT NOT NULL,  -- Normalized role from controlled vocabulary
+    role_confidence REAL NOT NULL CHECK(role_confidence BETWEEN 0 AND 1),
+    role_method TEXT NOT NULL,  -- 'relator_code', 'relator_term', 'inferred', 'manual_map', etc.
+
+    -- Provenance (JSON array of SourceMetadata)
+    provenance_json TEXT NOT NULL,
+
     FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE
 );
 
+-- Indexes for efficient querying
 CREATE INDEX idx_agents_record_id ON agents(record_id);
-CREATE INDEX idx_agents_value ON agents(value);
-CREATE INDEX idx_agents_role ON agents(role);
+CREATE INDEX idx_agents_agent_norm ON agents(agent_norm);
+CREATE INDEX idx_agents_role_norm ON agents(role_norm);
+CREATE INDEX idx_agents_agent_role ON agents(agent_norm, role_norm);  -- Composite for "printer X" queries
+CREATE INDEX idx_agents_type ON agents(agent_type);
 
 -- ==============================================================================
 -- LANGUAGE TABLE

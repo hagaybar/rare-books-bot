@@ -191,22 +191,82 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
         ))
         stats['subjects'] += 1
 
-    # Insert agents
-    for agent in record.get('agents', []):
-        name_value = agent.get('name', {}).get('value') if agent.get('name') else None
-        name_source = agent.get('name', {}).get('source', []) if agent.get('name') else []
-        role = agent.get('entry_role', 'unknown')
-        function_value = agent.get('function', {}).get('value') if agent.get('function') else None
+    # Insert agents (Stage 4: M1 + M2 fields)
+    agents_m1 = record.get('agents', [])
+    agents_m2 = m2_data.get('agents_norm', [])
+
+    # Build lookup: agent_index → (agent_norm, role_norm) from M2
+    agents_m2_lookup = {}
+    for agent_tuple in agents_m2:
+        if len(agent_tuple) == 3:
+            idx, agent_norm_obj, role_norm_obj = agent_tuple
+            agents_m2_lookup[idx] = (agent_norm_obj, role_norm_obj)
+
+    # Insert each agent with M1 + M2 data
+    for idx, agent_m1 in enumerate(agents_m1):
+        agent_index = agent_m1.get('agent_index')
+        if agent_index is None:
+            # Backward compatibility: use enumeration index if agent_index not present
+            agent_index = idx
+
+        # M1 fields
+        agent_raw = agent_m1.get('name', {}).get('value', '')
+        if not agent_raw:
+            continue
+
+        agent_type = agent_m1.get('agent_type', 'personal')
+        role_raw = agent_m1.get('function', {}).get('value') if agent_m1.get('function') else None
+        role_source = agent_m1.get('role_source', 'unknown')
+
+        # Build provenance JSON from M1 sources
+        name_sources = agent_m1.get('name', {}).get('source', []) if agent_m1.get('name') else []
+        provenance = [{"source": src} for src in name_sources]
+
+        # M2 fields (with fallback if M2 not available)
+        if agent_index in agents_m2_lookup:
+            agent_norm_obj, role_norm_obj = agents_m2_lookup[agent_index]
+            agent_norm = agent_norm_obj.get('agent_norm', agent_raw.lower())
+            agent_confidence = agent_norm_obj.get('agent_confidence', 0.5)
+            agent_method = agent_norm_obj.get('agent_method', 'fallback')
+            agent_notes = agent_norm_obj.get('agent_notes')
+
+            role_norm = role_norm_obj.get('role_norm', 'other')
+            role_confidence = role_norm_obj.get('role_confidence', 0.5)
+            role_method = role_norm_obj.get('role_method', 'fallback')
+        else:
+            # Fallback if M2 not available (shouldn't happen in normal flow)
+            agent_norm = agent_raw.lower()
+            agent_confidence = 0.5
+            agent_method = 'fallback'
+            agent_notes = 'M2 enrichment not available'
+
+            role_norm = 'other'
+            role_confidence = 0.5
+            role_method = 'fallback'
 
         cursor.execute("""
-            INSERT INTO agents (record_id, value, role, relator_code, source)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO agents (
+                record_id, agent_index,
+                agent_raw, agent_type, role_raw, role_source,
+                agent_norm, agent_confidence, agent_method, agent_notes,
+                role_norm, role_confidence, role_method,
+                provenance_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             record_id,
-            name_value,
-            role,
-            function_value,  # Using function as relator_code
-            json.dumps(name_source)
+            agent_index,
+            agent_raw,
+            agent_type,
+            role_raw,
+            role_source,
+            agent_norm,
+            agent_confidence,
+            agent_method,
+            agent_notes,
+            role_norm,
+            role_confidence,
+            role_method,
+            json.dumps(provenance)
         ))
         stats['agents'] += 1
 

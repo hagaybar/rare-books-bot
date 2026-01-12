@@ -28,6 +28,7 @@ class AgentData(BaseModel):
     """Author/contributor data with provenance.
 
     Separates structural role (main/added entry) from bibliographic function (printer, editor, etc.).
+    Enhanced for agent integration with type tracking, role source, and stable ordering.
     """
 
     name: SourcedValue = Field(..., description="Agent name with source")
@@ -35,6 +36,20 @@ class AgentData(BaseModel):
     function: Optional[SourcedValue] = Field(None, description="Bibliographic function from relator (printer, editor, etc.)")
     dates: Optional[SourcedValue] = Field(None, description="Life dates with source")
     source_tags: List[str] = Field(..., description="MARC tags used (e.g., ['100'] or ['700'])")
+
+    # NEW FIELDS for agent integration (Stage 1)
+    agent_type: str = Field(
+        default="personal",
+        description="Agent type: 'personal' (100/700), 'corporate' (110/710), or 'meeting' (111/711)"
+    )
+    agent_index: Optional[int] = Field(
+        default=None,
+        description="Stable ordering index for agents within a record (for repeatability)"
+    )
+    role_source: Optional[str] = Field(
+        default=None,
+        description="Source of role/function: 'relator_code' ($4), 'relator_term' ($e), 'inferred_from_tag', or 'unknown'"
+    )
 
 
 class SubjectData(BaseModel):

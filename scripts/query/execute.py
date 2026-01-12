@@ -146,6 +146,76 @@ def extract_evidence_for_filter(
             confidence=None
         )
 
+    elif filter_obj.field == FilterField.AGENT_NORM:
+        # Stage 5: Extract provenance from agent_provenance JSON
+        marc_source = "unknown"
+        if "agent_provenance" in row.keys() and row["agent_provenance"]:
+            try:
+                provenance = json.loads(row["agent_provenance"])
+                if provenance and len(provenance) > 0:
+                    # Get first source from provenance array
+                    first_source = provenance[0].get("source", {})
+                    tag = first_source.get("tag", "unknown")
+                    occ = first_source.get("occurrence", 0)
+                    marc_source = f"{tag}[{occ}]"
+            except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
+                marc_source = "unknown"
+
+        return Evidence(
+            field="agent_norm",
+            value=row["agent_norm"] if "agent_norm" in row.keys() else None,
+            operator="=" if filter_obj.op == FilterOp.EQUALS else "LIKE",
+            matched_against=filter_obj.value,
+            source=f"db.agents.agent_norm (marc:{marc_source})",
+            confidence=row["agent_confidence"] if "agent_confidence" in row.keys() else None
+        )
+
+    elif filter_obj.field == FilterField.AGENT_ROLE:
+        # Stage 5: Role filter evidence
+        marc_source = "unknown"
+        if "agent_provenance" in row.keys() and row["agent_provenance"]:
+            try:
+                provenance = json.loads(row["agent_provenance"])
+                if provenance and len(provenance) > 0:
+                    first_source = provenance[0].get("source", {})
+                    tag = first_source.get("tag", "unknown")
+                    occ = first_source.get("occurrence", 0)
+                    marc_source = f"{tag}[{occ}]"
+            except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
+                marc_source = "unknown"
+
+        return Evidence(
+            field="role_norm",
+            value=row["agent_role_norm"] if "agent_role_norm" in row.keys() else None,
+            operator="=",
+            matched_against=filter_obj.value,
+            source=f"db.agents.role_norm (marc:{marc_source})",
+            confidence=row["agent_role_confidence"] if "agent_role_confidence" in row.keys() else None
+        )
+
+    elif filter_obj.field == FilterField.AGENT_TYPE:
+        # Stage 5: Agent type filter evidence
+        marc_source = "unknown"
+        if "agent_provenance" in row.keys() and row["agent_provenance"]:
+            try:
+                provenance = json.loads(row["agent_provenance"])
+                if provenance and len(provenance) > 0:
+                    first_source = provenance[0].get("source", {})
+                    tag = first_source.get("tag", "unknown")
+                    occ = first_source.get("occurrence", 0)
+                    marc_source = f"{tag}[{occ}]"
+            except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
+                marc_source = "unknown"
+
+        return Evidence(
+            field="agent_type",
+            value=row["agent_type"] if "agent_type" in row.keys() else None,
+            operator="=",
+            matched_against=filter_obj.value,
+            source=f"db.agents.agent_type (marc:{marc_source})",
+            confidence=None
+        )
+
     else:
         # Fallback for unknown filter types
         return Evidence(
@@ -196,6 +266,18 @@ def build_match_rationale(plan: QueryPlan, row: sqlite3.Row) -> str:
         elif filter_obj.field == FilterField.AGENT:
             agent = row["agent_value"] if "agent_value" in row.keys() else "unknown"
             parts.append(f"agent='{agent}'")
+
+        elif filter_obj.field == FilterField.AGENT_NORM:
+            agent_norm = row["agent_norm"] if "agent_norm" in row.keys() else "unknown"
+            parts.append(f"agent_norm='{agent_norm}'")
+
+        elif filter_obj.field == FilterField.AGENT_ROLE:
+            role_norm = row["agent_role_norm"] if "agent_role_norm" in row.keys() else "unknown"
+            parts.append(f"role_norm='{role_norm}'")
+
+        elif filter_obj.field == FilterField.AGENT_TYPE:
+            agent_type = row["agent_type"] if "agent_type" in row.keys() else "unknown"
+            parts.append(f"agent_type='{agent_type}'")
 
     return " AND ".join(parts) if parts else "matched"
 

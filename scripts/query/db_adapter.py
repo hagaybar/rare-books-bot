@@ -60,6 +60,22 @@ def normalize_filter_value(field: FilterField, raw_value: str) -> str:
     elif field == FilterField.AGENT:
         # Agents use substring match, casefold for consistency
         return raw_value.casefold()
+    elif field in [FilterField.AGENT_NORM, FilterField.AGENT_ROLE, FilterField.AGENT_TYPE]:
+        # Stage 5: Agent normalization follows same rules as agent_base
+        # Casefold, strip brackets, collapse whitespace, remove trailing punctuation
+        # ALSO remove commas to enable flexible searching (with or without commas)
+        value = raw_value.casefold()
+        # Remove brackets
+        value = re.sub(r'[\[\]]', '', value)
+        # Remove commas for flexible matching
+        value = value.replace(',', '')
+        # Strip trailing punctuation
+        value = value.rstrip('.,;:')
+        # Collapse multiple spaces
+        value = re.sub(r'\s+', ' ', value)
+        # Strip leading/trailing whitespace
+        value = value.strip()
+        return value
     else:
         # For other fields (like YEAR), return as-is
         return raw_value
@@ -200,6 +216,53 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
                 condition = f"NOT ({condition})"
             conditions.append(condition)
 
+        elif filter.field == FilterField.AGENT_NORM:
+            # Stage 5: Query by normalized agent name (comma-insensitive)
+            # Use REPLACE to remove commas from both database and search string
+            needed_joins.add("agents")
+            if filter.op == FilterOp.EQUALS:
+                param_name = f"{param_prefix}_agent_norm"
+                condition = f"LOWER(REPLACE(a.agent_norm, ',', '')) = LOWER(:{param_name})"
+                params[param_name] = normalize_filter_value(filter.field, filter.value)
+            elif filter.op == FilterOp.CONTAINS:
+                param_name = f"{param_prefix}_agent_norm"
+                condition = f"LOWER(REPLACE(a.agent_norm, ',', '')) LIKE LOWER(:{param_name})"
+                params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
+            else:
+                raise ValueError(f"Unsupported operation {filter.op} for agent_norm")
+
+            if filter.negate:
+                condition = f"NOT ({condition})"
+            conditions.append(condition)
+
+        elif filter.field == FilterField.AGENT_ROLE:
+            # Stage 5: Query by role (printer, translator, etc.)
+            needed_joins.add("agents")
+            if filter.op == FilterOp.EQUALS:
+                param_name = f"{param_prefix}_agent_role"
+                condition = f"a.role_norm = :{param_name}"
+                params[param_name] = normalize_filter_value(filter.field, filter.value)
+            else:
+                raise ValueError(f"Unsupported operation {filter.op} for agent_role")
+
+            if filter.negate:
+                condition = f"NOT ({condition})"
+            conditions.append(condition)
+
+        elif filter.field == FilterField.AGENT_TYPE:
+            # Stage 5: Query by type (personal, corporate, meeting)
+            needed_joins.add("agents")
+            if filter.op == FilterOp.EQUALS:
+                param_name = f"{param_prefix}_agent_type"
+                condition = f"a.agent_type = :{param_name}"
+                params[param_name] = normalize_filter_value(filter.field, filter.value)
+            else:
+                raise ValueError(f"Unsupported operation {filter.op} for agent_type")
+
+            if filter.negate:
+                condition = f"NOT ({condition})"
+            conditions.append(condition)
+
     where_clause = " AND ".join(conditions)
     return where_clause, params, list(needed_joins)
 
@@ -235,7 +298,15 @@ def build_select_columns(needed_joins: List[str]) -> str:
         columns.extend(["s.value AS subject_value", "s.source AS subject_source"])
 
     if "agents" in needed_joins:
-        columns.extend(["a.value AS agent_value", "a.role AS agent_role", "a.source AS agent_source"])
+        columns.extend([
+            "a.agent_raw AS agent_raw",
+            "a.agent_norm AS agent_norm",
+            "a.agent_confidence AS agent_confidence",
+            "a.role_norm AS agent_role_norm",
+            "a.role_confidence AS agent_role_confidence",
+            "a.agent_type AS agent_type",
+            "a.provenance_json AS agent_provenance"
+        ])
 
     return ", ".join(columns)
 

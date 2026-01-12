@@ -32,7 +32,8 @@ def process_m1_to_m2(
     input_path: Path,
     output_path: Path,
     place_alias_path: Optional[Path] = None,
-    publisher_alias_path: Optional[Path] = None
+    publisher_alias_path: Optional[Path] = None,
+    agent_alias_path: Optional[Path] = None
 ) -> dict:
     """Process M1 JSONL and output M1+M2 enriched JSONL.
 
@@ -41,6 +42,7 @@ def process_m1_to_m2(
         output_path: Path to output M1+M2 JSONL file
         place_alias_path: Optional path to place alias map JSON
         publisher_alias_path: Optional path to publisher alias map JSON
+        agent_alias_path: Optional path to agent alias map JSON
 
     Returns:
         Statistics dictionary with counts
@@ -48,10 +50,12 @@ def process_m1_to_m2(
     # Load alias maps if provided
     place_alias_map = load_alias_map(place_alias_path)
     publisher_alias_map = load_alias_map(publisher_alias_path)
+    agent_alias_map = load_alias_map(agent_alias_path)
 
     stats = {
         'total_records': 0,
         'enriched_records': 0,
+        'agents_normalized': 0,
         'total_imprints': 0,
         'dates_normalized': 0,
         'places_normalized': 0,
@@ -71,7 +75,7 @@ def process_m1_to_m2(
             m1_record = json.loads(line.strip())
 
             # Enrich with M2
-            m2_enrichment = enrich_m2(m1_record, place_alias_map, publisher_alias_map)
+            m2_enrichment = enrich_m2(m1_record, place_alias_map, publisher_alias_map, agent_alias_map)
 
             # Append M2 to M1 record (non-destructive)
             enriched_record = m1_record.copy()
@@ -80,6 +84,7 @@ def process_m1_to_m2(
             # Update stats
             stats['enriched_records'] += 1
             stats['total_imprints'] += len(m2_enrichment.imprints_norm)
+            stats['agents_normalized'] += len(m2_enrichment.agents_norm)
 
             for imprint_norm in m2_enrichment.imprints_norm:
                 if imprint_norm.date_norm and imprint_norm.date_norm.start is not None:
@@ -98,19 +103,28 @@ def process_m1_to_m2(
 def main():
     """Main CLI entry point."""
     if len(sys.argv) < 3:
-        print("Usage: python -m scripts.marc.m2_normalize <input_m1.jsonl> <output_m1m2.jsonl> [place_alias.json] [publisher_alias.json]")
+        print("Usage: python -m scripts.marc.m2_normalize <input_m1.jsonl> <output_m1m2.jsonl> [place_alias.json] [publisher_alias.json] [agent_alias.json]")
         print()
         print("Example with place alias map:")
         print("  python -m scripts.marc.m2_normalize \\")
         print("    data/canonical/records.jsonl \\")
         print("    data/m2/records_m1m2.jsonl \\")
         print("    data/normalization/place_aliases/place_alias_map.json")
+        print()
+        print("Example with all alias maps:")
+        print("  python -m scripts.marc.m2_normalize \\")
+        print("    data/canonical/records.jsonl \\")
+        print("    data/m2/records_m1m2.jsonl \\")
+        print("    data/normalization/place_aliases/place_alias_map.json \\")
+        print("    data/normalization/publisher_aliases/publisher_alias_map.json \\")
+        print("    data/normalization/agent_aliases/agent_alias_map.json")
         sys.exit(1)
 
     input_path = Path(sys.argv[1])
     output_path = Path(sys.argv[2])
     place_alias_path = Path(sys.argv[3]) if len(sys.argv) > 3 else None
     publisher_alias_path = Path(sys.argv[4]) if len(sys.argv) > 4 else None
+    agent_alias_path = Path(sys.argv[5]) if len(sys.argv) > 5 else None
 
     if not input_path.exists():
         print(f"Error: Input file not found: {input_path}")
@@ -125,7 +139,7 @@ def main():
         print(f"  Publisher alias map: {publisher_alias_path}")
     print()
 
-    stats = process_m1_to_m2(input_path, output_path, place_alias_path, publisher_alias_path)
+    stats = process_m1_to_m2(input_path, output_path, place_alias_path, publisher_alias_path, agent_alias_path)
 
     print(f"✅ M2 enrichment complete!")
     print(f"\nStatistics:")
@@ -135,6 +149,7 @@ def main():
     print(f"  Dates normalized: {stats['dates_normalized']}")
     print(f"  Places normalized: {stats['places_normalized']}")
     print(f"  Publishers normalized: {stats['publishers_normalized']}")
+    print(f"  Agents normalized: {stats['agents_normalized']}")
     print(f"\nOutput: {output_path}")
 
 

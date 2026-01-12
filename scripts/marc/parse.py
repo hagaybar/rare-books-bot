@@ -208,62 +208,265 @@ def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
     return subjects
 
 
+def _extract_role_from_field(field: pymarc.Field, tag: str, occurrence: int) -> tuple:
+    """Extract role with source priority: $4 (relator code) > $e (relator term) > inferred from tag.
+
+    Args:
+        field: MARC field object
+        tag: MARC tag (e.g., '100', '700')
+        occurrence: Zero-based occurrence index
+
+    Returns:
+        (function_sourced_value, role_source) where:
+        - function_sourced_value: SourcedValue with role or None
+        - role_source: 'relator_code', 'relator_term', 'inferred_from_tag', or 'unknown'
+    """
+    # Priority 1: $4 relator code (best)
+    relator_codes = field.get_subfields('4')
+    if relator_codes:
+        return (
+            SourcedValue(value=relator_codes[0], source=[_make_source_ref(tag, occurrence, '4')]),
+            'relator_code'
+        )
+
+    # Priority 2: $e relator term
+    relator_terms = field.get_subfields('e')
+    if relator_terms:
+        return (
+            SourcedValue(value=relator_terms[0], source=[_make_source_ref(tag, occurrence, 'e')]),
+            'relator_term'
+        )
+
+    # Priority 3: Infer from tag type (lower confidence)
+    inferred_roles = {
+        '100': 'author',  # Main entry - personal name (usually author)
+        '110': 'creator',  # Main entry - corporate body
+        '111': 'creator',  # Main entry - meeting
+    }
+
+    if tag in inferred_roles:
+        return (
+            SourcedValue(value=inferred_roles[tag], source=[f"{tag}[{occurrence}](inferred)"]),
+            'inferred_from_tag'
+        )
+
+    # No role information available
+    return (None, 'unknown')
+
+
+def _get_agent_type(tag: str) -> str:
+    """Determine agent type from MARC tag.
+
+    Args:
+        tag: MARC tag (e.g., '100', '710', '111')
+
+    Returns:
+        'personal', 'corporate', or 'meeting'
+    """
+    if tag in ['100', '700']:
+        return 'personal'
+    elif tag in ['110', '710']:
+        return 'corporate'
+    elif tag in ['111', '711']:
+        return 'meeting'
+    else:
+        return 'personal'  # default fallback
+
+
+def _extract_personal_agent(field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int) -> Optional[AgentData]:
+    """Extract personal name agent (100/700).
+
+    Args:
+        field: MARC field object
+        tag: MARC tag ('100' or '700')
+        occurrence: Zero-based occurrence index
+        entry_role: 'main' or 'added'
+        agent_index: Stable ordering index for this agent
+
+    Returns:
+        AgentData or None if extraction fails
+    """
+    name_vals = field.get_subfields('a')
+    if not name_vals:
+        return None
+
+    dates_vals = field.get_subfields('d')
+    function_sv, role_source = _extract_role_from_field(field, tag, occurrence)
+
+    return AgentData(
+        name=SourcedValue(value=name_vals[0], source=[_make_source_ref(tag, occurrence, 'a')]),
+        entry_role=entry_role,
+        dates=SourcedValue(value=dates_vals[0], source=[_make_source_ref(tag, occurrence, 'd')]) if dates_vals else None,
+        function=function_sv,
+        source_tags=[tag],
+        agent_type='personal',
+        agent_index=agent_index,
+        role_source=role_source
+    )
+
+
+def _extract_corporate_agent(field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int) -> Optional[AgentData]:
+    """Extract corporate body agent (110/710).
+
+    Args:
+        field: MARC field object
+        tag: MARC tag ('110' or '710')
+        occurrence: Zero-based occurrence index
+        entry_role: 'main' or 'added'
+        agent_index: Stable ordering index for this agent
+
+    Returns:
+        AgentData or None if extraction fails
+    """
+    # Corporate names: $a (name) + $b (subordinate unit)
+    name_parts = []
+    sources = []
+
+    name_vals = field.get_subfields('a')
+    if name_vals:
+        name_parts.append(name_vals[0])
+        sources.append(_make_source_ref(tag, occurrence, 'a'))
+
+    # Add subordinate units if present
+    subordinate_vals = field.get_subfields('b')
+    if subordinate_vals:
+        name_parts.append(subordinate_vals[0])
+        sources.append(_make_source_ref(tag, occurrence, 'b'))
+
+    if not name_parts:
+        return None
+
+    full_name = ' '.join(name_parts)
+    function_sv, role_source = _extract_role_from_field(field, tag, occurrence)
+
+    return AgentData(
+        name=SourcedValue(value=full_name, source=sources),
+        entry_role=entry_role,
+        dates=None,  # Corporate bodies typically don't have dates in name field
+        function=function_sv,
+        source_tags=[tag],
+        agent_type='corporate',
+        agent_index=agent_index,
+        role_source=role_source
+    )
+
+
+def _extract_meeting_agent(field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int) -> Optional[AgentData]:
+    """Extract meeting name agent (111/711).
+
+    Args:
+        field: MARC field object
+        tag: MARC tag ('111' or '711')
+        occurrence: Zero-based occurrence index
+        entry_role: 'main' or 'added'
+        agent_index: Stable ordering index for this agent
+
+    Returns:
+        AgentData or None if extraction fails
+    """
+    # Meeting names: $a (name) + $c (location) + $d (date) + $n (number)
+    name_parts = []
+    sources = []
+    date_val = None
+    date_source = None
+
+    name_vals = field.get_subfields('a')
+    if name_vals:
+        name_parts.append(name_vals[0])
+        sources.append(_make_source_ref(tag, occurrence, 'a'))
+
+    # Add location if present
+    location_vals = field.get_subfields('c')
+    if location_vals:
+        name_parts.append(location_vals[0])
+        sources.append(_make_source_ref(tag, occurrence, 'c'))
+
+    # Add number if present
+    number_vals = field.get_subfields('n')
+    if number_vals:
+        name_parts.append(number_vals[0])
+        sources.append(_make_source_ref(tag, occurrence, 'n'))
+
+    # Extract date separately (for dates field)
+    date_vals = field.get_subfields('d')
+    if date_vals:
+        date_val = date_vals[0]
+        date_source = _make_source_ref(tag, occurrence, 'd')
+
+    if not name_parts:
+        return None
+
+    full_name = ' '.join(name_parts)
+    function_sv, role_source = _extract_role_from_field(field, tag, occurrence)
+
+    return AgentData(
+        name=SourcedValue(value=full_name, source=sources),
+        entry_role=entry_role,
+        dates=SourcedValue(value=date_val, source=[date_source]) if date_val else None,
+        function=function_sv,
+        source_tags=[tag],
+        agent_type='meeting',
+        agent_index=agent_index,
+        role_source=role_source
+    )
+
+
 def extract_agents(record: pymarc.Record) -> List[AgentData]:
     """Extract authors/contributors from MARC 1XX and 7XX fields with occurrence indexing.
 
-    Separates structural role (main/added entry) from bibliographic function (printer, editor, etc.).
+    Enhanced for agent integration (Stage 2):
+    - Extracts personal names (100/700), corporate bodies (110/710), and meetings (111/711)
+    - Determines role with priority: $4 relator code > $e relator term > inferred from tag
+    - Tracks agent_type, agent_index, and role_source for normalization pipeline
+    - Separates structural role (main/added entry) from bibliographic function (printer, editor, etc.)
     """
     agents = []
+    agent_index = 0  # Stable ordering for agents within record
 
     # Track occurrence count per tag
     tag_occurrences = {}
 
-    # Main entry (100-130)
-    main_fields = record.get_fields('100', '110', '111', '130')
-    for field in main_fields:
-        tag = field.tag
-        occ = tag_occurrences.get(tag, 0)
-        tag_occurrences[tag] = occ + 1
+    # Main entries (100, 110, 111, 130)
+    # Note: 130 (uniform title) is skipped as it's not an agent
+    main_tags = ['100', '110', '111']
+    for tag in main_tags:
+        fields = record.get_fields(tag)
+        for field in fields:
+            occ = tag_occurrences.get(tag, 0)
+            tag_occurrences[tag] = occ + 1
 
-        name_vals = field.get_subfields('a')
-        if name_vals:
-            dates_vals = field.get_subfields('d')
+            agent = None
+            if tag == '100':
+                agent = _extract_personal_agent(field, tag, occ, 'main', agent_index)
+            elif tag == '110':
+                agent = _extract_corporate_agent(field, tag, occ, 'main', agent_index)
+            elif tag == '111':
+                agent = _extract_meeting_agent(field, tag, occ, 'main', agent_index)
 
-            agent = AgentData(
-                name=SourcedValue(value=name_vals[0], source=[_make_source_ref(tag, occ, 'a')]),
-                entry_role='main',
-                dates=SourcedValue(value=dates_vals[0], source=[_make_source_ref(tag, occ, 'd')]) if dates_vals else None,
-                function=None,  # Main entries typically don't have relator terms
-                source_tags=[tag]
-            )
-            agents.append(agent)
+            if agent:
+                agents.append(agent)
+                agent_index += 1
 
-    # Added entries (700-730)
-    added_fields = record.get_fields('700', '710', '711', '730')
-    for field in added_fields:
-        tag = field.tag
-        occ = tag_occurrences.get(tag, 0)
-        tag_occurrences[tag] = occ + 1
+    # Added entries (700, 710, 711, 730)
+    # Note: 730 (uniform title) is skipped as it's not an agent
+    added_tags = ['700', '710', '711']
+    for tag in added_tags:
+        fields = record.get_fields(tag)
+        for field in fields:
+            occ = tag_occurrences.get(tag, 0)
+            tag_occurrences[tag] = occ + 1
 
-        name_vals = field.get_subfields('a')
-        if name_vals:
-            dates_vals = field.get_subfields('d')
+            agent = None
+            if tag == '700':
+                agent = _extract_personal_agent(field, tag, occ, 'added', agent_index)
+            elif tag == '710':
+                agent = _extract_corporate_agent(field, tag, occ, 'added', agent_index)
+            elif tag == '711':
+                agent = _extract_meeting_agent(field, tag, occ, 'added', agent_index)
 
-            # Function/relator can be in subfield e (term) or 4 (code)
-            function_vals = field.get_subfields('e')
-            function_subfield = 'e'
-            if not function_vals:
-                function_vals = field.get_subfields('4')
-                function_subfield = '4'
-
-            agent = AgentData(
-                name=SourcedValue(value=name_vals[0], source=[_make_source_ref(tag, occ, 'a')]),
-                entry_role='added',
-                dates=SourcedValue(value=dates_vals[0], source=[_make_source_ref(tag, occ, 'd')]) if dates_vals else None,
-                function=SourcedValue(value=function_vals[0], source=[_make_source_ref(tag, occ, function_subfield)]) if function_vals else None,
-                source_tags=[tag]
-            )
-            agents.append(agent)
+            if agent:
+                agents.append(agent)
+                agent_index += 1
 
     return agents
 

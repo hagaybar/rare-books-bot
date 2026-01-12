@@ -4,7 +4,7 @@ These models represent normalized/enriched fields appended to M1 canonical recor
 All normalization is deterministic, reversible, confidence-scored, and method-tagged.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from pydantic import BaseModel, Field
 
 
@@ -50,10 +50,41 @@ class ImprintNormalization(BaseModel):
     publisher_norm: Optional[PublisherNormalization] = Field(None, description="Normalized publisher")
 
 
+class AgentNormalization(BaseModel):
+    """Normalized agent with confidence tracking.
+
+    Represents the canonical form of an agent name for faceting and search.
+    Raw value is preserved in the corresponding M1 AgentData.
+    """
+
+    agent_raw: str = Field(..., description="Original agent name from M1 (for traceability)")
+    agent_norm: str = Field(..., description="Normalized canonical name (lowercase, no punctuation)")
+    agent_confidence: float = Field(..., ge=0.0, le=1.0, description="Normalization confidence (0-1)")
+    agent_method: str = Field(..., description="Normalization method: 'base_clean', 'alias_map', or 'ambiguous'")
+    agent_notes: Optional[str] = Field(None, description="Warnings or ambiguity flags")
+
+
+class RoleNormalization(BaseModel):
+    """Normalized role with confidence tracking.
+
+    Maps raw MARC relator codes/terms to controlled vocabulary for querying.
+    """
+
+    role_raw: Optional[str] = Field(None, description="Original role string from M1 (may be None)")
+    role_norm: str = Field(..., description="Normalized role from controlled vocabulary")
+    role_confidence: float = Field(..., ge=0.0, le=1.0, description="Role mapping confidence (0-1)")
+    role_method: str = Field(..., description="Normalization method: 'relator_code', 'relator_term', 'inferred', or 'manual_map'")
+
+
 class M2Enrichment(BaseModel):
     """M2 enrichment object appended to M1 canonical records."""
 
     imprints_norm: List[ImprintNormalization] = Field(
         default_factory=list,
         description="Normalized imprint data (parallel to M1 imprints array)"
+    )
+
+    agents_norm: List[Tuple[int, "AgentNormalization", "RoleNormalization"]] = Field(
+        default_factory=list,
+        description="Normalized agent data: List[(agent_index, AgentNormalization, RoleNormalization)]"
     )
