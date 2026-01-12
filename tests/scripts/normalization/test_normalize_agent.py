@@ -130,6 +130,13 @@ class TestNormalizeRoleBase:
         assert confidence == 0.99
         assert method == "relator_code"
 
+    def test_relator_code_artist(self):
+        """Test mapping of 'art' relator code."""
+        role_norm, confidence, method = normalize_role_base("art")
+        assert role_norm == "artist"
+        assert confidence == 0.99
+        assert method == "relator_code"
+
     def test_relator_term_printer_full(self):
         """Test mapping of full 'printer' term."""
         role_norm, confidence, method = normalize_role_base("printer")
@@ -169,6 +176,13 @@ class TestNormalizeRoleBase:
         """Test mapping of 'trans.' abbreviation."""
         role_norm, confidence, method = normalize_role_base("trans.")
         assert role_norm == "translator"
+        assert confidence == 0.95
+        assert method == "relator_term"
+
+    def test_relator_term_artist(self):
+        """Test mapping of 'artist' term."""
+        role_norm, confidence, method = normalize_role_base("artist")
+        assert role_norm == "artist"
         assert confidence == 0.95
         assert method == "relator_term"
 
@@ -248,6 +262,7 @@ class TestNormalizeRoleBase:
             'ann': 'annotator',
             'cre': 'creator',
             'asn': 'associated_name',
+            'art': 'artist',
             'oth': 'other',
         }
         for code, expected_role in codes.items():

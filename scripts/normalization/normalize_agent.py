@@ -77,10 +77,21 @@ def normalize_role_base(role_raw: Optional[str]) -> Tuple[str, float, str]:
         - confidence: 0.0-1.0
         - method: Normalization method used
 
-    Controlled vocabulary:
-        author, printer, publisher, translator, editor, illustrator, commentator,
-        scribe, former_owner, dedicatee, bookseller, cartographer, engraver,
-        binder, annotator, other
+    Controlled vocabulary (90+ roles for rare books and manuscripts):
+        Authors: author, creator, compiler, contributor
+        Editors: editor, annotator, commentator, corrector, proofreader, redactor, reviewer
+        Writers: writer_of_preface, author_of_introduction, author_of_afterword
+        Translation: translator
+        Visual Arts: artist, illustrator, illuminator, engraver, etcher, lithographer,
+                     wood_engraver, draftsman, colorist, printmaker, photographer
+        Production: printer, publisher, binder, book_designer, book_producer, typographer,
+                    papermaker, marbler, manufacturer, distributor
+        Manuscripts: scribe, calligrapher, rubricator, inscriber
+        Cartography: cartographer, surveyor, delineator
+        Provenance: former_owner, owner, collector, donor, bookseller, curator
+        Patronage: dedicatee, patron, funder, sponsor, honoree
+        Conservation: conservator, restorationist
+        Other: facsimilist, signer, witness, censor, expert, researcher, other
     """
     if not role_raw:
         return ("other", 0.5, "missing_role")
@@ -89,24 +100,109 @@ def normalize_role_base(role_raw: Optional[str]) -> Tuple[str, float, str]:
 
     # Relator code mappings (ISO 639 codes - high confidence)
     RELATOR_CODE_MAP = {
+        # Authors and creators
         'aut': 'author',
+        'cre': 'creator',
+        'asn': 'associated_name',
+        'com': 'compiler',
+        'ctb': 'contributor',
+        'oth': 'other',
+
+        # Editors and textual work
+        'edt': 'editor',
+        'ann': 'annotator',
+        'cmm': 'commentator',
+        'crr': 'corrector',
+        'pfr': 'proofreader',
+        'red': 'redactor',
+        'rev': 'reviewer',
+        'wpr': 'writer_of_preface',
+        'aui': 'author_of_introduction',
+        'aft': 'author_of_afterword',
+        'wam': 'writer_of_accompanying_material',
+
+        # Translation
+        'trl': 'translator',
+
+        # Visual arts and illustration
+        'art': 'artist',
+        'ill': 'illustrator',
+        'ilu': 'illuminator',
+        'eng': 'engraver',
+        'etr': 'etcher',
+        'ltg': 'lithographer',
+        'wde': 'wood_engraver',
+        'drm': 'draftsman',
+        'clr': 'colorist',
+        'acp': 'art_copyist',
+        'pnc': 'penciller',
+        'ink': 'inker',
+        'prm': 'printmaker',
+        'pop': 'printer_of_plates',
+        'plt': 'platemaker',
+
+        # Book production and design
         'prt': 'printer',
         'pbl': 'publisher',
-        'trl': 'translator',
-        'edt': 'editor',
-        'ill': 'illustrator',
-        'com': 'commentator',
-        'scr': 'scribe',
-        'fmo': 'former_owner',
-        'dte': 'dedicatee',
-        'bsl': 'bookseller',
-        'ctg': 'cartographer',
-        'eng': 'engraver',
         'bnd': 'binder',
-        'ann': 'annotator',
-        'cre': 'creator',  # Generic creator
-        'asn': 'associated_name',  # Associated name
-        'oth': 'other',  # Other role
+        'bdd': 'binding_designer',
+        'bkd': 'book_designer',
+        'bkp': 'book_producer',
+        'bjd': 'bookjacket_designer',
+        'bpd': 'bookplate_designer',
+        'bka': 'book_artist',
+        'cov': 'cover_designer',
+        'tyd': 'type_designer',
+        'tyg': 'typographer',
+        'ppm': 'papermaker',
+        'mrb': 'marbler',
+        'mfr': 'manufacturer',
+        'dst': 'distributor',
+
+        # Manuscript and scribal
+        'scr': 'scribe',
+        'cll': 'calligrapher',
+        'rbr': 'rubricator',
+        'ins': 'inscriber',
+
+        # Cartography
+        'ctg': 'cartographer',
+        'srv': 'surveyor',
+        'dln': 'delineator',
+
+        # Provenance and ownership
+        'fmo': 'former_owner',
+        'own': 'owner',
+        'col': 'collector',
+        'dnr': 'donor',
+        'bsl': 'bookseller',
+        'rps': 'repository',
+        'cur': 'curator',
+        'cor': 'collection_registrar',
+
+        # Dedication and patronage
+        'dte': 'dedicatee',
+        'pat': 'patron',
+        'fnd': 'funder',
+        'spn': 'sponsor',
+        'hnr': 'honoree',
+
+        # Photography
+        'pht': 'photographer',
+
+        # Conservation
+        'con': 'conservator',
+        'rsr': 'restorationist',
+
+        # Other specialized roles
+        'fac': 'facsimilist',
+        'sgn': 'signer',
+        'wit': 'witness',
+        'cns': 'censor',
+        'lse': 'licensee',
+        'lso': 'licensor',
+        'res': 'researcher',
+        'exp': 'expert',
     }
 
     if role_clean in RELATOR_CODE_MAP:
@@ -114,30 +210,119 @@ def normalize_role_base(role_raw: Optional[str]) -> Tuple[str, float, str]:
 
     # Relator term mappings (English terms - medium-high confidence)
     RELATOR_TERM_MAP = {
+        # Authors and creators
         'author': 'author',
-        'printer': 'printer',
-        'publisher': 'publisher',
-        'translator': 'translator',
-        'editor': 'editor',
-        'illustrator': 'illustrator',
-        'commentator': 'commentator',
-        'scribe': 'scribe',
-        'former owner': 'former_owner',
-        'dedicatee': 'dedicatee',
-        'bookseller': 'bookseller',
-        'engraver': 'engraver',
-        'binder': 'binder',
-        'annotator': 'annotator',
-        'cartographer': 'cartographer',
         'creator': 'creator',
         'associated name': 'associated_name',
-        # Variants and abbreviations
+        'compiler': 'compiler',
+        'contributor': 'contributor',
+
+        # Editors and textual work
+        'editor': 'editor',
+        'annotator': 'annotator',
+        'commentator': 'commentator',
+        'corrector': 'corrector',
+        'proofreader': 'proofreader',
+        'redactor': 'redactor',
+        'reviewer': 'reviewer',
+        'writer of preface': 'writer_of_preface',
+        'author of introduction': 'author_of_introduction',
+        'author of afterword': 'author_of_afterword',
+        'writer of accompanying material': 'writer_of_accompanying_material',
+
+        # Translation
+        'translator': 'translator',
+
+        # Visual arts and illustration
+        'artist': 'artist',
+        'illustrator': 'illustrator',
+        'illuminator': 'illuminator',
+        'engraver': 'engraver',
+        'etcher': 'etcher',
+        'lithographer': 'lithographer',
+        'wood engraver': 'wood_engraver',
+        'draftsman': 'draftsman',
+        'colorist': 'colorist',
+        'art copyist': 'art_copyist',
+        'penciller': 'penciller',
+        'inker': 'inker',
+        'printmaker': 'printmaker',
+        'printer of plates': 'printer_of_plates',
+        'platemaker': 'platemaker',
+
+        # Book production and design
+        'printer': 'printer',
+        'publisher': 'publisher',
+        'binder': 'binder',
+        'binding designer': 'binding_designer',
+        'book designer': 'book_designer',
+        'book producer': 'book_producer',
+        'bookjacket designer': 'bookjacket_designer',
+        'bookplate designer': 'bookplate_designer',
+        'book artist': 'book_artist',
+        'cover designer': 'cover_designer',
+        'type designer': 'type_designer',
+        'typographer': 'typographer',
+        'papermaker': 'papermaker',
+        'marbler': 'marbler',
+        'manufacturer': 'manufacturer',
+        'distributor': 'distributor',
+
+        # Manuscript and scribal
+        'scribe': 'scribe',
+        'calligrapher': 'calligrapher',
+        'rubricator': 'rubricator',
+        'inscriber': 'inscriber',
+
+        # Cartography
+        'cartographer': 'cartographer',
+        'surveyor': 'surveyor',
+        'delineator': 'delineator',
+
+        # Provenance and ownership
+        'former owner': 'former_owner',
+        'owner': 'owner',
+        'collector': 'collector',
+        'donor': 'donor',
+        'bookseller': 'bookseller',
+        'repository': 'repository',
+        'curator': 'curator',
+        'collection registrar': 'collection_registrar',
+
+        # Dedication and patronage
+        'dedicatee': 'dedicatee',
+        'patron': 'patron',
+        'funder': 'funder',
+        'sponsor': 'sponsor',
+        'honoree': 'honoree',
+
+        # Photography
+        'photographer': 'photographer',
+
+        # Conservation
+        'conservator': 'conservator',
+        'restorationist': 'restorationist',
+
+        # Other specialized roles
+        'facsimilist': 'facsimilist',
+        'signer': 'signer',
+        'witness': 'witness',
+        'censor': 'censor',
+        'licensee': 'licensee',
+        'licensor': 'licensor',
+        'researcher': 'researcher',
+        'expert': 'expert',
+
+        # Common abbreviations and variants
         'impr.': 'printer',
         'impr': 'printer',
+        'print.': 'printer',
         'pub.': 'publisher',
         'pub': 'publisher',
+        'publ.': 'publisher',
         'ed.': 'editor',
         'ed': 'editor',
+        'edit.': 'editor',
         'trans.': 'translator',
         'trans': 'translator',
         'tran.': 'translator',
@@ -148,9 +333,8 @@ def normalize_role_base(role_raw: Optional[str]) -> Tuple[str, float, str]:
         'illus.': 'illustrator',
         'illus': 'illustrator',
         'ill.': 'illustrator',
-        'print.': 'printer',
-        'publ.': 'publisher',
-        'edit.': 'editor',
+        'phot.': 'photographer',
+        'annot.': 'annotator',
     }
 
     if role_clean in RELATOR_TERM_MAP:
