@@ -54,6 +54,12 @@ NORMALIZATION RULES:
 - Year: extract explicit years or century ranges (16th century = 1501-1600)
 - Agent names: lowercase, preserve spaces
 - Titles: lowercase, preserve spaces
+- Subjects: Transform to Library of Congress Subject Heading (LCSH) style:
+  * Convert adjectives to noun forms: "historical" → "history", "philosophical" → "philosophy", "scientific" → "science"
+  * Use proper capitalization: "History" not "history", "Philosophy" not "philosophy"
+  * Use standard LCSH subdivisions with dashes: "United States -- History", "World War, 1939-1945"
+  * For general topics, prefer broader noun forms over specific adjectives
+  * Examples: "biographical works" → "biography", "theological texts" → "theology", "geographical data" → "geography"
 
 OPERATION SELECTION GUIDELINES:
 - Title queries: Use CONTAINS by default (partial match) unless user explicitly requests exact match with words like "exact", "exactly", "precisely" or uses quotes around the full title
@@ -124,6 +130,24 @@ Plan: {
   ]
 }
 
+Query: "Historical Books published in London"
+Plan: {
+  "query_text": "Historical Books published in London",
+  "filters": [
+    {"field": "imprint_place", "op": "EQUALS", "value": "london", "notes": "Place name"},
+    {"field": "subject", "op": "CONTAINS", "value": "History", "notes": "Normalized from 'Historical' (adjective → noun, LCSH style)"}
+  ]
+}
+
+Query: "philosophical texts in Latin"
+Plan: {
+  "query_text": "philosophical texts in Latin",
+  "filters": [
+    {"field": "language", "op": "EQUALS", "value": "lat", "notes": "Latin→lat"},
+    {"field": "subject", "op": "CONTAINS", "value": "Philosophy", "notes": "Normalized from 'philosophical' to LCSH noun form"}
+  ]
+}
+
 IMPORTANT:
 - Always normalize values (lowercase, clean punctuation)
 - Include helpful notes for each filter
@@ -132,6 +156,7 @@ IMPORTANT:
 - For agent queries: "printed by X" → agent_role=printer, "published by X" → use publisher field (not agent)
 - For century ranges: 16th century = 1501-1600, 17th century = 1601-1700, etc.
 - For title queries: Default to CONTAINS (partial match) unless explicit exact match requested. Rare book titles often have long subtitles that users don't know.
+- For subject queries: ALWAYS transform adjectives to LCSH noun forms. Users say "historical books" but MARC subjects use "History". Transform: biographical→Biography, theological→Theology, scientific→Science, etc.
 """
 
 
