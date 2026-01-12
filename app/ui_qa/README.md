@@ -1,6 +1,10 @@
 # M4 Query QA Tool
 
-A Streamlit-based QA tool for testing the M4 query pipeline, labeling results, and creating regression test sets.
+**Status:** Development tool for M4 quality assurance (maintained in-repo)
+
+A Streamlit-based QA tool for testing the M4 query pipeline, labeling results, and creating regression test sets. This tool supports M4 development by providing systematic query labeling, issue tracking, and regression testing capabilities.
+
+**For production query execution**, use the CLI: `python -m app.cli query "<query>"`
 
 ## Quick Start
 

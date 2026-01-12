@@ -175,6 +175,72 @@ Must support queries like:
 
 Output must include CandidateSet + evidence fields used.
 
+## QA Tool Architecture
+
+**Status**: Development tool maintained as part of core repository
+
+**Purpose**: Quality assurance infrastructure for M4 query pipeline development, providing systematic labeling, issue tracking, and regression testing capabilities.
+
+### Components
+
+**Streamlit UI** (`app/ui_qa/`):
+- 5-page interactive application for query testing and labeling
+- Session management for organizing QA work
+- Visual query builder and result inspection
+- Issue tagging with predefined categories (parser errors, normalization issues, etc.)
+
+**QA Database** (`data/qa/qa.db`):
+- Separate SQLite database (isolated from production `bibliographic.db`)
+- Tables: `qa_queries`, `qa_candidate_labels`, `qa_query_gold`
+- Stores query runs, candidate labels (TP/FP/FN/UNK), and gold set metadata
+
+**Regression Framework**:
+- Gold set export to `data/qa/gold.json` (expected includes/excludes per query)
+- CLI regression runner: `python -m app.qa regress --gold data/qa/gold.json --db data/index/bibliographic.db`
+- Exit codes for CI integration (0 = pass, 1 = fail)
+
+### Scope and Boundaries
+
+**In Scope**:
+- Query labeling and issue tracking for M4 development
+- Gold set creation and management
+- Regression testing for query pipeline
+- Statistical analysis of query quality (precision, recall, issue patterns)
+
+**Out of Scope**:
+- Production query execution (use `app/cli.py query` for production)
+- M1-M3 pipeline testing (covered by unit tests in `tests/`)
+- General-purpose data exploration (not a database browser)
+
+### Usage
+
+**Launch QA UI**:
+```bash
+poetry run streamlit run app/ui_qa/main.py
+```
+
+**Run regression tests** (for CI or manual validation):
+```bash
+poetry run python -m app.qa regress \
+  --gold data/qa/gold.json \
+  --db data/index/bibliographic.db
+```
+
+**Workflow**:
+1. Run query in UI → review results
+2. Label candidates as TP/FP/FN → tag issues
+3. Find missing records (FN) via database search
+4. Export gold set when queries are validated
+5. Run regression tests to prevent quality regressions
+
+**Documentation**: See `app/ui_qa/README.md` for detailed usage guide
+
+**Decision rationale**: QA tool is maintained in-repo (not extracted) because:
+- Tightly coupled to M4 query pipeline evolution
+- Uses same dependencies (Pydantic models, query compiler, evidence extraction)
+- Facilitates rapid iteration during M4 development
+- Small codebase (~1000 lines) doesn't justify separate package overhead
+
 ## Project Structure (Inherited Shell)
 
 This project started from a multi-source RAG platform template. The core structure includes:

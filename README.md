@@ -14,6 +14,9 @@ This project processes MARC XML records through a multi-stage pipeline (M1 → M
 # Install dependencies
 poetry install
 
+# Set up OpenAI API key (REQUIRED for M4 query compilation)
+export OPENAI_API_KEY="sk-..."
+
 # Parse MARC XML to canonical format (M1)
 python -m scripts.marc.parse_xml \
   data/marc_source/BIBLIOGRAPHIC_*.xml \
@@ -300,13 +303,15 @@ Every query response must include:
 
 **Completed:**
 - ✅ M1: MARC XML parsing with occurrence indexing
-- ✅ M2: Deterministic normalization (date, place, publisher)
+- ✅ M2: Deterministic normalization (date, place, publisher, agents)
 - ✅ M3: SQLite indexing with FTS
+- ✅ M4: LLM-based query planning and execution
 - ✅ Place alias mapping utility (LLM-assisted)
+- ✅ QA Tool: Streamlit-based query labeling, gold set management, and regression testing
 
 **In Progress:**
-- 🚧 M4: Query planning and execution
-- 🚧 Additional normalization types (agents, subjects)
+- 🚧 Additional normalization types (subjects)
+- 🚧 M4 error handling improvements
 
 **Planned:**
 - 📋 M5: Complex question answering over CandidateSet
