@@ -160,7 +160,7 @@ class TestBuildWhereClause:
             filters=[Filter(field=FilterField.AGENT, op=FilterOp.CONTAINS, value="Dante")]
         )
         where, params, joins = build_where_clause(plan)
-        assert "LOWER(a.value) LIKE LOWER(" in where
+        assert "LOWER(a.agent_raw) LIKE LOWER(" in where
         assert "agents" in joins
         assert any("dante" in str(v) for v in params.values())
 

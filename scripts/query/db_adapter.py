@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Tuple, Dict, List, Optional
 
 from scripts.schemas import QueryPlan, FilterField, FilterOp
+from scripts.marc.m3_contract import M3Tables, M3Columns, M3Aliases
 
 
 def get_connection(db_path: Path) -> sqlite3.Connection:
@@ -104,14 +105,14 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
         param_prefix = f"filter_{idx}"
 
         if filter.field == FilterField.PUBLISHER:
-            needed_joins.add("imprints")
+            needed_joins.add(M3Tables.IMPRINTS)
             if filter.op == FilterOp.EQUALS:
                 param_name = f"{param_prefix}_publisher"
-                condition = f"LOWER(i.publisher_norm) = LOWER(:{param_name})"
+                condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.PUBLISHER_NORM}) = LOWER(:{param_name})"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             elif filter.op == FilterOp.CONTAINS:
                 param_name = f"{param_prefix}_publisher"
-                condition = f"LOWER(i.publisher_norm) LIKE LOWER(:{param_name})"
+                condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.PUBLISHER_NORM}) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for publisher")
@@ -121,14 +122,14 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.IMPRINT_PLACE:
-            needed_joins.add("imprints")
+            needed_joins.add(M3Tables.IMPRINTS)
             if filter.op == FilterOp.EQUALS:
                 param_name = f"{param_prefix}_place"
-                condition = f"LOWER(i.place_norm) = LOWER(:{param_name})"
+                condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.PLACE_NORM}) = LOWER(:{param_name})"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             elif filter.op == FilterOp.CONTAINS:
                 param_name = f"{param_prefix}_place"
-                condition = f"LOWER(i.place_norm) LIKE LOWER(:{param_name})"
+                condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.PLACE_NORM}) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for imprint_place")
@@ -138,12 +139,12 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.YEAR:
-            needed_joins.add("imprints")
+            needed_joins.add(M3Tables.IMPRINTS)
             if filter.op == FilterOp.RANGE:
                 # Overlap match: record's date range overlaps with query range
                 start_param = f"{param_prefix}_year_start"
                 end_param = f"{param_prefix}_year_end"
-                condition = f"(i.date_end >= :{start_param} AND i.date_start <= :{end_param})"
+                condition = f"({M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_END} >= :{start_param} AND {M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_START} <= :{end_param})"
                 params[start_param] = filter.start
                 params[end_param] = filter.end
             else:
@@ -154,10 +155,10 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.LANGUAGE:
-            needed_joins.add("languages")
+            needed_joins.add(M3Tables.LANGUAGES)
             if filter.op == FilterOp.EQUALS:
                 param_name = f"{param_prefix}_lang"
-                condition = f"l.code = :{param_name}"
+                condition = f"{M3Aliases.LANGUAGES}.{M3Columns.Languages.CODE} = :{param_name}"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             elif filter.op == FilterOp.IN:
                 # Generate multiple parameters for IN clause
@@ -166,7 +167,7 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
                     param_name = f"{param_prefix}_lang_{lang_idx}"
                     lang_params.append(f":{param_name}")
                     params[param_name] = normalize_filter_value(filter.field, lang)
-                condition = f"l.code IN ({', '.join(lang_params)})"
+                condition = f"{M3Aliases.LANGUAGES}.{M3Columns.Languages.CODE} IN ({', '.join(lang_params)})"
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for language")
 
@@ -175,12 +176,12 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.TITLE:
-            needed_joins.add("titles")
+            needed_joins.add(M3Tables.TITLES)
             if filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
                 param_name = f"{param_prefix}_title"
                 # FTS5 MATCH query
-                condition = f"EXISTS (SELECT 1 FROM titles_fts WHERE titles_fts.mms_id = r.mms_id AND titles_fts MATCH :{param_name})"
+                condition = f"EXISTS (SELECT 1 FROM {M3Tables.TITLES_FTS} WHERE {M3Tables.TITLES_FTS}.{M3Columns.Records.MMS_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.MMS_ID} AND {M3Tables.TITLES_FTS} MATCH :{param_name})"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for title")
@@ -190,11 +191,11 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.SUBJECT:
-            needed_joins.add("subjects")
+            needed_joins.add(M3Tables.SUBJECTS)
             if filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
                 param_name = f"{param_prefix}_subject"
-                condition = f"EXISTS (SELECT 1 FROM subjects_fts WHERE subjects_fts.mms_id = r.mms_id AND subjects_fts MATCH :{param_name})"
+                condition = f"EXISTS (SELECT 1 FROM {M3Tables.SUBJECTS_FTS} WHERE {M3Tables.SUBJECTS_FTS}.{M3Columns.Records.MMS_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.MMS_ID} AND {M3Tables.SUBJECTS_FTS} MATCH :{param_name})"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for subject")
@@ -204,10 +205,10 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.AGENT:
-            needed_joins.add("agents")
+            needed_joins.add(M3Tables.AGENTS)
             if filter.op == FilterOp.CONTAINS:
                 param_name = f"{param_prefix}_agent"
-                condition = f"LOWER(a.value) LIKE LOWER(:{param_name})"
+                condition = f"LOWER({M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_RAW}) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent")
@@ -219,14 +220,14 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
         elif filter.field == FilterField.AGENT_NORM:
             # Stage 5: Query by normalized agent name (comma-insensitive)
             # Use REPLACE to remove commas from both database and search string
-            needed_joins.add("agents")
+            needed_joins.add(M3Tables.AGENTS)
             if filter.op == FilterOp.EQUALS:
                 param_name = f"{param_prefix}_agent_norm"
-                condition = f"LOWER(REPLACE(a.agent_norm, ',', '')) = LOWER(:{param_name})"
+                condition = f"LOWER(REPLACE({M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}, ',', '')) = LOWER(:{param_name})"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             elif filter.op == FilterOp.CONTAINS:
                 param_name = f"{param_prefix}_agent_norm"
-                condition = f"LOWER(REPLACE(a.agent_norm, ',', '')) LIKE LOWER(:{param_name})"
+                condition = f"LOWER(REPLACE({M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}, ',', '')) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent_norm")
@@ -237,10 +238,10 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
 
         elif filter.field == FilterField.AGENT_ROLE:
             # Stage 5: Query by role (printer, translator, etc.)
-            needed_joins.add("agents")
+            needed_joins.add(M3Tables.AGENTS)
             if filter.op == FilterOp.EQUALS:
                 param_name = f"{param_prefix}_agent_role"
-                condition = f"a.role_norm = :{param_name}"
+                condition = f"{M3Aliases.AGENTS}.{M3Columns.Agents.ROLE_NORM} = :{param_name}"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent_role")
@@ -251,10 +252,10 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
 
         elif filter.field == FilterField.AGENT_TYPE:
             # Stage 5: Query by type (personal, corporate, meeting)
-            needed_joins.add("agents")
+            needed_joins.add(M3Tables.AGENTS)
             if filter.op == FilterOp.EQUALS:
                 param_name = f"{param_prefix}_agent_type"
-                condition = f"a.agent_type = :{param_name}"
+                condition = f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_TYPE} = :{param_name}"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent_type")
@@ -277,35 +278,50 @@ def build_select_columns(needed_joins: List[str]) -> str:
         SELECT column list
     """
     # Always include record ID
-    columns = ["DISTINCT r.mms_id"]
+    columns = [f"DISTINCT {M3Aliases.RECORDS}.{M3Columns.Records.MMS_ID}"]
 
     # Add columns from joined tables for evidence
-    if "imprints" in needed_joins:
+    if M3Tables.IMPRINTS in needed_joins:
         columns.extend([
-            "i.publisher_norm", "i.publisher_confidence", "i.publisher_raw",
-            "i.place_norm", "i.place_confidence", "i.place_raw",
-            "i.date_start", "i.date_end", "i.date_confidence",
-            "i.source_tags"
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.PUBLISHER_NORM}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.PUBLISHER_CONFIDENCE}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.PUBLISHER_RAW}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.PLACE_NORM}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.PLACE_CONFIDENCE}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.PLACE_RAW}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_START}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_END}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_CONFIDENCE}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.SOURCE_TAGS}"
         ])
 
-    if "languages" in needed_joins:
-        columns.extend(["l.code AS language_code", "l.source AS language_source"])
-
-    if "titles" in needed_joins:
-        columns.extend(["t.value AS title_value", "t.source AS title_source"])
-
-    if "subjects" in needed_joins:
-        columns.extend(["s.value AS subject_value", "s.source AS subject_source"])
-
-    if "agents" in needed_joins:
+    if M3Tables.LANGUAGES in needed_joins:
         columns.extend([
-            "a.agent_raw AS agent_raw",
-            "a.agent_norm AS agent_norm",
-            "a.agent_confidence AS agent_confidence",
-            "a.role_norm AS agent_role_norm",
-            "a.role_confidence AS agent_role_confidence",
-            "a.agent_type AS agent_type",
-            "a.provenance_json AS agent_provenance"
+            f"{M3Aliases.LANGUAGES}.{M3Columns.Languages.CODE} AS language_code",
+            f"{M3Aliases.LANGUAGES}.{M3Columns.Languages.SOURCE} AS language_source"
+        ])
+
+    if M3Tables.TITLES in needed_joins:
+        columns.extend([
+            f"{M3Aliases.TITLES}.{M3Columns.Titles.VALUE} AS title_value",
+            f"{M3Aliases.TITLES}.{M3Columns.Titles.SOURCE} AS title_source"
+        ])
+
+    if M3Tables.SUBJECTS in needed_joins:
+        columns.extend([
+            f"{M3Aliases.SUBJECTS}.{M3Columns.Subjects.VALUE} AS subject_value",
+            f"{M3Aliases.SUBJECTS}.{M3Columns.Subjects.SOURCE} AS subject_source"
+        ])
+
+    if M3Tables.AGENTS in needed_joins:
+        columns.extend([
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_RAW} AS agent_raw",
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM} AS agent_norm",
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_CONFIDENCE} AS agent_confidence",
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.ROLE_NORM} AS agent_role_norm",
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.ROLE_CONFIDENCE} AS agent_role_confidence",
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_TYPE} AS agent_type",
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.PROVENANCE_JSON} AS agent_provenance"
         ])
 
     return ", ".join(columns)
@@ -323,20 +339,20 @@ def build_join_clauses(needed_joins: List[str]) -> str:
     joins = []
 
     # Imprints is the most common join
-    if "imprints" in needed_joins:
-        joins.append("JOIN imprints i ON r.id = i.record_id")
+    if M3Tables.IMPRINTS in needed_joins:
+        joins.append(f"JOIN {M3Tables.IMPRINTS} {M3Aliases.IMPRINTS} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.IMPRINTS}.{M3Columns.Imprints.RECORD_ID}")
 
-    if "languages" in needed_joins:
-        joins.append("LEFT JOIN languages l ON r.id = l.record_id")
+    if M3Tables.LANGUAGES in needed_joins:
+        joins.append(f"LEFT JOIN {M3Tables.LANGUAGES} {M3Aliases.LANGUAGES} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.LANGUAGES}.{M3Columns.Languages.RECORD_ID}")
 
-    if "titles" in needed_joins:
-        joins.append("LEFT JOIN titles t ON r.id = t.record_id")
+    if M3Tables.TITLES in needed_joins:
+        joins.append(f"LEFT JOIN {M3Tables.TITLES} {M3Aliases.TITLES} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.TITLES}.{M3Columns.Titles.RECORD_ID}")
 
-    if "subjects" in needed_joins:
-        joins.append("LEFT JOIN subjects s ON r.id = s.record_id")
+    if M3Tables.SUBJECTS in needed_joins:
+        joins.append(f"LEFT JOIN {M3Tables.SUBJECTS} {M3Aliases.SUBJECTS} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.SUBJECTS}.{M3Columns.Subjects.RECORD_ID}")
 
-    if "agents" in needed_joins:
-        joins.append("LEFT JOIN agents a ON r.id = a.record_id")
+    if M3Tables.AGENTS in needed_joins:
+        joins.append(f"LEFT JOIN {M3Tables.AGENTS} {M3Aliases.AGENTS} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.AGENTS}.{M3Columns.Agents.RECORD_ID}")
 
     return "\n".join(joins)
 
@@ -356,10 +372,10 @@ def build_full_query(plan: QueryPlan) -> Tuple[str, Dict[str, any]]:
 
     sql_parts = [
         f"SELECT {select_columns}",
-        "FROM records r",
+        f"FROM {M3Tables.RECORDS} {M3Aliases.RECORDS}",
         join_clauses,
         f"WHERE {where_clause}",
-        "ORDER BY r.mms_id"
+        f"ORDER BY {M3Aliases.RECORDS}.{M3Columns.Records.MMS_ID}"
     ]
 
     if plan.limit:

@@ -110,6 +110,140 @@ class TestSchemaCreation:
 
         conn.close()
 
+    def test_m3_contract_matches_schema(self, test_db):
+        """Test that M3 contract constants match actual database schema.
+
+        This validates that scripts/marc/m3_contract.py accurately reflects
+        the schema defined in scripts/marc/m3_schema.sql.
+        """
+        from scripts.marc.m3_contract import M3Tables, M3Columns
+
+        conn = sqlite3.connect(str(test_db))
+        cursor = conn.cursor()
+
+        # Test 1: Verify all contract table names exist in database
+        contract_tables = [
+            M3Tables.RECORDS,
+            M3Tables.TITLES,
+            M3Tables.IMPRINTS,
+            M3Tables.SUBJECTS,
+            M3Tables.AGENTS,
+            M3Tables.LANGUAGES,
+            M3Tables.NOTES,
+            M3Tables.PHYSICAL_DESCRIPTIONS,
+            M3Tables.TITLES_FTS,
+            M3Tables.SUBJECTS_FTS
+        ]
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+        db_tables = set(row[0] for row in cursor.fetchall())
+
+        for table in contract_tables:
+            assert table in db_tables, f"Contract table {table} not found in database"
+
+        # Test 2: Verify column names for each table
+        def get_db_columns(table_name):
+            """Get column names from database table."""
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            return set(row[1] for row in cursor.fetchall())
+
+        # Records table
+        records_cols = get_db_columns(M3Tables.RECORDS)
+        assert M3Columns.Records.ID in records_cols
+        assert M3Columns.Records.MMS_ID in records_cols
+        assert M3Columns.Records.SOURCE_FILE in records_cols
+        assert M3Columns.Records.CREATED_AT in records_cols
+        assert M3Columns.Records.JSONL_LINE_NUMBER in records_cols
+
+        # Titles table
+        titles_cols = get_db_columns(M3Tables.TITLES)
+        assert M3Columns.Titles.ID in titles_cols
+        assert M3Columns.Titles.RECORD_ID in titles_cols
+        assert M3Columns.Titles.TITLE_TYPE in titles_cols
+        assert M3Columns.Titles.VALUE in titles_cols
+        assert M3Columns.Titles.SOURCE in titles_cols
+
+        # Imprints table (M1 raw + M2 normalized)
+        imprints_cols = get_db_columns(M3Tables.IMPRINTS)
+        # M1 raw fields
+        assert M3Columns.Imprints.ID in imprints_cols
+        assert M3Columns.Imprints.RECORD_ID in imprints_cols
+        assert M3Columns.Imprints.OCCURRENCE in imprints_cols
+        assert M3Columns.Imprints.DATE_RAW in imprints_cols
+        assert M3Columns.Imprints.PLACE_RAW in imprints_cols
+        assert M3Columns.Imprints.PUBLISHER_RAW in imprints_cols
+        assert M3Columns.Imprints.MANUFACTURER_RAW in imprints_cols
+        assert M3Columns.Imprints.SOURCE_TAGS in imprints_cols
+        # M2 normalized fields
+        assert M3Columns.Imprints.DATE_START in imprints_cols
+        assert M3Columns.Imprints.DATE_END in imprints_cols
+        assert M3Columns.Imprints.DATE_LABEL in imprints_cols
+        assert M3Columns.Imprints.DATE_CONFIDENCE in imprints_cols
+        assert M3Columns.Imprints.DATE_METHOD in imprints_cols
+        assert M3Columns.Imprints.PLACE_NORM in imprints_cols
+        assert M3Columns.Imprints.PLACE_DISPLAY in imprints_cols
+        assert M3Columns.Imprints.PLACE_CONFIDENCE in imprints_cols
+        assert M3Columns.Imprints.PLACE_METHOD in imprints_cols
+        assert M3Columns.Imprints.PUBLISHER_NORM in imprints_cols
+        assert M3Columns.Imprints.PUBLISHER_DISPLAY in imprints_cols
+        assert M3Columns.Imprints.PUBLISHER_CONFIDENCE in imprints_cols
+        assert M3Columns.Imprints.PUBLISHER_METHOD in imprints_cols
+
+        # Subjects table
+        subjects_cols = get_db_columns(M3Tables.SUBJECTS)
+        assert M3Columns.Subjects.ID in subjects_cols
+        assert M3Columns.Subjects.RECORD_ID in subjects_cols
+        assert M3Columns.Subjects.VALUE in subjects_cols
+        assert M3Columns.Subjects.SOURCE_TAG in subjects_cols
+        assert M3Columns.Subjects.SCHEME in subjects_cols
+        assert M3Columns.Subjects.HEADING_LANG in subjects_cols
+        assert M3Columns.Subjects.PARTS in subjects_cols
+        assert M3Columns.Subjects.SOURCE in subjects_cols
+
+        # Agents table (M1 raw + M2 normalized)
+        agents_cols = get_db_columns(M3Tables.AGENTS)
+        # M1 raw fields
+        assert M3Columns.Agents.ID in agents_cols
+        assert M3Columns.Agents.RECORD_ID in agents_cols
+        assert M3Columns.Agents.AGENT_INDEX in agents_cols
+        assert M3Columns.Agents.AGENT_RAW in agents_cols
+        assert M3Columns.Agents.AGENT_TYPE in agents_cols
+        assert M3Columns.Agents.ROLE_RAW in agents_cols
+        assert M3Columns.Agents.ROLE_SOURCE in agents_cols
+        # M2 normalized fields
+        assert M3Columns.Agents.AGENT_NORM in agents_cols
+        assert M3Columns.Agents.AGENT_CONFIDENCE in agents_cols
+        assert M3Columns.Agents.AGENT_METHOD in agents_cols
+        assert M3Columns.Agents.AGENT_NOTES in agents_cols
+        assert M3Columns.Agents.ROLE_NORM in agents_cols
+        assert M3Columns.Agents.ROLE_CONFIDENCE in agents_cols
+        assert M3Columns.Agents.ROLE_METHOD in agents_cols
+        assert M3Columns.Agents.PROVENANCE_JSON in agents_cols
+
+        # Languages table
+        languages_cols = get_db_columns(M3Tables.LANGUAGES)
+        assert M3Columns.Languages.ID in languages_cols
+        assert M3Columns.Languages.RECORD_ID in languages_cols
+        assert M3Columns.Languages.CODE in languages_cols
+        assert M3Columns.Languages.SOURCE in languages_cols
+
+        # Notes table
+        notes_cols = get_db_columns(M3Tables.NOTES)
+        assert M3Columns.Notes.ID in notes_cols
+        assert M3Columns.Notes.RECORD_ID in notes_cols
+        assert M3Columns.Notes.TAG in notes_cols
+        assert M3Columns.Notes.VALUE in notes_cols
+        assert M3Columns.Notes.SOURCE in notes_cols
+
+        # Physical descriptions table
+        phys_desc_cols = get_db_columns(M3Tables.PHYSICAL_DESCRIPTIONS)
+        assert M3Columns.PhysicalDescriptions.ID in phys_desc_cols
+        assert M3Columns.PhysicalDescriptions.RECORD_ID in phys_desc_cols
+        assert M3Columns.PhysicalDescriptions.VALUE in phys_desc_cols
+        assert M3Columns.PhysicalDescriptions.SOURCE in phys_desc_cols
+
+        conn.close()
+
 
 class TestIndexing:
     """Test record indexing."""

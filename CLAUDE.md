@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Tool Safety & Bounded Output
+
+1. When inspecting files, never read large files in full. Always use bounded operations:
+2. search first (rg/grep), then view small excerpts (offset/limit, sed -n, head, tail).
+3. Any command that may return large output must include a hard cap (e.g., | head -n 50).
+4. If a tool returns an error about size/limits, do not retry the same approach. Switch strategy (search → narrow excerpt → proceed).
+
 ## Project Mission
 
 Build a bibliographic discovery system for rare books where **MARC XML is the source of truth**.
