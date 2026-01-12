@@ -10,10 +10,11 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime, timezone
 
-from openai import OpenAI
+from openai import OpenAI, AuthenticationError, RateLimitError, APITimeoutError, APIError
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
+from scripts.query.exceptions import QueryCompilationError
 
 
 class QueryPlanLLM(BaseModel):
@@ -218,7 +219,9 @@ def compile_query_llm(
         Validated QueryPlan (from cache or LLM)
 
     Raises:
-        ValueError: If API key not found
+        QueryCompilationError: If API key is missing, API call fails,
+            or response is invalid. Error message includes specific
+            guidance for troubleshooting.
     """
     # Check cache first
     cache = load_cache()
@@ -238,29 +241,29 @@ def compile_query_llm(
     # Get API key
     api_key_to_use = api_key or os.getenv("OPENAI_API_KEY")
     if not api_key_to_use:
-        raise ValueError(
-            "OpenAI API key not found. Set OPENAI_API_KEY environment variable "
-            "or pass api_key parameter."
-        )
+        raise QueryCompilationError.from_missing_api_key()
 
     # Initialize OpenAI client
     client = OpenAI(api_key=api_key_to_use)
 
-    # Call LLM
+    # Call LLM with proper error handling
     try:
         plan = call_model(client, model, query_text)
+    except AuthenticationError as e:
+        # Invalid or expired API key
+        raise QueryCompilationError.from_api_error(e)
+    except RateLimitError as e:
+        # Rate limiting
+        raise QueryCompilationError.from_api_error(e)
+    except APITimeoutError as e:
+        # Timeout
+        raise QueryCompilationError.from_api_error(e)
+    except APIError as e:
+        # Other OpenAI API errors
+        raise QueryCompilationError.from_api_error(e)
     except Exception as e:
-        # If LLM fails, return empty plan with error in debug
-        return QueryPlan(
-            query_text=query_text,
-            filters=[],
-            debug={
-                "parser": "llm",
-                "error": f"{type(e).__name__}: {str(e)}",
-                "model": model,
-                "cache_hit": False
-            }
-        )
+        # Unexpected errors (e.g., Pydantic validation failure, JSON parsing)
+        raise QueryCompilationError.from_invalid_response(e)
 
     # Apply limit if provided
     if limit:

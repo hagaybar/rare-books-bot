@@ -14,6 +14,7 @@ from scripts.query.llm_compiler import (
     CACHE_PATH,
 )
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
+from scripts.query.exceptions import QueryCompilationError
 
 
 class TestBuildUserPrompt:
@@ -172,9 +173,9 @@ class TestCompileQueryLLM:
             assert plan.limit == 50  # Should override cached limit
 
     def test_missing_api_key(self):
-        """Should raise ValueError if API key not provided."""
+        """Should raise QueryCompilationError if API key not provided."""
         with patch.dict('os.environ', {}, clear=True):
-            with pytest.raises(ValueError, match="OpenAI API key not found"):
+            with pytest.raises(QueryCompilationError, match="OpenAI API key not found"):
                 compile_query_llm("test query")
 
     @patch('scripts.query.llm_compiler.OpenAI')
@@ -220,23 +221,18 @@ class TestCompileQueryLLM:
 
     @patch('scripts.query.llm_compiler.OpenAI')
     def test_llm_error_handling(self, mock_openai_class, tmp_path):
-        """Should return empty plan with error on LLM failure."""
+        """Should raise QueryCompilationError on unexpected LLM failure."""
         cache_file = tmp_path / "cache.jsonl"
         cache_file.touch()
 
-        # Mock OpenAI client that raises exception
+        # Mock OpenAI client that raises unexpected exception
         mock_client = Mock()
         mock_openai_class.return_value = mock_client
-        mock_client.responses.parse.side_effect = Exception("API Error")
+        mock_client.responses.parse.side_effect = Exception("Unexpected API Error")
 
         with patch('scripts.query.llm_compiler.CACHE_PATH', cache_file):
-            plan = compile_query_llm("test query", api_key="test-key")
-
-            # Should return plan with empty filters and error in debug
-            assert plan.query_text == "test query"
-            assert len(plan.filters) == 0
-            assert "error" in plan.debug
-            assert "API Error" in plan.debug["error"]
+            with pytest.raises(QueryCompilationError, match="OpenAI returned invalid response"):
+                compile_query_llm("test query", api_key="test-key")
 
     @patch('scripts.query.llm_compiler.OpenAI')
     @patch('scripts.query.llm_compiler.write_cache_entry')
@@ -279,6 +275,105 @@ class TestCompileQueryLLM:
                 plan = compile_query_llm("test", limit=100, api_key="test-key")
 
                 assert plan.limit == 100
+
+    @patch('scripts.query.llm_compiler.OpenAI')
+    def test_authentication_error(self, mock_openai_class, tmp_path):
+        """Should raise QueryCompilationError with helpful message on invalid API key."""
+        from openai import AuthenticationError
+
+        cache_file = tmp_path / "cache.jsonl"
+        cache_file.touch()
+
+        # Mock OpenAI client that raises AuthenticationError
+        mock_client = Mock()
+        mock_openai_class.return_value = mock_client
+        mock_client.responses.parse.side_effect = AuthenticationError(
+            message="Invalid API key",
+            response=Mock(status_code=401),
+            body=None
+        )
+
+        with patch('scripts.query.llm_compiler.CACHE_PATH', cache_file):
+            with pytest.raises(QueryCompilationError) as exc_info:
+                compile_query_llm("test query", api_key="invalid-key")
+
+            error_msg = str(exc_info.value)
+            assert "OpenAI API error" in error_msg
+            assert "AuthenticationError" in error_msg
+            assert "Invalid or expired API key" in error_msg
+
+    @patch('scripts.query.llm_compiler.OpenAI')
+    def test_rate_limit_error(self, mock_openai_class, tmp_path):
+        """Should raise QueryCompilationError with helpful message on rate limiting."""
+        from openai import RateLimitError
+
+        cache_file = tmp_path / "cache.jsonl"
+        cache_file.touch()
+
+        # Mock OpenAI client that raises RateLimitError
+        mock_client = Mock()
+        mock_openai_class.return_value = mock_client
+        mock_client.responses.parse.side_effect = RateLimitError(
+            message="Rate limit exceeded",
+            response=Mock(status_code=429),
+            body=None
+        )
+
+        with patch('scripts.query.llm_compiler.CACHE_PATH', cache_file):
+            with pytest.raises(QueryCompilationError) as exc_info:
+                compile_query_llm("test query", api_key="test-key")
+
+            error_msg = str(exc_info.value)
+            assert "OpenAI API error" in error_msg
+            assert "RateLimitError" in error_msg
+            assert "Rate limiting" in error_msg
+
+    @patch('scripts.query.llm_compiler.OpenAI')
+    def test_api_timeout_error(self, mock_openai_class, tmp_path):
+        """Should raise QueryCompilationError with helpful message on timeout."""
+        from openai import APITimeoutError
+
+        cache_file = tmp_path / "cache.jsonl"
+        cache_file.touch()
+
+        # Mock OpenAI client that raises APITimeoutError
+        mock_client = Mock()
+        mock_openai_class.return_value = mock_client
+        mock_client.responses.parse.side_effect = APITimeoutError(request=Mock())
+
+        with patch('scripts.query.llm_compiler.CACHE_PATH', cache_file):
+            with pytest.raises(QueryCompilationError) as exc_info:
+                compile_query_llm("test query", api_key="test-key")
+
+            error_msg = str(exc_info.value)
+            assert "OpenAI API error" in error_msg
+            assert "APITimeoutError" in error_msg
+            assert "Network timeout" in error_msg
+
+    @patch('scripts.query.llm_compiler.OpenAI')
+    def test_general_api_error(self, mock_openai_class, tmp_path):
+        """Should raise QueryCompilationError on general API errors."""
+        from openai import APIError
+
+        cache_file = tmp_path / "cache.jsonl"
+        cache_file.touch()
+
+        # Mock OpenAI client that raises APIError
+        mock_client = Mock()
+        mock_openai_class.return_value = mock_client
+        mock_client.responses.parse.side_effect = APIError(
+            message="Service unavailable",
+            request=Mock(),
+            body=None
+        )
+
+        with patch('scripts.query.llm_compiler.CACHE_PATH', cache_file):
+            with pytest.raises(QueryCompilationError) as exc_info:
+                compile_query_llm("test query", api_key="test-key")
+
+            error_msg = str(exc_info.value)
+            assert "OpenAI API error" in error_msg
+            assert "APIError" in error_msg
 
 
 class TestIntegration:

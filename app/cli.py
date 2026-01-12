@@ -109,6 +109,7 @@ def query(
     from datetime import datetime
     from scripts.query.compile import compile_query, write_plan_to_file
     from scripts.query.execute import execute_plan_from_file
+    from scripts.query.exceptions import QueryCompilationError
 
     # Validate database exists
     if not db.exists():
@@ -139,8 +140,14 @@ def query(
         typer.echo(f"  ✓ Plan generated: {len(plan.filters)} filters")
         if plan.debug and "patterns_matched" in plan.debug:
             typer.echo(f"  ✓ Patterns matched: {', '.join(plan.debug['patterns_matched'])}")
+    except QueryCompilationError as e:
+        # LLM compilation failure - display helpful error message
+        typer.echo(f"  ✗ Query compilation failed\n")
+        typer.echo(str(e))
+        raise typer.Exit(code=1)
     except Exception as e:
-        typer.echo(f"  ✗ Error compiling query: {e}")
+        # Unexpected error
+        typer.echo(f"  ✗ Unexpected error compiling query: {e}")
         raise typer.Exit(code=1)
 
     # Step 2: Execute plan
