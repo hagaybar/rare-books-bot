@@ -53,6 +53,13 @@ NORMALIZATION RULES:
 - Language: convert to ISO 639-2 codes (Latin→lat, Hebrew→heb, English→eng, French→fre, German→ger, Italian→ita, Spanish→spa, Greek→gre, Arabic→ara)
 - Year: extract explicit years or century ranges (16th century = 1501-1600)
 - Agent names: lowercase, preserve spaces
+- Titles: lowercase, preserve spaces
+
+OPERATION SELECTION GUIDELINES:
+- Title queries: Use CONTAINS by default (partial match) unless user explicitly requests exact match with words like "exact", "exactly", "precisely" or uses quotes around the full title
+- Subject queries: Use CONTAINS (keyword search in subject headings)
+- Publisher/place: Use EQUALS for known entities, CONTAINS for partial names or when uncertain
+- Agent names: Use CONTAINS (partial match on names)
 
 EXAMPLES:
 Query: "All books published by Oxford between 1500 and 1599"
@@ -101,6 +108,22 @@ Plan: {
   ]
 }
 
+Query: "Does a title The descent of man exist in this collection?"
+Plan: {
+  "query_text": "Does a title The descent of man exist in this collection?",
+  "filters": [
+    {"field": "title", "op": "CONTAINS", "value": "the descent of man", "notes": "Use CONTAINS for partial title match - full title may include subtitle"}
+  ]
+}
+
+Query: "books with 'historia' in the title"
+Plan: {
+  "query_text": "books with 'historia' in the title",
+  "filters": [
+    {"field": "title", "op": "CONTAINS", "value": "historia", "notes": "Keyword in title"}
+  ]
+}
+
 IMPORTANT:
 - Always normalize values (lowercase, clean punctuation)
 - Include helpful notes for each filter
@@ -108,6 +131,7 @@ IMPORTANT:
 - Empty filters list is OK if no extractable criteria
 - For agent queries: "printed by X" → agent_role=printer, "published by X" → use publisher field (not agent)
 - For century ranges: 16th century = 1501-1600, 17th century = 1601-1700, etc.
+- For title queries: Default to CONTAINS (partial match) unless explicit exact match requested. Rare book titles often have long subtitles that users don't know.
 """
 
 
