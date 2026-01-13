@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.models import ChatRequest, ChatResponseAPI, HealthResponse
@@ -390,3 +390,232 @@ async def expire_session(session_id: str):
 
     store.expire_session(session_id)
     return {"status": "success", "message": f"Session {session_id} expired"}
+
+
+@app.websocket("/ws/chat")
+async def websocket_chat(websocket: WebSocket):
+    """WebSocket endpoint for streaming chat responses.
+
+    Provides progressive results with:
+    - Progress messages during query execution
+    - Batched results (groups of 10 candidates)
+    - Real-time streaming for better UX
+
+    Protocol:
+    1. Client connects
+    2. Client sends JSON: {"message": "query", "session_id": "optional-id"}
+    3. Server streams JSON messages:
+       - {"type": "progress", "message": "Compiling query..."}
+       - {"type": "progress", "message": "Executing SQL..."}
+       - {"type": "batch", "candidates": [...], "batch_num": 1, "total_batches": 3}
+       - {"type": "complete", "response": ChatResponse}
+    4. Connection closes
+    """
+    await websocket.accept()
+    store = get_session_store()
+    bib_db = get_db_path()
+
+    try:
+        # Receive initial message
+        data = await websocket.receive_json()
+        message = data.get("message")
+        session_id = data.get("session_id")
+
+        if not message:
+            await websocket.send_json({"type": "error", "message": "Message is required"})
+            await websocket.close()
+            return
+
+        # Get or create session
+        if session_id:
+            session = store.get_session(session_id)
+            if not session:
+                await websocket.send_json({
+                    "type": "error",
+                    "message": f"Session {session_id} not found"
+                })
+                await websocket.close()
+                return
+        else:
+            session = store.create_session()
+            session_id = session.session_id
+            await websocket.send_json({
+                "type": "session_created",
+                "session_id": session_id
+            })
+
+        # Add user message
+        user_message = Message(role="user", content=message)
+        store.add_message(session_id, user_message)
+
+        # Progress: Compiling query
+        await websocket.send_json({
+            "type": "progress",
+            "message": "Compiling query..."
+        })
+
+        try:
+            query_plan = compile_query(message)
+
+            # Check for ambiguity before executing
+            needs_clarification_before, reason_before = detect_ambiguous_query(
+                query_plan, result_count=1
+            )
+
+            if needs_clarification_before:
+                clarification_msg = generate_clarification_message(
+                    query_plan, reason_before, result_count=1
+                )
+
+                response = ChatResponse(
+                    message="I need some clarification to search effectively.",
+                    candidate_set=None,
+                    clarification_needed=clarification_msg,
+                    session_id=session_id,
+                )
+
+                # Add to session
+                assistant_message = Message(
+                    role="assistant",
+                    content=clarification_msg,
+                    query_plan=query_plan,
+                    candidate_set=None,
+                )
+                store.add_message(session_id, assistant_message)
+
+                # Send complete response
+                await websocket.send_json({
+                    "type": "complete",
+                    "response": response.model_dump()
+                })
+                await websocket.close()
+                return
+
+        except QueryCompilationError as e:
+            error_msg = f"Could not understand query: {str(e)}"
+            response = ChatResponse(
+                message=error_msg,
+                candidate_set=None,
+                clarification_needed=(
+                    "Could you rephrase your query? For example: "
+                    "'books published by Oxford between 1500 and 1599' or "
+                    "'books about History printed in Paris'"
+                ),
+                session_id=session_id,
+            )
+
+            assistant_message = Message(
+                role="assistant",
+                content=error_msg,
+                query_plan=None,
+                candidate_set=None,
+            )
+            store.add_message(session_id, assistant_message)
+
+            await websocket.send_json({
+                "type": "complete",
+                "response": response.model_dump()
+            })
+            await websocket.close()
+            return
+
+        # Progress: Executing SQL
+        await websocket.send_json({
+            "type": "progress",
+            "message": f"Executing query with {len(query_plan.filters)} filters..."
+        })
+
+        # Execute query
+        candidate_set = execute_plan(query_plan, bib_db)
+        result_count = len(candidate_set.candidates)
+
+        # Progress: Found results
+        await websocket.send_json({
+            "type": "progress",
+            "message": f"Found {result_count} results. Formatting response..."
+        })
+
+        # Stream results in batches of 10
+        batch_size = 10
+        total_batches = (result_count + batch_size - 1) // batch_size if result_count > 0 else 0
+
+        for batch_num in range(total_batches):
+            start_idx = batch_num * batch_size
+            end_idx = min((batch_num + 1) * batch_size, result_count)
+            batch_candidates = candidate_set.candidates[start_idx:end_idx]
+
+            await websocket.send_json({
+                "type": "batch",
+                "candidates": [c.model_dump() for c in batch_candidates],
+                "batch_num": batch_num + 1,
+                "total_batches": total_batches,
+                "start_idx": start_idx,
+                "end_idx": end_idx
+            })
+
+        # Check for clarification after execution
+        ask_for_clarification = should_ask_for_clarification(
+            query_plan,
+            result_count,
+            enable_zero_result_clarification=True
+        )
+
+        clarification_message = None
+        if ask_for_clarification:
+            _, reason = detect_ambiguous_query(query_plan, result_count)
+            clarification_message = generate_clarification_message(
+                query_plan, reason, result_count
+            )
+
+        # Format final response
+        response_message = format_for_chat(candidate_set, max_candidates=10)
+        suggested_followups = generate_followups(candidate_set, query_plan.query_text)
+
+        response = ChatResponse(
+            message=response_message,
+            candidate_set=candidate_set,
+            suggested_followups=suggested_followups,
+            clarification_needed=clarification_message,
+            session_id=session_id,
+        )
+
+        # Add to session
+        assistant_message = Message(
+            role="assistant",
+            content=response_message,
+            query_plan=query_plan,
+            candidate_set=candidate_set,
+        )
+        store.add_message(session_id, assistant_message)
+
+        # Send complete response
+        await websocket.send_json({
+            "type": "complete",
+            "response": response.model_dump()
+        })
+
+        logger.info(
+            "WebSocket chat completed",
+            extra={
+                "session_id": session_id,
+                "result_count": result_count,
+                "batches_sent": total_batches
+            }
+        )
+
+    except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected")
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}", exc_info=True)
+        try:
+            await websocket.send_json({
+                "type": "error",
+                "message": f"Internal error: {str(e)}"
+            })
+        except:
+            pass
+    finally:
+        try:
+            await websocket.close()
+        except:
+            pass

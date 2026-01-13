@@ -394,6 +394,89 @@ Response: {
 - Prioritizes specificity (narrow date ranges, specific terms)
 - Graceful zero-results handling (broadening suggestions)
 
+## Streaming Responses (WebSocket)
+
+Real-time streaming for progressive query results and better UX:
+
+**Location**: `app/api/main.py` (`@app.websocket("/ws/chat")`)
+**Purpose**: Stream progress messages and batch results for real-time feedback
+
+**WebSocket Protocol**:
+1. Client connects to `ws://localhost:8000/ws/chat`
+2. Client sends JSON: `{"message": "query", "session_id": "optional-id"}`
+3. Server streams messages:
+   - `{"type": "session_created", "session_id": "..."}` (if new session)
+   - `{"type": "progress", "message": "Compiling query..."}`
+   - `{"type": "progress", "message": "Executing query with N filters..."}`
+   - `{"type": "progress", "message": "Found X results. Formatting response..."}`
+   - `{"type": "batch", "candidates": [...], "batch_num": 1, "total_batches": 3, ...}`
+   - `{"type": "complete", "response": ChatResponse}`
+4. Connection closes after complete message
+
+**Message Types**:
+- **session_created**: New session was created (includes session_id)
+- **progress**: Status update during query execution
+- **batch**: Result batch with up to 10 candidates
+- **complete**: Final response with full ChatResponse object
+- **error**: Error occurred (connection closes after)
+
+**Batch Structure**:
+```json
+{
+  "type": "batch",
+  "candidates": [...],  // Array of up to 10 Candidate objects
+  "batch_num": 1,       // Current batch number (1-indexed)
+  "total_batches": 3,   // Total number of batches
+  "start_idx": 0,       // Start index in full results
+  "end_idx": 10         // End index in full results
+}
+```
+
+**Features**:
+- Progressive result streaming (batches of 10)
+- Real-time progress updates during execution
+- Session creation and reuse
+- Clarification detection (same as HTTP endpoint)
+- Error handling with graceful connection closure
+
+**Example Client Code (JavaScript)**:
+```javascript
+const ws = new WebSocket('ws://localhost:8000/ws/chat');
+
+ws.onopen = () => {
+  ws.send(JSON.stringify({
+    message: "books published by Oxford",
+    session_id: existingSessionId  // optional
+  }));
+};
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  if (data.type === 'progress') {
+    console.log('Progress:', data.message);
+  } else if (data.type === 'batch') {
+    console.log(`Batch ${data.batch_num}/${data.total_batches}:`, data.candidates);
+  } else if (data.type === 'complete') {
+    console.log('Complete:', data.response);
+  }
+};
+```
+
+**Testing**:
+```bash
+# Run WebSocket tests (4 tests, all passing)
+pytest tests/app/test_api.py -k websocket -v
+
+# Test with wscat (install: npm install -g wscat)
+wscat -c ws://localhost:8000/ws/chat
+> {"message": "books by Oxford"}
+```
+
+**Comparison with HTTP /chat**:
+- **HTTP**: Single request/response, simpler client, no streaming
+- **WebSocket**: Progressive streaming, real-time feedback, better UX for slow queries
+
 ## Common Commands
 
 ```bash

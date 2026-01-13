@@ -232,3 +232,126 @@ def test_chat_with_context(client):
     session_data = session_response.json()
     assert "user_preference" in session_data["context"]
     assert session_data["context"]["user_preference"] == "concise_results"
+
+
+def test_websocket_creates_session(client):
+    """Test WebSocket endpoint creates new session."""
+    with client.websocket_connect("/ws/chat") as websocket:
+        # Send message without session_id
+        websocket.send_json({"message": "books"})
+
+        # Should receive session_created message
+        msg1 = websocket.receive_json()
+        assert msg1["type"] == "session_created"
+        assert "session_id" in msg1
+
+        # Should receive progress messages
+        messages = []
+        while True:
+            msg = websocket.receive_json()
+            messages.append(msg)
+            if msg["type"] == "complete":
+                break
+
+        # Verify we got progress messages
+        progress_msgs = [m for m in messages if m["type"] == "progress"]
+        assert len(progress_msgs) > 0
+        assert any("Compiling query" in m["message"] for m in progress_msgs)
+
+
+def test_websocket_with_existing_session(client):
+    """Test WebSocket endpoint uses existing session."""
+    # Create session via HTTP first
+    response = client.post("/chat", json={"message": "test"})
+    session_id = response.json()["response"]["session_id"]
+
+    # Connect via WebSocket with session_id
+    with client.websocket_connect("/ws/chat") as websocket:
+        websocket.send_json({
+            "message": "books",
+            "session_id": session_id
+        })
+
+        # Should not create new session
+        messages = []
+        while True:
+            msg = websocket.receive_json()
+            messages.append(msg)
+            if msg["type"] == "complete":
+                break
+
+        # Should not have session_created message
+        assert not any(m["type"] == "session_created" for m in messages)
+
+        # Should have complete response
+        complete_msg = [m for m in messages if m["type"] == "complete"][0]
+        assert complete_msg["response"]["session_id"] == session_id
+
+
+def test_websocket_empty_message(client):
+    """Test WebSocket endpoint rejects empty message."""
+    with client.websocket_connect("/ws/chat") as websocket:
+        websocket.send_json({"message": ""})
+
+        # Should receive error
+        msg = websocket.receive_json()
+        assert msg["type"] == "error"
+        assert "required" in msg["message"].lower()
+
+
+def test_websocket_invalid_session(client):
+    """Test WebSocket endpoint rejects invalid session_id."""
+    with client.websocket_connect("/ws/chat") as websocket:
+        websocket.send_json({
+            "message": "books",
+            "session_id": "nonexistent-session"
+        })
+
+        # Should receive error
+        msg = websocket.receive_json()
+        assert msg["type"] == "error"
+        assert "not found" in msg["message"].lower()
+
+
+@pytest.mark.integration
+def test_websocket_streaming_batches(client):
+    """Test WebSocket streams results in batches.
+
+    Requires OPENAI_API_KEY environment variable.
+    """
+    if not os.getenv("OPENAI_API_KEY"):
+        pytest.skip("OPENAI_API_KEY not set")
+
+    with client.websocket_connect("/ws/chat") as websocket:
+        websocket.send_json({
+            "message": "books published by Oxford"
+        })
+
+        # Collect all messages
+        messages = []
+        while True:
+            msg = websocket.receive_json()
+            messages.append(msg)
+            if msg["type"] == "complete":
+                break
+
+        # Should have session_created
+        assert any(m["type"] == "session_created" for m in messages)
+
+        # Should have progress messages
+        progress_msgs = [m for m in messages if m["type"] == "progress"]
+        assert len(progress_msgs) >= 2  # At least compiling and executing
+
+        # Should have complete message
+        complete_msgs = [m for m in messages if m["type"] == "complete"]
+        assert len(complete_msgs) == 1
+
+        # If results found, should have batch messages
+        batch_msgs = [m for m in messages if m["type"] == "batch"]
+        if batch_msgs:
+            # Verify batch structure
+            for batch in batch_msgs:
+                assert "candidates" in batch
+                assert "batch_num" in batch
+                assert "total_batches" in batch
+                assert len(batch["candidates"]) <= 10  # Batch size limit
