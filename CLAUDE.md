@@ -318,6 +318,47 @@ pylint scripts/                 # additional linting
 python -m app.cli parse <marc_xml_path>      # parse MARC XML to JSONL
 python -m app.cli index <canonical_dir>      # build SQLite index
 python -m app.cli query "<nl_query>"         # execute query (requires OPENAI_API_KEY)
+
+# API server commands (M6 Chatbot API):
+uvicorn app.api.main:app --reload           # start development server (http://localhost:8000)
+uvicorn app.api.main:app --host 0.0.0.0 --port 8000  # production server
+
+# Test API endpoints:
+curl http://localhost:8000/health           # health check
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "books by Oxford"}'       # chat query (creates new session)
+```
+
+## API Layer (M6 Chatbot)
+
+The FastAPI application in `app/api/` provides the HTTP interface for the conversational chatbot:
+
+**Endpoints:**
+- `POST /chat` - Send natural language query, get results
+  - Request: `{message: str, session_id?: str, context?: dict}`
+  - Response: `{success: bool, response: ChatResponse, error?: str}`
+  - Creates new session if `session_id` not provided
+  - Automatically routes through M4 query pipeline (compile + execute)
+
+- `GET /health` - Health check for monitoring
+  - Returns: `{status: str, database_connected: bool, session_store_ok: bool}`
+
+- `GET /sessions/{session_id}` - Get session details and message history
+- `DELETE /sessions/{session_id}` - Expire a session
+
+**Configuration (environment variables):**
+- `SESSIONS_DB_PATH` - Path to sessions.db (default: `data/chat/sessions.db`)
+- `BIBLIOGRAPHIC_DB_PATH` - Path to bibliographic.db (default: `data/index/bibliographic.db`)
+- `OPENAI_API_KEY` - Required for query compilation
+
+**Testing:**
+```bash
+# Run API tests (unit tests, no API key needed)
+pytest tests/app/test_api.py -v
+
+# Run integration tests (requires OPENAI_API_KEY)
+pytest tests/app/test_api.py -v --run-integration
 ```
 
 ## Key Architecture Notes
