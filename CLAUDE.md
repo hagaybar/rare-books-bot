@@ -477,6 +477,124 @@ wscat -c ws://localhost:8000/ws/chat
 - **HTTP**: Single request/response, simpler client, no streaming
 - **WebSocket**: Progressive streaming, real-time feedback, better UX for slow queries
 
+## Testing the Chatbot (M6)
+
+The chatbot API is ready for testing with all essential components implemented:
+
+**Prerequisites**:
+1. Ensure dependencies installed: `poetry install`
+2. Set OpenAI API key: `export OPENAI_API_KEY="sk-..."`
+3. Ensure bibliographic database exists at `data/index/bibliographic.db`
+
+**Starting the Server**:
+```bash
+# Development mode (auto-reload on code changes)
+uvicorn app.api.main:app --reload
+
+# Server starts at http://localhost:8000
+# API docs available at http://localhost:8000/docs
+```
+
+**Test 1: Health Check**
+```bash
+curl http://localhost:8000/health
+
+# Expected response:
+# {
+#   "status": "healthy",
+#   "database_connected": true,
+#   "session_store_ok": true
+# }
+```
+
+**Test 2: HTTP Chat Endpoint (Simple)**
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "books published by Oxford between 1500 and 1599"}'
+
+# Response includes:
+# - session_id (save for multi-turn conversations)
+# - message (natural language response)
+# - candidate_set (matched records with evidence)
+# - followup_questions (suggested refinements)
+```
+
+**Test 3: Multi-Turn Conversation**
+```bash
+# First query creates session
+RESPONSE=$(curl -s -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "books about History"}')
+
+SESSION_ID=$(echo $RESPONSE | jq -r '.response.session_id')
+
+# Second query uses same session
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"message\": \"only from Paris\", \"session_id\": \"$SESSION_ID\"}"
+```
+
+**Test 4: WebSocket Streaming (Real-Time)**
+```bash
+# Install wscat: npm install -g wscat
+wscat -c ws://localhost:8000/ws/chat
+
+# Send query:
+> {"message": "books by Oxford"}
+
+# Watch streaming messages:
+# - session_created (with session_id)
+# - progress messages ("Compiling query...", "Executing...", "Found X results...")
+# - batch messages (groups of 10 candidates)
+# - complete message (final response)
+```
+
+**Test 5: Ambiguity Detection**
+```bash
+# Vague query triggers clarification
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "books"}'
+
+# Response includes:
+# - clarification_needed: true
+# - message: helpful guidance on refining the query
+```
+
+**Interactive API Documentation**:
+- Navigate to http://localhost:8000/docs
+- Try all endpoints interactively with Swagger UI
+- View request/response schemas
+- Test rate limiting (10 requests/minute per IP)
+
+**Current Implementation Status**:
+- ✅ Session Management (CB-001) - Multi-turn conversations
+- ✅ API Layer (CB-002) - HTTP REST endpoints
+- ✅ Response Formatting (CB-003) - Natural language responses
+- ✅ Clarification Flow (CB-004) - Ambiguity detection
+- ✅ Streaming Responses (CB-005) - WebSocket progressive streaming
+- ✅ Basic Rate Limiting (CB-006) - 10 req/min for /chat endpoint
+- ⏸️ Authentication (CB-007) - Postponed for initial testing
+- ⏸️ Performance Metrics (CB-008) - Postponed for initial testing
+- ⏸️ Multi-User Isolation (CB-009) - Postponed for initial testing
+
+**What's Working**:
+- Natural language query compilation (via OpenAI)
+- SQL query execution against bibliographic database
+- Evidence-based responses with MARC field citations
+- Formatted responses with follow-up suggestions
+- Session-based conversation history
+- Real-time streaming with progress updates
+- Clarification prompts for ambiguous queries
+
+**Next Steps for Production**:
+- Add authentication and user management (when needed)
+- Implement performance metrics and monitoring (when scaling)
+- Add comprehensive error handling and logging
+- Deploy to production environment
+- Implement user-based rate limiting (vs IP-based)
+
 ## Common Commands
 
 ```bash
