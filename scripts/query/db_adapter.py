@@ -56,8 +56,15 @@ def normalize_filter_value(field: FilterField, raw_value: str) -> str:
         # Languages are ISO 639-2 codes, lowercase
         return raw_value.lower()
     elif field == FilterField.TITLE or field == FilterField.SUBJECT:
-        # FTS5 queries are case-insensitive, but we normalize for consistency
-        return raw_value.lower()
+        # FTS5 queries: wrap multi-word phrases in quotes for phrase matching
+        # Example: "military strategy" → '"military strategy"' for FTS5
+        value = raw_value.lower()
+        # If value contains spaces, wrap in double quotes for FTS5 phrase matching
+        if ' ' in value:
+            # Escape any existing double quotes in the value
+            value = value.replace('"', '""')
+            value = f'"{value}"'
+        return value
     elif field == FilterField.AGENT:
         # Agents use substring match, casefold for consistency
         return raw_value.casefold()
