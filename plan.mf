@@ -1,60 +1,755 @@
-# plan.mf — Proof of Concept Phase 1 (Inventory Subset Engine)
+# plan.mf — Rare Books Bibliographic Discovery System
 
-## Milestone M0 — Repo Setup (Done when:)
-- Project scaffolding created
-- Pre-commit / ruff / mypy configured
-- Basic CI runs unit tests
+**Last Updated:** 2026-01-13
+**Project Status:** M4 Complete | M5-M6 Planned
 
-## Milestone M1 — Canonical Record Extraction
-Goal: MARC XML -> canonical JSONL (one record per bib record)
-Done when:
-- `scripts/marc/parse.py` parses the provided MARC XML file
-- Outputs `data/canonical/records.jsonl`
-- Each JSON has: record_id, title, imprint(publisher/place/date raw), language codes, subjects raw, agents raw, notes raw
-- A `provenance` object exists per record mapping field tags -> extracted values
+---
 
-Artifacts:
-- records.jsonl
-- extraction_report.json (counts, missing fields)
+## Project Overview
 
-## Milestone M2 — SQLite Bibliographic Index
-Goal: deterministic fielded filtering (no embeddings)
-Done when:
-- `scripts/index/build_index.py` builds `data/index/biblio.sqlite`
-- Tables: records, agents, subjects (at minimum)
-- Indexed columns: date_start, date_end, place_norm, publisher_norm, agent_norm, subject_norm, language
+**Mission:** Build a bibliographic discovery system for rare books where **MARC XML is the source of truth**. The system enables deterministic, evidence-based queries over MARC bibliographic records with full provenance tracking.
 
-Artifacts:
-- biblio.sqlite
-- schema.sql
+**Core Principle:** Evidence before interpretation. Every query result includes traceable evidence showing which MARC fields caused inclusion.
 
-## Milestone M3 — Normalization v1
-Done when:
-- Dates: parse common forms -> date_start/date_end + confidence
-- Places/publishers/agents: normalize via rule-based pipeline (casefolding, punctuation, diacritics) + alias table
-- Unparsed values preserved with explicit reason
+### Current Architecture
 
-Artifacts:
-- normalization_report.json (coverage + examples)
+```
+MARC XML → M1 Parse → M2 Normalize → M3 Index → M4 Query → CandidateSet + Evidence
+                                                    ↓
+                                            QA Tool (Streamlit)
+                                            Regression Testing
+```
 
-## Milestone M4 — QueryPlan + CandidateSet (Primary Success Condition)
-Goal: NL -> QueryPlan -> SQL -> CandidateSet + Evidence
-Done when:
-- `scripts/query/compile.py` produces a JSON QueryPlan (schema-validated)
-- `scripts/query/execute.py` runs plan -> CandidateSet with evidence per record
-- CLI command works:
-  `python -m app.query "All books published by X between 1500 and 1599"`
-- Output includes:
-  - plan.json
-  - sql.txt
-  - candidates.json (record_ids + match_rationale)
+### Technology Stack
+- **Language:** Python 3.12 with Poetry dependency management
+- **Parsing:** pymarc for MARC XML
+- **Database:** SQLite (7.5MB, ~2000 records as of Jan 2026)
+- **Query Compilation:** OpenAI GPT-4o via Responses API (structured output)
+- **CLI:** Typer
+- **QA Tool:** Streamlit (development tool, in-repo)
+- **Testing:** Pytest with comprehensive unit and integration tests
 
-## Milestone M5 — Complex Q&A over CandidateSet (Secondary)
-Done when:
-- Given a record_id or a CandidateSet, the system can answer:
-  "What is the cultural significance of X relative to Y?"
-- Answer prompt is constrained to use only evidence from CandidateSet + curated DB
-- If external info is needed, it must say so explicitly (no silent web)
+### Project Structure
+```
+app/                           # CLI and UI interfaces
+├── cli.py                     # Typer CLI (parse_marc, query commands)
+├── qa.py                      # Regression runner for gold sets
+└── ui_qa/                     # Streamlit QA tool (12 files, 5 pages)
 
-Artifacts:
-- answer.md including citations to MARC evidence fields used
+scripts/                       # Core library organized by function
+├── marc/                      # M1-M3 pipeline (parsing, normalization, indexing)
+│   ├── parse.py              # M1: MARC XML → Canonical JSONL
+│   ├── m2_normalize.py       # M2: Canonical → Enriched with normalized fields
+│   ├── m3_index.py           # M3: Enriched → SQLite database
+│   ├── models.py             # M1 Pydantic models
+│   ├── m2_models.py          # M2 Pydantic models
+│   └── m3_contract.py        # M3 schema contract (tables, columns)
+├── query/                    # M4 query execution
+│   ├── compile.py            # Query entry point
+│   ├── llm_compiler.py       # LLM-based QueryPlan generation
+│   ├── execute.py            # QueryPlan → SQL → CandidateSet
+│   ├── db_adapter.py         # SQL generation and evidence extraction
+│   └── exceptions.py         # Query-specific exceptions
+├── schemas/                  # Cross-module Pydantic models
+│   ├── query_plan.py         # QueryPlan schema (M4 input)
+│   └── candidate_set.py      # CandidateSet schema (M4 output)
+├── normalization/            # Normalization utilities
+│   ├── normalize_agent.py    # Agent name normalization
+│   └── generate_place_alias_map.py  # Place alias map generation (one-time)
+└── utils/                    # Shared utilities (logging, config, paths)
+
+tests/                        # Pytest suite mirroring scripts/ structure
+├── scripts/marc/             # M1-M3 tests
+├── scripts/query/            # M4 tests (unit + integration)
+└── fixtures/                 # Test data
+
+data/                         # Artifacts and run outputs (gitignored except alias map)
+├── marc_source/              # Raw MARC XML files
+├── canonical/                # M1 outputs (records.jsonl, extraction_report.json)
+├── m2/                       # M2 outputs (records_m1m2.jsonl)
+├── index/                    # M3 outputs (bibliographic.db)
+├── normalization/            # Normalization artifacts (place_alias_map.json)
+├── qa/                       # QA tool database (qa.db, gold.json)
+└── runs/                     # M4 per-query outputs (query_YYYYMMDD_HHMMSS/)
+
+docs/                         # Specifications and documentation
+├── specs/                    # Technical specifications (normalization, schema versioning)
+├── pipelines/                # Pipeline documentation
+└── dev_instructions/         # Development guides
+
+audits/                       # Project audit reports (organized by date)
+├── 2026-01-12-general/       # General codebase audit
+└── 2026-01-13-chatbot-readiness/  # Chatbot UI readiness assessment
+```
+
+---
+
+## Milestone History (Completed)
+
+### Milestone M0 — Repository Setup ✅
+**Status:** Completed (Dec 2025)
+**Git Commits:** 66d364d (Initial commit), e067975 (Initialize Claude Code project)
+
+**Achievements:**
+- Project scaffolding from RAG template → MARC-focused system
+- Pre-commit hooks, ruff, mypy configured
+- Poetry dependency management
+- Basic CI with pytest integration
+- Python 3.12 environment established
+
+**Artifacts:**
+- `pyproject.toml` with MARC-specific dependencies (pymarc, openai, pydantic, streamlit)
+- `.gitignore` for data artifacts
+- `CLAUDE.md` project instructions for Claude Code
+- `.claude/skills/` (python-dev-expert, git-expert, project-audit)
+
+---
+
+### Milestone M1 — Canonical Record Extraction ✅
+**Status:** Completed (Jan 9, 2026)
+**Git Commits:** 7eae615 (Implement M1), 8501bfe (Upgrade M1 canonical model), 5d46bd4 (Improve canonical structure)
+
+**Goal:** MARC XML → Canonical JSONL (one record per bibliographic record)
+
+**Achievements:**
+- Implemented `scripts/marc/parse.py` with subfield-level provenance tracking
+- Created `CanonicalRecord` Pydantic model with structured data classes:
+  - `SourcedValue` for provenance (tag, occurrence, subfield)
+  - `ImprintData`, `AgentData`, `SubjectData`, `NoteData` structured types
+- Occurrence indexing: Multiple imprints/agents/subjects tracked with occurrence numbers
+- CLI command: `python -m app.cli parse_marc <input.xml>`
+
+**Artifacts:**
+- `data/canonical/records.jsonl` - One JSON object per line, one record per line
+- `data/canonical/extraction_report.json` - Coverage statistics:
+  - Total records processed
+  - Records with title, imprints, languages, subjects, agents, notes
+  - Failed extractions with reasons
+
+**Key Features:**
+- **Raw value preservation:** All MARC values stored exactly as extracted
+- **Provenance:** Every field includes source tag, occurrence, subfield
+- **Deterministic:** Same MARC XML → same canonical output (no randomness)
+- **Reversible:** Can reconstruct MARC fields from canonical record
+
+---
+
+### Milestone M2 — Normalization v1 ✅
+**Status:** Completed (Jan 9, 2026)
+**Git Commits:** 0abf135 (Implement M2), 11ad171 (Place frequency builder)
+
+**Goal:** Enrich canonical records with normalized fields (dates, places, publishers, agents) using confidence-scored, reversible transformations
+
+**Achievements:**
+- Implemented `scripts/marc/m2_normalize.py` with deterministic normalization pipeline
+- Created `M2EnrichedRecord` Pydantic model:
+  - Original canonical record preserved
+  - `m2` object with normalized fields + confidence + method
+- **Date normalization** (6 deterministic patterns):
+  - Exact (e.g., "1650") → confidence 0.99
+  - Bracketed (e.g., "[1650]") → confidence 0.95
+  - Circa (e.g., "c. 1650") → ±5 years, confidence 0.85
+  - Range (e.g., "1600-1650") → confidence 0.95
+  - Embedded (e.g., "Published in 1650") → confidence 0.90
+  - Unparsed → confidence 0.0, explicit reason logged
+- **Place/Publisher normalization:**
+  - Base cleaning: casefold, strip punctuation, remove brackets (confidence 0.80)
+  - Optional alias map lookup (confidence 0.95)
+  - Place alias map generated via LLM-assisted one-time process
+- CLI command: `python -m scripts.marc.m2_normalize <input.jsonl> <output.jsonl> <alias_map.json>`
+
+**Artifacts:**
+- `data/m2/records_m1m2.jsonl` - Enriched records (M1 + M2)
+- `data/normalization/place_aliases/place_alias_map.json` - Production alias map (version-controlled)
+- `data/normalization/place_aliases/place_alias_cache.jsonl` - LLM cache (gitignored)
+
+**Key Features:**
+- **Reversible:** Normalized fields include method and original value
+- **Confident:** Confidence scores track normalization certainty
+- **Deterministic:** Same input → same normalized output (except LLM cache misses)
+- **Documented:** Normalization rules documented in `docs/specs/m2_normalization_spec.md`
+
+---
+
+### Milestone M3 — SQLite Bibliographic Index ✅
+**Status:** Completed (Jan 9, 2026)
+**Git Commits:** b56dc1e (Implement M3), 52b2fb1 (Schema versioning strategy)
+
+**Goal:** Build queryable SQLite database with both raw and normalized fields
+
+**Achievements:**
+- Implemented `scripts/marc/m3_index.py` with schema-driven indexing
+- Created `bibliographic.db` with 7 tables:
+  - `records` (record_id, mms_id, title_statement)
+  - `titles` (FTS5 full-text search)
+  - `imprints` (place_norm, publisher_norm, date_start, date_end)
+  - `subjects` (FTS5 full-text search)
+  - `agents` (agent_norm, role_norm, agent_type with provenance JSON)
+  - `languages` (code, source)
+  - `notes` (note_text, note_type)
+- Created `m3_contract.py` with schema constants (M3Tables, M3Columns, M3Aliases)
+- Established schema versioning strategy documented in `docs/specs/SCHEMA_VERSIONING.md`
+- CLI command: `python -m scripts.marc.m3_index <input_m2.jsonl> <output.db> <schema.sql>`
+
+**Artifacts:**
+- `data/index/bibliographic.db` - SQLite database (7.5MB, ~2000 records as of Jan 2026)
+- `scripts/marc/m3_schema.sql` - Schema definition with indexes
+- `scripts/marc/m3_contract.py` - Schema contract for M4 query builder
+
+**Key Features:**
+- **Indexed:** All normalized columns indexed for fast queries
+- **FTS5:** Full-text search on titles and subjects
+- **Provenance:** Agent provenance stored as JSON (tag, occurrence, subfield)
+- **Confidence:** Normalization confidence scores preserved in database
+- **Versioned:** Schema version tracked, migration strategy documented
+
+---
+
+### Milestone M4 — QueryPlan + CandidateSet (Primary Success Condition) ✅
+**Status:** Completed (Jan 10-13, 2026)
+**Git Commits:** 5fdcf69 (Implement M4), 90c91f6 (Replace heuristic parser with LLM), 77b7dae (Retry mechanism), b0f20b3 (FTS5 syntax fix)
+
+**Goal:** Natural Language → QueryPlan → SQL → CandidateSet with Evidence
+
+**Achievements:**
+- Implemented `scripts/query/` module with LLM-based query compilation
+- **Query Compilation:**
+  - OpenAI GPT-4o with Responses API (structured output)
+  - `QueryPlan` Pydantic schema enforced by LLM
+  - JSONL cache for repeat queries (`data/query_plan_cache.jsonl`)
+  - Retry mechanism with database subject hints for zero-result queries
+  - LCSH (Library of Congress Subject Headings) normalization in prompts
+- **Query Execution:**
+  - `db_adapter.py` generates SQL from QueryPlan using M3 contract
+  - Evidence extraction for every candidate (field → value → MARC source)
+  - Match rationale generated deterministically from filters
+- **Error Handling:**
+  - `QueryCompilationError` with user-friendly messages
+  - Graceful handling of OpenAI API failures
+  - Clear instructions for API key setup
+- CLI command: `python -m app.cli query "All books published by Oxford between 1500 and 1599"`
+
+**Artifacts (per query run):**
+- `data/runs/query_YYYYMMDD_HHMMSS/plan.json` - QueryPlan JSON
+- `data/runs/query_YYYYMMDD_HHMMSS/sql.txt` - Executed SQL
+- `data/runs/query_YYYYMMDD_HHMMSS/candidates.json` - CandidateSet with evidence
+
+**Key Features:**
+- **Evidence-based:** Every result includes traceable evidence
+- **Deterministic SQL:** Same QueryPlan → same SQL (no randomness)
+- **Cached:** Repeat queries use cache (no API cost)
+- **Retry logic:** Zero-result subject queries retry with database hints
+- **Transparent:** Plan hash, SQL, and evidence logged for reproducibility
+
+**Example Query Flow:**
+```
+User: "books by Oxford between 1500 and 1599"
+  ↓ LLM Compiler (OpenAI GPT-4o)
+QueryPlan: {
+  filters: [
+    {field: "publisher", op: "EQUALS", value: "oxford"},
+    {field: "year", op: "RANGE", start: 1500, end: 1599}
+  ]
+}
+  ↓ SQL Builder (db_adapter.py)
+SQL: SELECT ... FROM records r JOIN imprints i ON ...
+     WHERE LOWER(i.publisher_norm) = LOWER(:filter_0_publisher)
+     AND i.date_start <= :filter_1_end
+     AND i.date_end >= :filter_1_start
+  ↓ Evidence Extractor
+CandidateSet: {
+  candidates: [
+    {
+      record_id: "990001234",
+      match_rationale: "publisher_norm='oxford' AND year_range=1500-1599 overlaps 1500-1599",
+      evidence: [
+        {field: "publisher_norm", value: "oxford", source: "db.imprints.publisher_norm (marc:264$b[0])"},
+        {field: "date_range", value: "1500-1599", source: "db.imprints.date_start/date_end (marc:264$c[0])"}
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### Enhancement: QA Tool (Streamlit) ✅
+**Status:** Completed (Jan 11, 2026)
+**Git Commits:** 6cc1c62 (Add QA wizard), 195dd1a (Document QA tool status)
+
+**Purpose:** Development tool for M4 quality assurance, maintained as part of core repository
+
+**Achievements:**
+- 5-page Streamlit application (`app/ui_qa/`)
+  - **Page 0:** QA Sessions (session management)
+  - **Page 1:** Run + Review (execute queries, label candidates as TP/FP/FN/UNK)
+  - **Page 2:** Find Missing (search for false negatives)
+  - **Page 3:** Dashboard (aggregate statistics, issue tags analysis)
+  - **Page 4:** Gold Set (export gold.json for regression testing)
+- QA database (`data/qa/qa.db`) separate from production `bibliographic.db`
+- Issue tagging system (PARSER_MISSED_FILTER, NORM_PLACE_BAD, etc.)
+- Regression testing framework:
+  - Gold set export to `data/qa/gold.json`
+  - CLI regression runner: `python -m app.qa regress --gold data/qa/gold.json --db data/index/bibliographic.db`
+  - Exit codes for CI integration
+
+**Usage:**
+```bash
+# Launch UI
+poetry run streamlit run app/ui_qa/main.py
+
+# Run regression tests (CLI)
+poetry run python -m app.qa regress --gold data/qa/gold.json --db data/index/bibliographic.db
+```
+
+**Status Decision (Jan 12, 2026):**
+- QA tool is **development tool** maintained in-repo (not extracted)
+- Rationale:
+  - Tightly coupled to M4 query pipeline evolution
+  - Uses same dependencies (Pydantic models, query compiler)
+  - Facilitates rapid iteration during M4 development
+  - Small codebase (~1000 lines) doesn't justify separate package overhead
+- Documented in `CLAUDE.md` and `app/ui_qa/README.md`
+
+---
+
+### Enhancement: LLM Query Planner ✅
+**Status:** Completed (Jan 12, 2026)
+**Git Commits:** 90c91f6 (Replace heuristic parser), 98168c1 (Add LLM planner instructions), efdae0a (LCSH normalization)
+
+**Achievement:** Replaced heuristic/regex query parser with OpenAI GPT-4o using Responses API
+
+**Benefits:**
+- More robust natural language understanding
+- Better handling of ambiguous queries
+- LCSH (Library of Congress Subject Headings) normalization built into prompts
+- Structured output enforced by OpenAI Responses API (Pydantic schema)
+
+**Risks Mitigated:**
+- LLM failure handling: `QueryCompilationError` with clear messages (commit e46b678)
+- API key documentation: Prominently mentioned in CLAUDE.md and CLI error messages
+- Cache layer: JSONL cache for repeat queries (no API cost for common queries)
+
+---
+
+### Enhancement: Agent Extraction and Querying (Stage 5) ✅
+**Status:** Completed (Jan 12, 2026)
+**Git Commits:** 0ae8e16 (Implement Stage 5), 595c009 (Expand agent role vocabulary)
+
+**Achievement:** Full agent extraction, normalization, and querying support
+
+**Features:**
+- Agent extraction from MARC 100, 110, 111, 700, 710, 711 fields
+- Agent normalization with confidence scoring (similar to place/publisher)
+- Role extraction and normalization (90+ controlled role terms)
+- Agent type classification (personal, corporate, meeting)
+- Provenance tracking (tag, occurrence, subfield stored as JSON)
+- Query filters:
+  - `agent_norm` (normalized agent name, CONTAINS or EQUALS)
+  - `agent_role` (e.g., "printer", "translator")
+  - `agent_type` (e.g., "personal", "corporate")
+
+**Example:**
+```
+Query: "books printed by Aldus in Venice"
+QueryPlan: {
+  filters: [
+    {field: "agent_norm", op: "CONTAINS", value: "aldus"},
+    {field: "agent_role", op: "EQUALS", value: "printer"},
+    {field: "imprint_place", op: "EQUALS", value: "venice"}
+  ]
+}
+```
+
+---
+
+### Enhancement: M3 Schema Versioning ✅
+**Status:** Completed (Jan 12, 2026)
+**Git Commits:** 52b2fb1 (Implement schema versioning strategy)
+
+**Achievement:** Established schema versioning strategy for M3 database
+
+**Documentation:** `docs/specs/SCHEMA_VERSIONING.md`
+
+**Key Decisions:**
+- Schema version tracked in `records` table metadata field
+- Migration scripts stored in `scripts/marc/migrations/`
+- Backward compatibility policy: Read old schemas, write current schema
+- Version check on database open (error if unsupported version)
+
+**Current Version:** 1.0
+
+---
+
+### Enhancement: Subject Query Improvements ✅
+**Status:** Completed (Jan 12-13, 2026)
+**Git Commits:** efdae0a (LCSH normalization), 77b7dae (Retry mechanism), b0f20b3 (FTS5 syntax fix), cacd472 (FTS5 join fix)
+
+**Achievements:**
+- **LCSH Normalization in LLM:** Transform adjectives to noun forms (e.g., "historical" → "History")
+- **Retry Mechanism (Tier 2):** Zero-result subject queries retry with database subject hints
+  - Get top 100 subjects from database
+  - Send to LLM for semantic matching
+  - Retry query with adjusted subject filter
+  - Success message if results found
+- **FTS5 Fixes:**
+  - Quote multi-word phrases for exact phrase matching
+  - Fix JOIN strategy to go through content tables (records) not directly to FTS5
+  - Prevent Cartesian products in title+subject queries
+
+---
+
+## Audits Completed
+
+### Audit 2026-01-12: General Codebase Health ✅
+**Location:** `audits/2026-01-12-general/`
+**Scope:** Full codebase audit - M1-M4 pipeline, normalization, query execution, QA tools
+
+**Key Findings:**
+- ✅ Strong architectural clarity with M1→M2→M3→M4 pipeline
+- ✅ Mature engineering: Pydantic models, deterministic normalization, comprehensive tests
+- ✅ Excellent documentation (CLAUDE.md, specs, pipeline docs)
+- ⚠️ QA tool status unclear (resolved: documented as development tool)
+- ⚠️ LLM dependency risk without fallback (mitigated: error handling, cache, docs)
+- ⚠️ Normalization confidence scores not empirically validated (pending validation)
+
+**Status:** P0 findings: None | P1 findings: 3 (2 resolved, 1 in progress) | P2 findings: 4 (2 completed, 2 pending)
+
+### Audit 2026-01-13: Chatbot UI Readiness ✅
+**Location:** `audits/2026-01-13-chatbot-readiness/`
+**Scope:** Assessment of codebase readiness for conversational chatbot interface
+
+**Key Findings:**
+- ✅ M4 query pipeline mature and production-ready (95% score)
+- ✅ Evidence extraction perfect for chat needs (100% score)
+- ✅ LLM integration already in place (90% score)
+- ❌ No session management (0% score)
+- ❌ No API layer (20% score)
+- ❌ No conversational response formatting (30% score)
+
+**Overall Readiness:** 60% (Strong core, missing conversation layer)
+
+**Recommendation:** Build M6 (conversational layer) on top of M4 without modifying M4
+
+---
+
+## Milestone Status (In Progress / Planned)
+
+### Milestone M5 — Complex Q&A over CandidateSet (Secondary) 🔄
+**Status:** Planned (not started)
+**Priority:** Medium (after M6 or in parallel)
+
+**Goal:** Enable complex interpretive questions over query results
+
+**Requirements:**
+- Given a `record_id` or `CandidateSet`, answer questions like:
+  - "What is the cultural significance of X relative to Y?"
+  - "Compare the printing styles of Aldus vs Elsevier"
+  - "Summarize the subject coverage of these 50 books"
+- Answer prompt constrained to use **only evidence from CandidateSet + curated DB**
+- If external info needed, must say so explicitly (no silent web enrichment)
+- Generate `answer.md` with citations to MARC evidence fields
+
+**Acceptance Criteria:**
+- [ ] `scripts/answer/generate.py` module with answer generation logic
+- [ ] LLM prompt constrained to CandidateSet + evidence only
+- [ ] Citation tracking: Every statement links back to MARC fields
+- [ ] Explicit "external info needed" flag when evidence insufficient
+- [ ] CLI command: `python -m app.cli answer "question" --candidate-set results.json`
+- [ ] Output: `answer.md` with citations and evidence traceability
+
+**Dependencies:**
+- M4 complete ✅
+- CandidateSet schema stable ✅
+- LLM integration established ✅
+
+**Estimated Effort:** 2 weeks
+
+**Notes:**
+- Could be implemented in parallel with M6 (different code paths)
+- May benefit from M6's session management if multi-turn Q&A desired
+- Consider budget for LLM API costs (answer generation more expensive than query compilation)
+
+---
+
+### Milestone M6 — Conversational Interface (Chatbot UI) 📋
+**Status:** Planned (action plan defined)
+**Priority:** High (next major milestone)
+**Based on:** Chatbot Readiness Audit (2026-01-13)
+
+**Goal:** Build conversational layer on top of M4 for multi-turn chat interactions
+
+**Key Principle:** M4 is the foundation. M6 is a thin layer on top. Do NOT redesign M4 for chat.
+
+**Architecture:**
+```
+Natural Language Query → M6 Chat Layer → M4 Query Pipeline → Response Formatter → User
+                         ↓
+                    Session Management
+```
+
+**Action Plan:** See `audits/2026-01-13-chatbot-readiness/CHATBOT_READINESS_ACTION_PLAN.md`
+
+**Estimated Duration:** 3-4 weeks (4 phases)
+
+#### Phase 1: Conversational Foundation (Week 1) - P0 Blockers
+**Deliverables:**
+- [ ] `scripts/chat/models.py` - Pydantic schemas (ChatSession, Message, ChatResponse)
+- [ ] `scripts/chat/session_store.py` - Session CRUD operations (SQLite backend)
+- [ ] `scripts/chat/formatter.py` - CandidateSet → natural language response
+- [ ] `app/api/main.py` - FastAPI with `/chat` endpoint
+- [ ] Integration tests for session persistence and API endpoint
+
+**Key Components:**
+1. **Session Management** (CB-001):
+   - ChatSession model with conversation history
+   - SQLite database for session storage (`data/chat/sessions.db`)
+   - Session CRUD: create, get, add_message, update_context, expire
+2. **API Layer** (CB-002):
+   - FastAPI app with `/chat` POST endpoint
+   - Request: `{session_id, message, context}`
+   - Response: `{message, candidate_set, suggested_followups}`
+3. **Response Formatting** (CB-003):
+   - `format_for_chat(candidate_set) -> str` function
+   - Natural language summaries: "Found X books matching Y..."
+   - Evidence citations formatted as bullet points
+   - Graceful zero-results response
+
+#### Phase 2: UX Enhancements (Week 2) - P1 Critical
+**Deliverables:**
+- [ ] `scripts/chat/clarification.py` - Ambiguity detection and clarification flow
+- [ ] `/ws/chat` WebSocket endpoint for streaming responses
+- [ ] Rate limiting middleware (10 queries/minute per session)
+- [ ] Progress updates during query execution
+
+**Key Components:**
+1. **Clarification Flow** (CB-004):
+   - Detect ambiguous queries (empty filters, low confidence)
+   - Return `clarification_needed` flag in ChatResponse
+   - Retry logic with user clarification
+2. **Streaming Responses** (CB-005):
+   - WebSocket support for progressive results
+   - Batch results in groups of 10
+   - Progress messages: "Compiling query... Executing SQL... Found X results..."
+3. **Rate Limiting** (CB-006):
+   - `slowapi` middleware (10 queries/minute per session)
+   - OpenAI cost tracking per session
+   - HTTP 429 when limit exceeded
+
+#### Phase 3: Production Hardening (Week 3) - P2 Important
+**Deliverables:**
+- [ ] `app/api/auth.py` - JWT authentication
+- [ ] `/metrics` Prometheus endpoint
+- [ ] Load testing with 50+ concurrent users
+- [ ] Performance optimization based on load test results
+
+**Key Components:**
+1. **Authentication** (CB-007):
+   - JWT token generation and validation
+   - `/login` and `/logout` endpoints
+   - Per-user session isolation
+2. **Performance Metrics** (CB-008):
+   - Prometheus metrics for query latency, cache hit rate, LLM calls
+   - Slow query logging (>5s threshold)
+   - Grafana dashboard (optional)
+3. **Multi-User Isolation** (CB-009):
+   - `user_id` in ChatSession model
+   - Session queries filtered by user_id
+   - Concurrent user testing
+
+#### Phase 4: Web UI Integration (Week 4) - Optional
+**Deliverables:**
+- [ ] Simple web-based chat interface (React/Vue or HTML+JS)
+- [ ] Message list with expandable evidence
+- [ ] Loading indicators and streaming support
+- [ ] Dockerized deployment
+
+**Acceptance Criteria (Overall M6):**
+- [ ] `/chat` API endpoint functional with session management
+- [ ] Natural language responses generated from CandidateSet
+- [ ] Multi-turn conversations work (context carry-forward)
+- [ ] Clarifications reduce failed queries by 30%
+- [ ] API handles 50 concurrent users with P95 latency <10s
+- [ ] Authentication protects API
+- [ ] Rate limiting prevents abuse
+- [ ] Regression tests: All M4 tests still pass (no M4 changes)
+
+**Dependencies:**
+- M4 complete ✅
+- CandidateSet schema stable ✅
+- LLM integration established ✅
+
+**Risks:**
+- LLM API costs: Mitigate with rate limiting, aggressive caching, cost alerts
+- Query latency: Mitigate with streaming, async execution, result caching
+- Session storage growth: Mitigate with 24-hour expiration, archival
+
+---
+
+## Ongoing Improvements (From General Audit)
+
+### P1: High Priority Improvements
+
+#### 1. Validate Normalization Confidence Scores (F003)
+**Status:** Pending
+**Effort:** 2-3 days manual validation
+**Action:** Sample 200 normalized records, manually validate, calculate precision
+**Deliverable:** `data/normalization/validation_report.json`
+**Acceptance:**
+- [ ] Precision per confidence level documented
+- [ ] Update CLAUDE.md with validated confidence semantics or "Pending Validation" warnings
+
+### P2: Medium Priority Improvements
+
+#### 2. Add Schema Versioning to Data Models (F005)
+**Status:** In Progress (M3 schema versioning complete, M1/M2 models pending)
+**Effort:** 1-2 days
+**Action:** Add `version: str = "1.0"` to CanonicalRecord, M2EnrichedRecord, CandidateSet
+**Deliverable:** Version checking on load, migration strategy documented
+**Acceptance:**
+- [ ] All models have version field
+- [ ] Version mismatch raises error on load
+- [ ] Migration strategy documented in `docs/specs/SCHEMA_VERSIONING.md`
+
+#### 3. Add Place Alias Map Schema Validation (F006)
+**Status:** Pending
+**Effort:** 1 day
+**Action:** Create Pydantic model for `place_alias_map.json`
+**Deliverable:** `PlaceAliasMap` model in `scripts/marc/m2_models.py`
+**Acceptance:**
+- [ ] Alias map validated on load
+- [ ] Malformed alias maps raise clear error
+- [ ] Version field added to alias map JSON
+
+#### 4. Document Agent Normalization Strategy (F007)
+**Status:** Pending (Agent Stage 5 complete, documentation incomplete)
+**Effort:** 1-2 days
+**Action:** Create `docs/pipelines/agent_normalization.md` documenting agent extraction and normalization
+**Deliverable:** Comprehensive agent normalization documentation
+**Acceptance:**
+- [ ] Document agent extraction rules (MARC 100, 110, 111, 700, 710, 711)
+- [ ] Document role vocabulary (90+ controlled terms)
+- [ ] Document normalization pipeline (casefold, punctuation, comma handling)
+- [ ] Document agent type classification (personal, corporate, meeting)
+
+---
+
+## Future Enhancements (Not Milestone-Critical)
+
+### Authority URI Integration
+**Status:** Planned (design documented)
+**Git Commit:** 4fbfa3a (Add authority URI integration plan)
+**Description:** Integrate authority URIs from new MARC XML format (LOC, VIAF, etc.)
+**Benefits:** Better entity resolution, external knowledge integration
+**Effort:** 1-2 weeks
+**Dependencies:** New MARC XML format with authority URIs available
+
+### Web Enrichment Layer (M7)
+**Status:** Future consideration
+**Description:** Optional enrichment with external sources (WorldCat, OCLC, LOC)
+**Requirements:**
+- Must be cached with citations and confidence scores
+- Must be opt-in (not default)
+- Must be traceable (source URL, retrieval timestamp)
+**Effort:** 2-3 weeks
+**Dependencies:** M5 or M6 complete
+
+### Admin Dashboard
+**Status:** Future consideration
+**Description:** Administrative interface for system monitoring and management
+**Features:**
+- Query analytics (popular searches, failure rates)
+- User management (quotas, permissions)
+- System health monitoring (database size, API costs, error rates)
+**Effort:** 2-3 weeks
+**Dependencies:** M6 complete (authentication, metrics)
+
+---
+
+## Development Workflow
+
+### Common Commands
+
+```bash
+# Install dependencies
+poetry install
+
+# Set up environment (for LLM query planning)
+export OPENAI_API_KEY="sk-..."  # Required for M4 queries
+
+# Run tests
+pytest                          # all tests
+pytest tests/scripts/query/     # M4 tests only
+pytest -k "test_name"           # specific test
+pytest -m "not legacy_chunker"  # skip legacy tests
+pytest --run-integration        # integration tests (requires OPENAI_API_KEY)
+
+# Code quality
+ruff check .                    # linting
+ruff format .                   # formatting
+pylint scripts/                 # additional linting
+
+# MARC pipeline commands
+python -m app.cli parse_marc <marc_xml_path>      # M1: Parse MARC XML
+python -m scripts.marc.m2_normalize <input.jsonl> <output.jsonl> <alias_map.json>  # M2
+python -m scripts.marc.m3_index <input.jsonl> <output.db> <schema.sql>  # M3
+python -m app.cli query "<nl_query>"               # M4: Execute query (requires OPENAI_API_KEY)
+
+# QA tool
+poetry run streamlit run app/ui_qa/main.py         # Launch QA UI
+poetry run python -m app.qa regress --gold data/qa/gold.json --db data/index/bibliographic.db  # Regression tests
+```
+
+### Git Workflow
+- Use `git-expert` skill for all git operations
+- Commit granularly after each logical unit of work
+- Always push immediately after commit (backup to GitHub)
+- Use descriptive commit messages with context and rationale
+- See `.claude/skills/git-expert/SKILL.md` for full workflow
+
+### Audit Schedule
+- **Weekly during active development** (new features, major refactors)
+- **Before major milestones** (M5, M6 releases)
+- **After architecture changes** (new modules, schema updates)
+- Use `project-audit` skill: `/project-audit --focus "Description"`
+- All audits saved to `audits/YYYY-MM-DD-focus-name/`
+
+---
+
+## Success Metrics
+
+### Current Status (as of 2026-01-13)
+- ✅ M1-M4 pipeline complete and production-ready
+- ✅ ~2000 MARC records indexed and queryable
+- ✅ LLM-based query compilation with 90%+ success rate (estimated)
+- ✅ Evidence extraction 100% complete (traceable to MARC fields)
+- ✅ QA tool operational with gold set regression testing
+- ✅ Comprehensive test coverage (unit + integration)
+
+### M5 Success Metrics (When Complete)
+- [ ] Answer generation constrained to evidence (no hallucinations)
+- [ ] 95%+ of answers include MARC field citations
+- [ ] Complex questions answered without external web access
+- [ ] "External info needed" flag triggers correctly
+
+### M6 Success Metrics (When Complete)
+- [ ] Multi-turn conversations work (context carry-forward)
+- [ ] Session management handles 100+ concurrent users
+- [ ] API response time P95 < 10s (uncached queries)
+- [ ] API response time P95 < 3s (cached queries)
+- [ ] Rate limiting prevents abuse (10 queries/min per session)
+- [ ] Authentication protects API endpoints
+- [ ] No regressions in M4 query pipeline (all tests pass)
+
+---
+
+## References
+
+- **CLAUDE.md** - Project instructions for Claude Code
+- **README.md** - Project overview and setup
+- **audits/** - Project audit reports (organized by date and focus)
+- **docs/specs/** - Technical specifications (normalization, schema versioning)
+- **docs/pipelines/** - Pipeline documentation (M1-M4 flow, normalization)
+- `.claude/skills/` - Claude Code skills (python-dev-expert, git-expert, project-audit)
+
+**Last Updated:** 2026-01-13 by Claude (project-audit skill)
