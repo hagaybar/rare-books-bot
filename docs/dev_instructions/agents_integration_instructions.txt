@@ -315,4 +315,3 @@ LLM utility: add optional agent alias map generator (Prompt 1) for later refinem
 
 That gives you full integration with deterministic core behavior, and a safe place to apply AI only where it adds value. 
 
-PROJECT_DESCRIPTION
