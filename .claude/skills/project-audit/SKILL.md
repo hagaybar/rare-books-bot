@@ -46,6 +46,92 @@ Only *after* that does it evaluate quality.
 
 ---
 
+## Audit File Organization
+
+**CRITICAL: All audit artifacts must be saved in dated folders for tracking and comparison.**
+
+### Folder Structure
+```
+audits/
+├── YYYY-MM-DD-audit-name/
+│   ├── AUDIT_REPORT.md
+│   ├── FINDINGS.yaml
+│   ├── ACTION_PLAN.md
+│   └── NEXT_AUDIT_CHECKLIST.md
+└── YYYY-MM-DD-another-audit/
+    └── ...
+```
+
+### Naming Convention
+- Use ISO date format: `YYYY-MM-DD`
+- Add descriptive suffix: `-general`, `-chatbot-readiness`, `-security`, etc.
+- Examples:
+  - `audits/2026-01-12-general/`
+  - `audits/2026-01-13-chatbot-readiness/`
+  - `audits/2026-02-01-performance/`
+
+### When to Create New Audit Folders
+- **New audit focus:** Different scope (general → chatbot → security)
+- **Time gap:** More than 1 week since last audit
+- **Major changes:** Significant architecture or feature changes
+
+### File Naming Within Audit Folders
+- Use standard names: `AUDIT_REPORT.md`, `FINDINGS.yaml`, `ACTION_PLAN.md`, `NEXT_AUDIT_CHECKLIST.md`
+- For specialized audits, prefix with focus: `CHATBOT_READINESS_AUDIT.md`
+
+---
+
+## Git History Analysis
+
+**IMPORTANT: Always analyze git commit history to understand project evolution and decision-making context.**
+
+### Before Starting Audit
+Run these commands to gather historical context:
+
+```bash
+# Recent development activity
+git log --oneline --graph --all -30
+
+# Changes in last month
+git log --since="1 month ago" --pretty=format:"%h %ad | %s%d [%an]" --date=short
+
+# Most changed files (hotspots)
+git log --pretty=format: --name-only | sort | uniq -c | sort -rg | head -20
+
+# Contributors and activity
+git shortlog -s -n --all
+
+# Recent branches and their status
+git branch -a --sort=-committerdate | head -20
+```
+
+### What to Look For in Git History
+1. **Decision rationale:** Commit messages explaining "why" not just "what"
+2. **Architecture changes:** Large refactors, new modules, deleted code
+3. **Pattern shifts:** Change in coding style, dependency updates
+4. **Failed experiments:** Reverted commits, deleted branches
+5. **Hotspots:** Files changed frequently (potential instability)
+6. **Orphaned work:** Stale branches, unmerged features
+
+### Incorporate Git Insights Into Audit
+- **Phase 0 (Intent):** Use commit messages to understand evolving goals
+- **Phase 1 (Architecture):** Identify recent structural changes
+- **Phase 2 (Alignment):** Detect drift from original intentions
+- **Phase 5 (Code Health):** Correlate churn with test coverage
+- **Phase 7 (Findings):** Reference specific commits as evidence
+
+### Example Git Evidence in Findings
+```yaml
+- id: ARCH-001
+  evidence:
+    - file: "scripts/query/llm_compiler.py"
+      note: "Replaced regex parser with LLM (commit: b0f20b3)"
+    - git_log: "git log --oneline scripts/query/ | head -10"
+      note: "High churn in query module (15 commits in 2 weeks)"
+```
+
+---
+
 ## Phase 0 — Infer Project Intent (Critical)
 
 ### Inputs used
@@ -53,9 +139,10 @@ Only *after* that does it evaluate quality.
 - directory names
 - module names
 - CLI commands / entrypoints
-- tests (what they assert is “important”)
+- tests (what they assert is "important")
 - config files
 - user-provided one-paragraph intent (if supplied)
+- **git commit history** (recent changes, decision rationale)
 
 ### Outputs
 Produce an explicit **Inferred Project Model**:

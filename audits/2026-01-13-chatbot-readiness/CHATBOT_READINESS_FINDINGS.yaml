@@ -1,0 +1,298 @@
+# Chatbot UI Readiness - Structured Findings
+# Generated: 2026-01-13
+# Focus: Gaps between current implementation and chatbot requirements
+
+version: "1.0"
+audit_focus: "Chatbot UI Integration Readiness"
+overall_readiness: 60  # percentage
+
+findings:
+  # P0 - Blocking for MVP
+  - id: CB-001
+    severity: P0
+    category: blocker
+    area: architecture
+    title: "No Session Management Infrastructure"
+    description: |
+      No ability to maintain conversation state across multiple queries.
+      Each query is completely stateless with no session tracking.
+    evidence:
+      - file: "app/cli.py"
+        lines: [82-189]
+        note: "CLI executes single-shot queries only"
+      - file: "app/ui_qa/main.py"
+        lines: [24-26]
+        note: "Streamlit uses st.session_state but not for multi-turn queries"
+      - observation: "No session storage backend (database, Redis, etc.)"
+      - observation: "No ChatSession or Message models defined"
+    impact: "Cannot build multi-turn conversational interface"
+    recommended_invariant: |
+      - Every chat interaction must have a session_id
+      - Sessions must persist conversation history
+      - Sessions must support context carry-forward
+    acceptance_criteria:
+      - "ChatSession Pydantic model defined"
+      - "Session storage backend implemented (SQLite or Redis)"
+      - "Session CRUD operations (create, read, update, expire)"
+      - "Session ID included in all chat API calls"
+    estimated_effort: "3-4 days"
+
+  - id: CB-002
+    severity: P0
+    category: blocker
+    area: architecture
+    title: "No API Layer for Chat Integration"
+    description: |
+      Query pipeline only accessible via direct function calls.
+      No HTTP/WebSocket API for external chat clients.
+    evidence:
+      - file: "app/cli.py"
+        lines: [110-111]
+        note: "Direct imports: 'from scripts.query.compile import compile_query'"
+      - observation: "No FastAPI/Flask/similar web framework in dependencies"
+      - observation: "No API authentication or authorization"
+    impact: "Cannot integrate with chat UIs (web, mobile, third-party)"
+    recommended_invariant: |
+      - Chat API must expose session-aware query endpoint
+      - API must return JSON responses (structured + conversational)
+      - API must handle errors gracefully
+    acceptance_criteria:
+      - "FastAPI app with /chat endpoint implemented"
+      - "Request schema: {session_id, message, context}"
+      - "Response schema: {message, candidate_set, suggested_followups}"
+      - "HTTP error responses with appropriate status codes"
+    estimated_effort: "4-5 days"
+    dependencies: ["CB-001"]
+
+  - id: CB-003
+    severity: P0
+    category: blocker
+    area: response_generation
+    title: "No Response Formatting for Conversational Output"
+    description: |
+      CandidateSet is structured JSON, not conversational text.
+      CLI formats for terminal with ASCII art, not chat-friendly.
+    evidence:
+      - file: "app/cli.py"
+        lines: [179-188]
+        note: "Terminal-specific formatting (line breaks, ASCII borders)"
+      - observation: "No natural language summary generator"
+      - observation: "No progressive disclosure (summary → details)"
+    impact: "Chat UI will display raw JSON or overly technical output"
+    recommended_invariant: |
+      - Chat responses must include natural language summary
+      - Summary must mention key statistics (count, filters)
+      - Details available on-demand (not all at once)
+    acceptance_criteria:
+      - "format_for_chat(candidate_set) -> str function"
+      - "Natural language template: 'Found X books matching Y...'"
+      - "Evidence citations formatted as readable bullets"
+      - "Graceful zero-results response"
+    estimated_effort: "2-3 days"
+
+  # P1 - Critical for Good UX
+  - id: CB-004
+    severity: P1
+    category: critical
+    area: conversational_logic
+    title: "No Clarification / Disambiguation Flow"
+    description: |
+      LLM query compiler cannot ask follow-up questions when query is ambiguous.
+      Single-shot compilation with no dialogue.
+    evidence:
+      - file: "scripts/query/llm_compiler.py"
+        lines: [330-414]
+        note: "compile_query_llm() calls OpenAI once, returns plan or error"
+      - observation: "No multi-step dialogue support"
+      - observation: "No validation questions (e.g., 'Did you mean 1501-1600?')"
+    impact: "Poor UX for ambiguous queries - wrong results instead of clarifications"
+    recommended_approach: |
+      - Detect ambiguity in QueryPlan (empty filters, low confidence)
+      - Return clarification_needed flag in ChatResponse
+      - Collect user response and retry compilation
+    acceptance_criteria:
+      - "Ambiguity detection heuristics implemented"
+      - "ChatResponse.clarification_needed: Optional[str] field"
+      - "Retry logic with user clarification"
+      - "Test cases for common ambiguous queries"
+    estimated_effort: "3-4 days"
+    dependencies: ["CB-002"]
+
+  - id: CB-005
+    severity: P1
+    category: critical
+    area: performance
+    title: "No Streaming / Progressive Results"
+    description: |
+      Query execution is all-or-nothing - blocks until complete.
+      No streaming for large result sets.
+    evidence:
+      - file: "scripts/query/execute.py"
+        lines: [319-416]
+        note: "execute_plan() returns full CandidateSet at once"
+      - observation: "Typical query latency unknown (needs profiling)"
+      - observation: "No UI feedback during execution"
+    impact: "Poor UX for slow queries - users see loading spinner with no progress"
+    recommended_approach: |
+      - Add async query execution with status updates
+      - Stream results incrementally (batches of 10)
+      - Provide progress percentage if possible
+    acceptance_criteria:
+      - "Async execute_plan_async() function"
+      - "WebSocket support for streaming responses"
+      - "Progress updates: 'Compiled plan... Executing SQL...'"
+      - "Batch size configurable (default 10 records per batch)"
+    estimated_effort: "4-5 days"
+    dependencies: ["CB-002"]
+
+  - id: CB-006
+    severity: P1
+    category: critical
+    area: infrastructure
+    title: "No Rate Limiting / Quota Management"
+    description: |
+      No protection against abuse - unlimited queries per user/session.
+      No OpenAI API cost tracking.
+    evidence:
+      - observation: "No rate limiting in CLI or QA tool"
+      - observation: "No OpenAI API quota tracking"
+      - observation: "No cost estimation for LLM calls"
+    impact: "Risk of API abuse, unexpected OpenAI costs, DoS attacks"
+    recommended_invariant: |
+      - Rate limit: X queries per user per minute
+      - OpenAI cost tracking per session
+      - Graceful error when limits exceeded
+    acceptance_criteria:
+      - "Rate limiter middleware (e.g., slowapi for FastAPI)"
+      - "Per-session query counter in database"
+      - "Error response: 'Rate limit exceeded, try again in X seconds'"
+      - "Admin dashboard showing API usage"
+    estimated_effort: "2-3 days"
+    dependencies: ["CB-002"]
+
+  # P2 - Important for Production
+  - id: CB-007
+    severity: P2
+    category: important
+    area: security
+    title: "No Authentication / Authorization"
+    description: |
+      No user authentication or access control.
+      CLI and QA tool are local-only.
+    evidence:
+      - observation: "No auth middleware in codebase"
+      - observation: "No user_id in any data models"
+    impact: "Cannot deploy as public service without auth"
+    recommended_approach: "Add JWT-based auth for API, session-based for web UI"
+    acceptance_criteria:
+      - "JWT token generation and validation"
+      - "Login/logout endpoints"
+      - "Per-user session isolation"
+    estimated_effort: "3-4 days"
+
+  - id: CB-008
+    severity: P2
+    category: important
+    area: observability
+    title: "No Query Performance Metrics"
+    description: |
+      No latency tracking, slow query logging, or performance dashboards.
+    evidence:
+      - observation: "No metrics collection in query pipeline"
+      - observation: "No APM tool integration"
+    impact: "Cannot identify performance bottlenecks or optimize queries"
+    recommended_approach: "Add structured logging with times, integrate APM (Sentry)"
+    acceptance_criteria:
+      - "Query latency metrics per endpoint"
+      - "Slow query logging (threshold: >5s)"
+      - "Performance dashboard with P50/P95/P99 latencies"
+    estimated_effort: "2-3 days"
+
+  - id: CB-009
+    severity: P2
+    category: important
+    area: architecture
+    title: "No Multi-User Session Isolation"
+    description: |
+      Current code assumes single-user execution (CLI/QA tool).
+      No user_id or session isolation.
+    evidence:
+      - observation: "No user_id in session models"
+      - observation: "No per-user data isolation"
+    impact: "User sessions could interfere if deployed multi-user"
+    recommended_approach: "Add user_id to sessions, implement isolation"
+    acceptance_criteria:
+      - "user_id field in ChatSession model"
+      - "Session queries filtered by user_id"
+      - "Test cases for concurrent users"
+    estimated_effort: "2 days"
+    dependencies: ["CB-001", "CB-007"]
+
+  # P3 - Nice to Have
+  - id: CB-010
+    severity: P3
+    category: enhancement
+    area: features
+    title: "No Conversation History Export"
+    description: "Users cannot export conversation logs for reference"
+    recommended_approach: "Add /sessions/{id}/export endpoint returning JSON/PDF"
+    estimated_effort: "1-2 days"
+
+  - id: CB-011
+    severity: P3
+    category: enhancement
+    area: features
+    title: "No Suggested Follow-up Queries"
+    description: "Chat doesn't suggest related queries after results returned"
+    recommended_approach: "Generate suggestions based on current QueryPlan"
+    estimated_effort: "2-3 days"
+
+# Strengths (What's Already Good)
+strengths:
+  - area: "Query Pipeline"
+    score: 95
+    details: "M4 complete, tested, stable - excellent foundation"
+
+  - area: "Evidence Extraction"
+    score: 100
+    details: "Comprehensive, traceable, includes confidence scores"
+
+  - area: "Error Handling"
+    score: 80
+    details: "User-friendly QueryCompilationError with guidance"
+
+  - area: "Schema Design"
+    score: 95
+    details: "Pydantic models with validation, JSON-serializable"
+
+  - area: "LLM Integration"
+    score: 90
+    details: "OpenAI Responses API with caching, retry logic"
+
+  - area: "Test Coverage"
+    score: 85
+    details: "Comprehensive unit tests for query pipeline"
+
+# Readiness by Category
+readiness_breakdown:
+  query_pipeline: 95  # Core is excellent
+  evidence_extraction: 100  # Perfect for chat needs
+  api_surface: 20  # Major gap
+  session_management: 0  # Complete gap
+  response_formatting: 30  # CLI exists, needs adaptation
+  error_handling: 80  # Good, needs chat context
+  performance: 50  # Unknown, needs profiling
+  multi_turn_support: 0  # Complete gap
+  rate_limiting: 0  # Complete gap
+  authentication: 0  # Complete gap
+
+# Overall Assessment
+overall_assessment:
+  readiness_percentage: 60
+  status: "Solid foundation, missing conversation layer"
+  blocker_count: 3
+  critical_count: 3
+  recommendation: |
+    Build thin conversational layer (M6) on top of existing M4 pipeline.
+    Do not redesign M4 - it's excellent for its purpose.
+  estimated_total_effort: "3-4 weeks for MVP chatbot"
