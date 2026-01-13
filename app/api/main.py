@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.models import ChatRequest, ChatResponseAPI, HealthResponse
 from scripts.chat.models import ChatResponse, Message
 from scripts.chat.session_store import SessionStore
+from scripts.chat.formatter import format_for_chat, generate_followups
 from scripts.query.compile import compile_query
 from scripts.query.execute import execute_plan
 from scripts.query.exceptions import QueryCompilationError
@@ -238,24 +239,9 @@ async def chat(request: ChatRequest):
             },
         )
 
-        # Format response (simple for now, will enhance in CB-003)
-        if len(candidate_set.candidates) == 0:
-            response_message = "No books found matching your query."
-            suggested_followups = [
-                "Try broadening your search criteria",
-                "Check the spelling of names and places",
-                "Use more general terms",
-            ]
-        else:
-            count = len(candidate_set.candidates)
-            response_message = (
-                f"Found {count} book{'s' if count != 1 else ''} matching your query."
-            )
-            suggested_followups = [
-                "Refine by adding date range",
-                "Filter by place of publication",
-                "Search by subject",
-            ]
+        # Format response using formatter module (CB-003)
+        response_message = format_for_chat(candidate_set, max_candidates=10)
+        suggested_followups = generate_followups(candidate_set, query_plan.query_text)
 
         response = ChatResponse(
             message=response_message,

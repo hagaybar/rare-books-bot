@@ -293,6 +293,51 @@ python -m app.cli chat-cleanup [--max-age-hours 24]
 
 See `docs/session_management_usage.md` for full documentation.
 
+## Response Formatting (Chatbot)
+
+Natural language response formatting for conversational interfaces:
+
+**Location**: `scripts/chat/formatter.py`
+**Purpose**: Transform CandidateSet results into natural language chat responses
+
+**Key Functions**:
+- `format_for_chat(candidate_set) -> str` - Main formatting function
+  - Converts CandidateSet to conversational response with evidence
+  - Handles zero results with helpful suggestions
+  - Supports max_candidates limit and evidence toggle
+- `format_summary(candidate_set) -> str` - Brief one-line summary
+- `generate_followups(candidate_set, query_text) -> List[str]` - Context-aware suggestions
+- `format_evidence(evidence_list) -> str` - Evidence as readable bullet points
+
+**Features**:
+- Natural language summaries: "Found X books matching your query"
+- Evidence formatted as bullet points with confidence scores
+- Context-aware follow-up question suggestions
+- Zero-results handling with broadening suggestions
+- Multi-result formatting with detail limits
+
+**Integration**:
+- Used by API layer (`app/api/main.py`) to format responses
+- Automatically generates suggested_followups for ChatResponse
+- Provides evidence citations in readable format
+
+**Example Output**:
+```
+Found 2 books matching your query.
+Query: "books published by Oxford between 1500 and 1599"
+
+Showing details for 2 of 2 results:
+
+1. Record: 990001234
+   Match: publisher_norm='oxford' AND year_range overlaps 1500-1599
+   Evidence:
+     • publisher_norm matches 'oxford' (confidence: 95%) [marc:264$b[0]]
+     • date_start is 1550 (matches range) (confidence: 99%) [marc:264$c[0]]
+
+2. Record: 990005678
+   ...
+```
+
 ## Common Commands
 
 ```bash
