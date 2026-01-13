@@ -12,6 +12,8 @@ from typing import List, Dict, Any
 from scripts.schemas import QueryPlan, CandidateSet, Candidate, Evidence, FilterField, FilterOp
 from scripts.query.db_adapter import build_full_query, get_connection, fetch_candidates
 from scripts.query.compile import compute_plan_hash
+from scripts.query.subject_hints import get_top_subjects
+from scripts.query.llm_compiler import compile_query_with_subject_hints
 
 
 def load_plan_from_file(plan_path: Path) -> QueryPlan:
@@ -282,11 +284,46 @@ def build_match_rationale(plan: QueryPlan, row: sqlite3.Row) -> str:
     return " AND ".join(parts) if parts else "matched"
 
 
+def should_retry_with_subject_hints(plan: QueryPlan, result_count: int) -> bool:
+    """Check if query should retry with database subject hints.
+
+    Retry when:
+    1. Query returned zero results
+    2. Plan has subject filters (in filters or soft_filters)
+    3. Haven't already retried (check debug.retry_attempt)
+
+    Args:
+        plan: Executed QueryPlan
+        result_count: Number of results from query
+
+    Returns:
+        True if should retry with subject hints
+    """
+    # Don't retry if we got results
+    if result_count > 0:
+        return False
+
+    # Don't retry if already retried
+    if plan.debug.get("retry_attempt", False):
+        return False
+
+    # Check if plan has subject filters
+    has_subject_filter = any(
+        f.field == FilterField.SUBJECT
+        for f in (plan.filters + plan.soft_filters)
+    )
+
+    return has_subject_filter
+
+
 def execute_plan(
     plan: QueryPlan,
     db_path: Path
 ) -> CandidateSet:
     """Execute QueryPlan and generate CandidateSet with evidence.
+
+    Automatically retries with database subject hints if initial query with
+    subject filters returns zero results.
 
     Args:
         plan: Validated QueryPlan
@@ -304,6 +341,38 @@ def execute_plan(
     try:
         # Execute query
         rows = fetch_candidates(conn, sql, params)
+
+        # Check if retry needed
+        if should_retry_with_subject_hints(plan, len(rows)):
+            print("  ℹ️  No results found. Retrying with database subject hints...")
+
+            # Get top subjects from database
+            try:
+                subject_hints = get_top_subjects(db_path, limit=100)
+
+                # Retry compilation with hints
+                new_plan = compile_query_with_subject_hints(
+                    plan.query_text,
+                    subject_hints,
+                    plan
+                )
+
+                # Execute retry
+                sql, params = build_full_query(new_plan)
+                rows = fetch_candidates(conn, sql, params)
+
+                # Use retried plan for evidence
+                plan = new_plan
+
+                if len(rows) > 0:
+                    print(f"  ✓ Retry successful: Found {len(rows)} results with adjusted subject mapping")
+                else:
+                    print("  ⚠ Retry returned zero results")
+
+            except Exception as e:
+                # Log retry failure but don't crash
+                print(f"  ⚠ Retry failed: {e}")
+                # Continue with original zero results
 
         # Build candidates with evidence
         candidates = []

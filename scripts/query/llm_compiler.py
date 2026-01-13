@@ -207,6 +207,83 @@ def call_model(client: OpenAI, model: str, query_text: str) -> QueryPlan:
     )
 
 
+def compile_query_with_subject_hints(
+    query_text: str,
+    subject_hints: List[str],
+    original_plan: QueryPlan,
+    api_key: Optional[str] = None,
+    model: str = "gpt-4o"
+) -> QueryPlan:
+    """Retry query compilation with actual database subjects as hints.
+
+    Called when initial query with subject filter returned zero results.
+    Provides LLM with actual subject headings from database for semantic matching.
+
+    Args:
+        query_text: Original natural language query
+        subject_hints: Top N subjects from database (e.g., ["History", "Philosophy", ...])
+        original_plan: The plan that returned zero results
+        api_key: OpenAI API key (or use OPENAI_API_KEY env var)
+        model: Model to use (default: gpt-4o)
+
+    Returns:
+        New QueryPlan with subject filter mapped to database subjects
+
+    Raises:
+        QueryCompilationError: If API fails or response invalid
+    """
+    # Build enhanced prompt with subject hints
+    subject_list = ", ".join(subject_hints[:50])  # Show first 50 for brevity
+    more_count = len(subject_hints) - 50 if len(subject_hints) > 50 else 0
+
+    enhanced_prompt = f"""Original query: {query_text}
+
+IMPORTANT CONTEXT:
+The previous query attempt with subject filters returned ZERO results.
+
+Here are the actual subject headings available in this database (top subjects by frequency):
+{subject_list}{f' ...and {more_count} more' if more_count > 0 else ''}
+
+TASK:
+Re-parse the query and map the user's subject term to the CLOSEST SEMANTIC MATCH from the list above.
+- Use CONTAINS operation for flexibility (partial matching)
+- If the user's term doesn't match exactly, find the closest related subject
+- For example: "historical" → "History", "philosophical" → "Philosophy"
+- Preserve all other filters from the original query unchanged
+
+Original filters for reference: {[f.model_dump() for f in original_plan.filters]}
+"""
+
+    # Get API key
+    api_key_to_use = api_key or os.getenv("OPENAI_API_KEY")
+    if not api_key_to_use:
+        raise QueryCompilationError.from_missing_api_key()
+
+    # Initialize OpenAI client
+    client = OpenAI(api_key=api_key_to_use)
+
+    # Call LLM with enhanced prompt
+    try:
+        plan = call_model(client, model, enhanced_prompt)
+    except (AuthenticationError, RateLimitError, APITimeoutError, APIError) as e:
+        raise QueryCompilationError.from_api_error(e)
+    except Exception as e:
+        raise QueryCompilationError.from_invalid_response(e)
+
+    # Add debug info for retry
+    plan.debug.update({
+        "parser": "llm",
+        "model": model,
+        "filters_count": len(plan.filters),
+        "cache_hit": False,
+        "retry_attempt": True,
+        "retry_reason": "subject_filter_zero_results",
+        "subject_hints_provided": len(subject_hints)
+    })
+
+    return plan
+
+
 def load_cache() -> dict[str, dict]:
     """Load cache from JSONL file.
 
