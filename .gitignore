@@ -107,6 +107,9 @@ data/
 outputs/
 archived/
 
+# Chat session database (contains user session data, should not be committed)
+data/chat/sessions.db
+
 # FAISS / index binaries that may appear elsewhere
 *.faiss
 *.index

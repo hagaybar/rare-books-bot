@@ -262,6 +262,37 @@ This project started from a multi-source RAG platform template. The core structu
 
 **Transformation status**: Actively removing RAG-specific components and building MARC XML functionality. See `plan.mf` for milestone roadmap.
 
+## Session Management
+
+Multi-turn conversation support with persistent state:
+
+**Location**: `scripts/chat/session_store.py`
+**Database**: `data/chat/sessions.db`
+**Models**: `scripts/chat/models.py` (ChatSession, Message, ChatResponse)
+
+**Key Operations**:
+- Create session: `store.create_session(user_id)`
+- Add message: `store.add_message(session_id, message)`
+- Retrieve session: `store.get_session(session_id)`
+- Expire old: `store.expire_old_sessions(max_age_hours=24)`
+
+**CLI Commands**:
+```bash
+# Create new session
+python -m app.cli chat-init [--user-id USER_ID]
+
+# Query with session tracking
+python -m app.cli query "books by Oxford" --session-id <SESSION_ID>
+
+# View session history
+python -m app.cli chat-history <SESSION_ID>
+
+# Cleanup old sessions
+python -m app.cli chat-cleanup [--max-age-hours 24]
+```
+
+See `docs/session_management_usage.md` for full documentation.
+
 ## Common Commands
 
 ```bash

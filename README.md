@@ -213,6 +213,33 @@ python -m scripts.marc.m3_index \
 python -m app.cli query "Books printed in Paris in the 17th century"
 ```
 
+### Chat Session Management (M6 Foundation)
+
+**Purpose:** Enable multi-turn conversations with persistent state for chatbot interface
+
+**Features:**
+- Session lifecycle management (create, retrieve, expire)
+- Message history with QueryPlan and CandidateSet preservation
+- Context tracking for multi-turn conversations
+- User isolation support
+
+**CLI Commands:**
+```bash
+# Create new session
+python -m app.cli chat-init [--user-id USER_ID]
+
+# Query with session tracking
+python -m app.cli query "books by Oxford" --session-id <SESSION_ID>
+
+# View session history
+python -m app.cli chat-history <SESSION_ID>
+
+# Cleanup old sessions
+python -m app.cli chat-cleanup [--max-age-hours 24]
+```
+
+See [Session Management Usage Guide](docs/session_management_usage.md) for detailed documentation.
+
 ## Documentation
 
 ### Specifications (Completed Features)

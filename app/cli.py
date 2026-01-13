@@ -79,6 +79,90 @@ def parse_marc(
 
 
 @app.command()
+def chat_init(
+    db_path: Path = typer.Option(
+        Path("data/chat/sessions.db"),
+        "--db",
+        help="Path to session database"
+    ),
+    user_id: str = typer.Option(None, "--user-id", help="Optional user ID")
+):
+    """
+    Initialize new chat session.
+
+    Creates a new session and prints session_id for use in subsequent queries.
+    """
+    from scripts.chat.session_store import SessionStore
+
+    store = SessionStore(db_path)
+    session = store.create_session(user_id=user_id)
+
+    typer.echo(f"Created session: {session.session_id}")
+    typer.echo(f"User: {session.user_id or 'anonymous'}")
+    typer.echo(f"Database: {db_path}")
+
+    store.close()
+
+
+@app.command()
+def chat_history(
+    session_id: str = typer.Argument(..., help="Session ID"),
+    db_path: Path = typer.Option(
+        Path("data/chat/sessions.db"),
+        "--db",
+        help="Path to session database"
+    )
+):
+    """View conversation history for a session."""
+    from scripts.chat.session_store import SessionStore
+
+    store = SessionStore(db_path)
+    session = store.get_session(session_id)
+
+    if not session:
+        typer.echo(f"Session {session_id} not found", err=True)
+        raise typer.Exit(1)
+
+    typer.echo(f"Session: {session.session_id}")
+    typer.echo(f"User: {session.user_id or 'anonymous'}")
+    typer.echo(f"Messages: {len(session.messages)}")
+    typer.echo(f"Created: {session.created_at}")
+    typer.echo(f"Updated: {session.updated_at}")
+    typer.echo("\n--- Messages ---\n")
+
+    for i, msg in enumerate(session.messages, 1):
+        typer.echo(f"{i}. [{msg.role}] {msg.content}")
+        if msg.query_plan:
+            typer.echo(f"   QueryPlan: {len(msg.query_plan.filters)} filters")
+        if msg.candidate_set:
+            typer.echo(f"   Results: {msg.candidate_set.total_count} candidates")
+        typer.echo(f"   Time: {msg.timestamp}")
+        typer.echo()
+
+    store.close()
+
+
+@app.command()
+def chat_cleanup(
+    db_path: Path = typer.Option(
+        Path("data/chat/sessions.db"),
+        "--db",
+        help="Path to session database"
+    ),
+    max_age_hours: int = typer.Option(24, "--max-age-hours", help="Expire sessions older than this")
+):
+    """Expire old sessions."""
+    from scripts.chat.session_store import SessionStore
+
+    store = SessionStore(db_path)
+    count = store.expire_old_sessions(max_age_hours=max_age_hours)
+
+    typer.echo(f"Expired {count} sessions older than {max_age_hours} hours")
+
+    store.close()
+
+
+@app.command()
 def query(
     query_text: str = typer.Argument(
         ...,
@@ -99,12 +183,24 @@ def query(
         "--limit",
         help="Limit number of results"
     ),
+    session_id: str = typer.Option(
+        None,
+        "--session-id",
+        help="Optional session ID to save query to session history"
+    ),
+    session_db_path: Path = typer.Option(
+        Path("data/chat/sessions.db"),
+        "--session-db",
+        help="Path to session database"
+    ),
 ):
     """
     Execute bibliographic query (M4).
 
     Compiles natural language query to QueryPlan, executes against database,
     and returns CandidateSet with evidence.
+
+    If --session-id is provided, saves query and results to session history.
     """
     from datetime import datetime
     from scripts.query.compile import compile_query, write_plan_to_file
@@ -186,6 +282,38 @@ def query(
     else:
         typer.echo("\n⚠ No matching records found.")
         typer.echo("Hint: Try a different query or check if your database has indexed records.")
+
+    # Save to session if session_id provided
+    if session_id:
+        from scripts.chat.session_store import SessionStore
+        from scripts.chat.models import Message
+
+        try:
+            store = SessionStore(session_db_path)
+
+            # Add user message with query plan
+            user_msg = Message(
+                role="user",
+                content=query_text,
+                query_plan=plan
+            )
+            store.add_message(session_id, user_msg)
+
+            # Add assistant response with results
+            response_text = f"Found {candidate_set.total_count} books matching your query"
+            assistant_msg = Message(
+                role="assistant",
+                content=response_text,
+                candidate_set=candidate_set
+            )
+            store.add_message(session_id, assistant_msg)
+
+            typer.echo(f"\n✓ Saved to session {session_id}")
+            store.close()
+        except ValueError as e:
+            typer.echo(f"\n⚠ Warning: Could not save to session: {e}", err=True)
+        except Exception as e:
+            typer.echo(f"\n⚠ Warning: Unexpected error saving to session: {e}", err=True)
 
 
 if __name__ == "__main__":
