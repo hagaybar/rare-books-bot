@@ -338,6 +338,62 @@ Showing details for 2 of 2 results:
    ...
 ```
 
+## Clarification Flow (Chatbot)
+
+Ambiguity detection and clarification prompts for improved query success:
+
+**Location**: `scripts/chat/clarification.py`
+**Purpose**: Detect ambiguous or vague queries and guide users toward more specific searches
+
+**Key Functions**:
+- `detect_ambiguous_query(plan, result_count) -> (bool, reason)` - Detect ambiguity
+- `generate_clarification_message(plan, reason) -> str` - Create helpful prompt
+- `suggest_refinements(plan) -> List[str]` - Specific refinement suggestions
+- `should_ask_for_clarification(plan, result_count) -> bool` - Main entry point
+
+**Ambiguity Detection Criteria**:
+- **Empty filters**: Query has no specific filters (e.g., "books")
+- **Low confidence**: Filters have confidence < 0.7 (uncertain interpretation)
+- **Broad date range**: Date range > 200 years (e.g., 1400-1800)
+- **Vague queries**: Single-word subject/title searches without context
+- **Zero results**: No matches found (may indicate misunderstanding)
+
+**Integration with API** (`app/api/main.py`):
+- Checks ambiguity after query compilation (before execution)
+- Returns early with clarification_needed if ambiguous
+- Checks again after execution (for zero results)
+- Sets clarification_needed field in ChatResponse
+
+**Clarification Messages**:
+- Context-specific guidance based on reason code
+- Suggests missing filters (date, place, publisher, subject)
+- Provides examples and rephrasing hints
+- Recommends broadening for zero results
+
+**Example Flow**:
+```
+User: "books"
+↓ Compile query
+QueryPlan: { filters: [] }  # Empty filters
+↓ Detect ambiguity
+Reason: "empty_filters"
+↓ Generate clarification
+Response: {
+  message: "I need some clarification to search effectively.",
+  clarification_needed: "I need more details to search effectively. Could you specify:
+    • What topic or subject are you interested in?
+    • A specific publisher, author, or printer?
+    • A time period or date range?
+    • A place of publication?"
+}
+```
+
+**Features**:
+- Detects 5 types of ambiguity (empty, low confidence, broad date, vague, zero results)
+- Context-aware suggestions (suggests missing filters)
+- Prioritizes specificity (narrow date ranges, specific terms)
+- Graceful zero-results handling (broadening suggestions)
+
 ## Common Commands
 
 ```bash

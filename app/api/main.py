@@ -18,6 +18,11 @@ from app.api.models import ChatRequest, ChatResponseAPI, HealthResponse
 from scripts.chat.models import ChatResponse, Message
 from scripts.chat.session_store import SessionStore
 from scripts.chat.formatter import format_for_chat, generate_followups
+from scripts.chat.clarification import (
+    should_ask_for_clarification,
+    generate_clarification_message,
+    detect_ambiguous_query,
+)
 from scripts.query.compile import compile_query
 from scripts.query.execute import execute_plan
 from scripts.query.exceptions import QueryCompilationError
@@ -203,6 +208,42 @@ async def chat(request: ChatRequest):
                     "filters": len(query_plan.filters),
                 },
             )
+
+            # Check for ambiguity before executing (CB-004)
+            # Note: Don't check zero_results yet since we haven't executed
+            needs_clarification_before, reason_before = detect_ambiguous_query(
+                query_plan, result_count=1  # Assume non-zero to skip zero_results check
+            )
+
+            if needs_clarification_before:
+                # Query is ambiguous before execution - ask for clarification
+                clarification_msg = generate_clarification_message(
+                    query_plan, reason_before, result_count=1
+                )
+
+                response = ChatResponse(
+                    message="I need some clarification to search effectively.",
+                    candidate_set=None,
+                    clarification_needed=clarification_msg,
+                    session_id=session.session_id,
+                )
+
+                # Add assistant clarification request to session
+                assistant_message = Message(
+                    role="assistant",
+                    content=clarification_msg,
+                    query_plan=query_plan,
+                    candidate_set=None,
+                )
+                store.add_message(session.session_id, assistant_message)
+
+                logger.info(
+                    "Requesting clarification",
+                    extra={"session_id": session.session_id, "reason": reason_before},
+                )
+
+                return ChatResponseAPI(success=True, response=response, error=None)
+
         except QueryCompilationError as e:
             # Return error response but don't crash
             error_msg = f"Could not understand query: {str(e)}"
@@ -239,6 +280,27 @@ async def chat(request: ChatRequest):
             },
         )
 
+        # Check for clarification after execution (CB-004)
+        # Enable zero_results clarification if no results found
+        result_count = len(candidate_set.candidates)
+        ask_for_clarification = should_ask_for_clarification(
+            query_plan,
+            result_count,
+            enable_zero_result_clarification=True
+        )
+
+        clarification_message = None
+        if ask_for_clarification:
+            # Generate clarification message
+            _, reason = detect_ambiguous_query(query_plan, result_count)
+            clarification_message = generate_clarification_message(
+                query_plan, reason, result_count
+            )
+            logger.info(
+                "Suggesting clarification",
+                extra={"session_id": session.session_id, "reason": reason},
+            )
+
         # Format response using formatter module (CB-003)
         response_message = format_for_chat(candidate_set, max_candidates=10)
         suggested_followups = generate_followups(candidate_set, query_plan.query_text)
@@ -247,7 +309,7 @@ async def chat(request: ChatRequest):
             message=response_message,
             candidate_set=candidate_set,
             suggested_followups=suggested_followups,
-            clarification_needed=None,
+            clarification_needed=clarification_message,
             session_id=session.session_id,
         )
 
