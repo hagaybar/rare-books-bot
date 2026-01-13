@@ -169,14 +169,14 @@ async def health_check():
 
 @app.post("/chat", response_model=ChatResponseAPI)
 @limiter.limit("10/minute")
-async def chat(http_request: Request, request: ChatRequest):
+async def chat(request: Request, chat_request: ChatRequest):
     """Chat endpoint - process natural language query.
 
     Rate limited to 10 requests per minute per IP address.
 
     Args:
-        http_request: FastAPI Request object (for rate limiting)
-        request: ChatRequest with message and optional session_id
+        request: FastAPI Request object (for rate limiting)
+        chat_request: ChatRequest with message and optional session_id
 
     Returns:
         ChatResponseAPI with response message and results
@@ -189,12 +189,12 @@ async def chat(http_request: Request, request: ChatRequest):
 
     try:
         # Get or create session
-        if request.session_id:
-            session = store.get_session(request.session_id)
+        if chat_request.session_id:
+            session = store.get_session(chat_request.session_id)
             if not session:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Session {request.session_id} not found",
+                    detail=f"Session {chat_request.session_id} not found",
                 )
         else:
             # Create new session
@@ -205,16 +205,16 @@ async def chat(http_request: Request, request: ChatRequest):
             )
 
         # Update context if provided
-        if request.context:
-            store.update_context(session.session_id, request.context)
+        if chat_request.context:
+            store.update_context(session.session_id, chat_request.context)
 
         # Add user message to session
-        user_message = Message(role="user", content=request.message)
+        user_message = Message(role="user", content=chat_request.message)
         store.add_message(session.session_id, user_message)
 
         # Compile query using M4 pipeline
         try:
-            query_plan = compile_query(request.message)
+            query_plan = compile_query(chat_request.message)
             logger.info(
                 "Compiled query plan",
                 extra={
