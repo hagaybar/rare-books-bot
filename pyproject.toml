@@ -30,6 +30,7 @@ dependencies = [
     # API framework
     "fastapi>=0.115.0,<0.116.0",      # Web framework for API
     "uvicorn>=0.34.0,<0.35.0",        # ASGI server
+    "slowapi>=0.1.9,<0.2.0",          # Rate limiting middleware
 
     # Code quality (in main deps for convenience)
     "pylint>=3.3.7,<4.0.0",

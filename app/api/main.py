@@ -11,8 +11,11 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, status, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from app.api.models import ChatRequest, ChatResponseAPI, HealthResponse
 from scripts.chat.models import ChatResponse, Message
@@ -31,12 +34,19 @@ from scripts.utils.logger import LoggerManager
 # Initialize logger
 logger = LoggerManager.get_logger(__name__)
 
+# Initialize rate limiter (10 requests per minute per session)
+limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Rare Books Discovery API",
     description="Conversational interface for bibliographic discovery over MARC records",
     version="0.1.0",
 )
+
+# Add rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add CORS middleware (allow all origins for development)
 app.add_middleware(
@@ -158,10 +168,14 @@ async def health_check():
 
 
 @app.post("/chat", response_model=ChatResponseAPI)
-async def chat(request: ChatRequest):
+@limiter.limit("10/minute")
+async def chat(http_request: Request, request: ChatRequest):
     """Chat endpoint - process natural language query.
 
+    Rate limited to 10 requests per minute per IP address.
+
     Args:
+        http_request: FastAPI Request object (for rate limiting)
         request: ChatRequest with message and optional session_id
 
     Returns:
