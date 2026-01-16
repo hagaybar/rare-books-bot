@@ -13,6 +13,7 @@ class FilterField(str, Enum):
     """Supported filter fields (maps to M3 database columns)."""
     PUBLISHER = "publisher"
     IMPRINT_PLACE = "imprint_place"
+    COUNTRY = "country"  # Country of publication from MARC 008/15-17
     YEAR = "year"
     LANGUAGE = "language"
     TITLE = "title"

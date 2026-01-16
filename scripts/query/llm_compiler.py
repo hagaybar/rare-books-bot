@@ -42,11 +42,17 @@ Convert natural language queries to structured QueryPlan JSON.
 
 SCHEMA:
 - filters: List[Filter] (AND semantics)
-  - Filter fields: publisher, imprint_place, year, language, title, subject, agent_norm, agent_role
+  - Filter fields: publisher, imprint_place, country, year, language, title, subject, agent_norm, agent_role
   - Operations: EQUALS, CONTAINS, RANGE, IN
   - RANGE requires start/end (integers)
   - EQUALS/CONTAINS requires value (string)
   - IN requires value (list of strings)
+
+IMPORTANT - COUNTRY vs IMPRINT_PLACE:
+- country: Use for COUNTRIES (e.g., "from Germany", "printed in France", "Italian books")
+  Maps to MARC 008/15-17 country codes. Use lowercase country name: germany, france, italy, netherlands, england, etc.
+- imprint_place: Use for CITIES (e.g., "printed in Venice", "published in London", "from Paris")
+  Maps to publication city. Use lowercase city name: venice, london, paris, amsterdam, etc.
 
 NORMALIZATION RULES:
 - Publisher/place: lowercase, strip brackets/punctuation, trim
@@ -145,6 +151,40 @@ Plan: {
   "filters": [
     {"field": "language", "op": "EQUALS", "value": "lat", "notes": "Latin→lat"},
     {"field": "subject", "op": "CONTAINS", "value": "Philosophy", "notes": "Normalized from 'philosophical' to LCSH noun form"}
+  ]
+}
+
+Query: "books from Germany"
+Plan: {
+  "query_text": "books from Germany",
+  "filters": [
+    {"field": "country", "op": "EQUALS", "value": "germany", "notes": "Country of publication from MARC 008"}
+  ]
+}
+
+Query: "French books printed in the 16th century"
+Plan: {
+  "query_text": "French books printed in the 16th century",
+  "filters": [
+    {"field": "country", "op": "EQUALS", "value": "france", "notes": "Country of publication (French = France)"},
+    {"field": "year", "op": "RANGE", "start": 1501, "end": 1600, "notes": "16th century"}
+  ]
+}
+
+Query: "books printed in Venice"
+Plan: {
+  "query_text": "books printed in Venice",
+  "filters": [
+    {"field": "imprint_place", "op": "EQUALS", "value": "venice", "notes": "City name (use imprint_place, not country)"}
+  ]
+}
+
+Query: "Italian books on theology"
+Plan: {
+  "query_text": "Italian books on theology",
+  "filters": [
+    {"field": "country", "op": "EQUALS", "value": "italy", "notes": "Country of publication (Italian = Italy)"},
+    {"field": "subject", "op": "CONTAINS", "value": "Theology", "notes": "Subject heading"}
   ]
 }
 

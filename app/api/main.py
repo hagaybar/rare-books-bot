@@ -5,6 +5,10 @@ This module provides the HTTP API layer that:
 - Routes queries through M4 query pipeline (compile + execute)
 - Manages multi-turn conversation sessions
 - Returns structured responses with evidence
+
+Two-Phase Conversation Support:
+- Phase 1 (Query Definition): Intent interpretation with confidence scoring
+- Phase 2 (Corpus Exploration): Analysis of defined subgroups (future)
 """
 
 import os
@@ -18,7 +22,12 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.api.models import ChatRequest, ChatResponseAPI, HealthResponse
-from scripts.chat.models import ChatResponse, Message
+from scripts.chat.models import (
+    ChatResponse,
+    Message,
+    ConversationPhase,
+    ActiveSubgroup,
+)
 from scripts.chat.session_store import SessionStore
 from scripts.chat.formatter import format_for_chat, generate_followups
 from scripts.chat.clarification import (
@@ -26,10 +35,33 @@ from scripts.chat.clarification import (
     generate_clarification_message,
     detect_ambiguous_query,
 )
+from scripts.chat.intent_agent import (
+    interpret_query,
+    generate_clarification_prompt,
+    format_interpretation_for_user,
+    CONFIDENCE_THRESHOLD,
+)
+from scripts.chat.exploration_agent import (
+    interpret_exploration_request,
+    format_aggregation_response,
+    format_metadata_response,
+    format_refinement_response,
+    format_new_query_response,
+    ExplorationIntent,
+    ExplorationRequest,
+    ExplorationResponse,
+)
+from scripts.chat.aggregation import (
+    execute_aggregation,
+    execute_count_query,
+    apply_refinement,
+    execute_comparison,
+)
 from scripts.query.compile import compile_query
 from scripts.query.execute import execute_plan
 from scripts.query.exceptions import QueryCompilationError
 from scripts.utils.logger import LoggerManager
+from scripts.enrichment import EnrichmentService, EntityType as EnrichmentEntityType
 
 # Initialize logger
 logger = LoggerManager.get_logger(__name__)
@@ -60,6 +92,7 @@ app.add_middleware(
 # Global state (initialized on startup)
 session_store: Optional[SessionStore] = None
 db_path: Optional[Path] = None
+enrichment_service: Optional[EnrichmentService] = None
 
 
 def get_session_store() -> SessionStore:
@@ -99,24 +132,30 @@ def get_db_path() -> Path:
 @app.on_event("startup")
 async def startup_event():
     """Initialize application state on startup."""
-    global session_store, db_path
+    global session_store, db_path, enrichment_service
 
     # Get paths from environment or use defaults
     sessions_db = Path(os.getenv("SESSIONS_DB_PATH", "data/chat/sessions.db"))
     bib_db = Path(os.getenv("BIBLIOGRAPHIC_DB_PATH", "data/index/bibliographic.db"))
+    enrichment_db = Path(os.getenv("ENRICHMENT_DB_PATH", "data/enrichment/cache.db"))
 
     # Ensure directories exist
     sessions_db.parent.mkdir(parents=True, exist_ok=True)
+    enrichment_db.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize session store
     session_store = SessionStore(sessions_db)
     db_path = bib_db
+
+    # Initialize enrichment service
+    enrichment_service = EnrichmentService(cache_db_path=enrichment_db)
 
     logger.info(
         "API started",
         extra={
             "sessions_db": str(sessions_db),
             "bibliographic_db": str(bib_db),
+            "enrichment_db": str(enrichment_db),
         },
     )
 
@@ -126,6 +165,8 @@ async def shutdown_event():
     """Cleanup on shutdown."""
     if session_store is not None:
         session_store.close()
+    if enrichment_service is not None:
+        enrichment_service.close()
     logger.info("API shutdown")
 
 
@@ -170,7 +211,16 @@ async def health_check():
 @app.post("/chat", response_model=ChatResponseAPI)
 @limiter.limit("10/minute")
 async def chat(request: Request, chat_request: ChatRequest):
-    """Chat endpoint - process natural language query.
+    """Chat endpoint with two-phase conversation support.
+
+    Phase 1 (Query Definition):
+    - Interprets query with confidence scoring
+    - If confidence < 0.85: Returns clarification request
+    - If confidence >= 0.85: Executes query, transitions to Phase 2
+
+    Phase 2 (Corpus Exploration):
+    - Handles exploration of the defined subgroup
+    - Supports aggregation, enrichment, recommendations (future)
 
     Rate limited to 10 requests per minute per IP address.
 
@@ -182,7 +232,7 @@ async def chat(request: Request, chat_request: ChatRequest):
         ChatResponseAPI with response message and results
 
     Raises:
-        HTTPException: On API errors (400 for invalid queries, 500 for internal errors)
+        HTTPException: On API errors
     """
     store = get_session_store()
     bib_db = get_db_path()
@@ -212,120 +262,189 @@ async def chat(request: Request, chat_request: ChatRequest):
         user_message = Message(role="user", content=chat_request.message)
         store.add_message(session.session_id, user_message)
 
-        # Compile query using M4 pipeline
-        try:
-            query_plan = compile_query(chat_request.message)
-            logger.info(
-                "Compiled query plan",
-                extra={
-                    "session_id": session.session_id,
-                    "filters": len(query_plan.filters),
+        # Get current conversation phase
+        current_phase = store.get_phase(session.session_id)
+        if current_phase is None:
+            current_phase = ConversationPhase.QUERY_DEFINITION
+
+        # Route based on phase
+        if current_phase == ConversationPhase.QUERY_DEFINITION:
+            return await handle_query_definition_phase(
+                chat_request, session, store, bib_db
+            )
+        else:
+            # Phase 2: Corpus Exploration
+            return await handle_corpus_exploration_phase(
+                chat_request, session, store, bib_db
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            "Internal error in chat endpoint",
+            extra={"error": str(e)},
+            exc_info=True,
+        )
+        return ChatResponseAPI(
+            success=False,
+            response=None,
+            error=f"Internal server error: {str(e)}",
+        )
+
+
+async def handle_query_definition_phase(
+    chat_request: ChatRequest,
+    session,
+    store: SessionStore,
+    bib_db: Path
+) -> ChatResponseAPI:
+    """Handle Phase 1: Query definition with confidence scoring.
+
+    Uses the intent agent to interpret the query with confidence scoring.
+    If confidence >= 0.85, executes query and transitions to corpus exploration.
+    If confidence < 0.85, asks for clarification.
+
+    Args:
+        chat_request: The chat request
+        session: Current session
+        store: Session store
+        bib_db: Path to bibliographic database
+
+    Returns:
+        ChatResponseAPI with response
+    """
+    try:
+        # Use intent agent for interpretation with confidence scoring
+        interpretation = await interpret_query(
+            query_text=chat_request.message,
+            session_context=session.context,
+            conversation_history=session.get_recent_messages(5),
+        )
+
+        logger.info(
+            "Interpreted query",
+            extra={
+                "session_id": session.session_id,
+                "confidence": interpretation.overall_confidence,
+                "proceed": interpretation.proceed_to_execution,
+                "filters": len(interpretation.query_plan.filters),
+            },
+        )
+
+        # Check if we should proceed (confidence >= 0.85)
+        if not interpretation.proceed_to_execution:
+            # Low confidence - ask for clarification
+            clarification_msg = generate_clarification_prompt(interpretation)
+
+            response = ChatResponse(
+                message=interpretation.explanation,
+                candidate_set=None,
+                clarification_needed=clarification_msg,
+                session_id=session.session_id,
+                phase=ConversationPhase.QUERY_DEFINITION,
+                confidence=interpretation.overall_confidence,
+                metadata={
+                    "uncertainties": interpretation.uncertainties,
+                    "filters_extracted": len(interpretation.query_plan.filters),
                 },
             )
 
-            # Check for ambiguity before executing (CB-004)
-            # Note: Don't check zero_results yet since we haven't executed
-            needs_clarification_before, reason_before = detect_ambiguous_query(
-                query_plan, result_count=1  # Assume non-zero to skip zero_results check
-            )
-
-            if needs_clarification_before:
-                # Query is ambiguous before execution - ask for clarification
-                clarification_msg = generate_clarification_message(
-                    query_plan, reason_before, result_count=1
-                )
-
-                response = ChatResponse(
-                    message="I need some clarification to search effectively.",
-                    candidate_set=None,
-                    clarification_needed=clarification_msg,
-                    session_id=session.session_id,
-                )
-
-                # Add assistant clarification request to session
-                assistant_message = Message(
-                    role="assistant",
-                    content=clarification_msg,
-                    query_plan=query_plan,
-                    candidate_set=None,
-                )
-                store.add_message(session.session_id, assistant_message)
-
-                logger.info(
-                    "Requesting clarification",
-                    extra={"session_id": session.session_id, "reason": reason_before},
-                )
-
-                return ChatResponseAPI(success=True, response=response, error=None)
-
-        except QueryCompilationError as e:
-            # Return error response but don't crash
-            error_msg = f"Could not understand query: {str(e)}"
-            response = ChatResponse(
-                message=error_msg,
-                candidate_set=None,
-                clarification_needed=(
-                    "Could you rephrase your query? For example: "
-                    "'books published by Oxford between 1500 and 1599' or "
-                    "'books about History printed in Paris'"
-                ),
-                session_id=session.session_id,
-            )
-
-            # Add assistant error message to session
+            # Add assistant clarification to session
             assistant_message = Message(
                 role="assistant",
-                content=error_msg,
-                query_plan=None,
+                content=f"{interpretation.explanation}\n\n{clarification_msg}",
+                query_plan=interpretation.query_plan,
                 candidate_set=None,
             )
             store.add_message(session.session_id, assistant_message)
 
+            logger.info(
+                "Requesting clarification (low confidence)",
+                extra={
+                    "session_id": session.session_id,
+                    "confidence": interpretation.overall_confidence,
+                },
+            )
+
             return ChatResponseAPI(success=True, response=response, error=None)
 
-        # Execute query plan
+        # High confidence - execute query
+        query_plan = interpretation.query_plan
         candidate_set = execute_plan(query_plan, bib_db)
+        result_count = len(candidate_set.candidates)
 
         logger.info(
             "Executed query",
             extra={
                 "session_id": session.session_id,
-                "candidates_found": len(candidate_set.candidates),
+                "candidates_found": result_count,
             },
         )
 
-        # Check for clarification after execution (CB-004)
-        # Enable zero_results clarification if no results found
-        result_count = len(candidate_set.candidates)
-        ask_for_clarification = should_ask_for_clarification(
-            query_plan,
-            result_count,
-            enable_zero_result_clarification=True
-        )
-
+        # Check for zero results (may need clarification)
         clarification_message = None
-        if ask_for_clarification:
-            # Generate clarification message
-            _, reason = detect_ambiguous_query(query_plan, result_count)
-            clarification_message = generate_clarification_message(
-                query_plan, reason, result_count
-            )
-            logger.info(
-                "Suggesting clarification",
-                extra={"session_id": session.session_id, "reason": reason},
+        if result_count == 0:
+            clarification_message = (
+                "I didn't find any books matching these criteria. "
+                "Would you like to:\n"
+                "- Broaden your search (e.g., wider date range)?\n"
+                "- Try different terms?\n"
+                "- Search for a related topic?"
             )
 
-        # Format response using formatter module (CB-003)
-        response_message = format_for_chat(candidate_set, max_candidates=10)
+        # Format response with interpretation explanation
+        user_explanation = format_interpretation_for_user(interpretation, result_count)
+
+        # Build exploration prompt for Phase 2
+        if result_count > 0:
+            exploration_prompt = (
+                f"\n\nWhat would you like to know about this collection? I can:\n"
+                f"- Show top publishers or places of publication\n"
+                f"- Analyze the date distribution\n"
+                f"- Find books on specific topics within this set\n"
+                f"- Tell you about specific printers or authors"
+            )
+            response_message = user_explanation + exploration_prompt
+        else:
+            response_message = user_explanation
+
+        # Generate follow-up suggestions
         suggested_followups = generate_followups(candidate_set, query_plan.query_text)
 
+        # Create response
         response = ChatResponse(
             message=response_message,
             candidate_set=candidate_set,
             suggested_followups=suggested_followups,
             clarification_needed=clarification_message,
             session_id=session.session_id,
+            phase=ConversationPhase.CORPUS_EXPLORATION if result_count > 0 else ConversationPhase.QUERY_DEFINITION,
+            confidence=interpretation.overall_confidence,
+            metadata={
+                "explanation": interpretation.explanation,
+                "filters_count": len(query_plan.filters),
+            },
         )
+
+        # Transition to corpus exploration if we have results
+        if result_count > 0:
+            # Create and store active subgroup
+            active_subgroup = ActiveSubgroup(
+                candidate_set=candidate_set,
+                defining_query=chat_request.message,
+                filter_summary=interpretation.explanation,
+            )
+            store.set_active_subgroup(session.session_id, active_subgroup)
+            store.update_phase(session.session_id, ConversationPhase.CORPUS_EXPLORATION)
+
+            logger.info(
+                "Transitioned to corpus exploration",
+                extra={
+                    "session_id": session.session_id,
+                    "subgroup_size": result_count,
+                },
+            )
 
         # Add assistant response to session
         assistant_message = Message(
@@ -338,21 +457,402 @@ async def chat(request: Request, chat_request: ChatRequest):
 
         return ChatResponseAPI(success=True, response=response, error=None)
 
-    except HTTPException:
-        # Re-raise HTTP exceptions
-        raise
-    except Exception as e:
-        # Log and return internal error
-        logger.error(
-            "Internal error in chat endpoint",
-            extra={"error": str(e)},
-            exc_info=True,
+    except QueryCompilationError as e:
+        # Fallback to old behavior for compilation errors
+        error_msg = f"Could not understand query: {str(e)}"
+        response = ChatResponse(
+            message=error_msg,
+            candidate_set=None,
+            clarification_needed=(
+                "Could you rephrase your query? For example: "
+                "'books published by Oxford between 1500 and 1599' or "
+                "'books about History printed in Paris'"
+            ),
+            session_id=session.session_id,
+            phase=ConversationPhase.QUERY_DEFINITION,
         )
-        return ChatResponseAPI(
-            success=False,
-            response=None,
-            error=f"Internal server error: {str(e)}",
+
+        assistant_message = Message(
+            role="assistant",
+            content=error_msg,
+            query_plan=None,
+            candidate_set=None,
         )
+        store.add_message(session.session_id, assistant_message)
+
+        return ChatResponseAPI(success=True, response=response, error=None)
+
+
+async def handle_corpus_exploration_phase(
+    chat_request: ChatRequest,
+    session,
+    store: SessionStore,
+    bib_db: Path
+) -> ChatResponseAPI:
+    """Handle Phase 2: Corpus exploration with the active subgroup.
+
+    Interprets exploration requests and routes to appropriate handlers:
+    - AGGREGATION: Run aggregation query and return results
+    - METADATA_QUESTION: Answer count/existence questions
+    - REFINEMENT: Narrow the subgroup with additional filters
+    - COMPARISON: Compare subsets within the subgroup
+    - NEW_QUERY: Transition back to Phase 1
+    - ENRICHMENT_REQUEST: (Future) Fetch external data
+    - RECOMMENDATION: (Future) Recommend items
+
+    Args:
+        chat_request: The chat request
+        session: Current session
+        store: Session store
+        bib_db: Path to bibliographic database
+
+    Returns:
+        ChatResponseAPI with response
+    """
+    try:
+        # Get active subgroup
+        active_subgroup = store.get_active_subgroup(session.session_id)
+        if not active_subgroup:
+            # No active subgroup - transition back to Phase 1
+            logger.warning(
+                "No active subgroup in exploration phase, transitioning to Phase 1",
+                extra={"session_id": session.session_id}
+            )
+            store.update_phase(session.session_id, ConversationPhase.QUERY_DEFINITION)
+            return await handle_query_definition_phase(
+                chat_request, session, store, bib_db
+            )
+
+        # Interpret the exploration request
+        exploration_request = await interpret_exploration_request(
+            query_text=chat_request.message,
+            active_subgroup=active_subgroup,
+            conversation_history=session.get_recent_messages(5),
+        )
+
+        logger.info(
+            "Interpreted exploration request",
+            extra={
+                "session_id": session.session_id,
+                "intent": exploration_request.intent.value,
+                "confidence": exploration_request.confidence,
+            }
+        )
+
+        # Route based on intent
+        if exploration_request.intent == ExplorationIntent.NEW_QUERY:
+            # Transition back to Phase 1
+            store.set_active_subgroup(session.session_id, None)
+            store.update_phase(session.session_id, ConversationPhase.QUERY_DEFINITION)
+
+            # If new query text provided, process it
+            if exploration_request.new_query_text:
+                # Create new request with the new query
+                new_request = ChatRequest(
+                    message=exploration_request.new_query_text,
+                    session_id=session.session_id
+                )
+                return await handle_query_definition_phase(
+                    new_request, session, store, bib_db
+                )
+            else:
+                response = ChatResponse(
+                    message="Let's start a new search. What would you like to find?",
+                    session_id=session.session_id,
+                    phase=ConversationPhase.QUERY_DEFINITION,
+                )
+                assistant_message = Message(
+                    role="assistant",
+                    content=response.message,
+                )
+                store.add_message(session.session_id, assistant_message)
+                return ChatResponseAPI(success=True, response=response)
+
+        elif exploration_request.intent == ExplorationIntent.AGGREGATION:
+            # Execute aggregation query
+            field = exploration_request.aggregation_field or "publisher"
+            limit = exploration_request.aggregation_limit or 10
+
+            aggregation_result = execute_aggregation(
+                db_path=bib_db,
+                record_ids=active_subgroup.record_ids,
+                field=field,
+                limit=limit
+            )
+
+            exploration_response = format_aggregation_response(
+                aggregation_result, exploration_request
+            )
+
+            response = ChatResponse(
+                message=exploration_response.message,
+                session_id=session.session_id,
+                phase=ConversationPhase.CORPUS_EXPLORATION,
+                confidence=exploration_request.confidence,
+                suggested_followups=exploration_response.suggested_followups,
+                metadata={
+                    "visualization_hint": exploration_response.visualization_hint,
+                    "data": exploration_response.data,
+                }
+            )
+
+        elif exploration_request.intent == ExplorationIntent.METADATA_QUESTION:
+            # Answer metadata question
+            # Try to parse common questions
+            question = exploration_request.metadata_question or chat_request.message
+            question_lower = question.lower()
+
+            count = None
+            answer = ""
+
+            if "latin" in question_lower:
+                count = execute_count_query(bib_db, active_subgroup.record_ids, "count_language", "lat")
+                answer = f"There are {count or 0} books in Latin in this collection of {len(active_subgroup.record_ids)} books."
+            elif "hebrew" in question_lower:
+                count = execute_count_query(bib_db, active_subgroup.record_ids, "count_language", "heb")
+                answer = f"There are {count or 0} books in Hebrew in this collection."
+            elif "earliest" in question_lower or "oldest" in question_lower:
+                earliest = execute_count_query(bib_db, active_subgroup.record_ids, "earliest_date")
+                answer = f"The earliest book in this collection is from {earliest}." if earliest else "No date information available."
+            elif "latest" in question_lower or "newest" in question_lower or "most recent" in question_lower:
+                latest = execute_count_query(bib_db, active_subgroup.record_ids, "latest_date")
+                answer = f"The most recent book in this collection is from {latest}." if latest else "No date information available."
+            elif "how many" in question_lower or "count" in question_lower:
+                answer = f"There are {len(active_subgroup.record_ids)} books in this collection."
+                count = len(active_subgroup.record_ids)
+            else:
+                answer = f"This collection contains {len(active_subgroup.record_ids)} books. {exploration_request.explanation}"
+
+            exploration_response = format_metadata_response(answer, count, exploration_request)
+
+            response = ChatResponse(
+                message=exploration_response.message,
+                session_id=session.session_id,
+                phase=ConversationPhase.CORPUS_EXPLORATION,
+                confidence=exploration_request.confidence,
+                suggested_followups=exploration_response.suggested_followups,
+            )
+
+        elif exploration_request.intent == ExplorationIntent.REFINEMENT:
+            # Apply refinement filters
+            if exploration_request.refinement_filters:
+                old_count = len(active_subgroup.record_ids)
+                new_record_ids = active_subgroup.record_ids
+
+                for f in exploration_request.refinement_filters:
+                    new_record_ids = apply_refinement(
+                        db_path=bib_db,
+                        record_ids=new_record_ids,
+                        field=f.field,
+                        op=f.op,
+                        value=f.value,
+                        start=f.start,
+                        end=f.end
+                    )
+
+                new_count = len(new_record_ids)
+
+                if new_count > 0:
+                    # Update active subgroup
+                    new_subgroup = ActiveSubgroup(
+                        candidate_set=active_subgroup.candidate_set,  # Keep original for reference
+                        defining_query=f"{active_subgroup.defining_query} + refinement",
+                        filter_summary=f"{active_subgroup.filter_summary}, refined",
+                        record_ids=new_record_ids,
+                    )
+                    store.set_active_subgroup(session.session_id, new_subgroup)
+
+                filter_desc = ", ".join(
+                    f"{f.field}={f.value or f'{f.start}-{f.end}'}"
+                    for f in exploration_request.refinement_filters
+                )
+                exploration_response = format_refinement_response(new_count, old_count, filter_desc)
+            else:
+                exploration_response = format_refinement_response(
+                    len(active_subgroup.record_ids),
+                    len(active_subgroup.record_ids),
+                    "no filters applied"
+                )
+
+            response = ChatResponse(
+                message=exploration_response.message,
+                session_id=session.session_id,
+                phase=ConversationPhase.CORPUS_EXPLORATION,
+                confidence=exploration_request.confidence,
+                suggested_followups=exploration_response.suggested_followups,
+                metadata=exploration_response.data,
+            )
+
+        elif exploration_request.intent == ExplorationIntent.COMPARISON:
+            # Execute comparison
+            if exploration_request.comparison_field and exploration_request.comparison_values:
+                comparison_results = execute_comparison(
+                    db_path=bib_db,
+                    record_ids=active_subgroup.record_ids,
+                    field=exploration_request.comparison_field,
+                    values=exploration_request.comparison_values
+                )
+
+                # Format comparison message
+                parts = [f"Comparison of {exploration_request.comparison_field} in this collection of {len(active_subgroup.record_ids)} books:"]
+                parts.append("")
+                for value, count in sorted(comparison_results.items(), key=lambda x: -x[1]):
+                    pct = (count / len(active_subgroup.record_ids) * 100) if active_subgroup.record_ids else 0
+                    parts.append(f"- {value}: {count} books ({pct:.1f}%)")
+
+                message = "\n".join(parts)
+            else:
+                message = "I need specific values to compare. For example: 'Compare Paris vs London'"
+
+            response = ChatResponse(
+                message=message,
+                session_id=session.session_id,
+                phase=ConversationPhase.CORPUS_EXPLORATION,
+                confidence=exploration_request.confidence,
+                suggested_followups=["Show top publishers", "What are the most common subjects?"],
+            )
+
+        elif exploration_request.intent == ExplorationIntent.ENRICHMENT_REQUEST:
+            # Enrichment - fetch external data about an entity
+            entity = exploration_request.entity_value or "this entity"
+            entity_type_str = exploration_request.entity_type or "agent"
+
+            # Map entity type string to EnrichmentEntityType
+            entity_type_map = {
+                "agent": EnrichmentEntityType.AGENT,
+                "place": EnrichmentEntityType.PLACE,
+                "publisher": EnrichmentEntityType.PUBLISHER,
+            }
+            entity_type = entity_type_map.get(entity_type_str, EnrichmentEntityType.AGENT)
+
+            # Try to fetch enrichment
+            enrichment_result = None
+            if enrichment_service and entity:
+                try:
+                    enrichment_result = await enrichment_service.enrich_entity(
+                        entity_type=entity_type,
+                        entity_value=entity,
+                    )
+                except Exception as e:
+                    logger.warning(f"Enrichment failed for {entity}: {e}")
+
+            if enrichment_result:
+                # Format enrichment result
+                parts = [f"Here's what I found about **{enrichment_result.label or entity}**:"]
+
+                if enrichment_result.description:
+                    parts.append(f"\n{enrichment_result.description}")
+
+                if enrichment_result.person_info:
+                    info = enrichment_result.person_info
+                    if info.birth_year or info.death_year:
+                        dates = f"{info.birth_year or '?'} - {info.death_year or '?'}"
+                        parts.append(f"\n**Dates:** {dates}")
+                    if info.birth_place:
+                        parts.append(f"**Born in:** {info.birth_place}")
+                    if info.occupations:
+                        parts.append(f"**Occupations:** {', '.join(info.occupations[:5])}")
+                    if info.nationality:
+                        parts.append(f"**Nationality:** {info.nationality}")
+
+                if enrichment_result.place_info:
+                    info = enrichment_result.place_info
+                    if info.country:
+                        parts.append(f"\n**Country:** {info.country}")
+                    if info.coordinates:
+                        parts.append(f"**Coordinates:** {info.coordinates['lat']:.2f}, {info.coordinates['lon']:.2f}")
+
+                # Add external links
+                links = []
+                if enrichment_result.wikidata_id:
+                    links.append(f"[Wikidata](https://www.wikidata.org/wiki/{enrichment_result.wikidata_id})")
+                if enrichment_result.viaf_id:
+                    links.append(f"[VIAF](https://viaf.org/viaf/{enrichment_result.viaf_id})")
+                if enrichment_result.wikipedia_url:
+                    links.append(f"[Wikipedia]({enrichment_result.wikipedia_url})")
+
+                if links:
+                    parts.append(f"\n**External links:** {' | '.join(links)}")
+
+                parts.append(f"\n\n*Source: {enrichment_result.sources_used[0].value if enrichment_result.sources_used else 'unknown'} (confidence: {enrichment_result.confidence:.0%})*")
+
+                message = "\n".join(parts)
+                suggested_followups = [
+                    f"Show books related to {entity}",
+                    "Show top publishers",
+                    "What's the date distribution?",
+                ]
+            else:
+                message = (
+                    f"I couldn't find external information about '{entity}'. "
+                    f"This might be because:\n"
+                    f"- The name spelling differs from authority records\n"
+                    f"- No Wikidata entry exists for this entity\n"
+                    f"- The entity type ('{entity_type_str}') might be incorrect\n\n"
+                    f"Try rephrasing or asking about a different entity."
+                )
+                suggested_followups = ["Show top publishers", "Show top places"]
+
+            response = ChatResponse(
+                message=message,
+                session_id=session.session_id,
+                phase=ConversationPhase.CORPUS_EXPLORATION,
+                confidence=exploration_request.confidence,
+                suggested_followups=suggested_followups,
+            )
+
+        elif exploration_request.intent == ExplorationIntent.RECOMMENDATION:
+            # Recommendation - future feature
+            message = (
+                "Recommendations based on your research goals are not yet available. "
+                "In the future, I'll be able to suggest the most relevant books based on "
+                "your interests and research context."
+            )
+            response = ChatResponse(
+                message=message,
+                session_id=session.session_id,
+                phase=ConversationPhase.CORPUS_EXPLORATION,
+                confidence=exploration_request.confidence,
+                suggested_followups=["Show the subject distribution", "What are the most common topics?"],
+            )
+
+        else:
+            # Unknown intent - provide helpful response
+            response = ChatResponse(
+                message=f"I'm not sure how to help with that. {exploration_request.explanation}\n\n"
+                        f"You can ask me to:\n"
+                        f"- Show top publishers, places, or languages\n"
+                        f"- Filter to specific criteria (e.g., 'only Latin books')\n"
+                        f"- Start a new search",
+                session_id=session.session_id,
+                phase=ConversationPhase.CORPUS_EXPLORATION,
+                suggested_followups=["Show top publishers", "What languages are represented?", "Start a new search"],
+            )
+
+        # Add assistant message to session
+        assistant_message = Message(
+            role="assistant",
+            content=response.message,
+        )
+        store.add_message(session.session_id, assistant_message)
+
+        return ChatResponseAPI(success=True, response=response)
+
+    except QueryCompilationError as e:
+        # API error in exploration agent
+        error_msg = f"Error processing exploration request: {str(e)}"
+        response = ChatResponse(
+            message="I had trouble understanding that request. Could you rephrase?",
+            session_id=session.session_id,
+            phase=ConversationPhase.CORPUS_EXPLORATION,
+            suggested_followups=["Show top publishers", "Start a new search"],
+        )
+        assistant_message = Message(
+            role="assistant",
+            content=response.message,
+        )
+        store.add_message(session.session_id, assistant_message)
+        return ChatResponseAPI(success=True, response=response)
 
 
 @app.get("/sessions/{session_id}")

@@ -5,6 +5,11 @@ Provides persistent storage for multi-turn conversations with:
 - Context tracking for carry-forward state
 - Session expiration and lifecycle management
 - Atomic operations with foreign key constraints
+
+Two-Phase Conversation Support:
+- Phase tracking (query_definition → corpus_exploration)
+- Active subgroup storage for corpus exploration
+- User goal tracking for need elicitation
 """
 
 import json
@@ -13,7 +18,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from scripts.chat.models import ChatSession, Message
+from scripts.chat.models import (
+    ChatSession,
+    Message,
+    ConversationPhase,
+    ActiveSubgroup,
+    UserGoal,
+)
+from scripts.schemas import CandidateSet
 from scripts.utils.logger import LoggerManager
 
 
@@ -328,6 +340,252 @@ class SessionStore:
 
         cursor = conn.execute(query, params)
         return [row[0] for row in cursor.fetchall()]
+
+    # =========================================================================
+    # Two-Phase Conversation Support Methods
+    # =========================================================================
+
+    def get_phase(self, session_id: str) -> Optional[ConversationPhase]:
+        """Get current conversation phase for a session.
+
+        Args:
+            session_id: Session identifier
+
+        Returns:
+            ConversationPhase if session exists, None otherwise
+        """
+        conn = self._get_connection()
+        cursor = conn.execute(
+            "SELECT phase FROM chat_sessions WHERE session_id = ? AND expired_at IS NULL",
+            (session_id,),
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            return None
+
+        phase_str = row[0] or "query_definition"
+        return ConversationPhase(phase_str)
+
+    def update_phase(self, session_id: str, phase: ConversationPhase) -> None:
+        """Update session conversation phase.
+
+        Args:
+            session_id: Session identifier
+            phase: New conversation phase
+
+        Raises:
+            ValueError: If session doesn't exist
+        """
+        session = self.get_session(session_id)
+        if not session:
+            raise ValueError(f"Session {session_id} not found")
+
+        conn = self._get_connection()
+        conn.execute(
+            """
+            UPDATE chat_sessions
+            SET phase = ?, updated_at = ?
+            WHERE session_id = ?
+            """,
+            (phase.value, datetime.utcnow().isoformat(), session_id),
+        )
+        conn.commit()
+
+        self.logger.info(
+            "Updated session phase",
+            extra={"session_id": session_id, "phase": phase.value},
+        )
+
+    def set_active_subgroup(
+        self,
+        session_id: str,
+        subgroup: Optional[ActiveSubgroup]
+    ) -> None:
+        """Set or clear the active subgroup for a session.
+
+        Called when transitioning to corpus exploration phase. Pass None
+        to clear the subgroup (e.g., when starting a new query).
+
+        Args:
+            session_id: Session identifier
+            subgroup: ActiveSubgroup to set, or None to clear
+
+        Raises:
+            ValueError: If session doesn't exist
+        """
+        session = self.get_session(session_id)
+        if not session:
+            raise ValueError(f"Session {session_id} not found")
+
+        conn = self._get_connection()
+
+        if subgroup is None:
+            # Clear existing subgroup
+            conn.execute(
+                "DELETE FROM active_subgroups WHERE session_id = ?",
+                (session_id,),
+            )
+            conn.commit()
+            self.logger.info(
+                "Cleared active subgroup", extra={"session_id": session_id}
+            )
+            return
+
+        # Prepare record IDs JSON
+        record_ids_json = json.dumps(subgroup.record_ids)
+
+        # Store full CandidateSet if available (may be large)
+        candidate_set_json = None
+        if subgroup.candidate_set:
+            candidate_set_json = json.dumps(subgroup.candidate_set.model_dump())
+
+        # Upsert (insert or replace)
+        conn.execute(
+            """
+            INSERT INTO active_subgroups
+            (session_id, defining_query, filter_summary, record_ids,
+             candidate_count, candidate_set, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(session_id) DO UPDATE SET
+                defining_query = excluded.defining_query,
+                filter_summary = excluded.filter_summary,
+                record_ids = excluded.record_ids,
+                candidate_count = excluded.candidate_count,
+                candidate_set = excluded.candidate_set,
+                created_at = excluded.created_at
+            """,
+            (
+                session_id,
+                subgroup.defining_query,
+                subgroup.filter_summary,
+                record_ids_json,
+                len(subgroup.record_ids),
+                candidate_set_json,
+                subgroup.created_at.isoformat(),
+            ),
+        )
+        conn.commit()
+
+        self.logger.info(
+            "Set active subgroup",
+            extra={
+                "session_id": session_id,
+                "candidate_count": len(subgroup.record_ids),
+            },
+        )
+
+    def get_active_subgroup(self, session_id: str) -> Optional[ActiveSubgroup]:
+        """Get the current active subgroup for a session.
+
+        Args:
+            session_id: Session identifier
+
+        Returns:
+            ActiveSubgroup if exists, None otherwise
+        """
+        conn = self._get_connection()
+        cursor = conn.execute(
+            """
+            SELECT defining_query, filter_summary, record_ids,
+                   candidate_count, candidate_set, created_at
+            FROM active_subgroups
+            WHERE session_id = ?
+            """,
+            (session_id,),
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            return None
+
+        # Parse record IDs
+        record_ids = json.loads(row[2]) if row[2] else []
+
+        # Parse CandidateSet if stored
+        candidate_set = None
+        if row[4]:
+            try:
+                candidate_set = CandidateSet(**json.loads(row[4]))
+            except Exception as e:
+                self.logger.warning(
+                    "Failed to parse stored CandidateSet",
+                    extra={"session_id": session_id, "error": str(e)},
+                )
+
+        return ActiveSubgroup(
+            candidate_set=candidate_set,
+            defining_query=row[0],
+            filter_summary=row[1],
+            record_ids=record_ids,
+            created_at=datetime.fromisoformat(row[5]),
+        )
+
+    def add_user_goal(self, session_id: str, goal: UserGoal) -> None:
+        """Record an elicited user goal.
+
+        Args:
+            session_id: Session identifier
+            goal: UserGoal to record
+
+        Raises:
+            ValueError: If session doesn't exist
+        """
+        session = self.get_session(session_id)
+        if not session:
+            raise ValueError(f"Session {session_id} not found")
+
+        conn = self._get_connection()
+        conn.execute(
+            """
+            INSERT INTO user_goals (session_id, goal_type, description, elicited_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                session_id,
+                goal.goal_type,
+                goal.description,
+                goal.elicited_at.isoformat(),
+            ),
+        )
+        conn.commit()
+
+        self.logger.info(
+            "Added user goal",
+            extra={"session_id": session_id, "goal_type": goal.goal_type},
+        )
+
+    def get_user_goals(self, session_id: str) -> List[UserGoal]:
+        """Get all elicited goals for a session.
+
+        Args:
+            session_id: Session identifier
+
+        Returns:
+            List of UserGoal objects
+        """
+        conn = self._get_connection()
+        cursor = conn.execute(
+            """
+            SELECT goal_type, description, elicited_at
+            FROM user_goals
+            WHERE session_id = ?
+            ORDER BY elicited_at ASC
+            """,
+            (session_id,),
+        )
+
+        goals = []
+        for row in cursor.fetchall():
+            goals.append(
+                UserGoal(
+                    goal_type=row[0],
+                    description=row[1],
+                    elicited_at=datetime.fromisoformat(row[2]),
+                )
+            )
+
+        return goals
 
     def close(self) -> None:
         """Close database connection."""
