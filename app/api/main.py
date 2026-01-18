@@ -56,6 +56,9 @@ from scripts.chat.aggregation import (
     execute_count_query,
     apply_refinement,
     execute_comparison,
+    is_overview_query,
+    get_collection_overview,
+    format_collection_overview,
 )
 from scripts.query.compile import compile_query
 from scripts.query.execute import execute_plan
@@ -305,6 +308,9 @@ async def handle_query_definition_phase(
     If confidence >= 0.85, executes query and transitions to corpus exploration.
     If confidence < 0.85, asks for clarification.
 
+    Special handling for overview queries (e.g., "what can you tell me about
+    the collection?") - returns collection statistics instead of clarification.
+
     Args:
         chat_request: The chat request
         session: Current session
@@ -315,6 +321,43 @@ async def handle_query_definition_phase(
         ChatResponseAPI with response
     """
     try:
+        # Check if this is an overview/introductory query
+        if is_overview_query(chat_request.message):
+            logger.info(
+                "Detected overview query, returning collection statistics",
+                extra={"session_id": session.session_id}
+            )
+
+            # Get and format collection overview
+            overview = get_collection_overview(bib_db)
+            overview_message = format_collection_overview(overview)
+
+            # Build response
+            response = ChatResponse(
+                message=overview_message,
+                candidate_set=None,
+                suggested_followups=[
+                    "Show me 16th century books",
+                    "Books printed in Venice",
+                    "Hebrew books from Amsterdam",
+                    "Books about astronomy",
+                ],
+                clarification_needed=None,
+                session_id=session.session_id,
+                phase=ConversationPhase.QUERY_DEFINITION,
+                confidence=1.0,  # High confidence for overview
+                metadata={"overview_stats": overview},
+            )
+
+            # Add assistant message to session
+            assistant_message = Message(
+                role="assistant",
+                content=overview_message,
+            )
+            store.add_message(session.session_id, assistant_message)
+
+            return ChatResponseAPI(success=True, response=response, error=None)
+
         # Use intent agent for interpretation with confidence scoring
         interpretation = await interpret_query(
             query_text=chat_request.message,
