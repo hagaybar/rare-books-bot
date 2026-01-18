@@ -177,8 +177,12 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
         if record.get('country_code_fixed'):
             country_code = record['country_code_fixed'].get('value')
             if country_code:
+                # Strip fill characters (#, |) before lookup
+                clean_code = country_code.lower().rstrip('#|')
                 country_map = load_country_code_map()
-                country_name = country_map.get(country_code.lower())
+                country_name = country_map.get(clean_code)
+                # Store the clean code in the database
+                country_code = clean_code if clean_code else country_code
 
         cursor.execute("""
             INSERT INTO imprints (
