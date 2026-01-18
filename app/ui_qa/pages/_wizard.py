@@ -39,8 +39,7 @@ from app.ui_qa.wizard_components import (
     compute_session_summary,
     render_navigation_buttons
 )
-from scripts.query.compile import compile_query
-from scripts.query.execute import execute_plan
+from scripts.query import QueryService, QueryOptions
 from scripts.query.db_adapter import get_connection
 
 st.set_page_config(page_title="QA Wizard", page_icon="🧙", layout="wide")
@@ -207,11 +206,13 @@ def render_step_2():
         if st.button("▶️ Run Query Now", type="primary"):
             with st.spinner("Running query..."):
                 try:
-                    # Compile
-                    plan = compile_query(query_text, limit=limit)
+                    # Execute via QueryService
+                    service = QueryService(db_path)
+                    options = QueryOptions(compute_facets=False, limit=limit)
+                    query_result = service.execute(query_text, options=options)
 
-                    # Execute
-                    result = execute_plan(plan, db_path)
+                    plan = query_result.query_plan
+                    result = query_result.candidate_set
 
                     # Persist
                     query_id = insert_query_run(
@@ -310,8 +311,9 @@ def render_step_3():
     try:
         from scripts.schemas.query_plan import QueryPlan
         plan_obj = QueryPlan(**plan)
-        result = execute_plan(plan_obj, db_path)
-        candidates = result.candidates
+        service = QueryService(db_path)
+        query_result = service.execute_plan(plan_obj, options=QueryOptions(compute_facets=False))
+        candidates = query_result.candidate_set.candidates
     except Exception as e:
         st.error(f"❌ Error loading candidates: {e}")
         return
@@ -507,10 +509,11 @@ def render_step_4_smoke():
             try:
                 from scripts.schemas.query_plan import QueryPlan
                 plan_obj = QueryPlan(**plan)
-                result = execute_plan(plan_obj, db_path)
+                service = QueryService(db_path)
+                query_result = service.execute_plan(plan_obj, options=QueryOptions(compute_facets=False))
 
                 # Find this candidate
-                candidate = next((c for c in result.candidates if c.record_id == cand_data['record_id']), None)
+                candidate = next((c for c in query_result.candidate_set.candidates if c.record_id == cand_data['record_id']), None)
 
                 if candidate:
                     st.write(f"**Rationale:** {candidate.match_rationale}")
@@ -561,8 +564,9 @@ def render_step_4_recall():
     try:
         from scripts.schemas.query_plan import QueryPlan
         plan_obj = QueryPlan(**plan)
-        result = execute_plan(plan_obj, db_path)
-        existing_ids = {c.record_id for c in result.candidates}
+        service = QueryService(db_path)
+        query_result = service.execute_plan(plan_obj, options=QueryOptions(compute_facets=False))
+        existing_ids = {c.record_id for c in query_result.candidate_set.candidates}
     except:
         existing_ids = set()
 

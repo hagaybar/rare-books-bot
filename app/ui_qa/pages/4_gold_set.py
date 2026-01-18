@@ -10,8 +10,7 @@ import streamlit as st
 import json
 import pandas as pd
 from pathlib import Path
-from scripts.query.compile import compile_query
-from scripts.query.execute import execute_plan
+from scripts.query import QueryService, QueryOptions
 from app.ui_qa.db import export_gold_set, get_queries_with_labels, delete_query
 from app.ui_qa.config import GOLD_SET_PATH, BIBLIO_DB_PATH
 
@@ -202,9 +201,10 @@ if run_regression_button:
                 status_text.text(f"Running query {idx+1}/{len(queries)}: {query_text[:60]}...")
 
                 try:
-                    # Run query
-                    plan = compile_query(query_text)
-                    result = execute_plan(plan, db_path)
+                    # Run query via QueryService
+                    service = QueryService(db_path)
+                    query_result = service.execute(query_text, options=QueryOptions(compute_facets=False))
+                    result = query_result.candidate_set
 
                     # Check results
                     actual_ids = {c.record_id for c in result.candidates}

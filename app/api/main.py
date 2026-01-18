@@ -60,9 +60,9 @@ from scripts.chat.aggregation import (
     get_collection_overview,
     format_collection_overview,
 )
+from scripts.query import QueryService, QueryOptions, QueryCompilationError
 from scripts.query.compile import compile_query
 from scripts.query.execute import execute_plan
-from scripts.query.exceptions import QueryCompilationError
 from scripts.utils.logger import LoggerManager
 from scripts.enrichment import EnrichmentService, EntityType as EnrichmentEntityType
 
@@ -96,6 +96,7 @@ app.add_middleware(
 session_store: Optional[SessionStore] = None
 db_path: Optional[Path] = None
 enrichment_service: Optional[EnrichmentService] = None
+query_service: Optional[QueryService] = None
 
 
 def get_session_store() -> SessionStore:
@@ -132,10 +133,27 @@ def get_db_path() -> Path:
     return db_path
 
 
+def get_query_service() -> QueryService:
+    """Get query service instance.
+
+    Returns:
+        QueryService instance
+
+    Raises:
+        HTTPException: If query service not initialized
+    """
+    if query_service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Query service not initialized",
+        )
+    return query_service
+
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize application state on startup."""
-    global session_store, db_path, enrichment_service
+    global session_store, db_path, enrichment_service, query_service
 
     # Get paths from environment or use defaults
     sessions_db = Path(os.getenv("SESSIONS_DB_PATH", "data/chat/sessions.db"))
@@ -152,6 +170,9 @@ async def startup_event():
 
     # Initialize enrichment service
     enrichment_service = EnrichmentService(cache_db_path=enrichment_db)
+
+    # Initialize query service
+    query_service = QueryService(bib_db)
 
     logger.info(
         "API started",
@@ -412,9 +433,11 @@ async def handle_query_definition_phase(
 
             return ChatResponseAPI(success=True, response=response, error=None)
 
-        # High confidence - execute query
+        # High confidence - execute query via QueryService
         query_plan = interpretation.query_plan
-        candidate_set = execute_plan(query_plan, bib_db)
+        service = get_query_service()
+        query_result = service.execute_plan(query_plan, options=QueryOptions(compute_facets=True))
+        candidate_set = query_result.candidate_set
         result_count = len(candidate_set.candidates)
 
         logger.info(
@@ -1082,8 +1105,10 @@ async def websocket_chat(websocket: WebSocket):
             "message": f"Executing query with {len(query_plan.filters)} filters..."
         })
 
-        # Execute query
-        candidate_set = execute_plan(query_plan, bib_db)
+        # Execute query via QueryService
+        service = get_query_service()
+        query_result = service.execute_plan(query_plan, options=QueryOptions(compute_facets=False))
+        candidate_set = query_result.candidate_set
         result_count = len(candidate_set.candidates)
 
         # Progress: Found results

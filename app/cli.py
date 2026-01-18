@@ -202,10 +202,11 @@ def query(
 
     If --session-id is provided, saves query and results to session history.
     """
+    import json
     from datetime import datetime
-    from scripts.query.compile import compile_query, write_plan_to_file
-    from scripts.query.execute import execute_plan_from_file
-    from scripts.query.exceptions import QueryCompilationError
+    from scripts.query import QueryService, QueryOptions, QueryCompilationError
+    from scripts.query.compile import write_plan_to_file
+    from scripts.query.execute import write_sql_to_file, write_candidates_to_file
 
     # Validate database exists
     if not db.exists():
@@ -227,15 +228,36 @@ def query(
     typer.echo(f"Output: {out}")
     typer.echo()
 
-    # Step 1: Compile query to plan
-    typer.echo("Step 1/2: Compiling query to plan...")
+    # Execute query via unified QueryService
+    typer.echo("Executing query via QueryService...")
     try:
-        plan = compile_query(query_text, limit=limit)
+        service = QueryService(db)
+        options = QueryOptions(
+            compute_facets=False,
+            include_warnings=True,
+            limit=limit,
+        )
+        result = service.execute(query_text, options=options)
+
+        # Write outputs to files
         plan_path = out / "plan.json"
-        write_plan_to_file(plan, plan_path)
-        typer.echo(f"  ✓ Plan generated: {len(plan.filters)} filters")
-        if plan.debug and "patterns_matched" in plan.debug:
-            typer.echo(f"  ✓ Patterns matched: {', '.join(plan.debug['patterns_matched'])}")
+        write_plan_to_file(result.query_plan, plan_path)
+        write_sql_to_file(result.sql, out / "sql.txt")
+        write_candidates_to_file(result.candidate_set, out / "candidates.json")
+
+        typer.echo(f"  ✓ Plan generated: {len(result.query_plan.filters)} filters")
+        if result.query_plan.debug and "patterns_matched" in result.query_plan.debug:
+            typer.echo(f"  ✓ Patterns matched: {', '.join(result.query_plan.debug['patterns_matched'])}")
+        typer.echo(f"  ✓ Query executed in {result.execution_time_ms:.1f}ms")
+        typer.echo(f"  ✓ SQL written to: sql.txt")
+        typer.echo(f"  ✓ Results written to: candidates.json")
+
+        # Show warnings if any
+        if result.warnings:
+            typer.echo(f"\n⚠ Warnings:")
+            for warning in result.warnings:
+                typer.echo(f"  - [{warning.code}] {warning.message}")
+
     except QueryCompilationError as e:
         # LLM compilation failure - display helpful error message
         typer.echo(f"  ✗ Query compilation failed\n")
@@ -243,23 +265,13 @@ def query(
         raise typer.Exit(code=1)
     except Exception as e:
         # Unexpected error
-        typer.echo(f"  ✗ Unexpected error compiling query: {e}")
-        raise typer.Exit(code=1)
-
-    # Step 2: Execute plan
-    typer.echo("\nStep 2/2: Executing query...")
-    try:
-        candidate_set = execute_plan_from_file(plan_path, db, out)
-        typer.echo(f"  ✓ Query executed successfully")
-        typer.echo(f"  ✓ SQL written to: sql.txt")
-        typer.echo(f"  ✓ Results written to: candidates.json")
-    except Exception as e:
         typer.echo(f"  ✗ Error executing query: {e}")
         import traceback
         traceback.print_exc()
         raise typer.Exit(code=1)
 
     # Print summary
+    candidate_set = result.candidate_set
     typer.echo(f"\n{'='*60}")
     typer.echo(f"Query Results Summary")
     typer.echo(f"{'='*60}")
@@ -295,7 +307,7 @@ def query(
             user_msg = Message(
                 role="user",
                 content=query_text,
-                query_plan=plan
+                query_plan=result.query_plan
             )
             store.add_message(session_id, user_msg)
 

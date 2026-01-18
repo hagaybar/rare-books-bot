@@ -9,8 +9,7 @@ sys.path.append(str(ROOT))
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-from scripts.query.compile import compile_query
-from scripts.query.execute import execute_plan
+from scripts.query import QueryService, QueryOptions
 from app.ui_qa.db import (
     insert_query_run,
     upsert_label,
@@ -65,11 +64,13 @@ with col2:
 if run_button:
     with st.spinner("Running query..."):
         try:
-            # Compile
-            plan = compile_query(query_text, limit=limit)
+            # Execute via QueryService
+            service = QueryService(Path(db_path))
+            options = QueryOptions(compute_facets=False, limit=limit)
+            query_result = service.execute(query_text, options=options)
 
-            # Execute
-            result = execute_plan(plan, Path(db_path))
+            plan = query_result.query_plan
+            result = query_result.candidate_set
 
             # Persist to QA DB
             query_id = insert_query_run(
