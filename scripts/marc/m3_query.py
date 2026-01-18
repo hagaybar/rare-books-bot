@@ -1,7 +1,14 @@
-"""Query functions for M3 bibliographic index.
+"""Query functions for M3 bibliographic index (low-level API).
 
-This module provides typed query functions that return CandidateSet + Evidence
-following the Answer Contract from CLAUDE.md.
+This module provides direct SQL query functions for the M3 index layer.
+Used primarily for:
+- Testing M3 index functionality (see tests/scripts/marc/test_m3_index.py)
+- Debugging and exploratory queries
+- Direct database access without QueryPlan
+
+For production queries, use the M4 query system instead:
+- scripts/query/db_adapter.py - QueryPlan → SQL generation
+- scripts/query/execute.py - Full query execution with evidence
 """
 
 import json

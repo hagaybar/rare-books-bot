@@ -18,10 +18,11 @@ class FilterField(str, Enum):
     LANGUAGE = "language"
     TITLE = "title"
     SUBJECT = "subject"
-    AGENT = "agent"  # Legacy - kept for backward compatibility
-    AGENT_NORM = "agent_norm"  # Stage 5: Query normalized agent names
-    AGENT_ROLE = "agent_role"  # Stage 5: Query by role (printer, translator, etc.)
-    AGENT_TYPE = "agent_type"  # Stage 5: Query by type (personal, corporate, meeting)
+    # Agent fields - use AGENT_NORM/AGENT_ROLE/AGENT_TYPE for new code
+    AGENT = "agent"  # Deprecated: searches raw agent_raw column. Use AGENT_NORM instead.
+    AGENT_NORM = "agent_norm"  # Preferred: Query normalized agent names (comma-insensitive)
+    AGENT_ROLE = "agent_role"  # Query by role: printer, translator, editor, etc.
+    AGENT_TYPE = "agent_type"  # Query by type: personal, corporate, meeting
 
 
 class FilterOp(str, Enum):
