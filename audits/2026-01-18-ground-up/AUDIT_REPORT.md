@@ -16,15 +16,15 @@
 |---|---------|--------|----------|
 | 1 | **FTS5 quoting breaks EQUALS path** | 21 query tests failing; title/subject EQUALS queries wrap values in quotes meant for FTS5 CONTAINS | `scripts/query/db_adapter.py:58-67` |
 | 2 | **Database schema not rebuilt** | Country code columns added but DB has unmapped codes; tests assume old schema | `data/index/bibliographic.db` has `aa`, `ag`, `bl` codes with NULL names |
-| 3 | **No production web UI** | API layer complete but no frontend; `app/ui_chat/` directory exists but empty/incomplete | Only development tools (CLI, QA Streamlit) available |
+| 3 | **datetime.utcnow() deprecation** | 211 deprecation warnings; will break in Python 3.14 | `scripts/chat/session_store.py` multiple locations |
 
 ### 3 Most Promising Strengths
 
 | # | Strength | Evidence |
 |---|----------|----------|
-| 1 | **Well-structured evidence system** | Every query result includes `Evidence` objects with field, value, operator, source, confidence |
-| 2 | **LLM query caching** | JSONL cache at `data/query_plan_cache.jsonl` prevents redundant API calls |
-| 3 | **Two-phase conversation architecture** | Phase 1 (Query Definition) + Phase 2 (Corpus Exploration) with confidence scoring |
+| 1 | **Complete end-to-end system** | Streamlit chat UI (`app/ui_chat/main.py`, 279 lines) + FastAPI backend + SQLite storage |
+| 2 | **Well-structured evidence system** | Every query result includes `Evidence` objects with field, value, operator, source, confidence |
+| 3 | **LLM query caching** | JSONL cache at `data/query_plan_cache.jsonl` prevents redundant API calls |
 
 ---
 
@@ -40,7 +40,7 @@ rare-books-bot/
 │   ├── api/                      # FastAPI chatbot API
 │   │   └── main.py               # REST + WebSocket endpoints
 │   ├── ui_qa/                    # Streamlit QA tool (5 pages)
-│   └── ui_chat/                  # [INCOMPLETE] Future chat UI
+│   └── ui_chat/                  # Streamlit chat UI (279 lines)
 │
 ├── scripts/                      # Core library
 │   ├── marc/                     # M1-M3: Parse → Normalize → Index
@@ -142,6 +142,7 @@ rare-books-bot/
 | `/chat` | HTTP POST | `app/api/main.py:214` | Chatbot endpoint |
 | `/ws/chat` | WebSocket | `app/api/main.py` | Streaming responses |
 | `/health` | HTTP GET | `app/api/main.py:176` | Health check |
+| Streamlit Chat | Web | `app/ui_chat/main.py` | User-facing chat UI |
 | Streamlit QA | Web | `app/ui_qa/` | Query labeling tool |
 
 ### 2.4 Persistent State
@@ -178,7 +179,6 @@ rare-books-bot/
 
 | Feature | Implied By | Actual Status |
 |---------|------------|---------------|
-| Production web UI | `app/ui_chat/` directory | Empty/incomplete |
 | JWT authentication | `plan.mf:68` mentions "JWT (planned)" | Not implemented |
 | Multi-user isolation | API has sessions but no user auth | Single-user mode |
 | Country filtering in queries | Country code columns added | Schema migration needed |
@@ -371,18 +371,7 @@ def test_is_overview_query_returns_false_for_specific():
 
 **Success Metric:** Title/Subject EQUALS queries work correctly.
 
-### Recommendation 4: Implement Minimal Web UI
-
-**Rationale:** API layer complete but unusable without frontend.
-
-**Action:**
-1. Create single-page HTML/JS chat interface
-2. Connect to `/chat` endpoint
-3. Display results with evidence
-
-**Success Metric:** End-to-end user journey possible.
-
-### Recommendation 5: Add Integration Test for Full Query Path
+### Recommendation 4: Add Integration Test for Full Query Path
 
 **Rationale:** Unit tests pass but system integration untested.
 

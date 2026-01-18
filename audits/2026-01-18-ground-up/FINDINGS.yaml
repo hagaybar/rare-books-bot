@@ -98,23 +98,23 @@ findings:
       - All datetime operations use timezone.utc
 
   - id: ARCH-001
-    severity: P1
+    severity: P2
     area: Architecture
-    title: No Production Web UI
+    title: JWT Authentication Not Implemented
     description: |
-      API layer (FastAPI) is complete with /chat endpoint, WebSocket support,
-      session management, but no frontend UI exists for end users.
+      plan.mf mentions "JWT (planned)" but authentication is not implemented.
+      API currently operates in single-user mode with IP-based rate limiting.
     evidence:
-      - directory: app/ui_chat/
-        note: Directory exists but incomplete/empty
       - file: plan.mf
         line: 68
-        quote: "Web UI: React/Vue or HTML+JS (planned)"
+        quote: "Authentication: JWT (planned)"
+      - file: app/api/main.py
+        note: "Rate limiting by IP, no user authentication"
     recommended_invariant: |
-      System should have a usable end-user interface.
+      Multi-user deployments should have proper authentication.
     acceptance_criteria:
-      - Single-page chat UI deployed
-      - End-to-end user journey testable
+      - JWT authentication implemented
+      - Per-user session isolation
 
   # P2: Maintainability Issues
   - id: TEST-001
@@ -181,8 +181,8 @@ metadata:
   total_findings: 9
   by_severity:
     P0: 2
-    P1: 3
-    P2: 4
+    P1: 2
+    P2: 5
   by_area:
     Query Execution: 2
     Data Integrity: 1
