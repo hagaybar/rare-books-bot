@@ -251,7 +251,8 @@ class TestNormalizeRoleBase:
             'trl': 'translator',
             'edt': 'editor',
             'ill': 'illustrator',
-            'com': 'commentator',
+            'com': 'compiler',      # MARC code 'com' = compiler, not commentator
+            'cmm': 'commentator',   # MARC code 'cmm' = commentator
             'scr': 'scribe',
             'fmo': 'former_owner',
             'dte': 'dedicatee',
