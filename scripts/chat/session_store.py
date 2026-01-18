@@ -14,7 +14,7 @@ Two-Phase Conversation Support:
 
 import json
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -227,7 +227,7 @@ class SessionStore:
             SET updated_at = ?
             WHERE session_id = ?
             """,
-            (datetime.utcnow().isoformat(), session_id),
+            (datetime.now(timezone.utc).isoformat(), session_id),
         )
 
         conn.commit()
@@ -261,7 +261,7 @@ class SessionStore:
             SET context = ?, updated_at = ?
             WHERE session_id = ?
             """,
-            (json.dumps(merged_context), datetime.utcnow().isoformat(), session_id),
+            (json.dumps(merged_context), datetime.now(timezone.utc).isoformat(), session_id),
         )
         conn.commit()
 
@@ -283,7 +283,7 @@ class SessionStore:
             SET expired_at = ?
             WHERE session_id = ?
             """,
-            (datetime.utcnow().isoformat(), session_id),
+            (datetime.now(timezone.utc).isoformat(), session_id),
         )
         conn.commit()
 
@@ -298,7 +298,7 @@ class SessionStore:
         Returns:
             Number of sessions expired
         """
-        cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
 
         conn = self._get_connection()
         cursor = conn.execute(
@@ -307,7 +307,7 @@ class SessionStore:
             SET expired_at = ?
             WHERE updated_at < ? AND expired_at IS NULL
             """,
-            (datetime.utcnow().isoformat(), cutoff.isoformat()),
+            (datetime.now(timezone.utc).isoformat(), cutoff.isoformat()),
         )
         count = cursor.rowcount
         conn.commit()
@@ -388,7 +388,7 @@ class SessionStore:
             SET phase = ?, updated_at = ?
             WHERE session_id = ?
             """,
-            (phase.value, datetime.utcnow().isoformat(), session_id),
+            (phase.value, datetime.now(timezone.utc).isoformat(), session_id),
         )
         conn.commit()
 

@@ -6,7 +6,7 @@ persistence, expiration, and foreign key constraints.
 
 import sqlite3
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -187,7 +187,7 @@ def test_expire_old_sessions(store):
 
     # Manually set one session's updated_at to 25 hours ago
     conn = sqlite3.connect(str(store.db_path))
-    old_time = (datetime.utcnow() - timedelta(hours=25)).isoformat()
+    old_time = (datetime.now(timezone.utc) - timedelta(hours=25)).isoformat()
     conn.execute(
         "UPDATE chat_sessions SET updated_at = ? WHERE session_id = ?",
         (old_time, session1.session_id),

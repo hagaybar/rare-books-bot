@@ -12,7 +12,7 @@ Two-Phase Conversation Support:
 - UserGoal: Elicited user goals for corpus exploration
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional
 from uuid import uuid4
@@ -67,7 +67,7 @@ class ActiveSubgroup(BaseModel):
     defining_query: str
     filter_summary: str
     record_ids: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     model_config = ConfigDict(
         json_encoders={datetime: lambda v: v.isoformat()}
@@ -97,7 +97,7 @@ class UserGoal(BaseModel):
     """
     goal_type: str  # "find_specific", "analyze_corpus", "compare", "discover"
     description: str
-    elicited_at: datetime = Field(default_factory=datetime.utcnow)
+    elicited_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     model_config = ConfigDict(
         json_encoders={datetime: lambda v: v.isoformat()}
@@ -124,7 +124,7 @@ class Message(BaseModel):
     content: str
     query_plan: Optional[QueryPlan] = None
     candidate_set: Optional[CandidateSet] = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     model_config = ConfigDict(
         json_encoders={datetime: lambda v: v.isoformat()}
@@ -146,8 +146,8 @@ class ChatSession(BaseModel):
 
     session_id: str = Field(default_factory=lambda: str(uuid4()))
     user_id: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     messages: List[Message] = Field(default_factory=list)
     context: Dict[str, Any] = Field(default_factory=dict)
     metadata: Dict[str, Any] = Field(default_factory=dict)
@@ -163,7 +163,7 @@ class ChatSession(BaseModel):
             message: Message to add to conversation history
         """
         self.messages.append(message)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_recent_messages(self, n: int = 5) -> List[Message]:
         """Get last N messages.

@@ -6,7 +6,7 @@ Defines data structures for:
 - Cache entries
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -145,7 +145,7 @@ class EnrichmentResult(BaseModel):
     # Metadata
     sources_used: List[EnrichmentSource] = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    fetched_at: datetime = Field(default_factory=datetime.utcnow)
+    fetched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     raw_data: Optional[Dict[str, Any]] = None  # For debugging
 
 
@@ -165,7 +165,7 @@ class NLIAuthorityIdentifiers(BaseModel):
     other_ids: Dict[str, str] = Field(default_factory=dict)
 
     # Metadata
-    fetched_at: datetime = Field(default_factory=datetime.utcnow)
+    fetched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     fetch_method: str = "unknown"  # "wikidata_sparql", "manual_mapping", "jsonld"
 
 
