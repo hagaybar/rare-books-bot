@@ -45,6 +45,8 @@ def golden_db(tmp_path):
             date_end INTEGER,
             date_confidence REAL,
             source_tags TEXT,
+            country_code TEXT,
+            country_name TEXT,
             FOREIGN KEY (record_id) REFERENCES records(id)
         );
 
@@ -63,8 +65,9 @@ def golden_db(tmp_path):
     conn.execute("""
         INSERT INTO imprints (record_id, publisher_norm, publisher_raw, publisher_confidence,
                              place_norm, place_raw, place_confidence,
-                             date_start, date_end, date_confidence, source_tags)
-        VALUES (1, 'x', 'X', 0.80, 'london', 'London', 0.90, 1510, 1510, 0.99, '["260$b"]')
+                             date_start, date_end, date_confidence, source_tags,
+                             country_code, country_name)
+        VALUES (1, 'x', 'X', 0.80, 'london', 'London', 0.90, 1510, 1510, 0.99, '["260$b"]', 'enk', 'england')
     """)
 
     # Record 2: Matches publisher "x" but year is outside range
@@ -72,8 +75,9 @@ def golden_db(tmp_path):
     conn.execute("""
         INSERT INTO imprints (record_id, publisher_norm, publisher_raw, publisher_confidence,
                              place_norm, place_raw, place_confidence,
-                             date_start, date_end, date_confidence, source_tags)
-        VALUES (2, 'x', 'X', 0.80, 'paris', 'Paris', 0.90, 1650, 1650, 0.99, '["260$b"]')
+                             date_start, date_end, date_confidence, source_tags,
+                             country_code, country_name)
+        VALUES (2, 'x', 'X', 0.80, 'paris', 'Paris', 0.90, 1650, 1650, 0.99, '["260$b"]', 'fr', 'france')
     """)
 
     # Record 3: Matches year range but different publisher
@@ -81,8 +85,9 @@ def golden_db(tmp_path):
     conn.execute("""
         INSERT INTO imprints (record_id, publisher_norm, publisher_raw, publisher_confidence,
                              place_norm, place_raw, place_confidence,
-                             date_start, date_end, date_confidence, source_tags)
-        VALUES (3, 'cambridge press', 'Cambridge Press', 0.90, 'cambridge', 'Cambridge', 0.95, 1550, 1550, 0.99, '["260$b"]')
+                             date_start, date_end, date_confidence, source_tags,
+                             country_code, country_name)
+        VALUES (3, 'cambridge press', 'Cambridge Press', 0.90, 'cambridge', 'Cambridge', 0.95, 1550, 1550, 0.99, '["260$b"]', 'enk', 'england')
     """)
 
     # Record 4: Another match for publisher "x" and year range
@@ -90,8 +95,9 @@ def golden_db(tmp_path):
     conn.execute("""
         INSERT INTO imprints (record_id, publisher_norm, publisher_raw, publisher_confidence,
                              place_norm, place_raw, place_confidence,
-                             date_start, date_end, date_confidence, source_tags)
-        VALUES (4, 'x', 'X', 0.80, 'venice', 'Venice', 0.85, 1590, 1590, 0.99, '["264$b"]')
+                             date_start, date_end, date_confidence, source_tags,
+                             country_code, country_name)
+        VALUES (4, 'x', 'X', 0.80, 'venice', 'Venice', 0.85, 1590, 1590, 0.99, '["264$b"]', 'it', 'italy')
     """)
 
     # Record 5: Edge case - year range boundary (1599)
@@ -99,8 +105,9 @@ def golden_db(tmp_path):
     conn.execute("""
         INSERT INTO imprints (record_id, publisher_norm, publisher_raw, publisher_confidence,
                              place_norm, place_raw, place_confidence,
-                             date_start, date_end, date_confidence, source_tags)
-        VALUES (5, 'x', 'X', 0.80, 'oxford', 'Oxford', 0.90, 1599, 1599, 0.99, '["260$b"]')
+                             date_start, date_end, date_confidence, source_tags,
+                             country_code, country_name)
+        VALUES (5, 'x', 'X', 0.80, 'oxford', 'Oxford', 0.90, 1599, 1599, 0.99, '["260$b"]', 'enk', 'england')
     """)
 
     # Record 6: Edge case - year range boundary (1500)
@@ -108,8 +115,9 @@ def golden_db(tmp_path):
     conn.execute("""
         INSERT INTO imprints (record_id, publisher_norm, publisher_raw, publisher_confidence,
                              place_norm, place_raw, place_confidence,
-                             date_start, date_end, date_confidence, source_tags)
-        VALUES (6, 'x', 'X', 0.80, 'amsterdam', 'Amsterdam', 0.95, 1500, 1500, 0.99, '["260$c"]')
+                             date_start, date_end, date_confidence, source_tags,
+                             country_code, country_name)
+        VALUES (6, 'x', 'X', 0.80, 'amsterdam', 'Amsterdam', 0.95, 1500, 1500, 0.99, '["260$c"]', 'ne', 'netherlands')
     """)
 
     conn.commit()

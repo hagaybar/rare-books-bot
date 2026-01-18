@@ -49,6 +49,8 @@ def test_db(tmp_path):
             date_end INTEGER,
             date_confidence REAL,
             source_tags TEXT,
+            country_code TEXT,
+            country_name TEXT,
             FOREIGN KEY (record_id) REFERENCES records(id)
         );
 
@@ -79,9 +81,13 @@ def test_db(tmp_path):
         CREATE TABLE agents (
             id INTEGER PRIMARY KEY,
             record_id INTEGER NOT NULL,
-            value TEXT NOT NULL,
-            role TEXT,
-            source TEXT,
+            agent_raw TEXT NOT NULL,
+            agent_norm TEXT NOT NULL,
+            agent_confidence REAL NOT NULL,
+            agent_type TEXT NOT NULL,
+            role_norm TEXT,
+            role_confidence REAL,
+            provenance_json TEXT,
             FOREIGN KEY (record_id) REFERENCES records(id)
         );
 
@@ -93,13 +99,14 @@ def test_db(tmp_path):
 
         INSERT INTO imprints (record_id, publisher_norm, publisher_raw, publisher_confidence,
                              place_norm, place_raw, place_confidence,
-                             date_start, date_end, date_confidence, source_tags) VALUES
+                             date_start, date_end, date_confidence, source_tags,
+                             country_code, country_name) VALUES
             (1, 'oxford university press', 'Oxford University Press', 0.95,
-             'london', 'London', 0.95, 1550, 1550, 0.99, '["260$b"]'),
+             'london', 'London', 0.95, 1550, 1550, 0.99, '["260$b"]', 'enk', 'england'),
             (2, 'cambridge press', 'Cambridge Press', 0.90,
-             'cambridge', 'Cambridge', 0.90, 1575, 1575, 0.99, '["264$b"]'),
+             'cambridge', 'Cambridge', 0.90, 1575, 1575, 0.99, '["264$b"]', 'enk', 'england'),
             (3, 'venetian press', 'Venetian Press', 0.85,
-             'venice', 'Venice', 0.85, 1520, 1520, 0.99, '["260$b"]');
+             'venice', 'Venice', 0.85, 1520, 1520, 0.99, '["260$b"]', 'it', 'italy');
 
         INSERT INTO languages (record_id, code, source) VALUES
             (1, 'lat', '041$a'),

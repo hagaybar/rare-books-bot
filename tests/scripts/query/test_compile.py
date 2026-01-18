@@ -19,6 +19,7 @@ from scripts.query.compile import (
     write_plan_to_file,
     compute_plan_hash,
 )
+from scripts.query.exceptions import QueryCompilationError
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
 
 
@@ -84,10 +85,12 @@ class TestCompileQuery:
         assert len(plan.filters) == 1
         assert plan.debug.get("cache_hit") is True
 
-    def test_compile_query_missing_api_key(self):
+    @patch('scripts.query.llm_compiler.load_cache')
+    def test_compile_query_missing_api_key(self, mock_load_cache):
         """Should raise error if API key not provided."""
+        mock_load_cache.return_value = {}  # Empty cache, no cache hit
         with patch.dict('os.environ', {}, clear=True):
-            with pytest.raises(ValueError, match="OpenAI API key"):
+            with pytest.raises(QueryCompilationError, match="OpenAI API key"):
                 compile_query("test query")
 
     @patch('scripts.query.llm_compiler.OpenAI')

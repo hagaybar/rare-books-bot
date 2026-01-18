@@ -27,7 +27,7 @@ def get_connection(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
-def normalize_filter_value(field: FilterField, raw_value: str) -> str:
+def normalize_filter_value(field: FilterField, raw_value: str, op: FilterOp = None) -> str:
     """Normalize filter values using M2 normalization rules.
 
     For publisher/place: casefold, strip punctuation, remove brackets.
@@ -36,6 +36,7 @@ def normalize_filter_value(field: FilterField, raw_value: str) -> str:
     Args:
         field: Filter field type
         raw_value: Raw input value
+        op: Filter operation (used to determine FTS5 quoting for TITLE/SUBJECT)
 
     Returns:
         Normalized value
@@ -56,11 +57,11 @@ def normalize_filter_value(field: FilterField, raw_value: str) -> str:
         # Languages are ISO 639-2 codes, lowercase
         return raw_value.lower()
     elif field == FilterField.TITLE or field == FilterField.SUBJECT:
-        # FTS5 queries: wrap multi-word phrases in quotes for phrase matching
-        # Example: "military strategy" → '"military strategy"' for FTS5
+        # Lowercase for consistent matching
         value = raw_value.lower()
-        # If value contains spaces, wrap in double quotes for FTS5 phrase matching
-        if ' ' in value:
+        # Only wrap in quotes for FTS5 CONTAINS operations (MATCH syntax)
+        # EQUALS operations use direct string comparison and must NOT be quoted
+        if op == FilterOp.CONTAINS and ' ' in value:
             # Escape any existing double quotes in the value
             value = value.replace('"', '""')
             value = f'"{value}"'
@@ -205,7 +206,7 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
                 needed_joins.add(M3Tables.TITLES)
                 param_name = f"{param_prefix}_title"
                 condition = f"LOWER({M3Aliases.TITLES}.{M3Columns.Titles.VALUE}) = LOWER(:{param_name})"
-                params[param_name] = normalize_filter_value(filter.field, filter.value)
+                params[param_name] = normalize_filter_value(filter.field, filter.value, filter.op)
             elif filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
                 # FTS5 content table is 'titles', so we need to join through titles to records
@@ -217,7 +218,7 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
                     WHERE {M3Tables.TITLES}.{M3Columns.Titles.RECORD_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.ID}
                     AND {M3Tables.TITLES_FTS} MATCH :{param_name}
                 )"""
-                params[param_name] = normalize_filter_value(filter.field, filter.value)
+                params[param_name] = normalize_filter_value(filter.field, filter.value, filter.op)
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for title")
 
@@ -237,7 +238,7 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
                     WHERE {M3Tables.SUBJECTS}.{M3Columns.Subjects.RECORD_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.ID}
                     AND {M3Tables.SUBJECTS_FTS} MATCH :{param_name}
                 )"""
-                params[param_name] = normalize_filter_value(filter.field, filter.value)
+                params[param_name] = normalize_filter_value(filter.field, filter.value, filter.op)
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for subject")
 

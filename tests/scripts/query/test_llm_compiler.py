@@ -172,8 +172,10 @@ class TestCompileQueryLLM:
 
             assert plan.limit == 50  # Should override cached limit
 
-    def test_missing_api_key(self):
+    @patch('scripts.query.llm_compiler.load_cache')
+    def test_missing_api_key(self, mock_load_cache):
         """Should raise QueryCompilationError if API key not provided."""
+        mock_load_cache.return_value = {}  # Empty cache, no cache hit
         with patch.dict('os.environ', {}, clear=True):
             with pytest.raises(QueryCompilationError, match="OpenAI API key not found"):
                 compile_query_llm("test query")
