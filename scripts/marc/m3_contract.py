@@ -80,6 +80,10 @@ class M3Columns:
         PUBLISHER_CONFIDENCE = "publisher_confidence"
         PUBLISHER_METHOD = "publisher_method"
 
+        # M1 country from 008/15-17
+        COUNTRY_CODE = "country_code"
+        COUNTRY_NAME = "country_name"
+
     # subjects table
     class Subjects:
         """Columns in subjects table."""

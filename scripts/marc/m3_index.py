@@ -11,6 +11,22 @@ from datetime import datetime, UTC
 from pathlib import Path
 from typing import Dict, Optional
 
+# Load MARC country code mapping
+COUNTRY_CODE_MAP = None
+
+def load_country_code_map() -> dict:
+    """Load MARC country code to name mapping."""
+    global COUNTRY_CODE_MAP
+    if COUNTRY_CODE_MAP is None:
+        try:
+            map_path = Path(__file__).parent.parent.parent / "data/normalization/marc_country_codes.json"
+            with open(map_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                COUNTRY_CODE_MAP = data.get('codes', {})
+        except (FileNotFoundError, json.JSONDecodeError):
+            COUNTRY_CODE_MAP = {}
+    return COUNTRY_CODE_MAP
+
 
 def create_database(db_path: Path, schema_path: Path) -> sqlite3.Connection:
     """Create SQLite database with M3 schema.
@@ -155,20 +171,31 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
                 publisher_confidence = publisher_norm_data.get('confidence')
                 publisher_method = publisher_norm_data.get('method')
 
+        # M1 country code from 008/15-17
+        country_code = None
+        country_name = None
+        if record.get('country_code_fixed'):
+            country_code = record['country_code_fixed'].get('value')
+            if country_code:
+                country_map = load_country_code_map()
+                country_name = country_map.get(country_code.lower())
+
         cursor.execute("""
             INSERT INTO imprints (
                 record_id, occurrence,
                 date_raw, place_raw, publisher_raw, manufacturer_raw, source_tags,
                 date_start, date_end, date_label, date_confidence, date_method,
                 place_norm, place_display, place_confidence, place_method,
-                publisher_norm, publisher_display, publisher_confidence, publisher_method
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                publisher_norm, publisher_display, publisher_confidence, publisher_method,
+                country_code, country_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             record_id, i,
             date_raw, place_raw, publisher_raw, manufacturer_raw, source_tags,
             date_start, date_end, date_label, date_confidence, date_method,
             place_norm, place_display, place_confidence, place_method,
-            publisher_norm, publisher_display, publisher_confidence, publisher_method
+            publisher_norm, publisher_display, publisher_confidence, publisher_method,
+            country_code, country_name
         ))
         stats['imprints'] += 1
 

@@ -67,6 +67,10 @@ CREATE TABLE imprints (
     publisher_confidence REAL,
     publisher_method TEXT,
 
+    -- M1 country from 008/15-17
+    country_code TEXT,  -- MARC country code (e.g., 'it', 'fr', 'gw')
+    country_name TEXT,  -- Normalized country name (e.g., 'italy', 'france', 'germany')
+
     FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE
 );
 
@@ -75,6 +79,8 @@ CREATE INDEX idx_imprints_date_range ON imprints(date_start, date_end);
 CREATE INDEX idx_imprints_place_norm ON imprints(place_norm);
 CREATE INDEX idx_imprints_publisher_norm ON imprints(publisher_norm);
 CREATE INDEX idx_imprints_date_confidence ON imprints(date_confidence);
+CREATE INDEX idx_imprints_country_code ON imprints(country_code);
+CREATE INDEX idx_imprints_country_name ON imprints(country_name);
 
 -- ==============================================================================
 -- SUBJECT TABLES

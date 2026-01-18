@@ -137,6 +137,24 @@ def extract_language_fixed(record: pymarc.Record) -> Optional[SourcedValue]:
     return None
 
 
+def extract_country_code_fixed(record: pymarc.Record) -> Optional[SourcedValue]:
+    """Extract fixed country code from MARC 008 positions 15-17.
+
+    This is the place of publication, production, or execution.
+    Two or three character code (e.g., 'it ' for Italy, 'fr ' for France).
+    """
+    try:
+        field_008 = record['008']
+        if field_008 and hasattr(field_008, 'data') and len(field_008.data) >= 18:
+            # Positions 15-17 contain 2-3 character country code
+            country_code = field_008.data[15:18].strip()
+            if country_code and country_code != '   ':  # Check it's not just spaces
+                return SourcedValue(value=country_code, source=["008/15-17"])
+    except (KeyError, AttributeError):
+        pass
+    return None
+
+
 def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
     """Extract subject headings from MARC 6XX fields with occurrence indexing and scheme/lang."""
     subjects = []
@@ -611,6 +629,7 @@ def parse_marc_record(record: pymarc.Record, source_file: Optional[str] = None) 
     imprints = extract_imprints(record)
     languages = extract_languages(record)
     language_fixed = extract_language_fixed(record)
+    country_code_fixed = extract_country_code_fixed(record)
     subjects = extract_subjects(record)
     agents = extract_agents(record)
     notes = extract_notes(record)
@@ -625,6 +644,7 @@ def parse_marc_record(record: pymarc.Record, source_file: Optional[str] = None) 
         imprints=imprints,
         languages=languages,
         language_fixed=language_fixed,
+        country_code_fixed=country_code_fixed,
         subjects=subjects,
         agents=agents,
         notes=notes,

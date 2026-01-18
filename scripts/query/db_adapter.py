@@ -145,6 +145,24 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
                 condition = f"NOT ({condition})"
             conditions.append(condition)
 
+        elif filter.field == FilterField.COUNTRY:
+            needed_joins.add(M3Tables.IMPRINTS)
+            if filter.op == FilterOp.EQUALS:
+                param_name = f"{param_prefix}_country"
+                # Country names are already normalized (lowercase) in the database
+                condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.COUNTRY_NAME}) = LOWER(:{param_name})"
+                params[param_name] = filter.value.lower().strip()
+            elif filter.op == FilterOp.CONTAINS:
+                param_name = f"{param_prefix}_country"
+                condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.COUNTRY_NAME}) LIKE LOWER(:{param_name})"
+                params[param_name] = f"%{filter.value.lower().strip()}%"
+            else:
+                raise ValueError(f"Unsupported operation {filter.op} for country")
+
+            if filter.negate:
+                condition = f"NOT ({condition})"
+            conditions.append(condition)
+
         elif filter.field == FilterField.YEAR:
             needed_joins.add(M3Tables.IMPRINTS)
             if filter.op == FilterOp.RANGE:
@@ -315,6 +333,8 @@ def build_select_columns(needed_joins: List[str]) -> str:
             f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_START}",
             f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_END}",
             f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_CONFIDENCE}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.COUNTRY_CODE}",
+            f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.COUNTRY_NAME}",
             f"{M3Aliases.IMPRINTS}.{M3Columns.Imprints.SOURCE_TAGS}"
         ])
 

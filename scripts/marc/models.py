@@ -110,6 +110,11 @@ class CanonicalRecord(BaseModel):
         description="Fixed language code from 008/35-37 (when used as fallback or for consistency check)"
     )
 
+    country_code_fixed: Optional[SourcedValue] = Field(
+        None,
+        description="Fixed country code from 008/15-17 (place of publication/production)"
+    )
+
     subjects: List[SubjectData] = Field(
         default_factory=list,
         description="Subject headings with display + structured parts (6XX)"
