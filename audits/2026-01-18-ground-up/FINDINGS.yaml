@@ -1,0 +1,192 @@
+# Ground-Up System Audit Findings
+# Date: 2026-01-18
+# Auditor: Claude Opus 4.5
+
+findings:
+
+  # P0: Correctness Issues
+  - id: DET-001
+    severity: P0
+    area: Query Execution
+    title: FTS5 Quoting Breaks EQUALS Path
+    description: |
+      normalize_filter_value() wraps multi-word title/subject values in quotes
+      for FTS5 phrase matching, but this also affects EQUALS operations which
+      use direct string comparison, causing 0 matches.
+    evidence:
+      - file: scripts/query/db_adapter.py
+        lines: 58-67
+        code: |
+          if ' ' in value:
+              value = value.replace('"', '""')
+              value = f'"{value}"'
+    reproduction: |
+      pytest tests/scripts/query/test_db_adapter.py::TestNormalizeFilterValue::test_title_normalization -v
+    recommended_invariant: |
+      EQUALS operations should receive unquoted values.
+      Only CONTAINS operations using FTS5 MATCH should receive quoted phrases.
+    acceptance_criteria:
+      - test_title_normalization passes
+      - test_title_equals passes
+      - 15 related query tests pass
+
+  - id: DET-002
+    severity: P0
+    area: Query Execution
+    title: Test Suite Has 21 Failing Tests
+    description: |
+      21 tests failing, primarily due to FTS5 quoting issue cascading through
+      query execution tests. This masks potential regressions.
+    evidence:
+      - command: poetry run pytest tests/ -q --tb=no
+        output: "21 failed, 328 passed, 211 warnings"
+    reproduction: |
+      poetry run pytest tests/ -q --tb=no 2>&1 | tail -30
+    recommended_invariant: |
+      All tests should pass on main branch.
+    acceptance_criteria:
+      - 0 failing tests
+      - CI should block merges with failing tests
+
+  # P1: Architectural/Data Issues
+  - id: DATA-001
+    severity: P1
+    area: Data Integrity
+    title: Country Code Mapping Incomplete
+    description: |
+      Country code columns added to imprints table, but only 41 codes mapped.
+      Records with unmapped codes (aa, ag, bl, etc.) have NULL country_name.
+    evidence:
+      - file: data/normalization/marc_country_codes.json
+        note: Only 41 codes defined
+      - query: |
+          SELECT country_code, country_name FROM imprints
+          WHERE country_name IS NULL LIMIT 10
+        result: "aa -> None, ag -> None, bl -> None, etc."
+    reproduction: |
+      poetry run python -c "
+      import sqlite3
+      conn = sqlite3.connect('data/index/bibliographic.db')
+      c = conn.cursor()
+      c.execute('SELECT country_code, COUNT(*) FROM imprints WHERE country_name IS NULL GROUP BY country_code')
+      print(c.fetchall())
+      "
+    recommended_invariant: |
+      All valid MARC country codes should have a mapping.
+    acceptance_criteria:
+      - marc_country_codes.json contains 100+ codes
+      - Database rebuilt with full mapping
+      - No NULL country_name for valid codes
+
+  - id: COMPAT-001
+    severity: P1
+    area: Compatibility
+    title: datetime.utcnow() Deprecation Warnings
+    description: |
+      211 deprecation warnings for datetime.utcnow() usage.
+      Deprecated in Python 3.12, will be removed in Python 3.14.
+    evidence:
+      - file: scripts/chat/session_store.py
+        lines: [230, 264, 286, 301, 310]
+        code: "datetime.utcnow().isoformat()"
+    reproduction: |
+      poetry run pytest tests/ 2>&1 | grep "utcnow.*deprecated" | wc -l
+    recommended_invariant: |
+      Use timezone-aware datetime: datetime.now(timezone.utc)
+    acceptance_criteria:
+      - 0 deprecation warnings for utcnow
+      - All datetime operations use timezone.utc
+
+  - id: ARCH-001
+    severity: P1
+    area: Architecture
+    title: No Production Web UI
+    description: |
+      API layer (FastAPI) is complete with /chat endpoint, WebSocket support,
+      session management, but no frontend UI exists for end users.
+    evidence:
+      - directory: app/ui_chat/
+        note: Directory exists but incomplete/empty
+      - file: plan.mf
+        line: 68
+        quote: "Web UI: React/Vue or HTML+JS (planned)"
+    recommended_invariant: |
+      System should have a usable end-user interface.
+    acceptance_criteria:
+      - Single-page chat UI deployed
+      - End-to-end user journey testable
+
+  # P2: Maintainability Issues
+  - id: TEST-001
+    severity: P2
+    area: Test Coverage
+    title: No Tests for is_overview_query()
+    description: |
+      is_overview_query() function (80 lines) has complex logic for detecting
+      overview vs. search queries but no unit tests.
+    evidence:
+      - file: scripts/chat/aggregation.py
+        function: is_overview_query
+        lines: "~600-680"
+        note: "Contains search_criteria list (50+ terms), exact_matches, overview_patterns"
+    reproduction: |
+      grep -r "is_overview_query" tests/
+      # Returns no results
+    recommended_invariant: |
+      Complex logic functions should have unit tests.
+    acceptance_criteria:
+      - Test file: tests/scripts/chat/test_aggregation.py
+      - Tests for true positives (overview queries)
+      - Tests for false positives (specific queries)
+      - Edge case coverage
+
+  - id: CODE-001
+    severity: P2
+    area: Code Quality
+    title: Legacy FilterField.AGENT Still Present
+    description: |
+      FilterField.AGENT marked as "Legacy - kept for backward compatibility"
+      but still in codebase alongside AGENT_NORM, AGENT_ROLE, AGENT_TYPE.
+    evidence:
+      - file: scripts/schemas/query_plan.py
+        line: 21
+        code: 'AGENT = "agent"  # Legacy - kept for backward compatibility'
+    recommended_invariant: |
+      Legacy code should be removed or documented with migration path.
+    acceptance_criteria:
+      - Either remove AGENT field
+      - Or document clear deprecation timeline
+
+  - id: CODE-002
+    severity: P2
+    area: Code Quality
+    title: m3_query.py Appears Superseded
+    description: |
+      scripts/marc/m3_query.py is 16KB but query functionality moved to
+      scripts/query/db_adapter.py. Unclear if m3_query.py is still used.
+    evidence:
+      - file: scripts/marc/m3_query.py
+        size: 16KB
+      - file: scripts/query/db_adapter.py
+        note: "Active query implementation"
+    reproduction: |
+      grep -r "from scripts.marc.m3_query import" scripts/ app/
+    recommended_invariant: |
+      Dead code should be removed.
+    acceptance_criteria:
+      - Verify m3_query.py is unused
+      - Either remove or document its purpose
+
+metadata:
+  total_findings: 9
+  by_severity:
+    P0: 2
+    P1: 3
+    P2: 4
+  by_area:
+    Query Execution: 2
+    Data Integrity: 1
+    Compatibility: 1
+    Architecture: 1
+    Test Coverage: 1
+    Code Quality: 3

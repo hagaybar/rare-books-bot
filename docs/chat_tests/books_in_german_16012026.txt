@@ -1,0 +1,20 @@
+The chat: {
+    Are there rare books in German? and from which years?
+
+You're asking for rare books published in German, but the query lacks specific time period details. The term 'rare books' is understood to refer to works in the German language, but the time frame is uncertain.
+
+💡 Suggestion: You're asking for rare books published in German, but the query lacks specific time period details. The term 'rare books' is understood to refer to works in the German language, but the time frame is uncertain.
+
+To help you better, could you clarify:
+
+What specific years or century are you interested in for these German books?
+Are there any other specific criteria, such as subject or place of publication?
+}
+
+The Problem: {
+    I expected that the bot will: 
+    1. create a set of all books in german.
+    2. extract metadata (most frequent topics, authors, specific location, printers, etc)
+    3. Send to llm to formulate an answer  
+
+}
