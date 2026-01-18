@@ -99,11 +99,13 @@ $RECYCLE.BIN/
 ###############################################################################
 # Local data and generated artefacts; not part of the source code
 # Exception: Track production place alias map (curated, reviewed mapping)
+data/
+
+# Exceptions: Track normalization mapping files (curated, reviewed)
 !data/normalization/
 !data/normalization/place_aliases/
 !data/normalization/place_aliases/place_alias_map.json
-
-data/
+!data/normalization/marc_country_codes.json
 outputs/
 archived/
 
