@@ -105,21 +105,59 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
             warnings=[]
         )
 
-    # Rule 5: Embedded year (find first \d{4} anywhere)
+    # Rule 5: Bracketed Gregorian equivalent (Hebrew calendar dates)
+    # Patterns like: "5850 [1846]", "año 5493 [1732]", "5500 [i.e. 1740]"
+    # Look for [YYYY] or [i.e. YYYY] patterns - these are Gregorian equivalents
+    match = re.search(r'\[(?:i\.?e\.?\s*)?(\d{4})\]', raw_stripped)
+    if match:
+        year = int(match.group(1))
+        # Validate it's a reasonable Gregorian year (not another Hebrew date in brackets)
+        if 1000 <= year <= 2100:
+            return DateNormalization(
+                start=year,
+                end=year,
+                label=str(year),
+                confidence=0.90,
+                method="year_bracketed_gregorian",
+                evidence_paths=[evidence_path],
+                warnings=["hebrew_calendar_date_converted"]
+            )
+
+    # Rule 6: Embedded year (find first \d{4} anywhere)
+    # Only use years in reasonable Gregorian range to avoid Hebrew calendar dates
+    for match in re.finditer(r'(\d{4})', raw_stripped):
+        year = int(match.group(1))
+        # Skip Hebrew calendar years (typically 5000+) and future dates
+        if 1000 <= year <= 2100:
+            return DateNormalization(
+                start=year,
+                end=year,
+                label=str(year),
+                confidence=0.85,
+                method="year_embedded",
+                evidence_paths=[evidence_path],
+                warnings=["embedded_year_in_complex_string"]
+            )
+
+    # Rule 6b: If only Hebrew calendar year found, try to convert it
     match = re.search(r'(\d{4})', raw_stripped)
     if match:
         year = int(match.group(1))
-        return DateNormalization(
-            start=year,
-            end=year,
-            label=str(year),
-            confidence=0.85,
-            method="year_embedded",
-            evidence_paths=[evidence_path],
-            warnings=["embedded_year_in_complex_string"]
-        )
+        # Hebrew calendar years are typically 5000+ (Hebrew year = Gregorian + 3760)
+        if year >= 5000:
+            gregorian_year = year - 3760
+            if 1000 <= gregorian_year <= 2100:
+                return DateNormalization(
+                    start=gregorian_year,
+                    end=gregorian_year,
+                    label=str(gregorian_year),
+                    confidence=0.75,
+                    method="hebrew_calendar_converted",
+                    evidence_paths=[evidence_path],
+                    warnings=["hebrew_calendar_date_auto_converted"]
+                )
 
-    # Rule 6: Unparsed
+    # Rule 7: Unparsed
     return DateNormalization(
         start=None,
         end=None,
