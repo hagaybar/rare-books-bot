@@ -1,9 +1,9 @@
-"""Tests for enhanced agent extraction (Stage 2)."""
+"""Tests for enhanced agent extraction (Stage 2) and authority URI extraction."""
 
 import pytest
 from pymarc import Record, Field, Subfield
 
-from scripts.marc.parse import extract_agents, AgentData
+from scripts.marc.parse import extract_agents, extract_subjects, AgentData
 
 
 class TestPersonalNameExtraction:
@@ -395,6 +395,103 @@ class TestMultipleAgents:
             assert agent.agent_index == i
 
 
+class TestAuthorityURIExtraction:
+    """Test extraction of authority URIs from $0 subfield."""
+
+    def test_personal_name_with_authority_uri(self):
+        """Test extraction of authority URI from personal name (100)."""
+        record = Record()
+        record.add_field(
+            Field(
+                tag='100',
+                indicators=['1', ' '],
+                subfields=[
+                    Subfield(code='a', value='Manutius, Aldus,'),
+                    Subfield(code='d', value='1449-1515'),
+                    Subfield(code='0', value='https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007261327805171.jsonld'),
+                ]
+            )
+        )
+
+        agents = extract_agents(record)
+
+        assert len(agents) == 1
+        agent = agents[0]
+        assert agent.name.value == 'Manutius, Aldus,'
+        assert agent.authority_uri is not None
+        assert agent.authority_uri.value == 'https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007261327805171.jsonld'
+        assert '100[0]$0' in agent.authority_uri.source
+
+    def test_corporate_body_with_authority_uri(self):
+        """Test extraction of authority URI from corporate body (710)."""
+        record = Record()
+        record.add_field(
+            Field(
+                tag='710',
+                indicators=['2', ' '],
+                subfields=[
+                    Subfield(code='a', value='Aldine Press.'),
+                    Subfield(code='0', value='http://viaf.org/viaf/123456789'),
+                    Subfield(code='4', value='pbl'),
+                ]
+            )
+        )
+
+        agents = extract_agents(record)
+
+        assert len(agents) == 1
+        agent = agents[0]
+        assert agent.name.value == 'Aldine Press.'
+        assert agent.agent_type == 'corporate'
+        assert agent.authority_uri is not None
+        assert agent.authority_uri.value == 'http://viaf.org/viaf/123456789'
+        assert '710[0]$0' in agent.authority_uri.source
+
+    def test_meeting_with_authority_uri(self):
+        """Test extraction of authority URI from meeting (711)."""
+        record = Record()
+        record.add_field(
+            Field(
+                tag='711',
+                indicators=['2', ' '],
+                subfields=[
+                    Subfield(code='a', value='Council of Trent'),
+                    Subfield(code='d', value='1545-1563'),
+                    Subfield(code='c', value='Trento, Italy'),
+                    Subfield(code='0', value='http://id.loc.gov/authorities/names/n12345678'),
+                ]
+            )
+        )
+
+        agents = extract_agents(record)
+
+        assert len(agents) == 1
+        agent = agents[0]
+        assert 'Council of Trent' in agent.name.value
+        assert agent.agent_type == 'meeting'
+        assert agent.authority_uri is not None
+        assert agent.authority_uri.value == 'http://id.loc.gov/authorities/names/n12345678'
+        assert '711[0]$0' in agent.authority_uri.source
+
+    def test_agent_without_authority_uri(self):
+        """Test that agents without $0 have authority_uri=None."""
+        record = Record()
+        record.add_field(
+            Field(
+                tag='700',
+                indicators=['1', ' '],
+                subfields=[
+                    Subfield(code='a', value='Unknown Author'),
+                ]
+            )
+        )
+
+        agents = extract_agents(record)
+
+        assert len(agents) == 1
+        assert agents[0].authority_uri is None
+
+
 class TestEdgeCases:
     """Test edge cases and error handling."""
 
@@ -466,3 +563,97 @@ class TestEdgeCases:
         assert agents[0].agent_type == 'personal'
         assert agents[1].agent_type == 'corporate'
         assert agents[2].agent_type == 'meeting'
+
+
+class TestSubjectAuthorityURIExtraction:
+    """Test extraction of authority URIs from subject $0 subfields."""
+
+    def test_subject_with_authority_uri(self):
+        """Test extraction of authority URI from subject (650)."""
+        record = Record()
+        record.add_field(
+            Field(
+                tag='650',
+                indicators=[' ', '0'],
+                subfields=[
+                    Subfield(code='a', value='Printing'),
+                    Subfield(code='z', value='Italy'),
+                    Subfield(code='v', value='Bibliography'),
+                    Subfield(code='0', value='http://id.loc.gov/authorities/subjects/sh85106837'),
+                ]
+            )
+        )
+
+        subjects = extract_subjects(record)
+
+        assert len(subjects) == 1
+        subj = subjects[0]
+        assert 'Printing' in subj.value
+        assert subj.authority_uri is not None
+        assert subj.authority_uri.value == 'http://id.loc.gov/authorities/subjects/sh85106837'
+        assert '650[0]$0' in subj.authority_uri.source
+
+    def test_subject_with_nli_authority_uri(self):
+        """Test extraction of NLI authority URI from subject."""
+        record = Record()
+        record.add_field(
+            Field(
+                tag='650',
+                indicators=[' ', '4'],
+                subfields=[
+                    Subfield(code='a', value='ספרים נדירים'),
+                    Subfield(code='2', value='nli'),
+                    Subfield(code='0', value='https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007261327805171.jsonld'),
+                ]
+            )
+        )
+
+        subjects = extract_subjects(record)
+
+        assert len(subjects) == 1
+        subj = subjects[0]
+        assert subj.authority_uri is not None
+        assert 'exlibrisgroup.com' in subj.authority_uri.value
+        assert subj.scheme.value == 'nli'
+
+    def test_geographic_subject_with_authority_uri(self):
+        """Test extraction of authority URI from geographic subject (651)."""
+        record = Record()
+        record.add_field(
+            Field(
+                tag='651',
+                indicators=[' ', '0'],
+                subfields=[
+                    Subfield(code='a', value='Venice (Italy)'),
+                    Subfield(code='x', value='History'),
+                    Subfield(code='0', value='http://id.loc.gov/authorities/names/n79022936'),
+                ]
+            )
+        )
+
+        subjects = extract_subjects(record)
+
+        assert len(subjects) == 1
+        subj = subjects[0]
+        assert 'Venice (Italy)' in subj.value
+        assert subj.authority_uri is not None
+        assert subj.authority_uri.value == 'http://id.loc.gov/authorities/names/n79022936'
+        assert '651[0]$0' in subj.authority_uri.source
+
+    def test_subject_without_authority_uri(self):
+        """Test that subjects without $0 have authority_uri=None."""
+        record = Record()
+        record.add_field(
+            Field(
+                tag='650',
+                indicators=[' ', '0'],
+                subfields=[
+                    Subfield(code='a', value='Incunabula'),
+                ]
+            )
+        )
+
+        subjects = extract_subjects(record)
+
+        assert len(subjects) == 1
+        assert subjects[0].authority_uri is None

@@ -177,6 +177,7 @@ def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
         parts_dict = {}
         scheme_val = None
         heading_lang_val = None
+        authority_uri_val = None
 
         # Subdivision subfields that should always be arrays
         subdivision_codes = {'v', 'x', 'y', 'z'}
@@ -185,13 +186,15 @@ def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
             code = subfield[0]
             value = subfield[1]
 
-            # Capture scheme ($2) and heading language ($9)
+            # Capture scheme ($2), heading language ($9), and authority URI ($0)
             if code == '2':
                 scheme_val = value
             elif code == '9':
                 heading_lang_val = value
+            elif code == '0':
+                authority_uri_val = value
             # Skip other control subfields
-            elif code not in ['0', '6', '8']:
+            elif code not in ['6', '8']:
                 display_parts.append(value)
                 sources.append(_make_source_ref(tag, occ, code))
 
@@ -220,7 +223,8 @@ def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
                 parts=parts_dict,
                 source_tag=tag,
                 scheme=SourcedValue(value=scheme_val, source=[_make_source_ref(tag, occ, '2')]) if scheme_val else None,
-                heading_lang=SourcedValue(value=heading_lang_val, source=[_make_source_ref(tag, occ, '9')]) if heading_lang_val else None
+                heading_lang=SourcedValue(value=heading_lang_val, source=[_make_source_ref(tag, occ, '9')]) if heading_lang_val else None,
+                authority_uri=SourcedValue(value=authority_uri_val, source=[_make_source_ref(tag, occ, '0')]) if authority_uri_val else None
             ))
 
     return subjects
@@ -309,6 +313,7 @@ def _extract_personal_agent(field: pymarc.Field, tag: str, occurrence: int, entr
         return None
 
     dates_vals = field.get_subfields('d')
+    authority_uri_vals = field.get_subfields('0')
     function_sv, role_source = _extract_role_from_field(field, tag, occurrence)
 
     return AgentData(
@@ -319,7 +324,8 @@ def _extract_personal_agent(field: pymarc.Field, tag: str, occurrence: int, entr
         source_tags=[tag],
         agent_type='personal',
         agent_index=agent_index,
-        role_source=role_source
+        role_source=role_source,
+        authority_uri=SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')]) if authority_uri_vals else None
     )
 
 
@@ -355,6 +361,7 @@ def _extract_corporate_agent(field: pymarc.Field, tag: str, occurrence: int, ent
         return None
 
     full_name = ' '.join(name_parts)
+    authority_uri_vals = field.get_subfields('0')
     function_sv, role_source = _extract_role_from_field(field, tag, occurrence)
 
     return AgentData(
@@ -365,7 +372,8 @@ def _extract_corporate_agent(field: pymarc.Field, tag: str, occurrence: int, ent
         source_tags=[tag],
         agent_type='corporate',
         agent_index=agent_index,
-        role_source=role_source
+        role_source=role_source,
+        authority_uri=SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')]) if authority_uri_vals else None
     )
 
 
@@ -415,6 +423,7 @@ def _extract_meeting_agent(field: pymarc.Field, tag: str, occurrence: int, entry
         return None
 
     full_name = ' '.join(name_parts)
+    authority_uri_vals = field.get_subfields('0')
     function_sv, role_source = _extract_role_from_field(field, tag, occurrence)
 
     return AgentData(
@@ -425,7 +434,8 @@ def _extract_meeting_agent(field: pymarc.Field, tag: str, occurrence: int, entry
         source_tags=[tag],
         agent_type='meeting',
         agent_index=agent_index,
-        role_source=role_source
+        role_source=role_source,
+        authority_uri=SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')]) if authority_uri_vals else None
     )
 
 

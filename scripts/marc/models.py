@@ -50,6 +50,10 @@ class AgentData(BaseModel):
         default=None,
         description="Source of role/function: 'relator_code' ($4), 'relator_term' ($e), 'inferred_from_tag', or 'unknown'"
     )
+    authority_uri: Optional[SourcedValue] = Field(
+        default=None,
+        description="Authority URI from $0 subfield (e.g., NLI/VIAF/LC authority link)"
+    )
 
 
 class SubjectData(BaseModel):
@@ -61,6 +65,7 @@ class SubjectData(BaseModel):
     source_tag: str = Field(..., description="MARC tag (e.g., '650', '651')")
     scheme: Optional[SourcedValue] = Field(None, description="Subject scheme from $2 (e.g., 'nli', 'lcsh')")
     heading_lang: Optional[SourcedValue] = Field(None, description="Heading language from $9 (e.g., 'lat', 'eng')")
+    authority_uri: Optional[SourcedValue] = Field(None, description="Authority URI from $0 subfield (e.g., NLI/VIAF/LC authority link)")
 
 
 class NoteData(BaseModel):

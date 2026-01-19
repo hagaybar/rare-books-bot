@@ -354,7 +354,8 @@ def build_select_columns(needed_joins: List[str]) -> str:
     if M3Tables.SUBJECTS in needed_joins:
         columns.extend([
             f"{M3Aliases.SUBJECTS}.{M3Columns.Subjects.VALUE} AS subject_value",
-            f"{M3Aliases.SUBJECTS}.{M3Columns.Subjects.SOURCE} AS subject_source"
+            f"{M3Aliases.SUBJECTS}.{M3Columns.Subjects.SOURCE} AS subject_source",
+            f"{M3Aliases.SUBJECTS}.{M3Columns.Subjects.AUTHORITY_URI} AS subject_authority_uri"
         ])
 
     if M3Tables.AGENTS in needed_joins:
@@ -365,7 +366,8 @@ def build_select_columns(needed_joins: List[str]) -> str:
             f"{M3Aliases.AGENTS}.{M3Columns.Agents.ROLE_NORM} AS agent_role_norm",
             f"{M3Aliases.AGENTS}.{M3Columns.Agents.ROLE_CONFIDENCE} AS agent_role_confidence",
             f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_TYPE} AS agent_type",
-            f"{M3Aliases.AGENTS}.{M3Columns.Agents.PROVENANCE_JSON} AS agent_provenance"
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.PROVENANCE_JSON} AS agent_provenance",
+            f"{M3Aliases.AGENTS}.{M3Columns.Agents.AUTHORITY_URI} AS agent_authority_uri"
         ])
 
     return ", ".join(columns)

@@ -94,6 +94,7 @@ CREATE TABLE subjects (
     source_tag TEXT NOT NULL,  -- MARC tag (650, 651, etc.)
     scheme TEXT,  -- Subject scheme from $2 (e.g., 'nli', 'lcsh')
     heading_lang TEXT,  -- Heading language from $9
+    authority_uri TEXT,  -- Authority URI from $0 (e.g., NLI/VIAF/LC authority link)
     parts TEXT NOT NULL,  -- JSON object of structured parts
     source TEXT NOT NULL,  -- JSON array of MARC sources with occurrence
     FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE
@@ -103,6 +104,7 @@ CREATE INDEX idx_subjects_record_id ON subjects(record_id);
 CREATE INDEX idx_subjects_value ON subjects(value);
 CREATE INDEX idx_subjects_tag ON subjects(source_tag);
 CREATE INDEX idx_subjects_scheme ON subjects(scheme);
+CREATE INDEX idx_subjects_authority_uri ON subjects(authority_uri);
 
 -- ==============================================================================
 -- AGENT TABLES (Authors, Contributors, etc.)
@@ -119,6 +121,7 @@ CREATE TABLE agents (
     agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),
     role_raw TEXT,  -- Raw role from MARC (may be NULL)
     role_source TEXT,  -- 'relator_code', 'relator_term', 'inferred_from_tag', 'unknown'
+    authority_uri TEXT,  -- Authority URI from $0 (e.g., NLI/VIAF/LC authority link)
 
     -- M2 normalized fields
     agent_norm TEXT NOT NULL,  -- Canonical normalized name
@@ -142,6 +145,7 @@ CREATE INDEX idx_agents_agent_norm ON agents(agent_norm);
 CREATE INDEX idx_agents_role_norm ON agents(role_norm);
 CREATE INDEX idx_agents_agent_role ON agents(agent_norm, role_norm);  -- Composite for "printer X" queries
 CREATE INDEX idx_agents_type ON agents(agent_type);
+CREATE INDEX idx_agents_authority_uri ON agents(authority_uri);
 
 -- ==============================================================================
 -- LANGUAGE TABLE
@@ -247,3 +251,34 @@ CREATE TRIGGER subjects_fts_update AFTER UPDATE ON subjects BEGIN
     SELECT NEW.id, r.mms_id, NEW.value
     FROM records r WHERE r.id = NEW.record_id;
 END;
+
+-- ==============================================================================
+-- AUTHORITY ENRICHMENT TABLE (Wikidata/VIAF/NLI)
+-- ==============================================================================
+
+-- Authority enrichment data from external sources
+CREATE TABLE authority_enrichment (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    authority_uri TEXT NOT NULL UNIQUE,  -- Original authority URI from $0
+    nli_id TEXT,  -- NLI authority ID (extracted from URI)
+    wikidata_id TEXT,  -- Wikidata QID (e.g., Q123456)
+    viaf_id TEXT,  -- VIAF ID
+    isni_id TEXT,  -- ISNI
+    loc_id TEXT,  -- Library of Congress ID
+    label TEXT,  -- Display label from Wikidata
+    description TEXT,  -- Description from Wikidata
+    person_info TEXT,  -- JSON: birth/death years, occupations, nationality
+    place_info TEXT,  -- JSON: coordinates, country
+    image_url TEXT,  -- Wikidata image URL
+    wikipedia_url TEXT,  -- Wikipedia article URL
+    source TEXT NOT NULL,  -- Primary source: 'wikidata', 'viaf', 'nli'
+    confidence REAL,  -- Confidence score (0-1)
+    fetched_at TEXT NOT NULL,  -- ISO 8601 timestamp when fetched
+    expires_at TEXT NOT NULL  -- ISO 8601 timestamp when cache expires
+);
+
+-- Indexes for efficient lookups
+CREATE INDEX idx_enrichment_authority_uri ON authority_enrichment(authority_uri);
+CREATE INDEX idx_enrichment_wikidata ON authority_enrichment(wikidata_id);
+CREATE INDEX idx_enrichment_nli ON authority_enrichment(nli_id);
+CREATE INDEX idx_enrichment_viaf ON authority_enrichment(viaf_id);

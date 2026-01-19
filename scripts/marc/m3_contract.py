@@ -20,6 +20,7 @@ class M3Tables:
     LANGUAGES = "languages"
     NOTES = "notes"
     PHYSICAL_DESCRIPTIONS = "physical_descriptions"
+    AUTHORITY_ENRICHMENT = "authority_enrichment"
 
     # FTS5 virtual tables
     TITLES_FTS = "titles_fts"
@@ -93,6 +94,7 @@ class M3Columns:
         SOURCE_TAG = "source_tag"
         SCHEME = "scheme"
         HEADING_LANG = "heading_lang"
+        AUTHORITY_URI = "authority_uri"
         PARTS = "parts"
         SOURCE = "source"
 
@@ -108,6 +110,7 @@ class M3Columns:
         AGENT_TYPE = "agent_type"
         ROLE_RAW = "role_raw"
         ROLE_SOURCE = "role_source"
+        AUTHORITY_URI = "authority_uri"
 
         # M2 normalized fields
         AGENT_NORM = "agent_norm"
@@ -147,6 +150,27 @@ class M3Columns:
         VALUE = "value"
         SOURCE = "source"
 
+    # authority_enrichment table
+    class AuthorityEnrichment:
+        """Columns in authority_enrichment table."""
+        ID = "id"
+        AUTHORITY_URI = "authority_uri"
+        NLI_ID = "nli_id"
+        WIKIDATA_ID = "wikidata_id"
+        VIAF_ID = "viaf_id"
+        ISNI_ID = "isni_id"
+        LOC_ID = "loc_id"
+        LABEL = "label"
+        DESCRIPTION = "description"
+        PERSON_INFO = "person_info"
+        PLACE_INFO = "place_info"
+        IMAGE_URL = "image_url"
+        WIKIPEDIA_URL = "wikipedia_url"
+        SOURCE = "source"
+        CONFIDENCE = "confidence"
+        FETCHED_AT = "fetched_at"
+        EXPIRES_AT = "expires_at"
+
 
 # Commonly used table aliases in SQL queries
 class M3Aliases:
@@ -157,3 +181,4 @@ class M3Aliases:
     TITLES = "t"
     SUBJECTS = "s"
     AGENTS = "a"
+    AUTHORITY_ENRICHMENT = "ae"

@@ -2,17 +2,23 @@
 
 This script creates a queryable SQLite database from enriched canonical records.
 The database supports fielded queries on both M1 raw values and M2 normalized values.
+Optionally enriches authority URIs with Wikidata metadata.
 """
 
+import asyncio
 import json
 import sqlite3
 import sys
-from datetime import datetime, UTC
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Set, List
 
 # Load MARC country code mapping
 COUNTRY_CODE_MAP = None
+
+# Default TTL for enrichment cache
+DEFAULT_ENRICHMENT_TTL_DAYS = 30
+
 
 def load_country_code_map() -> dict:
     """Load MARC country code to name mapping."""
@@ -26,6 +32,143 @@ def load_country_code_map() -> dict:
         except (FileNotFoundError, json.JSONDecodeError):
             COUNTRY_CODE_MAP = {}
     return COUNTRY_CODE_MAP
+
+
+def collect_authority_uris(conn: sqlite3.Connection) -> Set[str]:
+    """Collect unique authority URIs from agents and subjects tables.
+
+    Args:
+        conn: SQLite connection
+
+    Returns:
+        Set of unique authority URIs
+    """
+    uris = set()
+
+    # Collect from agents
+    cursor = conn.execute("SELECT DISTINCT authority_uri FROM agents WHERE authority_uri IS NOT NULL")
+    for row in cursor:
+        uris.add(row[0])
+
+    # Collect from subjects
+    cursor = conn.execute("SELECT DISTINCT authority_uri FROM subjects WHERE authority_uri IS NOT NULL")
+    for row in cursor:
+        uris.add(row[0])
+
+    return uris
+
+
+async def enrich_authority_uris(
+    conn: sqlite3.Connection,
+    uris: Set[str],
+    enrichment_service=None,
+    rate_limit_delay: float = 1.0
+) -> Dict[str, int]:
+    """Enrich authority URIs with Wikidata metadata.
+
+    Args:
+        conn: SQLite connection
+        uris: Set of authority URIs to enrich
+        enrichment_service: Optional EnrichmentService instance (created if None)
+        rate_limit_delay: Delay between requests in seconds
+
+    Returns:
+        Statistics dict with counts
+    """
+    from scripts.enrichment.enrichment_service import EnrichmentService
+    from scripts.enrichment.models import EntityType
+
+    stats = {
+        'total': len(uris),
+        'enriched': 0,
+        'cached': 0,
+        'failed': 0,
+        'no_wikidata': 0
+    }
+
+    if not uris:
+        return stats
+
+    # Create enrichment service if not provided
+    if enrichment_service is None:
+        cache_path = Path("data/enrichment/cache.db")
+        enrichment_service = EnrichmentService(cache_db_path=cache_path)
+
+    print(f"\nEnriching {len(uris)} unique authority URIs...")
+
+    for i, uri in enumerate(uris):
+        try:
+            # Progress indicator
+            if (i + 1) % 10 == 0 or i == 0:
+                print(f"  Enriching {i + 1}/{len(uris)} URIs...")
+
+            # Check if already in authority_enrichment table
+            cursor = conn.execute(
+                "SELECT id FROM authority_enrichment WHERE authority_uri = ?",
+                (uri,)
+            )
+            if cursor.fetchone():
+                stats['cached'] += 1
+                continue
+
+            # Enrich via EnrichmentService
+            # Agents are the most common entity type for authority URIs
+            result = await enrichment_service.enrich_entity(
+                entity_type=EntityType.AGENT,
+                entity_value=uri,  # Use URI as value (service will extract ID)
+                nli_authority_uri=uri,
+            )
+
+            if result and result.wikidata_id:
+                # Insert into authority_enrichment table
+                fetched_at = datetime.now(timezone.utc).isoformat()
+                expires_at = (datetime.now(timezone.utc) + timedelta(days=DEFAULT_ENRICHMENT_TTL_DAYS)).isoformat()
+
+                # Extract NLI ID from URI
+                nli_id = None
+                if "/authorities/" in uri:
+                    part = uri.split("/authorities/")[-1]
+                    if part.endswith(".jsonld"):
+                        nli_id = part[:-7]
+                    else:
+                        nli_id = part.split(".")[0]
+
+                # Serialize person/place info
+                person_info_json = None
+                place_info_json = None
+                if result.person_info:
+                    person_info_json = json.dumps(result.person_info.model_dump())
+                if result.place_info:
+                    place_info_json = json.dumps(result.place_info.model_dump())
+
+                conn.execute("""
+                    INSERT OR REPLACE INTO authority_enrichment (
+                        authority_uri, nli_id, wikidata_id, viaf_id, isni_id, loc_id,
+                        label, description, person_info, place_info,
+                        image_url, wikipedia_url, source, confidence,
+                        fetched_at, expires_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    uri, nli_id, result.wikidata_id, result.viaf_id,
+                    result.isni_id, result.loc_id, result.label, result.description,
+                    person_info_json, place_info_json, result.image_url,
+                    result.wikipedia_url, result.sources_used[0].value if result.sources_used else 'unknown',
+                    result.confidence, fetched_at, expires_at
+                ))
+                conn.commit()
+                stats['enriched'] += 1
+            else:
+                stats['no_wikidata'] += 1
+
+            # Rate limiting
+            await asyncio.sleep(rate_limit_delay)
+
+        except Exception as e:
+            print(f"    Error enriching {uri[:60]}...: {e}")
+            stats['failed'] += 1
+
+    enrichment_service.close()
+    return stats
 
 
 def create_database(db_path: Path, schema_path: Path) -> sqlite3.Connection:
@@ -80,7 +223,7 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
 
     # Insert record
     mms_id = record['source']['control_number']['value']
-    created_at = datetime.now(UTC).isoformat()
+    created_at = datetime.now(timezone.utc).isoformat()
 
     cursor.execute(
         "INSERT INTO records (mms_id, source_file, created_at, jsonl_line_number) VALUES (?, ?, ?, ?)",
@@ -207,16 +350,18 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
     for subject in record.get('subjects', []):
         scheme = subject.get('scheme', {}).get('value') if subject.get('scheme') else None
         heading_lang = subject.get('heading_lang', {}).get('value') if subject.get('heading_lang') else None
+        authority_uri = subject.get('authority_uri', {}).get('value') if subject.get('authority_uri') else None
 
         cursor.execute("""
-            INSERT INTO subjects (record_id, value, source_tag, scheme, heading_lang, parts, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO subjects (record_id, value, source_tag, scheme, heading_lang, authority_uri, parts, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             record_id,
             subject['value'],
             subject['source_tag'],
             scheme,
             heading_lang,
+            authority_uri,
             json.dumps(subject['parts']),
             json.dumps(subject['source'])
         ))
@@ -248,6 +393,7 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
         agent_type = agent_m1.get('agent_type', 'personal')
         role_raw = agent_m1.get('function', {}).get('value') if agent_m1.get('function') else None
         role_source = agent_m1.get('role_source', 'unknown')
+        authority_uri = agent_m1.get('authority_uri', {}).get('value') if agent_m1.get('authority_uri') else None
 
         # Build provenance JSON from M1 sources
         name_sources = agent_m1.get('name', {}).get('source', []) if agent_m1.get('name') else []
@@ -278,11 +424,11 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
         cursor.execute("""
             INSERT INTO agents (
                 record_id, agent_index,
-                agent_raw, agent_type, role_raw, role_source,
+                agent_raw, agent_type, role_raw, role_source, authority_uri,
                 agent_norm, agent_confidence, agent_method, agent_notes,
                 role_norm, role_confidence, role_method,
                 provenance_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             record_id,
             agent_index,
@@ -290,6 +436,7 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
             agent_type,
             role_raw,
             role_source,
+            authority_uri,
             agent_norm,
             agent_confidence,
             agent_method,
@@ -341,13 +488,21 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
     return stats
 
 
-def build_index(jsonl_path: Path, db_path: Path, schema_path: Path) -> dict:
+def build_index(
+    jsonl_path: Path,
+    db_path: Path,
+    schema_path: Path,
+    enrich: bool = False,
+    rate_limit_delay: float = 1.0
+) -> dict:
     """Build SQLite index from M1+M2 JSONL.
 
     Args:
         jsonl_path: Path to M1+M2 JSONL file
         db_path: Path to output SQLite database
         schema_path: Path to SQL schema file
+        enrich: Whether to enrich authority URIs with Wikidata metadata
+        rate_limit_delay: Delay between enrichment requests in seconds
 
     Returns:
         Statistics dict
@@ -361,7 +516,8 @@ def build_index(jsonl_path: Path, db_path: Path, schema_path: Path) -> dict:
         'languages': 0,
         'notes': 0,
         'physical_descriptions': 0,
-        'errors': []
+        'errors': [],
+        'enrichment': None
     }
 
     # Create database
@@ -398,8 +554,24 @@ def build_index(jsonl_path: Path, db_path: Path, schema_path: Path) -> dict:
                 stats['errors'].append(error_msg)
                 print(f"  ERROR: {error_msg}")
 
-    # Commit and close
+    # Commit after indexing
     conn.commit()
+
+    # Optionally enrich authority URIs
+    if enrich:
+        try:
+            uris = collect_authority_uris(conn)
+            print(f"\nFound {len(uris)} unique authority URIs")
+            if uris:
+                enrichment_stats = asyncio.run(
+                    enrich_authority_uris(conn, uris, rate_limit_delay=rate_limit_delay)
+                )
+                stats['enrichment'] = enrichment_stats
+        except Exception as e:
+            print(f"WARNING: Enrichment failed: {e}")
+            stats['enrichment'] = {'error': str(e)}
+
+    # Close connection
     conn.close()
 
     return stats
@@ -428,6 +600,19 @@ def print_report(stats: dict, db_path: Path):
     print(f"  Notes: {stats['notes']}")
     print(f"  Physical descriptions: {stats['physical_descriptions']}")
 
+    # Enrichment stats
+    if stats.get('enrichment'):
+        enrich = stats['enrichment']
+        if 'error' in enrich:
+            print(f"\nEnrichment: FAILED ({enrich['error']})")
+        else:
+            print(f"\nAuthority URI Enrichment:")
+            print(f"  Total URIs: {enrich.get('total', 0)}")
+            print(f"  Enriched (Wikidata): {enrich.get('enriched', 0)}")
+            print(f"  Already cached: {enrich.get('cached', 0)}")
+            print(f"  No Wikidata match: {enrich.get('no_wikidata', 0)}")
+            print(f"  Failed: {enrich.get('failed', 0)}")
+
     if stats['errors']:
         print(f"\nErrors: {len(stats['errors'])}")
         for error in stats['errors'][:10]:  # Show first 10
@@ -441,17 +626,23 @@ def print_report(stats: dict, db_path: Path):
 def main():
     """Main CLI entry point."""
     if len(sys.argv) < 4:
-        print("Usage: python -m scripts.marc.m3_index <m1m2_jsonl> <output_db> <schema_sql>")
+        print("Usage: python -m scripts.marc.m3_index <m1m2_jsonl> <output_db> <schema_sql> [--enrich]")
+        print("\nOptions:")
+        print("  --enrich    Enrich authority URIs with Wikidata metadata (requires network)")
         print("\nExample:")
         print("  python -m scripts.marc.m3_index \\")
         print("    data/canonical/m1m2_enriched.jsonl \\")
         print("    data/index/bibliographic.db \\")
-        print("    scripts/marc/m3_schema.sql")
+        print("    scripts/marc/m3_schema.sql \\")
+        print("    --enrich")
         sys.exit(1)
 
     jsonl_path = Path(sys.argv[1])
     db_path = Path(sys.argv[2])
     schema_path = Path(sys.argv[3])
+
+    # Check for --enrich flag
+    enrich = "--enrich" in sys.argv
 
     if not jsonl_path.exists():
         print(f"Error: JSONL file not found: {jsonl_path}")
@@ -465,7 +656,7 @@ def main():
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Build index
-    stats = build_index(jsonl_path, db_path, schema_path)
+    stats = build_index(jsonl_path, db_path, schema_path, enrich=enrich)
 
     # Print report
     print_report(stats, db_path)
