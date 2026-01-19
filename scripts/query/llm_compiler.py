@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
 from scripts.query.exceptions import QueryCompilationError
+from scripts.utils.llm_logger import log_llm_call
 
 
 class QueryPlanLLM(BaseModel):
@@ -227,13 +228,24 @@ def call_model(client: OpenAI, model: str, query_text: str) -> QueryPlan:
     Raises:
         Exception: If API call fails
     """
+    user_prompt = build_user_prompt(query_text)
     resp = client.responses.parse(
         model=model,
         input=[
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_user_prompt(query_text)},
+            {"role": "user", "content": user_prompt},
         ],
         text_format=QueryPlanLLM,
+    )
+
+    # Log the LLM call with full details
+    log_llm_call(
+        call_type="query_compilation",
+        model=model,
+        system_prompt=SYSTEM_PROMPT,
+        user_prompt=user_prompt,
+        response=resp,
+        extra_metadata={"query_text": query_text},
     )
 
     # Convert QueryPlanLLM to QueryPlan (adds debug field)

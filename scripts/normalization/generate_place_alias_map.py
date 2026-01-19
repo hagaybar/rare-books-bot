@@ -38,6 +38,8 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 # OpenAI SDK (Responses API)
 from openai import OpenAI
 
+from scripts.utils.llm_logger import log_llm_call
+
 
 # ----------------------------
 # Canonical key policy
@@ -274,6 +276,17 @@ def call_model(client: OpenAI, model: str, place_norm: str, count: int) -> Place
         ],
         text_format=PlaceNormResult,
     )
+
+    # Log the LLM call with full details
+    log_llm_call(
+        call_type="place_normalization",
+        model=model,
+        system_prompt=SYSTEM_INSTRUCTIONS,
+        user_prompt=prompt,
+        response=resp,
+        extra_metadata={"place_norm": place_norm, "count": count},
+    )
+
     return resp.output_parsed
 
 

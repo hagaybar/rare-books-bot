@@ -26,6 +26,7 @@ from scripts.chat.models import (
 )
 from scripts.schemas.query_plan import QueryPlan, Filter, FilterField, FilterOp
 from scripts.query.exceptions import QueryCompilationError
+from scripts.utils.llm_logger import log_llm_call
 
 
 # =============================================================================
@@ -328,6 +329,19 @@ async def interpret_exploration_request(
                 {"role": "user", "content": user_message},
             ],
             text_format=ExplorationRequestLLM,
+        )
+
+        # Log the LLM call with full details
+        log_llm_call(
+            call_type="exploration_interpretation",
+            model=model,
+            system_prompt=system_prompt,
+            user_prompt=user_message,
+            response=resp,
+            extra_metadata={
+                "query_text": query_text,
+                "subgroup_size": len(active_subgroup.record_ids) if active_subgroup else 0,
+            },
         )
 
         llm_output = resp.output_parsed

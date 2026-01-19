@@ -192,8 +192,11 @@ class TestCompileQueryLLM:
         mock_client = Mock()
         mock_openai_class.return_value = mock_client
 
-        # Mock successful parse response
+        # Mock successful parse response with usage stats (required for llm_logger)
         mock_response = Mock()
+        mock_response.usage = Mock()
+        mock_response.usage.input_tokens = 100
+        mock_response.usage.output_tokens = 50
         mock_plan = QueryPlan(
             query_text="test query",
             filters=[
@@ -243,10 +246,13 @@ class TestCompileQueryLLM:
         cache_file = tmp_path / "cache.jsonl"
         cache_file.touch()
 
-        # Mock successful LLM call
+        # Mock successful LLM call with usage stats (required for llm_logger)
         mock_client = Mock()
         mock_openai_class.return_value = mock_client
         mock_response = Mock()
+        mock_response.usage = Mock()
+        mock_response.usage.input_tokens = 100
+        mock_response.usage.output_tokens = 50
         mock_plan = QueryPlan(query_text="test", filters=[])
         mock_response.output_parsed = mock_plan
         mock_client.responses.parse.return_value = mock_response
@@ -265,9 +271,13 @@ class TestCompileQueryLLM:
         cache_file = tmp_path / "cache.jsonl"
         cache_file.touch()
 
+        # Mock with usage stats (required for llm_logger)
         mock_client = Mock()
         mock_openai_class.return_value = mock_client
         mock_response = Mock()
+        mock_response.usage = Mock()
+        mock_response.usage.input_tokens = 100
+        mock_response.usage.output_tokens = 50
         mock_plan = QueryPlan(query_text="test", filters=[])
         mock_response.output_parsed = mock_plan
         mock_client.responses.parse.return_value = mock_response

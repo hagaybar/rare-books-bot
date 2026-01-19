@@ -38,8 +38,11 @@ class TestCompileQuery:
         mock_client = Mock()
         mock_openai_class.return_value = mock_client
 
-        # Mock LLM response
+        # Mock LLM response with usage stats (required for llm_logger)
         mock_response = Mock()
+        mock_response.usage = Mock()
+        mock_response.usage.input_tokens = 100
+        mock_response.usage.output_tokens = 50
         mock_plan = QueryPlan(
             query_text="books published by Oxford",
             filters=[
@@ -103,7 +106,11 @@ class TestCompileQuery:
         mock_client = Mock()
         mock_openai_class.return_value = mock_client
 
+        # Mock LLM response with usage stats (required for llm_logger)
         mock_response = Mock()
+        mock_response.usage = Mock()
+        mock_response.usage.input_tokens = 100
+        mock_response.usage.output_tokens = 50
         mock_plan = QueryPlan(query_text="test", filters=[])
         mock_response.output_parsed = mock_plan
         mock_client.responses.parse.return_value = mock_response
@@ -261,7 +268,11 @@ class TestBackwardCompatibility:
         mock_client = Mock()
         mock_openai_class.return_value = mock_client
 
+        # Mock LLM response with usage stats (required for llm_logger)
         mock_response = Mock()
+        mock_response.usage = Mock()
+        mock_response.usage.input_tokens = 100
+        mock_response.usage.output_tokens = 50
         mock_plan = QueryPlan(query_text="test query", filters=[])
         mock_response.output_parsed = mock_plan
         mock_client.responses.parse.return_value = mock_response
