@@ -406,6 +406,7 @@ def execute_plan(
             query_text=plan.query_text,
             plan_hash=plan_hash,
             sql=sql,
+            sql_parameters=params,
             candidates=candidates,
             total_count=len(candidates)
         )

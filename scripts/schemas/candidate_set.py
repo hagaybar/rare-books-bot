@@ -5,7 +5,7 @@ Every candidate must include evidence showing which fields matched.
 """
 
 from datetime import datetime, timezone
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from pydantic import BaseModel, Field
 
 
@@ -41,6 +41,7 @@ class CandidateSet(BaseModel):
     query_text: str
     plan_hash: str  # SHA256 of canonicalized plan JSON
     sql: str  # Exact SQL executed (for reproducibility)
+    sql_parameters: Dict[str, Any] = Field(default_factory=dict)  # Actual parameter values passed to SQL
     generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     candidates: List[Candidate] = Field(default_factory=list)
     total_count: int = 0
