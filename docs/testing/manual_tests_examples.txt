@@ -1,0 +1,63 @@
+1. Latin language books (I wanted a count of all books in latin, need to make sure that the bot understand it)
+curl -s -X POST http://localhost:8000/chat   -H "Content-Type: application/json"   -d '{"message": "How many latin books are included in this database?"}' | jq .
+{
+  "success": true,
+  "response": {
+    "message": "You're looking for the count of Latin-language books in the database. It's unclear whether you're interested in any specific historical period, subject, or other constraints.",
+    "candidate_set": null,
+    "suggested_followups": [],
+    "clarification_needed": "You're looking for the count of Latin-language books in the database. It's unclear whether you're interested in any specific historical period, subject, or other constraints.\n\nTo help you better, could you clarify:\n  - Are you interested in books from a specific time period or century?\n  - Is there a particular subject or topic you're looking for?\n  - Do you need details about a specific publisher, printer, or author?\n  - Are you interested in books from a particular country or city?",
+    "session_id": "0dabc8c6-4397-43a0-8a71-d3ed699ef89c",
+    "phase": "query_definition",
+    "confidence": 0.8,
+    "metadata": {
+      "uncertainties": [
+        "Are you interested in books from a specific time period or century?",
+        "Is there a particular subject or topic you're looking for?",
+        "Do you need details about a specific publisher, printer, or author?",
+        "Are you interested in books from a particular country or city?"
+      ],
+      "filters_extracted": 1
+    }
+  },
+  "error": null
+}
+
+explanation:
+------------
+I asked: "How many latin books are included in this database?" - I expected a number of books in latin and maybe a small summarization of the results.
+It was clear that the LLM understood what I meant, but still I did not get the proper response.
+
+
+2. Subject Search ('war' and 'religion')
+
+(rare-books-bot-py3.12) hagaybar@Clib-adm-506:~/projects/rare-books-bot$ curl -s -X POST http://localhost:8000/chat   -H "Content-Type: application/json"   -d '{"message": "I am looking for books dealing with the subjects of war and religion"}' | jq .
+{
+  "success": true,
+  "response": {
+    "message": "You're looking for books that have subjects related to both war and religion. The query specifies topics but doesn't provide details on time period, language, or publication place, leading to some ambiguity.",
+    "candidate_set": null,
+    "suggested_followups": [],
+    "clarification_needed": "You're looking for books that have subjects related to both war and religion. The query specifies topics but doesn't provide details on time period, language, or publication place, leading to some ambiguity.\n\nTo help you better, could you clarify:\n  - What time period are you interested in?\n  - Do you have a specific language in mind?\n  - Is there a particular place or publisher you are looking for?",
+    "session_id": "f9d12a62-53ef-41d1-99ec-96c2ebcfdee2",
+    "phase": "query_definition",
+    "confidence": 0.8,
+    "metadata": {
+      "uncertainties": [
+        "What time period are you interested in?",
+        "Do you have a specific language in mind?",
+        "Is there a particular place or publisher you are looking for?"
+      ],
+      "filters_extracted": 2
+    }
+  },
+  "error": null
+}
+
+
+explanation: it seems that stating an explicit subject filter without other filters does not return results. 
+I would expect the bot to filter the results by all relevant subjects (wars in conjuction with religion) and create a subset 
+this subset could be then genrally described, based on the existing metadata and the summary would be then returned to the user.
+If those subjects are mapped in low confidence to existing subjects then we have here ambuigity and I would expect a help from the 
+llm to other subjects or revised query.
+

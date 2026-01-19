@@ -6,13 +6,13 @@ This document provides structured manual test scenarios for the rare books disco
 
 ## Prerequisites
 
-### Start the Server
+### Start the Server == Pass
 ```bash
 export OPENAI_API_KEY="sk-..."
 uvicorn app.api.main:app --reload
 ```
 
-### Verify Health
+### Verify Health == Pass
 ```bash
 curl http://localhost:8000/health
 ```
@@ -42,25 +42,24 @@ Expected: `{"status": "healthy", "database_connected": true, "session_store_ok":
 
 ## A. Basic Query Execution
 
-### A1. Simple Publisher + Date Query
+### A1. Simple Publisher + Date Query == Pass
 
 **Query:**
 ```bash
-curl -s -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "books published by Oxford between 1500 and 1599"}' | jq .
+  curl -s -X POST http://localhost:8000/chat \
+     -H "Content-Type: application/json"  \
+     -d '{"message": "books published in Venice between 1400 and 1500"}' | jq .
 ```
 
 **Inspect:**
 
-1. **Response Structure**
+1. **Response Structure** == Pass
    - `success` should be `true`
    - `response.session_id` should be a UUID
    - `response.candidate_set.candidates` should be an array
    - `response.followup_questions` should contain suggestions
 
-2. **Query Plan (in logs or cache)**
-   ```bash
+2. **Query Plan (in logs or cache)** == Pass
    # Check query plan cache
    tail -1 data/query_plan_cache.jsonl | jq .
    ```
@@ -68,7 +67,7 @@ curl -s -X POST http://localhost:8000/chat \
    - `field: "publisher"`, `value: "oxford"`, `operation: "EQUALS"` or `"CONTAINS"`
    - `field: "year"`, `operation: "RANGE"`, `value: {start: 1500, end: 1599}`
 
-3. **Database Verification**
+3. **Database Verification** == Pass
    ```sql
    -- In sqlite3 data/index/bibliographic.db
    SELECT DISTINCT r.mms_id, i.publisher_raw, i.publisher_norm, i.date_start, i.date_end
@@ -79,7 +78,7 @@ curl -s -X POST http://localhost:8000/chat \
    LIMIT 10;
    ```
 
-4. **Evidence Check**
+4. **Evidence Check** == Pass
    Each candidate should have evidence entries like:
    ```json
    {
@@ -100,7 +99,7 @@ curl -s -X POST http://localhost:8000/chat \
 
 ### A2. Place + Century Query
 
-**Query:**
+**Query:** == PASS
 ```bash
 curl -s -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
@@ -109,11 +108,11 @@ curl -s -X POST http://localhost:8000/chat \
 
 **Inspect:**
 
-1. **Century Conversion**
+1. **Century Conversion** == PASS
    - Query plan should have date range 1600-1699 (17th century)
    - NOT 1700-1799
 
-2. **Place Normalization**
+2. **Place Normalization** == PASS
    ```sql
    -- Check place normalization
    SELECT DISTINCT place_raw, place_norm
@@ -122,10 +121,10 @@ curl -s -X POST http://localhost:8000/chat \
    LIMIT 5;
    ```
 
-3. **SQL Join Strategy**
+3. **SQL Join Strategy** == PASS
    The query should join `records` with `imprints` table
 
-**Good Result:**
+**Good Result:** == PASS
 - Century correctly parsed to 1600-1699
 - Place matched against `place_norm` column
 - Results include Paris publications from 17th century

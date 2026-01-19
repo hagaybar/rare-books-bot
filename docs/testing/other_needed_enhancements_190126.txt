@@ -1,0 +1,4 @@
+1. Logs of API
+I wanted to examine logs of API runs (those in: docs/testing/manual_tests_examples.txt), but could not find specific data.
+What I needed to see is:  what is the context that was sent to the llm, what was the cost of each call? other relevant available information.
+Are the logs reserved to the conversational chats?
