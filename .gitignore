@@ -123,3 +123,6 @@ data/chat/sessions.db
 #  End                                                                        #
 ###############################################################################
 tests/*.csv
+
+# LLM call logs (generated)
+logs/
