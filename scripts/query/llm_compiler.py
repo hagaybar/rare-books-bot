@@ -70,7 +70,8 @@ NORMALIZATION RULES:
 OPERATION SELECTION GUIDELINES:
 - Title queries: Use CONTAINS by default (partial match) unless user explicitly requests exact match with words like "exact", "exactly", "precisely" or uses quotes around the full title
 - Subject queries: Use CONTAINS (keyword search in subject headings)
-- Publisher/place: Use EQUALS for known entities, CONTAINS for partial names or when uncertain
+- Publisher: Use CONTAINS by default (publisher names in records are often verbose, e.g., "Nella Stamparia di Giovanni Battista..."). Use EQUALS only if user explicitly requests exact match.
+- Place: Use EQUALS for well-known city names (paris, london, venice). Use CONTAINS if uncertain or for partial names.
 - Agent names: Use CONTAINS (partial match on names)
 
 EXAMPLES:
@@ -78,7 +79,7 @@ Query: "All books published by Oxford between 1500 and 1599"
 Plan: {
   "query_text": "All books published by Oxford between 1500 and 1599",
   "filters": [
-    {"field": "publisher", "op": "EQUALS", "value": "oxford", "notes": "Extracted publisher name"},
+    {"field": "publisher", "op": "CONTAINS", "value": "oxford", "notes": "Publisher name (CONTAINS for partial match)"},
     {"field": "year", "op": "RANGE", "start": 1500, "end": 1599, "notes": "Explicit year range"}
   ]
 }
@@ -107,7 +108,7 @@ Query: "books published by Elsevier"
 Plan: {
   "query_text": "books published by Elsevier",
   "filters": [
-    {"field": "publisher", "op": "EQUALS", "value": "elsevier", "notes": "Publisher name"}
+    {"field": "publisher", "op": "CONTAINS", "value": "elsevier", "notes": "Publisher name (CONTAINS for partial match)"}
   ]
 }
 
