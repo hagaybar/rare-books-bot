@@ -236,6 +236,10 @@ def read_places_freq(csv_path: Path, top_n: int) -> List[Row]:
 def auto_rules(place_norm: str) -> Optional[PlaceNormResult]:
     """
     Deterministic shortcuts BEFORE calling LLM.
+
+    Note: We do NOT auto-KEEP based on looks_like_canonical() because
+    Latin variants (venetiis, romae, londini) look like canonical ASCII
+    but need to be mapped to English equivalents (venice, rome, london).
     """
     s = nfkc(place_norm).casefold()
 
@@ -249,14 +253,12 @@ def auto_rules(place_norm: str) -> Optional[PlaceNormResult]:
     if stripped != s and looks_like_canonical(stripped):
         return PlaceNormResult(decision="MAP", canonical=stripped, confidence=0.95, notes="strip brackets")
 
-    # Already clean canonical English key -> KEEP without LLM
-    if looks_like_canonical(s):
-        return PlaceNormResult(decision="KEEP", canonical=s, confidence=0.90, notes="already canonical")
-
     # Always ambiguous list -> force AMBIGUOUS
     if s in ALWAYS_AMBIGUOUS:
         return PlaceNormResult(decision="AMBIGUOUS", canonical=s, confidence=0.0, notes="known ambiguous")
 
+    # Let LLM decide for everything else (including ASCII strings that may be
+    # Latin variants like "venetiis" that need mapping to "venice")
     return None
 
 
@@ -402,6 +404,44 @@ def write_alias_map_json(rows: List[dict], out_path: Path, min_conf: float) -> N
         json.dump(alias, f, ensure_ascii=False, indent=2, sort_keys=True)
 
 
+def write_alias_map_json_merged(
+    rows: List[dict],
+    out_path: Path,
+    min_conf: float,
+    existing: Dict[str, str]
+) -> None:
+    """
+    Write merged alias map: existing + new mappings.
+
+    - existing: previously validated mappings (preserved as-is)
+    - rows: newly processed items (filtered by min_conf and decision=MAP)
+    """
+    # Start with existing mappings
+    alias: Dict[str, str] = dict(existing)
+
+    # Add new mappings
+    new_count = 0
+    for r in rows:
+        if r["decision"] == "MAP" and float(r["confidence"]) >= min_conf:
+            key = nfkc(r["place_norm"]).casefold()
+            if key not in alias:  # Don't overwrite existing
+                alias[key] = r["canonical"]
+                new_count += 1
+
+    with out_path.open("w", encoding="utf-8") as f:
+        json.dump(alias, f, ensure_ascii=False, indent=2, sort_keys=True)
+
+    print(f"Merged {new_count} new mappings with {len(existing)} existing (total: {len(alias)})")
+
+
+def load_existing_alias_map(path: Path) -> Dict[str, str]:
+    """Load existing alias map for merging."""
+    if not path.exists():
+        return {}
+    with path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--places_csv", required=True, help="places_freq.csv path")
@@ -412,6 +452,7 @@ def main() -> None:
     ap.add_argument("--min_conf", type=float, default=0.85, help="min confidence for MAP to enter alias json")
     ap.add_argument("--model_primary", default="gpt-4.1")
     ap.add_argument("--model_fallback", default="gpt-4.1")
+    ap.add_argument("--existing", default=None, help="Existing alias map to merge with")
     args = ap.parse_args()
 
     if not os.getenv("OPENAI_API_KEY"):
@@ -425,11 +466,24 @@ def main() -> None:
     out_proposed = Path(args.out_proposed_csv)
     out_alias = Path(args.out_alias_json)
 
+    # Load existing alias map if provided
+    existing_map: Dict[str, str] = {}
+    if args.existing:
+        existing_map = load_existing_alias_map(Path(args.existing))
+        print(f"Loaded {len(existing_map)} existing mappings from {args.existing}")
+
     items = read_places_freq(places_csv, args.top_n)
     cache = load_cache(cache_path)
 
     out_rows: List[dict] = []
+    skipped = 0
     for row in items:
+        # Skip if already in existing alias map
+        key = nfkc(row.place_norm).casefold()
+        if key in existing_map:
+            skipped += 1
+            continue
+
         if row.place_norm in cache:
             out_rows.append(cache[row.place_norm])
             continue
@@ -444,11 +498,16 @@ def main() -> None:
         out_rows.append(result)
         append_cache(cache_path, result)
 
+    if skipped > 0:
+        print(f"Skipped {skipped} items already in existing map")
+
     # deterministic output ordering
     out_rows.sort(key=lambda r: (-int(r["count"]), str(r["place_norm"])))
 
     write_proposed_csv(out_rows, out_proposed)
-    write_alias_map_json(out_rows, out_alias, min_conf=args.min_conf)
+
+    # Merge with existing map when writing output
+    write_alias_map_json_merged(out_rows, out_alias, min_conf=args.min_conf, existing=existing_map)
 
     print(f"Wrote proposed review CSV: {out_proposed}")
     print(f"Wrote alias map JSON (MAP + conf >= {args.min_conf}): {out_alias}")
