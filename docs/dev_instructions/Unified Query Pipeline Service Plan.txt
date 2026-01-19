@@ -1,0 +1,236 @@
+Unified Query Pipeline Service Plan                                                                                                                                        
+                                                                                                                                                                            
+ Goal                                                                                                                                                                       
+                                                                                                                                                                            
+ Create a single QueryService that all interfaces (CLI, Streamlit, QA tool, FastAPI) call, ensuring the same query produces identical CandidateSet + rationales everywhere. 
+                                                                                                                                                                            
+ Current State                                                                                                                                                              
+                                                                                                                                                                            
+ Core query functions exist but are called differently by each interface:                                                                                                   
+ - scripts/query/compile.py → compile_query(nl_query) → QueryPlan                                                                                                           
+ - scripts/query/execute.py → execute_plan(plan, db_path) → CandidateSet                                                                                                    
+ - scripts/chat/aggregation.py → get_facet_counts() / get_collection_overview()                                                                                             
+                                                                                                                                                                            
+ Current interfaces:                                                                                                                                                        
+ - CLI (app/cli.py): Calls compile_query + execute_plan directly                                                                                                            
+ - FastAPI (app/api/main.py): Uses two-phase orchestrator, calls compile/execute separately                                                                                 
+ - Streamlit (app/ui_chat/): Calls orchestrator or direct functions                                                                                                         
+ - QA Tool (app/ui_qa/): Calls compile_query + execute_plan directly                                                                                                        
+                                                                                                                                                                            
+ Problem: No unified service layer means:                                                                                                                                   
+ - Facet computation inconsistent across interfaces                                                                                                                         
+ - Warning/ambiguity handling duplicated                                                                                                                                    
+ - Testing requires mocking multiple layers                                                                                                                                 
+                                                                                                                                                                            
+ Design                                                                                                                                                                     
+                                                                                                                                                                            
+ 1. New Files                                                                                                                                                               
+                                                                                                                                                                            
+ scripts/query/models.py - Extended result schemas:                                                                                                                         
+ class QueryWarning(BaseModel):                                                                                                                                             
+     code: str  # e.g., "LOW_CONFIDENCE", "AMBIGUOUS_FILTER"                                                                                                                
+     message: str                                                                                                                                                           
+     field: Optional[str] = None                                                                                                                                            
+     confidence: Optional[float] = None                                                                                                                                     
+                                                                                                                                                                            
+ class FacetCounts(BaseModel):                                                                                                                                              
+     by_place: Dict[str, int] = {}                                                                                                                                          
+     by_year: Dict[str, int] = {}                                                                                                                                           
+     by_language: Dict[str, int] = {}                                                                                                                                       
+     by_publisher: Dict[str, int] = {}                                                                                                                                      
+                                                                                                                                                                            
+ class QueryResult(BaseModel):                                                                                                                                              
+     """Unified result from QueryService.execute()"""                                                                                                                       
+     query_plan: QueryPlan                                                                                                                                                  
+     sql: str                                                                                                                                                               
+     params: List[Any]                                                                                                                                                      
+     candidate_set: CandidateSet                                                                                                                                            
+     facets: Optional[FacetCounts] = None                                                                                                                                   
+     warnings: List[QueryWarning] = []                                                                                                                                      
+     execution_time_ms: float                                                                                                                                               
+                                                                                                                                                                            
+ scripts/query/service.py - Unified service:                                                                                                                                
+ class QueryService:                                                                                                                                                        
+     def __init__(self, db_path: Path, api_key: Optional[str] = None):                                                                                                      
+         self.db_path = db_path                                                                                                                                             
+         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")                                                                                                         
+                                                                                                                                                                            
+     def execute(                                                                                                                                                           
+         self,                                                                                                                                                              
+         user_message: str,                                                                                                                                                 
+         session_id: Optional[str] = None,                                                                                                                                  
+         options: Optional[QueryOptions] = None                                                                                                                             
+     ) -> QueryResult:                                                                                                                                                      
+         """                                                                                                                                                                
+         Single entry point for all query execution.                                                                                                                        
+                                                                                                                                                                            
+         1. Compile user_message → QueryPlan (with warnings for low confidence)                                                                                             
+         2. Build SQL from plan (capture sql + params)                                                                                                                      
+         3. Execute → CandidateSet with evidence/rationales                                                                                                                 
+         4. Optionally compute facets over result set                                                                                                                       
+         5. Return unified QueryResult                                                                                                                                      
+         """                                                                                                                                                                
+         pass                                                                                                                                                               
+                                                                                                                                                                            
+     def _extract_warnings(self, plan: QueryPlan) -> List[QueryWarning]:                                                                                                    
+         """Extract warnings from plan (low confidence filters, etc.)"""                                                                                                    
+         pass                                                                                                                                                               
+                                                                                                                                                                            
+     def _compute_facets(                                                                                                                                                   
+         self,                                                                                                                                                              
+         candidate_ids: List[str],                                                                                                                                          
+         options: QueryOptions                                                                                                                                              
+     ) -> FacetCounts:                                                                                                                                                      
+         """Compute facet counts for result set"""                                                                                                                          
+         pass                                                                                                                                                               
+                                                                                                                                                                            
+ 2. Interface Integration                                                                                                                                                   
+                                                                                                                                                                            
+ Each interface becomes a thin wrapper:                                                                                                                                     
+                                                                                                                                                                            
+ CLI (app/cli.py):                                                                                                                                                          
+ from scripts.query.service import QueryService                                                                                                                             
+                                                                                                                                                                            
+ @app.command()                                                                                                                                                             
+ def query(nl_query: str, ...):                                                                                                                                             
+     service = QueryService(db_path)                                                                                                                                        
+     result = service.execute(nl_query, options=QueryOptions(compute_facets=False))                                                                                         
+     # Format and display result.candidate_set                                                                                                                              
+                                                                                                                                                                            
+ FastAPI (app/api/main.py):                                                                                                                                                 
+ # Initialize once at startup                                                                                                                                               
+ query_service = QueryService(Path(BIBLIOGRAPHIC_DB_PATH))                                                                                                                  
+                                                                                                                                                                            
+ @app.post("/chat")                                                                                                                                                         
+ async def chat(request: ChatRequest):                                                                                                                                      
+     result = query_service.execute(                                                                                                                                        
+         request.message,                                                                                                                                                   
+         session_id=request.session_id,                                                                                                                                     
+         options=QueryOptions(compute_facets=True)                                                                                                                          
+     )                                                                                                                                                                      
+     # Format response using existing formatter                                                                                                                             
+                                                                                                                                                                            
+ Streamlit (app/ui_chat/):                                                                                                                                                  
+ service = get_query_service()  # Cached in session state                                                                                                                   
+ result = service.execute(user_input, session_id=st.session_state.session_id)                                                                                               
+                                                                                                                                                                            
+ QA Tool (app/ui_qa/):                                                                                                                                                      
+ service = QueryService(db_path)                                                                                                                                            
+ result = service.execute(query_text, options=QueryOptions(compute_facets=False))                                                                                           
+ # Use result.candidate_set for labeling                                                                                                                                    
+                                                                                                                                                                            
+ 3. Facets Integration                                                                                                                                                      
+                                                                                                                                                                            
+ Move facet computation into QueryService, reusing existing aggregation functions:                                                                                          
+                                                                                                                                                                            
+ # In scripts/query/service.py                                                                                                                                              
+ from scripts.chat.aggregation import get_facet_counts                                                                                                                      
+                                                                                                                                                                            
+ def _compute_facets(self, candidate_ids: List[str], options: QueryOptions) -> FacetCounts:                                                                                 
+     if not options.compute_facets:                                                                                                                                         
+         return FacetCounts()                                                                                                                                               
+                                                                                                                                                                            
+     # Use existing aggregation module                                                                                                                                      
+     return get_facet_counts(self.db_path, candidate_ids)                                                                                                                   
+                                                                                                                                                                            
+ 4. Warning Extraction                                                                                                                                                      
+                                                                                                                                                                            
+ Detect and surface warnings from the query plan:                                                                                                                           
+                                                                                                                                                                            
+ def _extract_warnings(self, plan: QueryPlan) -> List[QueryWarning]:                                                                                                        
+     warnings = []                                                                                                                                                          
+     for f in plan.filters:                                                                                                                                                 
+         if f.confidence and f.confidence < 0.7:                                                                                                                            
+             warnings.append(QueryWarning(                                                                                                                                  
+                 code="LOW_CONFIDENCE",                                                                                                                                     
+                 message=f"Filter on '{f.field.value}' has low confidence ({f.confidence:.0%})",                                                                            
+                 field=f.field.value,                                                                                                                                       
+                 confidence=f.confidence                                                                                                                                    
+             ))                                                                                                                                                             
+     # Also check for ambiguous/empty filters                                                                                                                               
+     if not plan.filters:                                                                                                                                                   
+         warnings.append(QueryWarning(                                                                                                                                      
+             code="EMPTY_FILTERS",                                                                                                                                          
+             message="Query produced no specific filters"                                                                                                                   
+         ))                                                                                                                                                                 
+     return warnings                                                                                                                                                        
+                                                                                                                                                                            
+ Files to Modify                                                                                                                                                            
+ ┌─────────────────────────────────────┬────────┬──────────────────────────────────────────────────────┐                                                                    
+ │                File                 │ Action │                     Description                      │                                                                    
+ ├─────────────────────────────────────┼────────┼──────────────────────────────────────────────────────┤                                                                    
+ │ scripts/query/models.py             │ CREATE │ QueryWarning, FacetCounts, QueryResult, QueryOptions │                                                                    
+ ├─────────────────────────────────────┼────────┼──────────────────────────────────────────────────────┤                                                                    
+ │ scripts/query/service.py            │ CREATE │ QueryService class                                   │                                                                    
+ ├─────────────────────────────────────┼────────┼──────────────────────────────────────────────────────┤                                                                    
+ │ scripts/query/__init__.py           │ MODIFY │ Export QueryService, QueryResult                     │                                                                    
+ ├─────────────────────────────────────┼────────┼──────────────────────────────────────────────────────┤                                                                    
+ │ app/cli.py                          │ MODIFY │ Use QueryService.execute()                           │                                                                    
+ ├─────────────────────────────────────┼────────┼──────────────────────────────────────────────────────┤                                                                    
+ │ app/api/main.py                     │ MODIFY │ Use QueryService.execute()                           │                                                                    
+ ├─────────────────────────────────────┼────────┼──────────────────────────────────────────────────────┤                                                                    
+ │ app/ui_chat/main.py                 │ MODIFY │ Use QueryService.execute()                           │                                                                    
+ ├─────────────────────────────────────┼────────┼──────────────────────────────────────────────────────┤                                                                    
+ │ app/ui_qa/pages/*.py                │ MODIFY │ Use QueryService.execute()                           │                                                                    
+ ├─────────────────────────────────────┼────────┼──────────────────────────────────────────────────────┤                                                                    
+ │ tests/scripts/query/test_service.py │ CREATE │ Unit tests for QueryService                          │                                                                    
+ └─────────────────────────────────────┴────────┴──────────────────────────────────────────────────────┘                                                                    
+ Migration Path                                                                                                                                                             
+                                                                                                                                                                            
+ 1. Phase 1: Create QueryService and QueryResult without breaking existing code                                                                                             
+ 2. Phase 2: Migrate CLI to use QueryService (simplest interface)                                                                                                           
+ 3. Phase 3: Migrate FastAPI to use QueryService                                                                                                                            
+ 4. Phase 4: Migrate Streamlit and QA tool                                                                                                                                  
+ 5. Phase 5: Remove duplicate query execution paths                                                                                                                         
+                                                                                                                                                                            
+ Verification                                                                                                                                                               
+                                                                                                                                                                            
+ Unit Tests                                                                                                                                                                 
+                                                                                                                                                                            
+ # New service tests                                                                                                                                                        
+ pytest tests/scripts/query/test_service.py -v                                                                                                                              
+                                                                                                                                                                            
+ # Ensure existing tests still pass                                                                                                                                         
+ pytest tests/scripts/query/ -v                                                                                                                                             
+ pytest tests/app/test_api.py -v                                                                                                                                            
+                                                                                                                                                                            
+ Integration Test                                                                                                                                                           
+                                                                                                                                                                            
+ # Same query via different interfaces should produce identical CandidateSet                                                                                                
+ export OPENAI_API_KEY="sk-..."                                                                                                                                             
+                                                                                                                                                                            
+ # CLI                                                                                                                                                                      
+ python -m app.cli query "books published by Oxford" --json > /tmp/cli_result.json                                                                                          
+                                                                                                                                                                            
+ # FastAPI                                                                                                                                                                  
+ curl -X POST http://localhost:8000/chat \                                                                                                                                  
+   -H "Content-Type: application/json" \                                                                                                                                    
+   -d '{"message": "books published by Oxford"}' > /tmp/api_result.json                                                                                                     
+                                                                                                                                                                            
+ # Compare candidate_set.candidates[].record_id - must be identical                                                                                                         
+                                                                                                                                                                            
+ Manual Verification                                                                                                                                                        
+                                                                                                                                                                            
+ 1. Start FastAPI server: uvicorn app.api.main:app --reload                                                                                                                 
+ 2. Run same query via CLI and API                                                                                                                                          
+ 3. Verify query_plan, sql, candidate_set match exactly                                                                                                                     
+ 4. Check warnings surface for low-confidence filters                                                                                                                       
+                                                                                                                                                                            
+ Success Criteria                                                                                                                                                           
+                                                                                                                                                                            
+ - QueryService.execute() is the single entry point                                                                                                                         
+ - All 4 interfaces (CLI, API, Streamlit, QA) use QueryService                                                                                                              
+ - Same query produces identical CandidateSet everywhere                                                                                                                    
+ - match_rationales included in every result                                                                                                                                
+ - Facets computed when requested                                                                                                                                           
+ - Warnings surfaced for ambiguous/low-confidence filters                                                                                                                   
+ - All existing tests pass                                                                                                                                                  
+ - New unit tests for QueryService added                                                                                                                                    
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+                                                                                                                                                                            
+ Requested permissions:                                                                                                                                                     
+   · Bash(prompt: run tests)                                                                                                                                                
+   · Bash(prompt: run pytest)                                                                                                                                               
+   · Bash(prompt: check code formatting with ruff)                                                                                                                          
+                                                                                                                                                                            
+ Would you like to proceed?                                         
