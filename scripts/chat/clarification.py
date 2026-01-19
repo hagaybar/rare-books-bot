@@ -256,6 +256,25 @@ def suggest_refinements(plan: QueryPlan) -> List[str]:
     return suggestions[:5]
 
 
+def is_execution_blocking(reason_code: Optional[str]) -> bool:
+    """Check if the ambiguity reason should block execution.
+
+    Only "empty_filters" blocks execution. Other reasons (low_confidence,
+    broad_date, vague) become post-execution suggestions instead of blockers.
+
+    This implements the "Execute First" philosophy: if we have any extractable
+    filters, execute the query and show results. Users get results faster,
+    and refinements become helpful suggestions rather than blockers.
+
+    Args:
+        reason_code: The ambiguity reason code
+
+    Returns:
+        True only for "empty_filters"
+    """
+    return reason_code == "empty_filters"
+
+
 def should_ask_for_clarification(
     plan: QueryPlan,
     result_count: int,
@@ -264,6 +283,8 @@ def should_ask_for_clarification(
     """Determine if we should ask user for clarification.
 
     This is the main entry point for clarification logic in the API layer.
+    Post-execution, this only suggests clarification for zero results
+    (if enabled) - other ambiguities are handled as suggestions.
 
     Args:
         plan: QueryPlan from query compilation
@@ -271,12 +292,59 @@ def should_ask_for_clarification(
         enable_zero_result_clarification: Whether to ask for clarification on zero results
 
     Returns:
-        True if clarification is recommended
+        True if clarification is recommended (only for zero results post-execution)
     """
-    needs_clarification, reason_code = detect_ambiguous_query(plan, result_count)
+    # Post-execution: only zero results triggers clarification
+    if result_count == 0 and enable_zero_result_clarification:
+        return True
 
-    # Don't ask for clarification on zero results if disabled
-    if reason_code == "zero_results" and not enable_zero_result_clarification:
-        return False
+    return False
 
-    return needs_clarification
+
+def get_refinement_suggestions_for_query(plan: QueryPlan, result_count: int) -> Optional[str]:
+    """Generate optional refinement suggestions for the response.
+
+    Called after successful query execution. Returns suggestions to help users
+    refine their search, but does NOT block results.
+
+    Args:
+        plan: QueryPlan that was executed
+        result_count: Number of results returned
+
+    Returns:
+        Optional suggestion string, or None if no suggestions needed
+    """
+    # Don't add suggestions for zero results (handled separately)
+    if result_count == 0:
+        return None
+
+    # Check for conditions that warrant suggestions
+    _, reason = detect_ambiguous_query(plan, result_count)
+
+    # No ambiguity detected - no suggestions needed
+    if reason is None:
+        return None
+
+    # Generate helpful suggestions based on reason
+    if reason == "broad_date":
+        is_broad, broad_filter = has_overly_broad_date_range(plan)
+        if is_broad and broad_filter:
+            years = broad_filter.end - broad_filter.start
+            return (
+                f"💡 **Tip:** Your date range covers {years} years. "
+                f"You might get more focused results by narrowing to a specific century."
+            )
+
+    elif reason == "vague":
+        return (
+            "💡 **Tip:** You could refine these results by adding more specific terms, "
+            "a date range, or a place of publication."
+        )
+
+    elif reason == "low_confidence":
+        return (
+            "💡 **Tip:** Some search terms were interpreted with lower confidence. "
+            "If results don't match what you expected, try rephrasing with more specific terms."
+        )
+
+    return None

@@ -14,6 +14,8 @@ from scripts.chat.clarification import (
     has_low_confidence_filters,
     has_overly_broad_date_range,
     has_only_vague_filters,
+    is_execution_blocking,
+    get_refinement_suggestions_for_query,
 )
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
 
@@ -283,8 +285,15 @@ def test_should_ask_for_clarification_empty_filters(empty_plan):
 
 
 def test_should_ask_for_clarification_low_confidence(low_confidence_plan):
-    """Test should_ask_for_clarification with low confidence."""
-    assert should_ask_for_clarification(low_confidence_plan, result_count=10) is True
+    """Test should_ask_for_clarification with low confidence.
+
+    With the "Execute First" philosophy, low confidence is NOT a reason to ask
+    for clarification post-execution. If results were found, show them to the user
+    and provide refinement suggestions instead of blocking.
+    """
+    # Low confidence with results does NOT trigger clarification
+    # (results are shown with optional refinement tips instead)
+    assert should_ask_for_clarification(low_confidence_plan, result_count=10) is False
 
 
 def test_should_ask_for_clarification_zero_results_enabled(specific_plan):
@@ -359,3 +368,73 @@ def test_high_confidence_not_flagged():
 
     has_low, _ = has_low_confidence_filters(plan)
     assert has_low is False
+
+
+# =============================================================================
+# Tests for "Execute First" Philosophy Functions
+# =============================================================================
+
+
+def test_is_execution_blocking_empty_filters():
+    """Test that only empty_filters is execution-blocking."""
+    assert is_execution_blocking("empty_filters") is True
+
+
+def test_is_execution_blocking_other_reasons():
+    """Test that other reasons are NOT execution-blocking."""
+    # Low confidence should not block execution
+    assert is_execution_blocking("low_confidence") is False
+    # Broad date should not block execution
+    assert is_execution_blocking("broad_date") is False
+    # Vague query should not block execution
+    assert is_execution_blocking("vague") is False
+    # Zero results is handled separately post-execution
+    assert is_execution_blocking("zero_results") is False
+    # None means no ambiguity
+    assert is_execution_blocking(None) is False
+
+
+def test_get_refinement_suggestions_zero_results(specific_plan):
+    """Test that zero results returns None (handled separately)."""
+    suggestion = get_refinement_suggestions_for_query(specific_plan, result_count=0)
+    assert suggestion is None
+
+
+def test_get_refinement_suggestions_good_query(specific_plan):
+    """Test that good queries with results return None (no suggestions needed)."""
+    suggestion = get_refinement_suggestions_for_query(specific_plan, result_count=10)
+    assert suggestion is None
+
+
+def test_get_refinement_suggestions_broad_date():
+    """Test that broad date range returns a helpful tip."""
+    plan = QueryPlan(
+        query_text="old books",
+        filters=[
+            Filter(field=FilterField.YEAR, op=FilterOp.RANGE, start=1400, end=1800)
+        ],
+    )
+    suggestion = get_refinement_suggestions_for_query(plan, result_count=100)
+    assert suggestion is not None
+    assert "400 years" in suggestion  # Should mention the range size
+    assert "Tip" in suggestion
+
+
+def test_get_refinement_suggestions_vague():
+    """Test that vague single-word queries return a helpful tip."""
+    plan = QueryPlan(
+        query_text="history",
+        filters=[
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="history")
+        ],
+    )
+    suggestion = get_refinement_suggestions_for_query(plan, result_count=500)
+    assert suggestion is not None
+    assert "refine" in suggestion.lower() or "tip" in suggestion.lower()
+
+
+def test_get_refinement_suggestions_low_confidence(low_confidence_plan):
+    """Test that low confidence queries return a helpful tip."""
+    suggestion = get_refinement_suggestions_for_query(low_confidence_plan, result_count=10)
+    assert suggestion is not None
+    assert "confidence" in suggestion.lower() or "tip" in suggestion.lower()

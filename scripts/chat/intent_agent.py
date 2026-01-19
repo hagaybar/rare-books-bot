@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from scripts.schemas.query_plan import QueryPlan, Filter, FilterField, FilterOp
 from scripts.chat.models import Message
 from scripts.query.exceptions import QueryCompilationError
+from scripts.utils.llm_logger import log_llm_call
 
 
 # Confidence threshold for proceeding to execution
@@ -141,7 +142,7 @@ class IntentInterpretation(BaseModel):
         explanation: Natural language explanation of what was understood
         uncertainties: List of specific uncertainties if confidence is low
         query_plan: The compiled QueryPlan for execution
-        proceed_to_execution: Whether confidence meets threshold (>= 0.85)
+        proceed_to_execution: Whether to execute (confidence >= threshold OR has valid filters)
     """
     overall_confidence: float = Field(..., ge=0.0, le=1.0)
     explanation: str
@@ -151,12 +152,16 @@ class IntentInterpretation(BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
-        # Compute proceed_to_execution based on confidence threshold
-        object.__setattr__(
-            self,
-            'proceed_to_execution',
-            self.overall_confidence >= CONFIDENCE_THRESHOLD
-        )
+        # Compute proceed_to_execution based on:
+        # 1. High confidence (>= threshold), OR
+        # 2. At least one valid filter exists (execute first, suggest refinements later)
+        #
+        # Philosophy: If we have extractable filters, execute immediately rather than
+        # asking for clarification. Users get results faster, and refinements become
+        # helpful suggestions rather than blockers.
+        has_valid_filters = len(self.query_plan.filters) > 0
+        proceed = self.overall_confidence >= CONFIDENCE_THRESHOLD or has_valid_filters
+        object.__setattr__(self, 'proceed_to_execution', proceed)
 
 
 # System prompt for intent interpretation
@@ -489,6 +494,16 @@ async def interpret_query(
                 {"role": "user", "content": user_prompt},
             ],
             text_format=IntentInterpretationLLM,
+        )
+
+        # Log the LLM call with full details
+        log_llm_call(
+            call_type="intent_interpretation",
+            model=model,
+            system_prompt=INTENT_AGENT_SYSTEM_PROMPT,
+            user_prompt=user_prompt,
+            response=resp,
+            extra_metadata={"query_text": query_text},
         )
 
         llm_output = resp.output_parsed

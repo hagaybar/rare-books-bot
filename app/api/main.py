@@ -34,6 +34,8 @@ from scripts.chat.clarification import (
     should_ask_for_clarification,
     generate_clarification_message,
     detect_ambiguous_query,
+    is_execution_blocking,
+    get_refinement_suggestions_for_query,
 )
 from scripts.chat.intent_agent import (
     interpret_query,
@@ -472,6 +474,12 @@ async def handle_query_definition_phase(
                 f"- Tell you about specific printers or authors"
             )
             response_message = user_explanation + exploration_prompt
+
+            # Add optional refinement suggestions (non-blocking)
+            # These help users refine broad searches without blocking results
+            refinement_tip = get_refinement_suggestions_for_query(query_plan, result_count)
+            if refinement_tip:
+                response_message += f"\n\n{refinement_tip}"
         else:
             response_message = user_explanation
 
@@ -1037,12 +1045,11 @@ async def websocket_chat(websocket: WebSocket):
         try:
             query_plan = compile_query(message)
 
-            # Check for ambiguity before executing
-            needs_clarification_before, reason_before = detect_ambiguous_query(
-                query_plan, result_count=1
-            )
+            # Check for execution-blocking ambiguity (only empty_filters blocks)
+            # Other ambiguities become suggestions after execution
+            _, reason_before = detect_ambiguous_query(query_plan, result_count=1)
 
-            if needs_clarification_before:
+            if is_execution_blocking(reason_before):
                 clarification_msg = generate_clarification_message(
                     query_plan, reason_before, result_count=1
                 )
@@ -1151,6 +1158,13 @@ async def websocket_chat(websocket: WebSocket):
 
         # Format final response
         response_message = format_for_chat(candidate_set, max_candidates=10)
+
+        # Add refinement suggestions for broad queries (non-blocking)
+        if result_count > 0:
+            refinement_tip = get_refinement_suggestions_for_query(query_plan, result_count)
+            if refinement_tip:
+                response_message += f"\n\n{refinement_tip}"
+
         suggested_followups = generate_followups(candidate_set, query_plan.query_text)
 
         response = ChatResponse(
