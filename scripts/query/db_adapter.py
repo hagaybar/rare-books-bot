@@ -227,6 +227,8 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.SUBJECT:
+            # Add subjects table to joins so subject_value is available for evidence
+            needed_joins.add(M3Tables.SUBJECTS)
             if filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
                 # FTS5 content table is 'subjects', so we need to join through subjects to records
