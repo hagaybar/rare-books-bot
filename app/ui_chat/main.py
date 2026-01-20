@@ -155,11 +155,12 @@ def render_candidate_details(response_data: dict):
             st.info(f"Showing 50 of {len(candidates)} results. Refine your search to see more specific results.")
 
 
-def render_followup_suggestions(response_data: dict):
+def render_followup_suggestions(response_data: dict, msg_index: int = 0):
     """Render follow-up question suggestions as clickable buttons.
 
     Args:
         response_data: The API response containing suggested_followups
+        msg_index: Index of the message (for unique button keys)
     """
     chat_response = response_data.get("response", {})
     followups = chat_response.get("suggested_followups", [])
@@ -172,7 +173,9 @@ def render_followup_suggestions(response_data: dict):
 
     for i, followup in enumerate(followups[:3]):
         with cols[i]:
-            if st.button(followup, key=f"followup_{i}", use_container_width=True):
+            # Use unique key combining message index and followup index
+            button_key = f"followup_{msg_index}_{i}_{hash(followup) % 10000}"
+            if st.button(followup, key=button_key, use_container_width=True):
                 # Add to messages and trigger rerun
                 st.session_state.pending_message = followup
                 st.rerun()
@@ -275,9 +278,6 @@ def main():
                 # Show candidate details
                 render_candidate_details(response_data)
 
-                # Show follow-up suggestions
-                render_followup_suggestions(response_data)
-
                 # Store in history
                 st.session_state.messages.append({
                     "role": "assistant",
@@ -291,6 +291,11 @@ def main():
                     "role": "assistant",
                     "content": error_msg,
                 })
+
+        # Show follow-up suggestions OUTSIDE the chat_message context
+        # (buttons inside chat_message can have state issues)
+        if response_data:
+            render_followup_suggestions(response_data, len(st.session_state.messages))
 
 
 if __name__ == "__main__":
