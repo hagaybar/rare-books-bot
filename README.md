@@ -4,9 +4,16 @@ A deterministic, evidence-based bibliographic discovery system for rare books wh
 
 ## Overview
 
-This project processes MARC XML records through a multi-stage pipeline (M1 → M2 → M3 → M4) to enable fielded queries and analysis of rare book collections. All normalization is reversible, confidence-scored, and traceable back to source MARC fields.
+This project processes MARC XML records through a multi-stage pipeline (M1 → M2 → M3 → M4 → M6) to enable fielded queries and conversational discovery of rare book collections. All normalization is reversible, confidence-scored, and traceable back to source MARC fields.
 
 **Primary Success Criterion:** Given an inventory query, deterministically produce the correct CandidateSet (record IDs) with evidence showing which MARC fields/values caused inclusion.
+
+**Pipeline Stages:**
+- **M1:** MARC XML parsing → canonical JSONL
+- **M2:** Normalization & enrichment (dates, places, publishers)
+- **M3:** SQLite indexing with FTS
+- **M4:** Query planning & execution (LLM-based)
+- **M6:** Chatbot API with conversational interface
 
 ## Quick Start
 
@@ -14,7 +21,7 @@ This project processes MARC XML records through a multi-stage pipeline (M1 → M
 # Install dependencies
 poetry install
 
-# Set up OpenAI API key (REQUIRED for M4 query compilation)
+# Set up OpenAI API key (REQUIRED for query compilation)
 export OPENAI_API_KEY="sk-..."
 
 # Parse MARC XML to canonical format (M1)
@@ -45,8 +52,14 @@ python -m scripts.marc.m3_index \
   data/index/bibliographic.db \
   scripts/marc/m3_schema.sql
 
-# Query the index (M4 - in development)
+# Query the index (M4)
 python -m app.cli query "Books printed in Paris in the 17th century"
+
+# Start the Chatbot API (M6)
+uvicorn app.api.main:app --reload
+
+# Start the Chat UI
+poetry run streamlit run app/ui_chat/main.py
 ```
 
 ## Project Structure
@@ -59,59 +72,73 @@ rare-books-bot/
 │
 ├── docs/                        # Documentation
 │   ├── specs/                   # Completed specifications
-│   │   ├── place_frequency_spec.md
-│   │   └── m2_normalization_spec.md
 │   ├── pipelines/               # Pipeline documentation
-│   │   └── place_normalization.md
-│   └── utilities/               # Utility documentation
-│       └── place_alias_mapping.md
+│   ├── utilities/               # Utility documentation
+│   ├── session_management_usage.md
+│   ├── PROJECT_DESCRIPTION.md   # Comprehensive reference
+│   └── testing/
+│       └── MANUAL_TESTING_GUIDE.md
+│
+├── app/                         # Application layer
+│   ├── cli.py                   # CLI interface (Typer)
+│   ├── qa.py                    # QA regression runner
+│   ├── api/                     # FastAPI chatbot API
+│   │   ├── main.py              # HTTP + WebSocket endpoints
+│   │   └── models.py            # API request/response models
+│   ├── ui_chat/                 # Streamlit chat UI
+│   │   └── main.py
+│   └── ui_qa/                   # Streamlit QA tool
 │
 ├── scripts/                     # Source code
-│   ├── marc/                    # MARC XML processing
-│   │   ├── parse.py            # M1: MARC XML → canonical JSONL
-│   │   ├── models.py           # M1 data models
-│   │   ├── normalize.py        # M2: Normalization functions
-│   │   ├── m2_normalize.py     # M2: Enrichment CLI
-│   │   ├── m2_models.py        # M2 data models
-│   │   ├── build_place_freq.py # Place frequency analysis
-│   │   ├── m3_schema.sql       # M3: SQLite schema
-│   │   ├── m3_index.py         # M3: Indexing script
-│   │   └── m3_query.py         # M3: Query functions
+│   ├── marc/                    # MARC XML processing (M1-M3)
+│   │   ├── parse.py             # M1: MARC XML → canonical JSONL
+│   │   ├── models.py            # M1 data models
+│   │   ├── normalize.py         # M2: Normalization functions
+│   │   ├── m2_normalize.py      # M2: Enrichment CLI
+│   │   ├── m3_schema.sql        # M3: SQLite schema
+│   │   ├── m3_index.py          # M3: Indexing script
+│   │   └── m3_query.py          # M3: Query functions
+│   │
+│   ├── query/                   # Query planning & execution (M4)
+│   │   ├── llm_compiler.py      # LLM-based query compilation
+│   │   ├── execute.py           # Query execution
+│   │   ├── service.py           # Query service
+│   │   ├── db_adapter.py        # Database adapter
+│   │   └── models.py            # Query models
+│   │
+│   ├── chat/                    # Chatbot components (M6)
+│   │   ├── session_store.py     # Session management
+│   │   ├── formatter.py         # Response formatting
+│   │   ├── clarification.py     # Ambiguity detection
+│   │   ├── intent_agent.py      # Intent interpretation
+│   │   ├── exploration_agent.py # Corpus exploration
+│   │   ├── aggregation.py       # Result aggregation
+│   │   └── models.py            # Chat models
+│   │
+│   ├── enrichment/              # External data enrichment
+│   │   ├── wikidata_client.py   # Wikidata API client
+│   │   ├── nli_client.py        # National Library of Israel client
+│   │   ├── enrichment_service.py
+│   │   └── models.py
+│   │
 │   ├── normalization/           # Normalization utilities
-│   │   └── generate_place_alias_map.py  # Place alias generation
 │   └── utils/                   # Shared utilities
 │
-├── tests/                       # Test suite
-│   └── scripts/                 # Mirrors scripts/ structure
-│       ├── marc/
-│       │   ├── test_parse.py
-│       │   ├── test_m2_normalize.py
-│       │   ├── test_place_freq.py
-│       │   └── test_m3_index.py
-│       └── ...
+├── tests/                       # Test suite (32+ test files)
+│   ├── scripts/                 # Mirrors scripts/ structure
+│   ├── app/                     # API and CLI tests
+│   └── ...
 │
 ├── data/                        # Data artifacts (gitignored)
 │   ├── marc_source/             # Raw MARC XML files
 │   ├── canonical/               # M1: Canonical JSONL records
-│   │   ├── records.jsonl
-│   │   └── extraction_report.json
-│   ├── frequency/               # Frequency analysis outputs
-│   │   ├── places_freq.csv
-│   │   └── places_examples.json
-│   ├── normalization/           # Normalization artifacts
-│   │   ├── place_aliases/
-│   │   │   ├── place_alias_map.json    # (tracked in git)
-│   │   │   ├── place_alias_cache.jsonl # (gitignored)
-│   │   │   └── place_alias_proposed.csv # (gitignored)
-│   │   └── test_results/        # Archived experiments
 │   ├── m2/                      # M2: Enriched records
-│   │   └── records_m1m2.jsonl
 │   ├── index/                   # M3: SQLite database
-│   │   └── bibliographic.db
+│   ├── chat/                    # Session database
+│   │   └── sessions.db
+│   ├── qa/                      # QA tool database
+│   │   └── qa.db
 │   └── runs/                    # M4: Query artifacts (per run_id)
-│
-├── app/                         # CLI interface
-│   └── cli.py
 │
 └── configs/                     # Configuration files
 ```
@@ -130,7 +157,6 @@ rare-books-bot/
 - Preserves all raw MARC values
 - Occurrence-indexed provenance (e.g., `500[0]$a`, `500[1]$a`)
 - Extracts: title, imprints, agents, subjects, languages, notes
-- Reference record: MMS 990011964120204146
 
 ```bash
 python -m scripts.marc.parse_xml \
@@ -156,7 +182,6 @@ python -m scripts.marc.parse_xml \
 - Reversible (M1 preserved)
 - Confidence-scored (0.0-1.0)
 - Method-tagged (e.g., `year_bracketed`, `place_alias_map`)
-- No LLM or web calls in core normalization
 
 ```bash
 python -m scripts.marc.m2_normalize \
@@ -178,13 +203,6 @@ python -m scripts.marc.m2_normalize \
 - FTS5 full-text search on titles and subjects
 - Indexes on date ranges, places, publishers
 
-**Statistics (reference dataset):**
-- 2,796 records
-- 4,791 titles
-- 2,773 imprints with M2 normalization
-- 5,415 subjects
-- 4,708 agents
-
 ```bash
 python -m scripts.marc.m3_index \
   data/m2/records_m1m2.jsonl \
@@ -192,7 +210,7 @@ python -m scripts.marc.m3_index \
   scripts/marc/m3_schema.sql
 ```
 
-### M4: Query Planning & Execution (In Development)
+### M4: Query Planning & Execution
 
 **Purpose:** Convert natural language queries to SQL with CandidateSet + Evidence
 
@@ -213,47 +231,113 @@ python -m scripts.marc.m3_index \
 python -m app.cli query "Books printed in Paris in the 17th century"
 ```
 
-### Chat Session Management (M6 Foundation)
+## M6: Chatbot API
 
-**Purpose:** Enable multi-turn conversations with persistent state for chatbot interface
+The chatbot layer provides a conversational interface for bibliographic discovery.
 
-**Features:**
-- Session lifecycle management (create, retrieve, expire)
-- Message history with QueryPlan and CandidateSet preservation
-- Context tracking for multi-turn conversations
-- User isolation support
+### HTTP Endpoints
 
-**CLI Commands:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/chat` | POST | Send query, receive results with evidence |
+| `/health` | GET | Health check (database, session store) |
+| `/sessions/{id}` | GET | Get session details and history |
+| `/sessions/{id}` | DELETE | Expire a session |
+
+**Example chat request:**
 ```bash
-# Create new session
-python -m app.cli chat-init [--user-id USER_ID]
-
-# Query with session tracking
-python -m app.cli query "books by Oxford" --session-id <SESSION_ID>
-
-# View session history
-python -m app.cli chat-history <SESSION_ID>
-
-# Cleanup old sessions
-python -m app.cli chat-cleanup [--max-age-hours 24]
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "books published by Oxford between 1500 and 1599"}'
 ```
 
-See [Session Management Usage Guide](docs/session_management_usage.md) for detailed documentation.
+**Response includes:**
+- `session_id` - for multi-turn conversations
+- `message` - natural language response
+- `candidate_set` - matched records with evidence
+- `followup_questions` - suggested refinements
+
+### WebSocket Streaming
+
+Connect to `ws://localhost:8000/ws/chat` for real-time streaming:
+- Progress updates during query execution
+- Batch results (groups of 10 candidates)
+- Final response with full ChatResponse
+
+### Two-Phase Conversation
+
+1. **Query Definition Phase:** Intent interpretation, ambiguity detection, clarification prompts
+2. **Corpus Exploration Phase:** Query execution, evidence collection, result formatting
+
+### Features
+
+- **Session Management:** Multi-turn conversations with persistent state
+- **Response Formatting:** Natural language responses with evidence citations
+- **Clarification Flow:** Detects vague queries and guides users to specificity
+- **Streaming:** Real-time progress and batch results via WebSocket
+- **Rate Limiting:** 10 requests/minute per IP on `/chat` endpoint
+
+### Starting the API
+
+```bash
+# Development mode (auto-reload)
+uvicorn app.api.main:app --reload
+
+# API docs at http://localhost:8000/docs
+```
+
+## Chat UI
+
+A Streamlit-based chat interface for interactive bibliographic discovery.
+
+```bash
+poetry run streamlit run app/ui_chat/main.py
+```
+
+**Features:**
+- Message history display
+- API integration with session tracking
+- Evidence visualization
+
+## Enrichment Services
+
+External data enrichment for bibliographic records:
+
+| Service | Purpose |
+|---------|---------|
+| `wikidata_client.py` | Wikidata entity lookup and enrichment |
+| `nli_client.py` | National Library of Israel integration |
+| `enrichment_service.py` | Unified enrichment orchestration |
+
+## QA Tool
+
+Quality assurance infrastructure for query pipeline development:
+
+```bash
+# Launch QA UI
+poetry run streamlit run app/ui_qa/main.py
+
+# Run regression tests
+poetry run python -m app.qa regress \
+  --gold data/qa/gold.json \
+  --db data/index/bibliographic.db
+```
+
+See `app/ui_qa/README.md` for detailed documentation.
 
 ## Documentation
 
-### Specifications (Completed Features)
-
-- **[Place Frequency Analysis](docs/specs/place_frequency_spec.md)** - Extract and count place name variants
+### Specifications
 - **[M2 Normalization](docs/specs/m2_normalization_spec.md)** - Date, place, publisher normalization rules
+- **[Place Frequency Analysis](docs/specs/place_frequency_spec.md)** - Extract and count place name variants
 
-### Pipeline Guides
+### Guides
+- **[Session Management](docs/session_management_usage.md)** - Multi-turn conversation support
+- **[Manual Testing Guide](docs/testing/MANUAL_TESTING_GUIDE.md)** - API testing procedures
+- **[Project Description](docs/PROJECT_DESCRIPTION.md)** - Comprehensive reference
 
-- **[Place Normalization Pipeline](docs/pipelines/place_normalization.md)** - Complete workflow from frequency analysis to alias mapping
-
-### Utilities
-
-- **[Place Alias Mapping](docs/utilities/place_alias_mapping.md)** - Generate canonical place name mappings using LLM
+### Pipeline Documentation
+- **[Place Normalization](docs/pipelines/place_normalization.md)** - Complete normalization workflow
 
 ## Testing
 
@@ -264,43 +348,81 @@ pytest
 # Run specific test suite
 pytest tests/scripts/marc/test_m2_normalize.py
 
+# Run API tests
+pytest tests/app/test_api.py -v
+
+# Run integration tests (requires OPENAI_API_KEY)
+pytest --run-integration
+
 # Run with coverage
 pytest --cov=scripts --cov-report=html
-
-# Run M3 tests (requires test data)
-pytest tests/scripts/marc/test_m3_index.py
 ```
 
-**Test Coverage:**
-- M1 parsing: 20+ tests
-- M2 normalization: 20+ tests
-- Place frequency: 11 tests
-- M3 indexing: 15 tests
+**Test Coverage:** 32+ test files covering M1-M4 pipelines, API endpoints, chat components, and query services.
 
-## Development Workflow
+## Common Commands
 
-### Adding New Features
+```bash
+# Install dependencies
+poetry install
 
-1. **Read specifications:** Check `docs/specs/` for existing specs
-2. **Plan implementation:** Use `EnterPlanMode` for non-trivial features
-3. **Write tests first:** Create tests in `tests/scripts/`
-4. **Implement feature:** Add code in `scripts/`
-5. **Update documentation:** Add/update relevant docs
-6. **Commit with evidence:** Include test results in commit message
+# Set up environment
+export OPENAI_API_KEY="sk-..."
 
-### Code Quality Standards
+# MARC pipeline
+python -m app.cli parse <marc_xml_path>
+python -m app.cli index <canonical_dir>
+python -m app.cli query "<nl_query>"
 
-- **Single-purpose functions** (<50 lines)
-- **Type hints** everywhere
-- **Comprehensive docstrings**
-- **Unit tests** for all normalization logic
-- **No LLM/web calls** in core processing (except utility scripts)
+# API server
+uvicorn app.api.main:app --reload
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "books by Oxford"}'
 
-### Skills Available
+# Chat UI
+poetry run streamlit run app/ui_chat/main.py
 
-This project has specialized Claude Code skills:
-- **python-dev-expert** - Best practices for Python development
-- **git-expert** - Git workflow management
+# QA Tool
+poetry run streamlit run app/ui_qa/main.py
+
+# Session management
+python -m app.cli chat-init [--user-id USER_ID]
+python -m app.cli chat-history <SESSION_ID>
+python -m app.cli chat-cleanup [--max-age-hours 24]
+
+# Code quality
+ruff check .
+ruff format .
+pytest
+```
+
+## Current Status
+
+**Completed:**
+- ✅ M1: MARC XML parsing with occurrence indexing
+- ✅ M2: Deterministic normalization (date, place, publisher, agents)
+- ✅ M3: SQLite indexing with FTS
+- ✅ M4: LLM-based query planning and execution
+- ✅ M6: Chatbot API (HTTP + WebSocket)
+- ✅ Session management (multi-turn conversations)
+- ✅ Response formatting (natural language with evidence)
+- ✅ Clarification flow (ambiguity detection)
+- ✅ Streaming responses (WebSocket progressive streaming)
+- ✅ Rate limiting (10 req/min for /chat)
+- ✅ QA Tool with regression testing
+- ✅ Chat UI (Streamlit interface)
+- ✅ Enrichment services (Wikidata, NLI clients)
+
+**In Progress:**
+- 🚧 Two-phase conversation refinement
+- 🚧 Enrichment service integration
+
+**Planned:**
+- 📋 M5: Complex question answering over CandidateSet
+- 📋 Authentication (postponed for initial testing)
+- 📋 Performance metrics (postponed for initial testing)
 
 ## Key Principles
 
@@ -324,30 +446,17 @@ Every query response must include:
 
 - Same input file → identical output
 - All normalization rules are explicit and testable
-- No randomness (LLM only used in utility scripts, not core pipeline)
+- No randomness (LLM only used for query compilation, not core pipeline)
 
-## Current Status
-
-**Completed:**
-- ✅ M1: MARC XML parsing with occurrence indexing
-- ✅ M2: Deterministic normalization (date, place, publisher, agents)
-- ✅ M3: SQLite indexing with FTS
-- ✅ M4: LLM-based query planning and execution
-- ✅ Place alias mapping utility (LLM-assisted)
-- ✅ QA Tool: Streamlit-based query labeling, gold set management, and regression testing
-
-**In Progress:**
-- 🚧 Additional normalization types (subjects)
-- 🚧 M4 error handling improvements
-
-**Planned:**
-- 📋 M5: Complex question answering over CandidateSet
-- 📋 Web enrichment with caching
-- 📋 Publisher alias mapping
-
-## Contributing
+## Development
 
 See [CLAUDE.md](CLAUDE.md) for detailed guidance on working with this codebase.
+
+### Skills Available
+
+This project has specialized Claude Code skills:
+- **python-dev-expert** - Best practices for Python development
+- **git-expert** - Git workflow management
 
 ## License
 
