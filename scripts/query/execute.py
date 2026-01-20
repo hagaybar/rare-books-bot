@@ -36,12 +36,13 @@ def fetch_display_info(
     placeholders = ",".join("?" * len(mms_ids))
 
     # Fetch titles (get first/primary title for each record)
+    # Note: source is stored as JSON array like '["245$a"]'
     title_sql = f"""
         SELECT r.mms_id, t.value
         FROM records r
         LEFT JOIN titles t ON t.record_id = r.id
         WHERE r.mms_id IN ({placeholders})
-        AND t.source LIKE '245%'
+        AND t.source LIKE '%245%'
         GROUP BY r.mms_id
     """
 
@@ -59,12 +60,13 @@ def fetch_display_info(
         pass  # Continue even if title fetch fails
 
     # Fetch primary author (first agent with author/creator role)
+    # Prefer 100 field (main author) or role_norm = 'author'
     author_sql = f"""
         SELECT r.mms_id, a.agent_raw
         FROM records r
         LEFT JOIN agents a ON a.record_id = r.id
         WHERE r.mms_id IN ({placeholders})
-        AND (a.role_norm IN ('author', 'creator', 'aut', 'cre') OR a.source LIKE '100%' OR a.source LIKE '700%')
+        AND (a.role_norm = 'author' OR a.provenance_json LIKE '%100%')
         GROUP BY r.mms_id
     """
 
