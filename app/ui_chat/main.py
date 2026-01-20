@@ -142,12 +142,30 @@ def render_candidate_details(response_data: dict):
             st.markdown(f"**{i}.** [{display_text}]({primo_url})")
 
             if evidence:
+                # Map technical field names to user-friendly labels
+                field_labels = {
+                    "subject_value": "Subject",
+                    "title_value": "Title",
+                    "publisher_norm": "Publisher",
+                    "place_norm": "Place",
+                    "date_range": "Date",
+                    "date_start": "Date",
+                    "language_code": "Language",
+                    "agent_norm": "Author/Agent",
+                    "agent_value": "Author/Agent",
+                    "role_norm": "Role",
+                    "country_name": "Country",
+                }
                 for ev in evidence[:3]:  # Limit evidence shown
                     field = ev.get("field", "")
-                    value = ev.get("value", "")
+                    value = ev.get("value")
+                    # Skip None or empty values
+                    if value is None or value == "" or value == "None":
+                        continue
+                    friendly_field = field_labels.get(field, field.replace("_", " ").title())
                     confidence = ev.get("confidence")
                     conf_str = f" ({confidence:.0%})" if confidence else ""
-                    st.markdown(f"  - {field}: `{value}`{conf_str}")
+                    st.markdown(f"  - {friendly_field}: `{value}`{conf_str}")
 
             st.markdown("---")
 
