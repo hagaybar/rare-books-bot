@@ -17,6 +17,45 @@ from scripts.normalization.normalize_agent import (
 )
 
 
+# Hebrew letter values for Gematria parsing
+HEBREW_GEMATRIA = {
+    'א': 1, 'ב': 2, 'ג': 3, 'ד': 4, 'ה': 5, 'ו': 6, 'ז': 7, 'ח': 8, 'ט': 9,
+    'י': 10, 'כ': 20, 'ך': 20, 'ל': 30, 'מ': 40, 'ם': 40, 'נ': 50, 'ן': 50,
+    'ס': 60, 'ע': 70, 'פ': 80, 'ף': 80, 'צ': 90, 'ץ': 90,
+    'ק': 100, 'ר': 200, 'ש': 300, 'ת': 400
+}
+
+
+def parse_hebrew_year(text: str) -> Optional[int]:
+    """Parse Hebrew letter-based year (Gematria) to integer.
+
+    Handles formats like: תשל"ט, [תס"ט], תק"ח
+    Hebrew years typically omit the thousands (5000), so we add 5000 if < 1000.
+
+    Args:
+        text: String containing Hebrew letters representing a year
+
+    Returns:
+        Hebrew year as integer (e.g., 5739), or None if not valid
+    """
+    # Remove quotes, brackets, punctuation (including Hebrew geresh/gershayim)
+    cleaned = re.sub(r'[\[\]"\'\״\'׳]', '', text)
+
+    total = 0
+    for char in cleaned:
+        if char in HEBREW_GEMATRIA:
+            total += HEBREW_GEMATRIA[char]
+
+    if total == 0:
+        return None
+
+    # Hebrew years typically omit the 5000 (ה' אלפים)
+    if total < 1000:
+        total += 5000
+
+    return total
+
+
 def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
     r"""Normalize publication date using deterministic rules.
 
@@ -32,8 +71,14 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
         2. Bracketed year: ^\[(\d{4})\]$ → confidence=0.95
         3. Circa: ^c\.?\s*(\d{4})$ → ±5 years, confidence=0.80
         4. Range: ^(\d{4})\s*[-/]\s*(\d{4})$ → confidence=0.90
-        5. Embedded: first \d{4} anywhere → confidence=0.85 + warning
-        6. Unparsed: null values, confidence=0.0 + warning
+        4b. Bracketed range: \[(\d{4})\s*[-/]\s*(\d{4})\] → confidence=0.90
+        5. Bracketed Gregorian: \[(?:i\.?e\.?\s*)?(\d{4})\] → confidence=0.90
+        5b. Embedded range (adjacent): YYYY-YYYY anywhere → confidence=0.85
+        5c. Embedded range (non-adjacent): two YYYY in string → confidence=0.80
+        6. Embedded year: first \d{4} anywhere → confidence=0.85 + warning
+        6b. Hebrew calendar numeric: 5000+ year auto-converted → confidence=0.75
+        6c. Hebrew Gematria: letter-based year (תשל"ט) → confidence=0.80
+        7. Unparsed: null values, confidence=0.0 + warning
     """
     if not raw:
         return DateNormalization(
@@ -105,6 +150,22 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
             warnings=[]
         )
 
+    # Rule 4b: Bracketed range [YYYY-YYYY] (e.g., "[1611-1612]", "[1500/1599]")
+    match = re.search(r'\[(\d{4})\s*[-/]\s*(\d{4})\]', raw_stripped)
+    if match:
+        start_year = int(match.group(1))
+        end_year = int(match.group(2))
+        if 1000 <= start_year <= 2100 and 1000 <= end_year <= 2100:
+            return DateNormalization(
+                start=start_year,
+                end=end_year,
+                label=f"[{start_year}-{end_year}]",
+                confidence=0.90,
+                method="year_bracketed_range",
+                evidence_paths=[evidence_path],
+                warnings=[]
+            )
+
     # Rule 5: Bracketed Gregorian equivalent (Hebrew calendar dates)
     # Patterns like: "5850 [1846]", "año 5493 [1732]", "5500 [i.e. 1740]"
     # Look for [YYYY] or [i.e. YYYY] patterns - these are Gregorian equivalents
@@ -121,6 +182,42 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
                 method="year_bracketed_gregorian",
                 evidence_paths=[evidence_path],
                 warnings=["hebrew_calendar_date_converted"]
+            )
+
+    # Rule 5b: Embedded range (e.g., "תרס\"א 1900-תרס\"ה 1904", "MDCXI - MDCXII [1611-1612]")
+    # First try: Look for YYYY-YYYY or YYYY/YYYY pattern directly
+    range_match = re.search(r'(\d{4})\s*[-/]\s*(\d{4})', raw_stripped)
+    if range_match:
+        start_year = int(range_match.group(1))
+        end_year = int(range_match.group(2))
+        # Both years must be in valid Gregorian range
+        if 1000 <= start_year <= 2100 and 1000 <= end_year <= 2100:
+            return DateNormalization(
+                start=start_year,
+                end=end_year,
+                label=f"{start_year}-{end_year}",
+                confidence=0.85,
+                method="year_embedded_range",
+                evidence_paths=[evidence_path],
+                warnings=["embedded_range_in_complex_string"]
+            )
+
+    # Rule 5c: Find all Gregorian years and check if two form a range
+    # Handles cases like "תרס\"א 1900-תרס\"ה 1904" where years are separated by non-numeric text
+    gregorian_years = [int(m.group(1)) for m in re.finditer(r'(\d{4})', raw_stripped)
+                       if 1000 <= int(m.group(1)) <= 2100]
+    if len(gregorian_years) == 2:
+        start_year, end_year = sorted(gregorian_years)
+        # Only treat as range if end > start (not same year)
+        if end_year > start_year:
+            return DateNormalization(
+                start=start_year,
+                end=end_year,
+                label=f"{start_year}-{end_year}",
+                confidence=0.80,  # Slightly lower confidence for non-adjacent years
+                method="year_embedded_range",
+                evidence_paths=[evidence_path],
+                warnings=["embedded_range_in_complex_string"]
             )
 
     # Rule 6: Embedded year (find first \d{4} anywhere)
@@ -155,6 +252,31 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
                     method="hebrew_calendar_converted",
                     evidence_paths=[evidence_path],
                     warnings=["hebrew_calendar_date_auto_converted"]
+                )
+
+    # Rule 6c: Hebrew letter year (Gematria) - e.g., תשל"ט, [תס"ט], תק"ח
+    # Hebrew years often have quotes (geresh/gershayim) within them
+    # Pattern allows Hebrew letters mixed with quote characters
+    hebrew_pattern = re.search(
+        r'[\[\(]?([אבגדהוזחטיכךלמםנןסעפףצץקרשת]["\'\״\'׳אבגדהוזחטיכךלמםנןסעפףצץקרשת]{1,8})["\'\״\'׳]?[\]\)]?',
+        raw_stripped
+    )
+    if hebrew_pattern:
+        hebrew_text = hebrew_pattern.group(1)  # Get captured group (Hebrew year only)
+        hebrew_year = parse_hebrew_year(hebrew_text)
+        if hebrew_year and 5000 <= hebrew_year <= 6000:
+            # Hebrew year spans two Gregorian years (Tishrei to Elul)
+            # Convert to primary Gregorian year (hebrew_year - 3760)
+            gregorian_year = hebrew_year - 3760
+            if 1000 <= gregorian_year <= 2100:
+                return DateNormalization(
+                    start=gregorian_year,
+                    end=gregorian_year,
+                    label=str(gregorian_year),
+                    confidence=0.80,
+                    method="hebrew_gematria",
+                    evidence_paths=[evidence_path],
+                    warnings=["hebrew_letter_year_converted"]
                 )
 
     # Rule 7: Unparsed
