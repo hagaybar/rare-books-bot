@@ -134,11 +134,11 @@ curl -s -X POST http://localhost:8000/chat \
 
 ### A3. Subject + Language Query
 
-**Query:**
+**Query:** == PASS
 ```bash
 curl -s -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "Latin books on astronomy"}' | jq .
+  -d '{"message": "Are there Latin books on the Church?"}' | jq .
 ```
 
 **Inspect:**
@@ -172,7 +172,7 @@ curl -s -X POST http://localhost:8000/chat \
 
 ### B1. Title Search
 
-**Query:**
+**Query:** == PASS
 ```bash
 curl -s -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
@@ -181,18 +181,17 @@ curl -s -X POST http://localhost:8000/chat \
 
 **Inspect:**
 
-1. **Title Normalization**
+1. **Title Normalization** =! FAIL The sql used full string: "sql_parameters": {"filter_0_title": "\"the descent of man\""```sql
    - Should search for normalized version (lowercase, stripped punctuation)
    - May use FTS5 `titles_fts` table
 
-2. **FTS Verification**
-   ```sql
+2. **FTS Verification** =! FAIL The sql used full string: "sql_parameters": {"filter_0_title": "\"the descent of man\""```sql
    SELECT mms_id, main_title FROM titles
    WHERE titles MATCH 'descent man'
    LIMIT 5;
    ```
 
-**Good Result:**
+**Good Result:** == PASS (but evidence is not presented in the terminal logging)
 - Finds Darwin's "The Descent of Man" if in collection
 - Case-insensitive matching works
 - Evidence cites MARC 245$a
