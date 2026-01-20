@@ -16,6 +16,74 @@ from scripts.query.subject_hints import get_top_subjects
 from scripts.query.llm_compiler import compile_query_with_subject_hints
 
 
+def fetch_display_info(
+    conn: sqlite3.Connection,
+    mms_ids: List[str]
+) -> Dict[str, Dict[str, str]]:
+    """Fetch title and author for display purposes.
+
+    Args:
+        conn: Database connection
+        mms_ids: List of MMS IDs to fetch info for
+
+    Returns:
+        Dict mapping mms_id -> {"title": str, "author": str}
+    """
+    if not mms_ids:
+        return {}
+
+    result = {}
+    placeholders = ",".join("?" * len(mms_ids))
+
+    # Fetch titles (get first/primary title for each record)
+    title_sql = f"""
+        SELECT r.mms_id, t.value
+        FROM records r
+        LEFT JOIN titles t ON t.record_id = r.id
+        WHERE r.mms_id IN ({placeholders})
+        AND t.source LIKE '245%'
+        GROUP BY r.mms_id
+    """
+
+    try:
+        cursor = conn.execute(title_sql, mms_ids)
+        for row in cursor.fetchall():
+            mms_id = row[0]
+            title = row[1]
+            if mms_id not in result:
+                result[mms_id] = {"title": None, "author": None}
+            if title:
+                # Truncate long titles for display
+                result[mms_id]["title"] = title[:100] + "..." if len(title) > 100 else title
+    except Exception:
+        pass  # Continue even if title fetch fails
+
+    # Fetch primary author (first agent with author/creator role)
+    author_sql = f"""
+        SELECT r.mms_id, a.agent_raw
+        FROM records r
+        LEFT JOIN agents a ON a.record_id = r.id
+        WHERE r.mms_id IN ({placeholders})
+        AND (a.role_norm IN ('author', 'creator', 'aut', 'cre') OR a.source LIKE '100%' OR a.source LIKE '700%')
+        GROUP BY r.mms_id
+    """
+
+    try:
+        cursor = conn.execute(author_sql, mms_ids)
+        for row in cursor.fetchall():
+            mms_id = row[0]
+            author = row[1]
+            if mms_id not in result:
+                result[mms_id] = {"title": None, "author": None}
+            if author:
+                # Truncate long author names for display
+                result[mms_id]["author"] = author[:80] + "..." if len(author) > 80 else author
+    except Exception:
+        pass  # Continue even if author fetch fails
+
+    return result
+
+
 def load_plan_from_file(plan_path: Path) -> QueryPlan:
     """Load and validate QueryPlan from JSON file.
 
@@ -397,6 +465,17 @@ def execute_plan(
                 evidence=evidence_list
             )
             candidates.append(candidate)
+
+        # Fetch display info (title and author) for all candidates
+        if candidates:
+            mms_ids = [c.record_id for c in candidates]
+            display_info = fetch_display_info(conn, mms_ids)
+
+            # Update candidates with title and author
+            for candidate in candidates:
+                info = display_info.get(candidate.record_id, {})
+                candidate.title = info.get("title")
+                candidate.author = info.get("author")
 
         # Compute plan hash
         plan_hash = compute_plan_hash(plan)

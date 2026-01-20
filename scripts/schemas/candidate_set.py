@@ -30,6 +30,8 @@ class Candidate(BaseModel):
     record_id: str
     match_rationale: str  # Deterministic template-generated string
     evidence: List[Evidence] = Field(default_factory=list)
+    title: Optional[str] = Field(None, description="Record title for display")
+    author: Optional[str] = Field(None, description="Primary author/agent for display")
 
 
 class CandidateSet(BaseModel):

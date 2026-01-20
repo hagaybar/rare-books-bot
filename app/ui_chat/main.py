@@ -122,11 +122,24 @@ def render_candidate_details(response_data: dict):
     with st.expander(f"View all {len(candidates)} matching records", expanded=False):
         for i, candidate in enumerate(candidates[:50], 1):  # Show up to 50
             record_id = candidate.get("record_id", "Unknown")
+            title = candidate.get("title")
+            author = candidate.get("author")
             evidence = candidate.get("evidence", [])
 
             # Generate Primo URL for the record
             primo_url = generate_primo_url(record_id)
-            st.markdown(f"**{i}.** [{record_id}]({primo_url})")
+
+            # Build display text: prefer title + author, fallback to record_id
+            if title and author:
+                display_text = f"{title} / {author}"
+            elif title:
+                display_text = title
+            elif author:
+                display_text = f"[{author}]"
+            else:
+                display_text = record_id
+
+            st.markdown(f"**{i}.** [{display_text}]({primo_url})")
 
             if evidence:
                 for ev in evidence[:3]:  # Limit evidence shown
