@@ -467,7 +467,7 @@ async def handle_query_definition_phase(
         # Build exploration prompt for Phase 2
         if result_count > 0:
             exploration_prompt = (
-                f"\n\nWhat would you like to know about this collection? I can:\n"
+                f"\n\nWhat would you like to know about {'this book' if result_count == 1 else 'these books'}? I can:\n"
                 f"- Show top publishers or places of publication\n"
                 f"- Analyze the date distribution\n"
                 f"- Find books on specific topics within this set\n"

@@ -16,6 +16,8 @@ import streamlit as st
 import requests
 from typing import Optional
 
+from app.ui_chat.config import generate_primo_url
+
 # Configuration
 API_BASE_URL = "http://localhost:8000"
 
@@ -117,24 +119,27 @@ def render_candidate_details(response_data: dict):
     if not candidates:
         return
 
-    with st.expander(f"📋 View {len(candidates)} matching records", expanded=False):
-        for i, candidate in enumerate(candidates[:20], 1):  # Limit to 20
+    with st.expander(f"View all {len(candidates)} matching records", expanded=False):
+        for i, candidate in enumerate(candidates[:50], 1):  # Show up to 50
             record_id = candidate.get("record_id", "Unknown")
             evidence = candidate.get("evidence", [])
 
-            st.markdown(f"**{i}. Record: `{record_id}`**")
+            # Generate Primo URL for the record
+            primo_url = generate_primo_url(record_id)
+            st.markdown(f"**{i}.** [{record_id}]({primo_url})")
 
             if evidence:
                 for ev in evidence[:3]:  # Limit evidence shown
                     field = ev.get("field", "")
-                    matched = ev.get("matched_value", "")
-                    confidence = ev.get("confidence") or 0
-                    st.markdown(f"  - {field}: `{matched}` ({confidence:.0%})")
+                    value = ev.get("value", "")
+                    confidence = ev.get("confidence")
+                    conf_str = f" ({confidence:.0%})" if confidence else ""
+                    st.markdown(f"  - {field}: `{value}`{conf_str}")
 
             st.markdown("---")
 
-        if len(candidates) > 20:
-            st.info(f"Showing 20 of {len(candidates)} results")
+        if len(candidates) > 50:
+            st.info(f"Showing 50 of {len(candidates)} results. Refine your search to see more specific results.")
 
 
 def render_followup_suggestions(response_data: dict):

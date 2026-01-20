@@ -623,8 +623,7 @@ def format_interpretation_for_user(
 ) -> str:
     """Format interpretation as user-facing message.
 
-    Creates a natural language message explaining what was understood
-    and what action was taken.
+    Creates a conversational message explaining results and what was understood.
 
     Args:
         interpretation: The IntentInterpretation result
@@ -635,24 +634,22 @@ def format_interpretation_for_user(
     """
     parts = []
 
-    # Explanation of understanding
-    parts.append(interpretation.explanation)
-
-    # Add result count if available
+    # Lead with results in a friendly, conversational way
     if result_count is not None:
-        parts.append("")
         if result_count == 0:
-            parts.append("I didn't find any books matching these criteria.")
+            parts.append("I couldn't find any books matching that search.")
+            parts.append("")
+            parts.append(interpretation.explanation)
         elif result_count == 1:
-            parts.append("I found 1 book matching these criteria.")
+            parts.append(interpretation.explanation)
+            parts.append("")
+            parts.append("I found **1 book** matching these criteria.")
         else:
-            parts.append(f"I found {result_count} books matching these criteria.")
-
-    # Add confidence indicator for transparency (optional)
-    if interpretation.overall_confidence >= 0.95:
-        pass  # High confidence, no need to mention
-    elif interpretation.overall_confidence >= 0.85:
-        parts.append("")
-        parts.append("(I'm fairly confident in this interpretation.)")
+            parts.append(interpretation.explanation)
+            parts.append("")
+            parts.append(f"I found **{result_count} books** matching these criteria.")
+    else:
+        # No results yet, just show explanation
+        parts.append(interpretation.explanation)
 
     return "\n".join(parts)
