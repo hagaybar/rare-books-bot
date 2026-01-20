@@ -128,7 +128,7 @@ def render_candidate_details(response_data: dict):
                 for ev in evidence[:3]:  # Limit evidence shown
                     field = ev.get("field", "")
                     matched = ev.get("matched_value", "")
-                    confidence = ev.get("confidence", 0)
+                    confidence = ev.get("confidence") or 0
                     st.markdown(f"  - {field}: `{matched}` ({confidence:.0%})")
 
             st.markdown("---")
