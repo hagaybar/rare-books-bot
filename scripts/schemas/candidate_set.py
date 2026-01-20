@@ -30,8 +30,17 @@ class Candidate(BaseModel):
     record_id: str
     match_rationale: str  # Deterministic template-generated string
     evidence: List[Evidence] = Field(default_factory=list)
+    # Core display fields
     title: Optional[str] = Field(None, description="Record title for display")
     author: Optional[str] = Field(None, description="Primary author/agent for display")
+    # Extended metadata fields
+    date_start: Optional[int] = Field(None, description="Publication date start year")
+    date_end: Optional[int] = Field(None, description="Publication date end year")
+    place_norm: Optional[str] = Field(None, description="Canonical place name (e.g., 'venice')")
+    place_raw: Optional[str] = Field(None, description="Raw bibliographic place")
+    publisher: Optional[str] = Field(None, description="Publisher name")
+    subjects: List[str] = Field(default_factory=list, description="Subject headings (first 3)")
+    description: Optional[str] = Field(None, description="Book description from MARC 500/520 notes")
 
 
 class CandidateSet(BaseModel):

@@ -103,8 +103,62 @@ def format_assistant_message(response_data: dict) -> str:
     return message
 
 
+def format_date_display(date_start: int | None, date_end: int | None) -> str | None:
+    """Format date range for display with smart single-year handling.
+
+    Args:
+        date_start: Start year
+        date_end: End year
+
+    Returns:
+        Formatted date string or None
+    """
+    if date_start is None and date_end is None:
+        return None
+    if date_start is not None and date_end is not None:
+        if date_start == date_end:
+            return str(date_start)
+        else:
+            return f"{date_start}-{date_end}"
+    if date_start is not None:
+        return f"{date_start}-?"
+    return f"?-{date_end}"
+
+
+def format_place_display(place_norm: str | None, place_raw: str | None) -> str | None:
+    """Format place for display showing canonical + raw form.
+
+    Args:
+        place_norm: Canonical place name
+        place_raw: Raw bibliographic place
+
+    Returns:
+        Formatted place string or None
+    """
+    if place_norm and place_raw:
+        raw_stripped = place_raw.strip()
+        norm_title = place_norm.title()
+        if raw_stripped.lower() != norm_title.lower():
+            return f"{norm_title} ({raw_stripped})"
+        return norm_title
+    elif place_norm:
+        return place_norm.title()
+    elif place_raw:
+        return place_raw.strip()
+    return None
+
+
 def render_candidate_details(response_data: dict):
     """Render candidate set details in an expander.
+
+    Shows standard bibliographic fields for each result:
+    - Title (clickable Primo link)
+    - Author
+    - Date (smart single year vs range display)
+    - Place (canonical + raw form)
+    - Publisher
+    - Subjects (first 3)
+    - Description (from MARC 500/520 notes)
 
     Args:
         response_data: The API response containing candidate_set
@@ -124,53 +178,84 @@ def render_candidate_details(response_data: dict):
             record_id = candidate.get("record_id", "Unknown")
             title = candidate.get("title")
             author = candidate.get("author")
+            date_start = candidate.get("date_start")
+            date_end = candidate.get("date_end")
+            place_norm = candidate.get("place_norm")
+            place_raw = candidate.get("place_raw")
+            publisher = candidate.get("publisher")
+            subjects = candidate.get("subjects", [])
+            description = candidate.get("description")
             evidence = candidate.get("evidence", [])
 
             # Generate Primo URL for the record
             primo_url = generate_primo_url(record_id)
 
-            # Build display text: prefer title + author, fallback to record_id
-            if title and author:
-                display_text = f"{title} / {author}"
-            elif title:
-                display_text = title
-            elif author:
-                display_text = f"[{author}]"
-            else:
-                display_text = record_id
+            # Title line (clickable link)
+            display_title = title if title else f"[Record {record_id}]"
+            st.markdown(f"**{i}.** [{display_title}]({primo_url})")
 
-            st.markdown(f"**{i}.** [{display_text}]({primo_url})")
+            # Author line (italicized)
+            if author:
+                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;*{author}*")
 
+            # Publication info: Place, Publisher, Date
+            pub_parts = []
+            place_display = format_place_display(place_norm, place_raw)
+            if place_display:
+                pub_parts.append(place_display)
+            if publisher:
+                pub_parts.append(publisher)
+            date_display = format_date_display(date_start, date_end)
+            if date_display:
+                pub_parts.append(date_display)
+
+            if pub_parts:
+                pub_line = " | ".join(pub_parts)
+                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;{pub_line}")
+
+            # Subjects (first 3)
+            if subjects:
+                subjects_str = ", ".join(subjects[:3])
+                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;**Subjects:** {subjects_str}")
+
+            # Description (truncated)
+            if description:
+                # Escape potential markdown in description
+                desc_clean = description.replace("`", "'")
+                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;> {desc_clean}")
+
+            # Evidence from query filters (collapsed by default in details)
             if evidence:
-                # Map technical field names to user-friendly labels
-                field_labels = {
-                    "subject_value": "Subject",
-                    "title_value": "Title",
-                    "publisher_norm": "Publisher",
-                    "place_norm": "Place",
-                    "date_range": "Date",
-                    "date_start": "Date",
-                    "language_code": "Language",
-                    "agent_norm": "Author/Agent",
-                    "agent_value": "Author/Agent",
-                    "role_norm": "Role",
-                    "country_name": "Country",
-                }
-                for ev in evidence[:3]:  # Limit evidence shown
-                    field = ev.get("field", "")
-                    value = ev.get("value")
-                    # Skip None or empty values
-                    if value is None or value == "" or value == "None":
-                        continue
-                    friendly_field = field_labels.get(field, field.replace("_", " ").title())
-                    confidence = ev.get("confidence")
-                    conf_str = f" ({confidence:.0%})" if confidence else ""
-                    st.markdown(f"  - {friendly_field}: `{value}`{conf_str}")
+                with st.container():
+                    field_labels = {
+                        "subject_value": "Subject",
+                        "title_value": "Title",
+                        "publisher_norm": "Publisher",
+                        "place_norm": "Place",
+                        "date_range": "Date",
+                        "date_start": "Date",
+                        "language_code": "Language",
+                        "agent_norm": "Author/Agent",
+                        "agent_value": "Author/Agent",
+                        "role_norm": "Role",
+                        "country_name": "Country",
+                    }
+                    evidence_parts = []
+                    for ev in evidence[:3]:
+                        field = ev.get("field", "")
+                        value = ev.get("value")
+                        if value is None or value == "" or value == "None":
+                            continue
+                        friendly_field = field_labels.get(field, field.replace("_", " ").title())
+                        evidence_parts.append(f"{friendly_field}: `{value}`")
+                    if evidence_parts:
+                        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;*Match:* {', '.join(evidence_parts)}")
 
             st.markdown("---")
 
         if len(candidates) > 50:
-            st.info(f"Showing 50 of {len(candidates)} results. Refine your search to see more specific results.")
+            msg = f"Showing 50 of {len(candidates)} results. Refine your search for more."
+            st.info(msg)
 
 
 def render_followup_suggestions(response_data: dict, msg_index: int = 0):

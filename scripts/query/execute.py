@@ -19,20 +19,47 @@ from scripts.query.llm_compiler import compile_query_with_subject_hints
 def fetch_display_info(
     conn: sqlite3.Connection,
     mms_ids: List[str]
-) -> Dict[str, Dict[str, str]]:
-    """Fetch title and author for display purposes.
+) -> Dict[str, Dict[str, Any]]:
+    """Fetch display metadata for candidates.
+
+    Fetches title, author, date, place, publisher, subjects, and description
+    for all candidate records.
 
     Args:
         conn: Database connection
         mms_ids: List of MMS IDs to fetch info for
 
     Returns:
-        Dict mapping mms_id -> {"title": str, "author": str}
+        Dict mapping mms_id -> {
+            "title": str,
+            "author": str,
+            "date_start": int,
+            "date_end": int,
+            "place_norm": str,
+            "place_raw": str,
+            "publisher": str,
+            "subjects": List[str],
+            "description": str
+        }
     """
     if not mms_ids:
         return {}
 
+    # Initialize result dict with all fields
     result = {}
+    for mms_id in mms_ids:
+        result[mms_id] = {
+            "title": None,
+            "author": None,
+            "date_start": None,
+            "date_end": None,
+            "place_norm": None,
+            "place_raw": None,
+            "publisher": None,
+            "subjects": [],
+            "description": None,
+        }
+
     placeholders = ",".join("?" * len(mms_ids))
 
     # Fetch titles (get first/primary title for each record)
@@ -51,8 +78,6 @@ def fetch_display_info(
         for row in cursor.fetchall():
             mms_id = row[0]
             title = row[1]
-            if mms_id not in result:
-                result[mms_id] = {"title": None, "author": None}
             if title:
                 # Truncate long titles for display
                 result[mms_id]["title"] = title[:100] + "..." if len(title) > 100 else title
@@ -75,13 +100,92 @@ def fetch_display_info(
         for row in cursor.fetchall():
             mms_id = row[0]
             author = row[1]
-            if mms_id not in result:
-                result[mms_id] = {"title": None, "author": None}
             if author:
                 # Truncate long author names for display
                 result[mms_id]["author"] = author[:80] + "..." if len(author) > 80 else author
     except Exception:
         pass  # Continue even if author fetch fails
+
+    # Fetch imprint info (date, place, publisher)
+    imprint_sql = f"""
+        SELECT r.mms_id, i.date_start, i.date_end, i.place_norm, i.place_raw, i.publisher_raw
+        FROM records r
+        LEFT JOIN imprints i ON i.record_id = r.id
+        WHERE r.mms_id IN ({placeholders})
+        GROUP BY r.mms_id
+    """
+
+    try:
+        cursor = conn.execute(imprint_sql, mms_ids)
+        for row in cursor.fetchall():
+            mms_id = row[0]
+            if mms_id in result:
+                result[mms_id]["date_start"] = row[1]
+                result[mms_id]["date_end"] = row[2]
+                result[mms_id]["place_norm"] = row[3]
+                result[mms_id]["place_raw"] = row[4]
+                if row[5]:
+                    # Truncate long publisher names
+                    pub = row[5]
+                    result[mms_id]["publisher"] = (pub[:60] + "...") if len(pub) > 60 else pub
+    except Exception:
+        pass  # Continue even if imprint fetch fails
+
+    # Fetch first 3 subjects per record
+    # Use a window function to limit subjects per record
+    subjects_sql = f"""
+        SELECT r.mms_id, s.value
+        FROM records r
+        LEFT JOIN subjects s ON s.record_id = r.id
+        WHERE r.mms_id IN ({placeholders})
+        AND s.value IS NOT NULL
+    """
+
+    try:
+        cursor = conn.execute(subjects_sql, mms_ids)
+        # Group subjects by mms_id and take first 3
+        subjects_by_mms = {}
+        for row in cursor.fetchall():
+            mms_id = row[0]
+            subject = row[1]
+            if mms_id not in subjects_by_mms:
+                subjects_by_mms[mms_id] = []
+            if len(subjects_by_mms[mms_id]) < 3:
+                # Truncate long subject strings
+                subj_str = subject[:50] + "..." if len(subject) > 50 else subject
+                subjects_by_mms[mms_id].append(subj_str)
+
+        for mms_id, subjects in subjects_by_mms.items():
+            if mms_id in result:
+                result[mms_id]["subjects"] = subjects
+    except Exception:
+        pass  # Continue even if subjects fetch fails
+
+    # Fetch description from notes (prefer 520 summary, fallback to 500)
+    # MARC 520 = Summary note, MARC 500 = General note
+    notes_sql = f"""
+        SELECT r.mms_id, n.value, n.tag
+        FROM records r
+        LEFT JOIN notes n ON n.record_id = r.id
+        WHERE r.mms_id IN ({placeholders})
+        AND n.tag IN ('520', '500')
+        ORDER BY r.mms_id, CASE n.tag WHEN '520' THEN 1 ELSE 2 END
+    """
+
+    try:
+        cursor = conn.execute(notes_sql, mms_ids)
+        # Track which records already have descriptions (prefer 520)
+        described_records = set()
+        for row in cursor.fetchall():
+            mms_id = row[0]
+            note_value = row[1]
+            if mms_id not in described_records and note_value:
+                # Truncate long descriptions
+                desc = note_value[:200] + "..." if len(note_value) > 200 else note_value
+                result[mms_id]["description"] = desc
+                described_records.add(mms_id)
+    except Exception:
+        pass  # Continue even if notes fetch fails
 
     return result
 
@@ -468,16 +572,23 @@ def execute_plan(
             )
             candidates.append(candidate)
 
-        # Fetch display info (title and author) for all candidates
+        # Fetch display info (all metadata) for all candidates
         if candidates:
             mms_ids = [c.record_id for c in candidates]
             display_info = fetch_display_info(conn, mms_ids)
 
-            # Update candidates with title and author
+            # Update candidates with all display fields
             for candidate in candidates:
                 info = display_info.get(candidate.record_id, {})
                 candidate.title = info.get("title")
                 candidate.author = info.get("author")
+                candidate.date_start = info.get("date_start")
+                candidate.date_end = info.get("date_end")
+                candidate.place_norm = info.get("place_norm")
+                candidate.place_raw = info.get("place_raw")
+                candidate.publisher = info.get("publisher")
+                candidate.subjects = info.get("subjects", [])
+                candidate.description = info.get("description")
 
         # Compute plan hash
         plan_hash = compute_plan_hash(plan)
