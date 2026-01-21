@@ -1,2 +1,14 @@
 1. Date range not extracted correctly:
 For record id 2 (mms is: 990012162110204146), the date_raw is: "תרס"א 1900-תרס"ה 1904" (from 260) and the date_start and date_end are the same: 1900
+For record id 24 the date_raw is: "MDCXI - MDCXII [1611-1612]" and the date_start and date_end are the same: 1611
+
+2. Date range not extracted at all:
+Date problems appear in many other Hebrew years. As a basic rule of thumb:
+  ## we need to find all those places in thich "date_start" and "date_end" are null, and they have a "date_label", and we need to understand what prevents the creation of normalized dates and solve it.
+  ## For example in record id 3, the date confidence is 0.0. The date_raw is: תשל"ט, which is a Hebrew year, equivalent to 1979 (actually 1978-1979, because the years do no overlap nicely in both methods).
+  ## There is also the case in which Hebrew date is in square brackets with other text in field. For example: "הנה' אנכי' שולח' לכם' את' אליה' הנביא' [תס"ט]" The Hebrew year here is 'תס"ט'  and should be: 1709 (or 1708-1709)
+
+3. Locations are not identified in place_norm correctly
+For record ids 30, 279, 427, 664, 949, 963 and some more the plae_raw contains: "Amstelodami", and the place_norm and place_display is "amstelodami". This form refer to Amsterdam and should be fixed.
+
+
