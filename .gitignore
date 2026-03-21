@@ -28,6 +28,7 @@ wheels/
 venv/
 env/
 ENV/
+node_modules/
 # Poetry keeps pyproject.toml & poetry.lock committed – do NOT ignore them
 
 ###############################################################################
