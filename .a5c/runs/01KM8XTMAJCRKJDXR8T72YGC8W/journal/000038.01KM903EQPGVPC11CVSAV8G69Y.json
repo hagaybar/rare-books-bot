@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:06:36.534Z",
+  "data": {
+    "effectId": "01KM903EQ9MN3D6THV6QQDBT3Q",
+    "invocationKey": "metadata-copilot-workbench:S000013:build-date-agent",
+    "invocationHash": "fe243d80b536554ed20cec78306c004a4091cfcd489cffed3a4c68874c7df549",
+    "stepId": "S000013",
+    "taskId": "build-date-agent",
+    "kind": "agent",
+    "label": "Build DateAgent - specialist for date normalization",
+    "taskDefRef": "tasks/01KM903EQ9MN3D6THV6QQDBT3Q/task.json"
+  },
+  "checksum": "358bc16fc6dc216ff869bc16718ba80e0f030986908a99eacce5b624cefc5945"
+}

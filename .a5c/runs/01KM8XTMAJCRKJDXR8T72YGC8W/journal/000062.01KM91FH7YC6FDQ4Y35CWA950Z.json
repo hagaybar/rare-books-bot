@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:30:40.895Z",
+  "data": {
+    "effectId": "01KM91FH7J8085QZR3P15S907K",
+    "invocationKey": "metadata-copilot-workbench:S000021:build-workbench-page",
+    "invocationHash": "422a0cf3ec244da4e03767ebdd593e14fb7e46a475f97754b26414163bcb92fb",
+    "stepId": "S000021",
+    "taskId": "build-workbench-page",
+    "kind": "agent",
+    "label": "Build Issues Workbench page with data tables",
+    "taskDefRef": "tasks/01KM91FH7J8085QZR3P15S907K/task.json"
+  },
+  "checksum": "4a6b7b887ae28870aa266dca61d1b90303ff842a273928095d93128ff563b946"
+}

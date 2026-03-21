@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8XV1S67S3P7AH88AJC4ZA7",
+  "taskId": "build-audit-module",
+  "invocationKey": "metadata-copilot-workbench:S000001:build-audit-module",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Build normalization coverage audit module",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "targetFields": [
+      "date",
+      "place",
+      "publisher",
+      "agent"
+    ]
+  }
+}

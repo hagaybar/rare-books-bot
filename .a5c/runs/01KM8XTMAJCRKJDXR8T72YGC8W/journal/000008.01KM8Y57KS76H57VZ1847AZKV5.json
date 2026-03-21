@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T19:32:37.625Z",
+  "data": {
+    "effectId": "01KM8Y57KD78AAAFF834VD712J",
+    "invocationKey": "metadata-copilot-workbench:S000003:build-gap-clustering",
+    "invocationHash": "bf1c1463973ab7fa6df8f9dbbce4b38bd19e82dd84ad02362b11a98d92f7609a",
+    "stepId": "S000003",
+    "taskId": "build-gap-clustering",
+    "kind": "agent",
+    "label": "Build gap clustering analysis module",
+    "taskDefRef": "tasks/01KM8Y57KD78AAAFF834VD712J/task.json"
+  },
+  "checksum": "337f67dbfea3a54b59ea3312946455a23f174d316d6f4bb90c2defeeafdf4fc8"
+}

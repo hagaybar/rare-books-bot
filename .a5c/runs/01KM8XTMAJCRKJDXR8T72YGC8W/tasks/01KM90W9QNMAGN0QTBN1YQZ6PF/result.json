@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM90W9QNMAGN0QTBN1YQZ6PF",
+  "taskId": "build-agent-chat-api",
+  "invocationKey": "metadata-copilot-workbench:S000017:build-agent-chat-api",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "app/api/metadata.py",
+      "tests/app/test_agent_chat.py"
+    ],
+    "endpoints_added": [
+      "POST /metadata/agent/chat"
+    ],
+    "files_created": [
+      "tests/app/test_agent_chat.py"
+    ],
+    "files_modified": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 18
+    }
+  },
+  "startedAt": "2026-03-21T20:24:35.881Z",
+  "finishedAt": "2026-03-21T20:24:35.881Z",
+  "value": {
+    "artifacts": [
+      "app/api/metadata.py",
+      "tests/app/test_agent_chat.py"
+    ],
+    "endpoints_added": [
+      "POST /metadata/agent/chat"
+    ],
+    "files_created": [
+      "tests/app/test_agent_chat.py"
+    ],
+    "files_modified": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 18
+    }
+  }
+}

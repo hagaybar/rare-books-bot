@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8YWRED96NV62WG0AHVH0DK",
+  "taskId": "build-corrections-api",
+  "invocationKey": "metadata-copilot-workbench:S000006:build-corrections-api",
+  "stepId": "S000006",
+  "kind": "agent",
+  "title": "Build corrections submission endpoint",
+  "inputs": {
+    "aliasMapDir": "data/normalization",
+    "metadataApi": {
+      "artifacts": [
+        "app/api/metadata.py",
+        "app/api/metadata_models.py"
+      ],
+      "endpoints_implemented": [
+        {
+          "method": "GET",
+          "path": "/metadata/coverage"
+        },
+        {
+          "method": "GET",
+          "path": "/metadata/issues"
+        },
+        {
+          "method": "GET",
+          "path": "/metadata/unmapped"
+        },
+        {
+          "method": "GET",
+          "path": "/metadata/methods"
+        },
+        {
+          "method": "GET",
+          "path": "/metadata/clusters"
+        }
+      ],
+      "files_created": [
+        "app/api/metadata.py",
+        "app/api/metadata_models.py"
+      ],
+      "files_modified": [
+        "app/api/main.py"
+      ],
+      "pydantic_models": 11,
+      "success": true
+    },
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

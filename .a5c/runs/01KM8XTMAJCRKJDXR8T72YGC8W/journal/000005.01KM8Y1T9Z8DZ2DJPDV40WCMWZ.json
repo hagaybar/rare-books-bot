@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T19:30:45.695Z",
+  "data": {
+    "effectId": "01KM8Y1T9KK31SXW1SS77V671A",
+    "invocationKey": "metadata-copilot-workbench:S000002:run-baseline-audit",
+    "invocationHash": "f9cad226f25b73797683d83e82707a1de0a2b296a1b4d9862527759d7afc2073",
+    "stepId": "S000002",
+    "taskId": "run-baseline-audit",
+    "kind": "agent",
+    "label": "Run baseline coverage audit and save results",
+    "taskDefRef": "tasks/01KM8Y1T9KK31SXW1SS77V671A/task.json"
+  },
+  "checksum": "e53a869a342b48e26932a52c056cb8a7eb371e656041bdd95071e3df9dc1a3cc"
+}

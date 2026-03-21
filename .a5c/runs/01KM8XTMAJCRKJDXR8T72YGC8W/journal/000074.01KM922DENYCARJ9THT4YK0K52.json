@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:40:59.605Z",
+  "data": {
+    "effectId": "01KM922DE9B70B0T80F5X6H5GC",
+    "invocationKey": "metadata-copilot-workbench:S000025:build-feedback-loop",
+    "invocationHash": "8dc1c62f490e1b9c08cd7d29a8ca833490dd8add2ec399a715c5518d1fd3b3b4",
+    "stepId": "S000025",
+    "taskId": "build-feedback-loop",
+    "kind": "agent",
+    "label": "Build the HITL feedback loop (approve -> alias map -> re-index -> coverage update)",
+    "taskDefRef": "tasks/01KM922DE9B70B0T80F5X6H5GC/task.json"
+  },
+  "checksum": "d38e83293feacc2c361b2d8836c9a198990456c1bf2caa827d29e33d2f1340d8"
+}

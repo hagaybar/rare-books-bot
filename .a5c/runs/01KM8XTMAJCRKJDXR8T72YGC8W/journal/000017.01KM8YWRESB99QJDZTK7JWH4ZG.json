@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T19:45:28.537Z",
+  "data": {
+    "effectId": "01KM8YWRED96NV62WG0AHVH0DK",
+    "invocationKey": "metadata-copilot-workbench:S000006:build-corrections-api",
+    "invocationHash": "3f711137bfc59131779cd281648f77ef69b03c91eaf38dc2b8a9d51b71ad263f",
+    "stepId": "S000006",
+    "taskId": "build-corrections-api",
+    "kind": "agent",
+    "label": "Build corrections submission endpoint",
+    "taskDefRef": "tasks/01KM8YWRED96NV62WG0AHVH0DK/task.json"
+  },
+  "checksum": "909b3c981618b5534cfae6c8b2e679e560ef5b7855902390b5919f4c4af4aadb"
+}

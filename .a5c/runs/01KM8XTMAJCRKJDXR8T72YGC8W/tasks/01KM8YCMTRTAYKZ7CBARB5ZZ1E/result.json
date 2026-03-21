@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8YCMTRTAYKZ7CBARB5ZZ1E",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "metadata-copilot-workbench:S000004:__sdk.breakpoint",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Approved. All future milestones pre-approved. Also: proactively fix data gaps (create aliases, canonize names, fix mapping mistakes) before the human user gets to the system."
+  },
+  "startedAt": "2026-03-21T19:41:37.729Z",
+  "finishedAt": "2026-03-21T19:41:37.729Z",
+  "value": {
+    "approved": true,
+    "response": "Approved. All future milestones pre-approved. Also: proactively fix data gaps (create aliases, canonize names, fix mapping mistakes) before the human user gets to the system."
+  }
+}

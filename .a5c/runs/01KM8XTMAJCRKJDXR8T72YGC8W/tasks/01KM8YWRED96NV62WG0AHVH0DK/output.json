@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "files_modified": ["app/api/metadata.py", "app/api/metadata_models.py"],
+  "files_created": ["tests/app/test_metadata_corrections.py"],
+  "endpoints_added": [
+    {"method": "POST", "path": "/metadata/corrections"},
+    {"method": "GET", "path": "/metadata/corrections/history"},
+    {"method": "POST", "path": "/metadata/corrections/batch"}
+  ],
+  "test_results": {"passed": 16, "failed": 0},
+  "features": ["atomic_writes", "conflict_detection", "idempotency", "affected_record_counting", "review_log_jsonl"],
+  "artifacts": ["app/api/metadata.py", "app/api/metadata_models.py", "tests/app/test_metadata_corrections.py"]
+}

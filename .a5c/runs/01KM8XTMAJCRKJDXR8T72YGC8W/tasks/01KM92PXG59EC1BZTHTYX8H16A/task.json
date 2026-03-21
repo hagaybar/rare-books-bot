@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM92PXG59EC1BZTHTYX8H16A",
+  "taskId": "write-documentation",
+  "invocationKey": "metadata-copilot-workbench:S000029:write-documentation",
+  "stepId": "S000029",
+  "kind": "agent",
+  "title": "Write workbench documentation and update CLAUDE.md",
+  "inputs": {
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

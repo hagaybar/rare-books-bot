@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:37:52.240Z",
+  "data": {
+    "effectId": "01KM91WPF4DTGKV54RMCN6WJND",
+    "invocationKey": "metadata-copilot-workbench:S000023:build-review-page",
+    "invocationHash": "588bb8995e00add151c249b8944326b4465e78819d20b31e6169db99609f610f",
+    "stepId": "S000023",
+    "taskId": "build-review-page",
+    "kind": "agent",
+    "label": "Build Corrections Review page",
+    "taskDefRef": "tasks/01KM91WPF4DTGKV54RMCN6WJND/task.json"
+  },
+  "checksum": "7c0faae9cc213b65d0a228be6009a1da10c141e7935583c71f908fbc60ab01af"
+}

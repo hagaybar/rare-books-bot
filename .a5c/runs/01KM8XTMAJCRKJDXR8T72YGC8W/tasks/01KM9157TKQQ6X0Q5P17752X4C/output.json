@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "files_created": ["frontend/vite.config.ts", "frontend/src/types/metadata.ts", "frontend/src/api/metadata.ts", "frontend/src/hooks/useMetadata.ts", "frontend/src/components/Layout.tsx", "frontend/src/components/Sidebar.tsx", "frontend/src/pages/Dashboard.tsx", "frontend/src/pages/Workbench.tsx", "frontend/src/pages/AgentChat.tsx", "frontend/src/pages/Review.tsx", "frontend/src/App.tsx", "frontend/src/main.tsx"],
+  "build_success": true,
+  "bundle_size": "256KB JS, 14KB CSS",
+  "artifacts": ["frontend/"]
+}

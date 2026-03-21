@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8YWRED96NV62WG0AHVH0DK",
+  "taskId": "build-corrections-api",
+  "invocationKey": "metadata-copilot-workbench:S000006:build-corrections-api",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py",
+      "tests/app/test_metadata_corrections.py"
+    ],
+    "endpoints_added": [
+      {
+        "method": "POST",
+        "path": "/metadata/corrections"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/corrections/history"
+      },
+      {
+        "method": "POST",
+        "path": "/metadata/corrections/batch"
+      }
+    ],
+    "features": [
+      "atomic_writes",
+      "conflict_detection",
+      "idempotency",
+      "affected_record_counting",
+      "review_log_jsonl"
+    ],
+    "files_created": [
+      "tests/app/test_metadata_corrections.py"
+    ],
+    "files_modified": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 16
+    }
+  },
+  "startedAt": "2026-03-21T19:49:51.846Z",
+  "finishedAt": "2026-03-21T19:49:51.846Z",
+  "value": {
+    "artifacts": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py",
+      "tests/app/test_metadata_corrections.py"
+    ],
+    "endpoints_added": [
+      {
+        "method": "POST",
+        "path": "/metadata/corrections"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/corrections/history"
+      },
+      {
+        "method": "POST",
+        "path": "/metadata/corrections/batch"
+      }
+    ],
+    "features": [
+      "atomic_writes",
+      "conflict_detection",
+      "idempotency",
+      "affected_record_counting",
+      "review_log_jsonl"
+    ],
+    "files_created": [
+      "tests/app/test_metadata_corrections.py"
+    ],
+    "files_modified": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 16
+    }
+  }
+}

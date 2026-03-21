@@ -1,0 +1,18 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:40:44.287Z",
+  "data": {
+    "effectId": "01KM921YFK8Q5TPNH5BWRBD748",
+    "invocationKey": "metadata-copilot-workbench:S000024:__sdk.breakpoint",
+    "invocationHash": "afbd78aae0ad37f05a940205c25350e20c7eee27eabe2db1ba1edf4590601b25",
+    "stepId": "S000024",
+    "taskId": "__sdk.breakpoint",
+    "kind": "breakpoint",
+    "label": "breakpoint",
+    "taskDefRef": "tasks/01KM921YFK8Q5TPNH5BWRBD748/task.json",
+    "labels": [
+      "breakpoint"
+    ]
+  },
+  "checksum": "94a307cfb7168becc0015ac11bcd82c2449a95b4ff8809fbb33dc61684459691"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM921YFK8Q5TPNH5BWRBD748",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "metadata-copilot-workbench:S000024:__sdk.breakpoint",
+  "stepId": "S000024",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Milestone 4 Complete: React frontend with 4 pages (Dashboard, Workbench, Agent Chat, Review). Proceed to integration testing?",
+      "title": "React Frontend Review"
+    },
+    "requestedAt": "2026-03-21T20:40:44.275Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Milestone 4 Complete: React frontend with 4 pages (Dashboard, Workbench, Agent Chat, Review). Proceed to integration testing?",
+      "title": "React Frontend Review"
+    },
+    "requestedAt": "2026-03-21T20:40:44.275Z"
+  }
+}

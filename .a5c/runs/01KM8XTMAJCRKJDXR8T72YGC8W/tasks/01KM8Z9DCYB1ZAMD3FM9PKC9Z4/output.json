@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "files_created": ["tests/app/test_metadata_api.py"],
+  "test_results": {"new_tests": 53, "existing_tests": 25, "total": 78, "all_passed": true},
+  "test_classes": ["TestGetCoverage(9)", "TestGetIssues(13)", "TestGetUnmapped(9)", "TestGetMethods(11)", "TestGetClusters(11)"],
+  "artifacts": ["tests/app/test_metadata_api.py"]
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM903EQ9MN3D6THV6QQDBT3Q",
+  "taskId": "build-date-agent",
+  "invocationKey": "metadata-copilot-workbench:S000013:build-date-agent",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/agents/date_agent.py"
+    ],
+    "files_created": [
+      "scripts/metadata/agents/date_agent.py",
+      "tests/scripts/metadata/agents/test_date_agent.py"
+    ],
+    "methods": [
+      "analyze",
+      "get_unparsed",
+      "propose_dates",
+      "group_by_pattern",
+      "classify_date_pattern"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 45
+    }
+  },
+  "startedAt": "2026-03-21T20:10:59.306Z",
+  "finishedAt": "2026-03-21T20:10:59.306Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/agents/date_agent.py"
+    ],
+    "files_created": [
+      "scripts/metadata/agents/date_agent.py",
+      "tests/scripts/metadata/agents/test_date_agent.py"
+    ],
+    "methods": [
+      "analyze",
+      "get_unparsed",
+      "propose_dates",
+      "group_by_pattern",
+      "classify_date_pattern"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 45
+    }
+  }
+}

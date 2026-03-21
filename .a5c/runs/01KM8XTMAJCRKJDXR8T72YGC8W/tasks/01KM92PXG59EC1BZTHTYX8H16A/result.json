@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM92PXG59EC1BZTHTYX8H16A",
+  "taskId": "write-documentation",
+  "invocationKey": "metadata-copilot-workbench:S000029:write-documentation",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "CLAUDE.md",
+      "docs/metadata_workbench.md"
+    ],
+    "files_created": [
+      "docs/metadata_workbench.md"
+    ],
+    "files_modified": [
+      "CLAUDE.md"
+    ],
+    "success": true
+  },
+  "startedAt": "2026-03-21T20:54:21.235Z",
+  "finishedAt": "2026-03-21T20:54:21.235Z",
+  "value": {
+    "artifacts": [
+      "CLAUDE.md",
+      "docs/metadata_workbench.md"
+    ],
+    "files_created": [
+      "docs/metadata_workbench.md"
+    ],
+    "files_modified": [
+      "CLAUDE.md"
+    ],
+    "success": true
+  }
+}

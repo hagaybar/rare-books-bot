@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8Z513NJ8YAKDNMN23675EC",
+  "taskId": "build-primo-api",
+  "invocationKey": "metadata-copilot-workbench:S000007:build-primo-api",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "endpoints_added": [
+      "POST /metadata/primo-urls",
+      "GET /metadata/records/{mms_id}/primo"
+    ],
+    "files_modified": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py",
+      "tests/app/test_metadata_corrections.py"
+    ],
+    "primo_url_pattern": "https://tau.primo.exlibrisgroup.com/nde/fulldisplay?query={mms_id}...",
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 25
+    }
+  },
+  "startedAt": "2026-03-21T19:52:14.901Z",
+  "finishedAt": "2026-03-21T19:52:14.901Z",
+  "value": {
+    "artifacts": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "endpoints_added": [
+      "POST /metadata/primo-urls",
+      "GET /metadata/records/{mms_id}/primo"
+    ],
+    "files_modified": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py",
+      "tests/app/test_metadata_corrections.py"
+    ],
+    "primo_url_pattern": "https://tau.primo.exlibrisgroup.com/nde/fulldisplay?query={mms_id}...",
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 25
+    }
+  }
+}

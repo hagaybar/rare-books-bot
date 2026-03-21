@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:49:31.541Z",
+  "data": {
+    "effectId": "01KM92J1C8KE4K3AQE866JF7K2",
+    "invocationKey": "metadata-copilot-workbench:S000027:build-review-log",
+    "invocationHash": "491fc1677058f871607d0a7872806ba0c1608dd0be1c9bc4d62e485758d95a00",
+    "stepId": "S000027",
+    "taskId": "build-review-log",
+    "kind": "agent",
+    "label": "Build review log persistence",
+    "taskDefRef": "tasks/01KM92J1C8KE4K3AQE866JF7K2/task.json"
+  },
+  "checksum": "48d6b6ddf8e85fafc590f8107c950ce444e732716886d3a74a3bbbe561dc517d"
+}

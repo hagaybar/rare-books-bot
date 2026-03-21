@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "files_modified": ["scripts/metadata/audit.py"],
+  "files_created": ["data/metadata/baseline_audit.json"],
+  "audit_summary": {
+    "total_imprint_rows": 2773,
+    "total_agent_rows": 4366,
+    "date": {"non_null": 2773, "coverage": "100%", "low_confidence_count": 69, "high_confidence_count": 1279},
+    "place": {"non_null": 2773, "coverage": "100%", "unmapped_count": 1185, "alias_mapped_count": 1569},
+    "publisher": {"non_null": 2773, "coverage": "100%", "no_alias_map": 2740, "missing": 33},
+    "agent_name": {"non_null": 4366, "coverage": "100%", "uniform_confidence": 0.80},
+    "agent_role": {"non_null": 4366, "missing_roles": 1655, "unmapped_roles": 122}
+  },
+  "top_issues": [
+    "1655 agent rows with empty role (confidence 0.50)",
+    "2740 publishers with no alias map (stuck at 0.80 confidence)",
+    "1185 places (43%) without alias map match (0.80 confidence)",
+    "69 unparsed dates including partial century patterns"
+  ],
+  "artifacts": ["data/metadata/baseline_audit.json"]
+}

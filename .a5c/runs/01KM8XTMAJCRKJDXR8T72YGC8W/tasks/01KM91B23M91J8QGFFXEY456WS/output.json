@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "files_modified": ["frontend/src/pages/Dashboard.tsx"],
+  "build_success": true,
+  "components_built": ["StatCard", "CoverageBar", "GapCard", "MethodChart", "ConfidenceLegend", "DashboardSkeleton", "Dashboard"],
+  "artifacts": ["frontend/src/pages/Dashboard.tsx"]
+}

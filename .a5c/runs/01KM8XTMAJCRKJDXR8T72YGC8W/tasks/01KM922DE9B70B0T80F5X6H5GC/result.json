@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM922DE9B70B0T80F5X6H5GC",
+  "taskId": "build-feedback-loop",
+  "invocationKey": "metadata-copilot-workbench:S000025:build-feedback-loop",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/feedback_loop.py"
+    ],
+    "files_created": [
+      "scripts/metadata/feedback_loop.py",
+      "tests/scripts/metadata/test_feedback_loop.py"
+    ],
+    "methods": [
+      "apply_correction",
+      "apply_batch",
+      "get_pending_corrections",
+      "get_coverage_delta",
+      "_renormalize_records",
+      "_write_to_alias_map",
+      "_log_correction"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 30
+    }
+  },
+  "startedAt": "2026-03-21T20:45:23.829Z",
+  "finishedAt": "2026-03-21T20:45:23.829Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/feedback_loop.py"
+    ],
+    "files_created": [
+      "scripts/metadata/feedback_loop.py",
+      "tests/scripts/metadata/test_feedback_loop.py"
+    ],
+    "methods": [
+      "apply_correction",
+      "apply_batch",
+      "get_pending_corrections",
+      "get_coverage_delta",
+      "_renormalize_records",
+      "_write_to_alias_map",
+      "_log_correction"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 30
+    }
+  }
+}

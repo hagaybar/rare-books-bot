@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "files_created": [
+    "scripts/metadata/__init__.py",
+    "scripts/metadata/audit.py",
+    "tests/scripts/metadata/__init__.py",
+    "tests/scripts/metadata/test_audit.py"
+  ],
+  "test_results": {
+    "total": 41,
+    "passed": 41,
+    "failed": 0,
+    "duration_seconds": 0.09
+  },
+  "coverage_report_structure": {
+    "date_coverage": "FieldCoverage with confidence bands, method breakdown, flagged unparsed dates",
+    "place_coverage": "FieldCoverage with confidence bands, flagged unmapped places (confidence <= 0.80)",
+    "publisher_coverage": "FieldCoverage with confidence bands",
+    "agent_name_coverage": "FieldCoverage with flagged ambiguous agents",
+    "agent_role_coverage": "FieldCoverage with flagged low-confidence roles",
+    "total_imprint_rows": "int",
+    "total_agent_rows": "int"
+  },
+  "public_api": [
+    "generate_coverage_report(db_path: Path) -> CoverageReport",
+    "generate_coverage_report_from_conn(conn: sqlite3.Connection) -> CoverageReport"
+  ],
+  "artifacts": ["scripts/metadata/audit.py", "tests/scripts/metadata/test_audit.py"]
+}

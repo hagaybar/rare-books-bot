@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:19:41.831Z",
+  "data": {
+    "effectId": "01KM90VDKVT3PZF5761RT7VGCH",
+    "invocationKey": "metadata-copilot-workbench:S000016:test-specialist-agents",
+    "invocationHash": "933ba32abbb7705795fdf98329245328003bad0cb4ad52f57ef42d594b666d76",
+    "stepId": "S000016",
+    "taskId": "test-specialist-agents",
+    "kind": "shell",
+    "label": "Run all specialist agent tests",
+    "taskDefRef": "tasks/01KM90VDKVT3PZF5761RT7VGCH/task.json"
+  },
+  "checksum": "54f7d9ddc84927999d9142fed92518ffaf6018122b748e65a1fd59df7f5e8ebb"
+}

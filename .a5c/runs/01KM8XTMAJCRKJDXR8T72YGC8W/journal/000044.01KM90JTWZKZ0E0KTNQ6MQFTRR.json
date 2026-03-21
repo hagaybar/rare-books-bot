@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:15:00.511Z",
+  "data": {
+    "effectId": "01KM90JTWJ64FKDV6G1GCRM6YH",
+    "invocationKey": "metadata-copilot-workbench:S000015:build-agent-agent",
+    "invocationHash": "295f41c7b71b3505675fb2b1d5cf4a6280d5dc971d36349ea6e81bee2a42e8f5",
+    "stepId": "S000015",
+    "taskId": "build-agent-agent",
+    "kind": "agent",
+    "label": "Build AgentAgent - specialist for name authority normalization",
+    "taskDefRef": "tasks/01KM90JTWJ64FKDV6G1GCRM6YH/task.json"
+  },
+  "checksum": "deb85e77aa213b12f8f097db00ea60eb45dc96787bbf914907117c775480593f"
+}

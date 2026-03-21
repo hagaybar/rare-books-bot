@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8Y1T9KK31SXW1SS77V671A",
+  "taskId": "run-baseline-audit",
+  "invocationKey": "metadata-copilot-workbench:S000002:run-baseline-audit",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Run baseline coverage audit and save results",
+  "inputs": {
+    "auditModule": {
+      "artifacts": [
+        "scripts/metadata/audit.py",
+        "tests/scripts/metadata/test_audit.py"
+      ],
+      "coverage_report_structure": {
+        "agent_name_coverage": "FieldCoverage with flagged ambiguous agents",
+        "agent_role_coverage": "FieldCoverage with flagged low-confidence roles",
+        "date_coverage": "FieldCoverage with confidence bands, method breakdown, flagged unparsed dates",
+        "place_coverage": "FieldCoverage with confidence bands, flagged unmapped places (confidence <= 0.80)",
+        "publisher_coverage": "FieldCoverage with confidence bands",
+        "total_agent_rows": "int",
+        "total_imprint_rows": "int"
+      },
+      "files_created": [
+        "scripts/metadata/__init__.py",
+        "scripts/metadata/audit.py",
+        "tests/scripts/metadata/__init__.py",
+        "tests/scripts/metadata/test_audit.py"
+      ],
+      "public_api": [
+        "generate_coverage_report(db_path: Path) -> CoverageReport",
+        "generate_coverage_report_from_conn(conn: sqlite3.Connection) -> CoverageReport"
+      ],
+      "success": true,
+      "test_results": {
+        "duration_seconds": 0.09,
+        "failed": 0,
+        "passed": 41,
+        "total": 41
+      }
+    },
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "targetFields": [
+      "date",
+      "place",
+      "publisher",
+      "agent"
+    ]
+  }
+}

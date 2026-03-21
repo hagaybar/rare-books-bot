@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:02:25.703Z",
+  "data": {
+    "effectId": "01KM8ZVSRVVTMPS9DEB7K72R7J",
+    "invocationKey": "metadata-copilot-workbench:S000012:build-place-agent",
+    "invocationHash": "7b24fe0eab03b0043e9a9302105272b86c5bad2e82f88d35e6f602781a07e49e",
+    "stepId": "S000012",
+    "taskId": "build-place-agent",
+    "kind": "agent",
+    "label": "Build PlaceAgent - specialist for place normalization",
+    "taskDefRef": "tasks/01KM8ZVSRVVTMPS9DEB7K72R7J/task.json"
+  },
+  "checksum": "f77b34e336104ceace0e0f460bfa077533acbc74e5d2c6398cb77c01924c2b4d"
+}

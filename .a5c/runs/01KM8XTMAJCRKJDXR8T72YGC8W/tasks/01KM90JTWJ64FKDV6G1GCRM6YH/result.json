@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM90JTWJ64FKDV6G1GCRM6YH",
+  "taskId": "build-agent-agent",
+  "invocationKey": "metadata-copilot-workbench:S000015:build-agent-agent",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/agents/name_agent.py"
+    ],
+    "files_created": [
+      "scripts/metadata/agents/name_agent.py",
+      "tests/scripts/metadata/agents/test_name_agent.py"
+    ],
+    "methods": [
+      "analyze",
+      "get_without_authority",
+      "get_low_confidence",
+      "propose_authority_match",
+      "validate_against_authority"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 61
+    },
+    "utilities": [
+      "normalize_name_for_comparison",
+      "reorder_name",
+      "names_match"
+    ]
+  },
+  "startedAt": "2026-03-21T20:19:26.709Z",
+  "finishedAt": "2026-03-21T20:19:26.709Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/agents/name_agent.py"
+    ],
+    "files_created": [
+      "scripts/metadata/agents/name_agent.py",
+      "tests/scripts/metadata/agents/test_name_agent.py"
+    ],
+    "methods": [
+      "analyze",
+      "get_without_authority",
+      "get_low_confidence",
+      "propose_authority_match",
+      "validate_against_authority"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 61
+    },
+    "utilities": [
+      "normalize_name_for_comparison",
+      "reorder_name",
+      "names_match"
+    ]
+  }
+}

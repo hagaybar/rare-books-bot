@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM90BSQ5MKP0RBTW4ZPTEPXD",
+  "taskId": "build-publisher-agent",
+  "invocationKey": "metadata-copilot-workbench:S000014:build-publisher-agent",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/agents/publisher_agent.py"
+    ],
+    "files_created": [
+      "scripts/metadata/agents/publisher_agent.py",
+      "tests/scripts/metadata/agents/test_publisher_agent.py"
+    ],
+    "methods": [
+      "analyze",
+      "get_clusters",
+      "propose_mappings",
+      "find_related",
+      "_is_missing_publisher"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 59
+    }
+  },
+  "startedAt": "2026-03-21T20:14:50.764Z",
+  "finishedAt": "2026-03-21T20:14:50.764Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/agents/publisher_agent.py"
+    ],
+    "files_created": [
+      "scripts/metadata/agents/publisher_agent.py",
+      "tests/scripts/metadata/agents/test_publisher_agent.py"
+    ],
+    "methods": [
+      "analyze",
+      "get_clusters",
+      "propose_mappings",
+      "find_related",
+      "_is_missing_publisher"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 59
+    }
+  }
+}

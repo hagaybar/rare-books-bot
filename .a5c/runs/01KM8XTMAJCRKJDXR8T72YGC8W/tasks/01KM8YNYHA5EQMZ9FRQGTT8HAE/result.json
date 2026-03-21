@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8YNYHA5EQMZ9FRQGTT8HAE",
+  "taskId": "build-metadata-api",
+  "invocationKey": "metadata-copilot-workbench:S000005:build-metadata-api",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "endpoints_implemented": [
+      {
+        "method": "GET",
+        "path": "/metadata/coverage"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/issues"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/unmapped"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/methods"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/clusters"
+      }
+    ],
+    "files_created": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "files_modified": [
+      "app/api/main.py"
+    ],
+    "pydantic_models": 11,
+    "success": true
+  },
+  "startedAt": "2026-03-21T19:45:20.253Z",
+  "finishedAt": "2026-03-21T19:45:20.253Z",
+  "value": {
+    "artifacts": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "endpoints_implemented": [
+      {
+        "method": "GET",
+        "path": "/metadata/coverage"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/issues"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/unmapped"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/methods"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/clusters"
+      }
+    ],
+    "files_created": [
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "files_modified": [
+      "app/api/main.py"
+    ],
+    "pydantic_models": 11,
+    "success": true
+  }
+}

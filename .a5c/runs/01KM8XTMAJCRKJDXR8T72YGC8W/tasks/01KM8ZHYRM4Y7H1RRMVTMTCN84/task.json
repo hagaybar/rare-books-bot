@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8ZHYRM4Y7H1RRMVTMTCN84",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "metadata-copilot-workbench:S000010:__sdk.breakpoint",
+  "stepId": "S000010",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Milestone 2 Complete: Metadata API built with 53 passing tests. Endpoints: /metadata/coverage, /metadata/issues, /metadata/corrections, /metadata/primo-urls. Proceed to React frontend?",
+      "title": "Metadata API Review"
+    },
+    "requestedAt": "2026-03-21T19:57:03.124Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Milestone 2 Complete: Metadata API built with 53 passing tests. Endpoints: /metadata/coverage, /metadata/issues, /metadata/corrections, /metadata/primo-urls. Proceed to React frontend?",
+      "title": "Metadata API Review"
+    },
+    "requestedAt": "2026-03-21T19:57:03.124Z"
+  }
+}

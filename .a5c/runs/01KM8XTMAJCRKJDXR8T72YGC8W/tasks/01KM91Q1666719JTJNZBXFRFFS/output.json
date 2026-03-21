@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "files_modified": ["frontend/src/pages/AgentChat.tsx"],
+  "build_success": true,
+  "features": ["chat UI", "proposal approve/reject/edit", "approve all", "cluster investigation", "coverage sidebar", "typing indicator", "quick actions"],
+  "artifacts": ["frontend/src/pages/AgentChat.tsx"]
+}

@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-21T19:26:50.216Z",
+  "data": {
+    "runId": "01KM8XTMAJCRKJDXR8T72YGC8W",
+    "processId": "metadata-copilot-workbench",
+    "entrypoint": {
+      "importPath": "../../processes/metadata-copilot-workbench.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Build the Metadata Co-pilot Workbench: agent-driven HITL system for bibliographic data quality improvement with React dashboard, FastAPI backend, and specialist LLM agents"
+  },
+  "checksum": "af59c3a083801a63802d9e6d3ad4fd5a2a5965569bba251b9b8d6a509540b056"
+}

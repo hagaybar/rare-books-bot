@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8YNYHA5EQMZ9FRQGTT8HAE",
+  "taskId": "build-metadata-api",
+  "invocationKey": "metadata-copilot-workbench:S000005:build-metadata-api",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Build FastAPI metadata API router",
+  "inputs": {
+    "aliasMapDir": "data/normalization",
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "targetFields": [
+      "date",
+      "place",
+      "publisher",
+      "agent"
+    ]
+  }
+}

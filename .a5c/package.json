@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@a5c-ai/babysitter-sdk": "^0.0.182"
+  }
+}

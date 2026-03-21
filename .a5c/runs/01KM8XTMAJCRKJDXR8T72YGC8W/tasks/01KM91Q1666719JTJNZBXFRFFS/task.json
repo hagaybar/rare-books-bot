@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM91Q1666719JTJNZBXFRFFS",
+  "taskId": "build-agent-chat-page",
+  "invocationKey": "metadata-copilot-workbench:S000022:build-agent-chat-page",
+  "stepId": "S000022",
+  "kind": "agent",
+  "title": "Build Agent Chat page for specialist agent conversations",
+  "inputs": {
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "targetFields": [
+      "date",
+      "place",
+      "publisher",
+      "agent"
+    ]
+  }
+}

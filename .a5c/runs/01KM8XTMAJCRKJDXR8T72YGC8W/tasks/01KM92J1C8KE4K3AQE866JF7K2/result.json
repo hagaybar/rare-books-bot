@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM92J1C8KE4K3AQE866JF7K2",
+  "taskId": "build-review-log",
+  "invocationKey": "metadata-copilot-workbench:S000027:build-review-log",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/review_log.py"
+    ],
+    "files_created": [
+      "scripts/metadata/review_log.py",
+      "tests/scripts/metadata/test_review_log.py"
+    ],
+    "methods": [
+      "append",
+      "append_approved",
+      "append_rejected",
+      "get_history",
+      "get_rejected",
+      "is_rejected",
+      "count_by_action",
+      "count_by_field",
+      "count_by_source"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 28
+    }
+  },
+  "startedAt": "2026-03-21T20:51:47.027Z",
+  "finishedAt": "2026-03-21T20:51:47.027Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/review_log.py"
+    ],
+    "files_created": [
+      "scripts/metadata/review_log.py",
+      "tests/scripts/metadata/test_review_log.py"
+    ],
+    "methods": [
+      "append",
+      "append_approved",
+      "append_rejected",
+      "get_history",
+      "get_rejected",
+      "is_rejected",
+      "count_by_action",
+      "count_by_field",
+      "count_by_source"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 28
+    }
+  }
+}

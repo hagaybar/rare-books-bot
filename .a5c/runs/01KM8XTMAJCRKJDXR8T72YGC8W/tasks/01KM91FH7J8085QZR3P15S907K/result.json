@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM91FH7J8085QZR3P15S907K",
+  "taskId": "build-workbench-page",
+  "invocationKey": "metadata-copilot-workbench:S000021:build-workbench-page",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "frontend/src/pages/Workbench.tsx"
+    ],
+    "build_success": true,
+    "features": [
+      "TanStack Table",
+      "inline editing",
+      "batch operations",
+      "CSV export",
+      "cluster view",
+      "URL param routing",
+      "confidence color coding"
+    ],
+    "files_created": [
+      "frontend/src/components/workbench/EditableCell.tsx",
+      "frontend/src/components/workbench/BatchToolbar.tsx",
+      "frontend/src/components/workbench/ClusterCard.tsx"
+    ],
+    "files_modified": [
+      "frontend/src/pages/Workbench.tsx"
+    ],
+    "success": true
+  },
+  "startedAt": "2026-03-21T20:34:37.016Z",
+  "finishedAt": "2026-03-21T20:34:37.016Z",
+  "value": {
+    "artifacts": [
+      "frontend/src/pages/Workbench.tsx"
+    ],
+    "build_success": true,
+    "features": [
+      "TanStack Table",
+      "inline editing",
+      "batch operations",
+      "CSV export",
+      "cluster view",
+      "URL param routing",
+      "confidence color coding"
+    ],
+    "files_created": [
+      "frontend/src/components/workbench/EditableCell.tsx",
+      "frontend/src/components/workbench/BatchToolbar.tsx",
+      "frontend/src/components/workbench/ClusterCard.tsx"
+    ],
+    "files_modified": [
+      "frontend/src/pages/Workbench.tsx"
+    ],
+    "success": true
+  }
+}

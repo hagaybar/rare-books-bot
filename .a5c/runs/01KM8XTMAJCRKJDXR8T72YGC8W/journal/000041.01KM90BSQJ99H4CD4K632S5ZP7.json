@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:11:09.938Z",
+  "data": {
+    "effectId": "01KM90BSQ5MKP0RBTW4ZPTEPXD",
+    "invocationKey": "metadata-copilot-workbench:S000014:build-publisher-agent",
+    "invocationHash": "f89a68b30a6259a5d72c64ac05f028956bd902ded52b7a91633f9a948fab1d4c",
+    "stepId": "S000014",
+    "taskId": "build-publisher-agent",
+    "kind": "agent",
+    "label": "Build PublisherAgent - specialist for publisher normalization",
+    "taskDefRef": "tasks/01KM90BSQ5MKP0RBTW4ZPTEPXD/task.json"
+  },
+  "checksum": "8d9672ec14c904de0908bce755f8a9b23524ec87b58c26dfec6b1dcfa1c4120c"
+}

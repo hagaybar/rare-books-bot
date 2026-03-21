@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8ZVSRVVTMPS9DEB7K72R7J",
+  "taskId": "build-place-agent",
+  "invocationKey": "metadata-copilot-workbench:S000012:build-place-agent",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/agents/place_agent.py"
+    ],
+    "files_created": [
+      "scripts/metadata/agents/__init__.py",
+      "scripts/metadata/agents/place_agent.py",
+      "tests/scripts/metadata/agents/__init__.py",
+      "tests/scripts/metadata/agents/test_place_agent.py"
+    ],
+    "methods": [
+      "analyze",
+      "get_clusters",
+      "propose_mappings",
+      "get_primo_links",
+      "cross_reference_country_code",
+      "get_country_codes_map"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 40
+    }
+  },
+  "startedAt": "2026-03-21T20:06:27.902Z",
+  "finishedAt": "2026-03-21T20:06:27.902Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/agents/place_agent.py"
+    ],
+    "files_created": [
+      "scripts/metadata/agents/__init__.py",
+      "scripts/metadata/agents/place_agent.py",
+      "tests/scripts/metadata/agents/__init__.py",
+      "tests/scripts/metadata/agents/test_place_agent.py"
+    ],
+    "methods": [
+      "analyze",
+      "get_clusters",
+      "propose_mappings",
+      "get_primo_links",
+      "cross_reference_country_code",
+      "get_country_codes_map"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 40
+    }
+  }
+}

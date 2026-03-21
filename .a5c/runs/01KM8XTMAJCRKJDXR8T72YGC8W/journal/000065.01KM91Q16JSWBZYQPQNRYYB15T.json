@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:34:46.610Z",
+  "data": {
+    "effectId": "01KM91Q1666719JTJNZBXFRFFS",
+    "invocationKey": "metadata-copilot-workbench:S000022:build-agent-chat-page",
+    "invocationHash": "4b1c74f4f1d160c3f89babd86a3adecd4b6643752af976a7b7e288797373db32",
+    "stepId": "S000022",
+    "taskId": "build-agent-chat-page",
+    "kind": "agent",
+    "label": "Build Agent Chat page for specialist agent conversations",
+    "taskDefRef": "tasks/01KM91Q1666719JTJNZBXFRFFS/task.json"
+  },
+  "checksum": "30b640477fd92e129c6861574e078425d17b676e4c92db7a5f3aa11c7012a278"
+}

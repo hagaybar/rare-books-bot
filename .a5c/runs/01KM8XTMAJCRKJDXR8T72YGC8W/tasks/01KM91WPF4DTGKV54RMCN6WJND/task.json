@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM91WPF4DTGKV54RMCN6WJND",
+  "taskId": "build-review-page",
+  "invocationKey": "metadata-copilot-workbench:S000023:build-review-page",
+  "stepId": "S000023",
+  "kind": "agent",
+  "title": "Build Corrections Review page",
+  "inputs": {
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

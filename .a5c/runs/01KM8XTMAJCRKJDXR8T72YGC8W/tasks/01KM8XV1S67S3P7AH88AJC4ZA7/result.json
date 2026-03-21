@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8XV1S67S3P7AH88AJC4ZA7",
+  "taskId": "build-audit-module",
+  "invocationKey": "metadata-copilot-workbench:S000001:build-audit-module",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/audit.py",
+      "tests/scripts/metadata/test_audit.py"
+    ],
+    "coverage_report_structure": {
+      "agent_name_coverage": "FieldCoverage with flagged ambiguous agents",
+      "agent_role_coverage": "FieldCoverage with flagged low-confidence roles",
+      "date_coverage": "FieldCoverage with confidence bands, method breakdown, flagged unparsed dates",
+      "place_coverage": "FieldCoverage with confidence bands, flagged unmapped places (confidence <= 0.80)",
+      "publisher_coverage": "FieldCoverage with confidence bands",
+      "total_agent_rows": "int",
+      "total_imprint_rows": "int"
+    },
+    "files_created": [
+      "scripts/metadata/__init__.py",
+      "scripts/metadata/audit.py",
+      "tests/scripts/metadata/__init__.py",
+      "tests/scripts/metadata/test_audit.py"
+    ],
+    "public_api": [
+      "generate_coverage_report(db_path: Path) -> CoverageReport",
+      "generate_coverage_report_from_conn(conn: sqlite3.Connection) -> CoverageReport"
+    ],
+    "success": true,
+    "test_results": {
+      "duration_seconds": 0.09,
+      "failed": 0,
+      "passed": 41,
+      "total": 41
+    }
+  },
+  "startedAt": "2026-03-21T19:30:34.660Z",
+  "finishedAt": "2026-03-21T19:30:34.660Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/audit.py",
+      "tests/scripts/metadata/test_audit.py"
+    ],
+    "coverage_report_structure": {
+      "agent_name_coverage": "FieldCoverage with flagged ambiguous agents",
+      "agent_role_coverage": "FieldCoverage with flagged low-confidence roles",
+      "date_coverage": "FieldCoverage with confidence bands, method breakdown, flagged unparsed dates",
+      "place_coverage": "FieldCoverage with confidence bands, flagged unmapped places (confidence <= 0.80)",
+      "publisher_coverage": "FieldCoverage with confidence bands",
+      "total_agent_rows": "int",
+      "total_imprint_rows": "int"
+    },
+    "files_created": [
+      "scripts/metadata/__init__.py",
+      "scripts/metadata/audit.py",
+      "tests/scripts/metadata/__init__.py",
+      "tests/scripts/metadata/test_audit.py"
+    ],
+    "public_api": [
+      "generate_coverage_report(db_path: Path) -> CoverageReport",
+      "generate_coverage_report_from_conn(conn: sqlite3.Connection) -> CoverageReport"
+    ],
+    "success": true,
+    "test_results": {
+      "duration_seconds": 0.09,
+      "failed": 0,
+      "passed": 41,
+      "total": 41
+    }
+  }
+}

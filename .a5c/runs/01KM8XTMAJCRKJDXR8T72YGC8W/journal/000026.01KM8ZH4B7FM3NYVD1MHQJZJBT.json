@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T19:56:36.071Z",
+  "data": {
+    "effectId": "01KM8ZH4AZFVEPZJJYZ77JWC3M",
+    "invocationKey": "metadata-copilot-workbench:S000009:run-api-tests",
+    "invocationHash": "501e752390ce7e0a0ea911eb4f9463675674f2db3670a5bd3427955fd00f264a",
+    "stepId": "S000009",
+    "taskId": "run-api-tests",
+    "kind": "shell",
+    "label": "Run metadata API tests",
+    "taskDefRef": "tasks/01KM8ZH4AZFVEPZJJYZ77JWC3M/task.json"
+  },
+  "checksum": "84339c1851c0f05b854672fa2efbe2979f1b36b9b73220947c7fa5913fa68b29"
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8ZH4AZFVEPZJJYZ77JWC3M",
+  "taskId": "run-api-tests",
+  "invocationKey": "metadata-copilot-workbench:S000009:run-api-tests",
+  "status": "ok",
+  "result": {
+    "all_tests_green": true,
+    "duration": "0.79s",
+    "failed": 0,
+    "passed": 53,
+    "success": true
+  },
+  "startedAt": "2026-03-21T19:56:55.515Z",
+  "finishedAt": "2026-03-21T19:56:55.515Z",
+  "value": {
+    "all_tests_green": true,
+    "duration": "0.79s",
+    "failed": 0,
+    "passed": 53,
+    "success": true
+  }
+}

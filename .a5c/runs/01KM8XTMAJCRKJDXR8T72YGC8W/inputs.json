@@ -1,0 +1,14 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "dbPath": "data/index/bibliographic.db",
+  "aliasMapDir": "data/normalization",
+  "frontendFramework": "react",
+  "targetFields": [
+    "date",
+    "place",
+    "publisher",
+    "agent"
+  ],
+  "primoBaseUrl": "",
+  "outputDir": "metadata-copilot-output"
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM91B23M91J8QGFFXEY456WS",
+  "taskId": "build-dashboard-page",
+  "invocationKey": "metadata-copilot-workbench:S000020:build-dashboard-page",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "frontend/src/pages/Dashboard.tsx"
+    ],
+    "build_success": true,
+    "components_built": [
+      "StatCard",
+      "CoverageBar",
+      "GapCard",
+      "MethodChart",
+      "ConfidenceLegend",
+      "DashboardSkeleton",
+      "Dashboard"
+    ],
+    "files_modified": [
+      "frontend/src/pages/Dashboard.tsx"
+    ],
+    "success": true
+  },
+  "startedAt": "2026-03-21T20:30:33.642Z",
+  "finishedAt": "2026-03-21T20:30:33.642Z",
+  "value": {
+    "artifacts": [
+      "frontend/src/pages/Dashboard.tsx"
+    ],
+    "build_success": true,
+    "components_built": [
+      "StatCard",
+      "CoverageBar",
+      "GapCard",
+      "MethodChart",
+      "ConfidenceLegend",
+      "DashboardSkeleton",
+      "Dashboard"
+    ],
+    "files_modified": [
+      "frontend/src/pages/Dashboard.tsx"
+    ],
+    "success": true
+  }
+}

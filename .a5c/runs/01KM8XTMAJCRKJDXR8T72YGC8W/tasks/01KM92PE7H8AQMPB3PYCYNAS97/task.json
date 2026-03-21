@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM92PE7H8AQMPB3PYCYNAS97",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "metadata-copilot-workbench:S000028:__sdk.breakpoint",
+  "stepId": "S000028",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Milestone 5 Complete: Full integration tested - agent proposes fixes, librarian reviews, corrections applied to alias maps, pipeline re-indexes, coverage updates. Ready to finalize?",
+      "title": "Integration Review"
+    },
+    "requestedAt": "2026-03-21T20:51:55.761Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Milestone 5 Complete: Full integration tested - agent proposes fixes, librarian reviews, corrections applied to alias maps, pipeline re-indexes, coverage updates. Ready to finalize?",
+      "title": "Integration Review"
+    },
+    "requestedAt": "2026-03-21T20:51:55.761Z"
+  }
+}

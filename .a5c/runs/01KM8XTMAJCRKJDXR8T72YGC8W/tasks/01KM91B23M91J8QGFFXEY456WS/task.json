@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM91B23M91J8QGFFXEY456WS",
+  "taskId": "build-dashboard-page",
+  "invocationKey": "metadata-copilot-workbench:S000020:build-dashboard-page",
+  "stepId": "S000020",
+  "kind": "agent",
+  "title": "Build Coverage Dashboard page",
+  "inputs": {
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "targetFields": [
+      "date",
+      "place",
+      "publisher",
+      "agent"
+    ]
+  }
+}

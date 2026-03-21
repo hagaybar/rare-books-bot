@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:52:11.409Z",
+  "data": {
+    "effectId": "01KM92PXG59EC1BZTHTYX8H16A",
+    "invocationKey": "metadata-copilot-workbench:S000029:write-documentation",
+    "invocationHash": "34d1ddbc5536a0e7130f35e950c8858c4f1ca3cb862dbee0d30c8e28c9ecd0d4",
+    "stepId": "S000029",
+    "taskId": "write-documentation",
+    "kind": "agent",
+    "label": "Write workbench documentation and update CLAUDE.md",
+    "taskDefRef": "tasks/01KM92PXG59EC1BZTHTYX8H16A/task.json"
+  },
+  "checksum": "64a5d30c322990b606ac55e38dd054c71dbc27e52a4841b1c7d59da53ee7b1c0"
+}

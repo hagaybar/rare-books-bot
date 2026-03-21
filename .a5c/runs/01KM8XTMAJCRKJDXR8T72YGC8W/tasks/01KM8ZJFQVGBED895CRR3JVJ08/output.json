@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "files_created": ["scripts/metadata/agent_harness.py", "tests/scripts/metadata/test_agent_harness.py"],
+  "test_results": {"passed": 46, "failed": 0},
+  "components": {
+    "GroundingLayer": ["query_gaps", "query_alias_map", "query_country_codes", "query_authority_uris", "count_affected_records"],
+    "ReasoningLayer": ["propose_mapping", "explain_cluster", "suggest_investigation"],
+    "AgentHarness": "combined interface delegating to both layers"
+  },
+  "features": ["strict_system_prompts", "jsonl_caching", "vocabulary_context", "evidence_propagation"],
+  "artifacts": ["scripts/metadata/agent_harness.py", "tests/scripts/metadata/test_agent_harness.py"]
+}

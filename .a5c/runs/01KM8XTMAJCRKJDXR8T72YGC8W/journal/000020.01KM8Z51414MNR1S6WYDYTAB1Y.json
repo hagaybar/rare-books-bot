@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T19:49:59.553Z",
+  "data": {
+    "effectId": "01KM8Z513NJ8YAKDNMN23675EC",
+    "invocationKey": "metadata-copilot-workbench:S000007:build-primo-api",
+    "invocationHash": "5c9b5239c026db93ca7c00abf3509ee6b3a312b75e564b948d819e0324b81508",
+    "stepId": "S000007",
+    "taskId": "build-primo-api",
+    "kind": "agent",
+    "label": "Build Primo URL batch generation endpoint",
+    "taskDefRef": "tasks/01KM8Z513NJ8YAKDNMN23675EC/task.json"
+  },
+  "checksum": "46782536040a6be5ad42355bf50e779911a20826ea0202023ce404c037325571"
+}

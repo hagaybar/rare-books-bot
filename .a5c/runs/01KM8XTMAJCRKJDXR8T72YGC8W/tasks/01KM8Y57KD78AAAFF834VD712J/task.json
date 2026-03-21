@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8Y57KD78AAAFF834VD712J",
+  "taskId": "build-gap-clustering",
+  "invocationKey": "metadata-copilot-workbench:S000003:build-gap-clustering",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Build gap clustering analysis module",
+  "inputs": {
+    "baselineAudit": {
+      "artifacts": [
+        "data/metadata/baseline_audit.json"
+      ],
+      "audit_summary": {
+        "agent_name": {
+          "coverage": "100%",
+          "non_null": 4366,
+          "uniform_confidence": 0.8
+        },
+        "agent_role": {
+          "missing_roles": 1655,
+          "non_null": 4366,
+          "unmapped_roles": 122
+        },
+        "date": {
+          "coverage": "100%",
+          "high_confidence_count": 1279,
+          "low_confidence_count": 69,
+          "non_null": 2773
+        },
+        "place": {
+          "alias_mapped_count": 1569,
+          "coverage": "100%",
+          "non_null": 2773,
+          "unmapped_count": 1185
+        },
+        "publisher": {
+          "coverage": "100%",
+          "missing": 33,
+          "no_alias_map": 2740,
+          "non_null": 2773
+        },
+        "total_agent_rows": 4366,
+        "total_imprint_rows": 2773
+      },
+      "files_created": [
+        "data/metadata/baseline_audit.json"
+      ],
+      "files_modified": [
+        "scripts/metadata/audit.py"
+      ],
+      "success": true,
+      "top_issues": [
+        "1655 agent rows with empty role (confidence 0.50)",
+        "2740 publishers with no alias map (stuck at 0.80 confidence)",
+        "1185 places (43%) without alias map match (0.80 confidence)",
+        "69 unparsed dates including partial century patterns"
+      ]
+    },
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "targetFields": [
+      "date",
+      "place",
+      "publisher",
+      "agent"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8Z513NJ8YAKDNMN23675EC",
+  "taskId": "build-primo-api",
+  "invocationKey": "metadata-copilot-workbench:S000007:build-primo-api",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Build Primo URL batch generation endpoint",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "primoBaseUrl": "",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

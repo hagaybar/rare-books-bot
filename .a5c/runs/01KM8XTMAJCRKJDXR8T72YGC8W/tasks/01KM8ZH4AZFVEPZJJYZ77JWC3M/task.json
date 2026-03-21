@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8ZH4AZFVEPZJJYZ77JWC3M",
+  "taskId": "run-api-tests",
+  "invocationKey": "metadata-copilot-workbench:S000009:run-api-tests",
+  "stepId": "S000009",
+  "kind": "shell",
+  "title": "Run metadata API tests",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

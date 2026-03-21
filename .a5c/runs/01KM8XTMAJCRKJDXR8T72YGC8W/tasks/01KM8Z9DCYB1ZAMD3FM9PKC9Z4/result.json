@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8Z9DCYB1ZAMD3FM9PKC9Z4",
+  "taskId": "test-metadata-api",
+  "invocationKey": "metadata-copilot-workbench:S000008:test-metadata-api",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "tests/app/test_metadata_api.py"
+    ],
+    "files_created": [
+      "tests/app/test_metadata_api.py"
+    ],
+    "success": true,
+    "test_classes": [
+      "TestGetCoverage(9)",
+      "TestGetIssues(13)",
+      "TestGetUnmapped(9)",
+      "TestGetMethods(11)",
+      "TestGetClusters(11)"
+    ],
+    "test_results": {
+      "all_passed": true,
+      "existing_tests": 25,
+      "new_tests": 53,
+      "total": 78
+    }
+  },
+  "startedAt": "2026-03-21T19:56:28.223Z",
+  "finishedAt": "2026-03-21T19:56:28.223Z",
+  "value": {
+    "artifacts": [
+      "tests/app/test_metadata_api.py"
+    ],
+    "files_created": [
+      "tests/app/test_metadata_api.py"
+    ],
+    "success": true,
+    "test_classes": [
+      "TestGetCoverage(9)",
+      "TestGetIssues(13)",
+      "TestGetUnmapped(9)",
+      "TestGetMethods(11)",
+      "TestGetClusters(11)"
+    ],
+    "test_results": {
+      "all_passed": true,
+      "existing_tests": 25,
+      "new_tests": 53,
+      "total": 78
+    }
+  }
+}

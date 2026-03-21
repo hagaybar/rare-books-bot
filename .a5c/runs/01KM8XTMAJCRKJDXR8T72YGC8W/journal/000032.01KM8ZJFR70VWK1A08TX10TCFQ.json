@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T19:57:20.519Z",
+  "data": {
+    "effectId": "01KM8ZJFQVGBED895CRR3JVJ08",
+    "invocationKey": "metadata-copilot-workbench:S000011:build-agent-harness",
+    "invocationHash": "d95410b651feea78b708bddf1fe04973e4bdb46c0d439b263188b05761536ab7",
+    "stepId": "S000011",
+    "taskId": "build-agent-harness",
+    "kind": "agent",
+    "label": "Build shared agent harness for specialist metadata agents",
+    "taskDefRef": "tasks/01KM8ZJFQVGBED895CRR3JVJ08/task.json"
+  },
+  "checksum": "8299158168b0cf70b5727f33742cc41d7d0de4707602da03d8d484286156d34e"
+}

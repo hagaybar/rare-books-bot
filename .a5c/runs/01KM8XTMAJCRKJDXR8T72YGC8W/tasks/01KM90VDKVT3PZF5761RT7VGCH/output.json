@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "passed": 205,
+  "failed": 0,
+  "duration": "4.67s",
+  "all_tests_green": true,
+  "breakdown": {
+    "place_agent": 40,
+    "date_agent": 45,
+    "publisher_agent": 59,
+    "name_agent": 61
+  }
+}

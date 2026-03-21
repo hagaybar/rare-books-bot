@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "files_created": ["app/api/metadata.py", "app/api/metadata_models.py"],
+  "files_modified": ["app/api/main.py"],
+  "endpoints_implemented": [
+    {"method": "GET", "path": "/metadata/coverage"},
+    {"method": "GET", "path": "/metadata/issues"},
+    {"method": "GET", "path": "/metadata/unmapped"},
+    {"method": "GET", "path": "/metadata/methods"},
+    {"method": "GET", "path": "/metadata/clusters"}
+  ],
+  "pydantic_models": 11,
+  "artifacts": ["app/api/metadata.py", "app/api/metadata_models.py"]
+}

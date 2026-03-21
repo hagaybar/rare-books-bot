@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:28:14.336Z",
+  "data": {
+    "effectId": "01KM91B23M91J8QGFFXEY456WS",
+    "invocationKey": "metadata-copilot-workbench:S000020:build-dashboard-page",
+    "invocationHash": "16c81543aadcaddd720450ddde6df6cc7f66fccf7f02679a19568902d9908310",
+    "stepId": "S000020",
+    "taskId": "build-dashboard-page",
+    "kind": "agent",
+    "label": "Build Coverage Dashboard page",
+    "taskDefRef": "tasks/01KM91B23M91J8QGFFXEY456WS/task.json"
+  },
+  "checksum": "729b0be7b6a97081dccd5349c6ca21e729f36a066b7bb2981edcd5bae5e2ea0b"
+}

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8Y57KD78AAAFF834VD712J",
+  "taskId": "build-gap-clustering",
+  "invocationKey": "metadata-copilot-workbench:S000003:build-gap-clustering",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/clustering.py",
+      "tests/scripts/metadata/test_clustering.py"
+    ],
+    "cluster_types_supported": [
+      "near_match",
+      "latin_place_names",
+      "hebrew_place_names",
+      "arabic_place_names",
+      "empty_place_values",
+      "partial_century",
+      "hebrew_gematria",
+      "latin_convention",
+      "circa",
+      "ambiguous_range",
+      "empty_missing",
+      "other_unparsed",
+      "variant_group",
+      "high_frequency_unmapped",
+      "low_frequency_unmapped",
+      "ambiguous_agent",
+      "missing_role",
+      "low_confidence_agent"
+    ],
+    "files_created": [
+      "scripts/metadata/clustering.py",
+      "tests/scripts/metadata/test_clustering.py"
+    ],
+    "public_api": [
+      "cluster_field_gaps(field, flagged_items, db_path, alias_map) -> List[Cluster]",
+      "cluster_all_gaps(report, db_path, alias_maps) -> Dict[str, List[Cluster]]"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 71,
+      "total": 71
+    }
+  },
+  "startedAt": "2026-03-21T19:36:30.365Z",
+  "finishedAt": "2026-03-21T19:36:30.365Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/clustering.py",
+      "tests/scripts/metadata/test_clustering.py"
+    ],
+    "cluster_types_supported": [
+      "near_match",
+      "latin_place_names",
+      "hebrew_place_names",
+      "arabic_place_names",
+      "empty_place_values",
+      "partial_century",
+      "hebrew_gematria",
+      "latin_convention",
+      "circa",
+      "ambiguous_range",
+      "empty_missing",
+      "other_unparsed",
+      "variant_group",
+      "high_frequency_unmapped",
+      "low_frequency_unmapped",
+      "ambiguous_agent",
+      "missing_role",
+      "low_confidence_agent"
+    ],
+    "files_created": [
+      "scripts/metadata/clustering.py",
+      "tests/scripts/metadata/test_clustering.py"
+    ],
+    "public_api": [
+      "cluster_field_gaps(field, flagged_items, db_path, alias_map) -> List[Cluster]",
+      "cluster_all_gaps(report, db_path, alias_maps) -> Dict[str, List[Cluster]]"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 71,
+      "total": 71
+    }
+  }
+}

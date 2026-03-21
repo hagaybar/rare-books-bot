@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8ZJFQVGBED895CRR3JVJ08",
+  "taskId": "build-agent-harness",
+  "invocationKey": "metadata-copilot-workbench:S000011:build-agent-harness",
+  "stepId": "S000011",
+  "kind": "agent",
+  "title": "Build shared agent harness for specialist metadata agents",
+  "inputs": {
+    "aliasMapDir": "data/normalization",
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

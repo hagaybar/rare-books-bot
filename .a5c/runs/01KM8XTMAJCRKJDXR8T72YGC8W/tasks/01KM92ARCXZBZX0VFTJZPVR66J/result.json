@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM92ARCXZBZX0VFTJZPVR66J",
+  "taskId": "run-integration-test",
+  "invocationKey": "metadata-copilot-workbench:S000026:run-integration-test",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "tests/integration/test_metadata_workbench.py"
+    ],
+    "files_created": [
+      "tests/integration/__init__.py",
+      "tests/integration/test_metadata_workbench.py"
+    ],
+    "files_modified": [
+      "pytest.ini"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 17
+    },
+    "workflow_steps_tested": [
+      "audit",
+      "clustering",
+      "place_agent",
+      "feedback_loop",
+      "re-audit",
+      "review_log",
+      "batch_corrections",
+      "coverage_delta",
+      "grounding_layer",
+      "full_smoke"
+    ]
+  },
+  "startedAt": "2026-03-21T20:49:21.667Z",
+  "finishedAt": "2026-03-21T20:49:21.667Z",
+  "value": {
+    "artifacts": [
+      "tests/integration/test_metadata_workbench.py"
+    ],
+    "files_created": [
+      "tests/integration/__init__.py",
+      "tests/integration/test_metadata_workbench.py"
+    ],
+    "files_modified": [
+      "pytest.ini"
+    ],
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 17
+    },
+    "workflow_steps_tested": [
+      "audit",
+      "clustering",
+      "place_agent",
+      "feedback_loop",
+      "re-audit",
+      "review_log",
+      "batch_corrections",
+      "coverage_delta",
+      "grounding_layer",
+      "full_smoke"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM90BSQ5MKP0RBTW4ZPTEPXD",
+  "taskId": "build-publisher-agent",
+  "invocationKey": "metadata-copilot-workbench:S000014:build-publisher-agent",
+  "stepId": "S000014",
+  "kind": "agent",
+  "title": "Build PublisherAgent - specialist for publisher normalization",
+  "inputs": {
+    "agentHarness": {
+      "artifacts": [
+        "scripts/metadata/agent_harness.py",
+        "tests/scripts/metadata/test_agent_harness.py"
+      ],
+      "components": {
+        "AgentHarness": "combined interface delegating to both layers",
+        "GroundingLayer": [
+          "query_gaps",
+          "query_alias_map",
+          "query_country_codes",
+          "query_authority_uris",
+          "count_affected_records"
+        ],
+        "ReasoningLayer": [
+          "propose_mapping",
+          "explain_cluster",
+          "suggest_investigation"
+        ]
+      },
+      "features": [
+        "strict_system_prompts",
+        "jsonl_caching",
+        "vocabulary_context",
+        "evidence_propagation"
+      ],
+      "files_created": [
+        "scripts/metadata/agent_harness.py",
+        "tests/scripts/metadata/test_agent_harness.py"
+      ],
+      "success": true,
+      "test_results": {
+        "failed": 0,
+        "passed": 46
+      }
+    },
+    "aliasMapDir": "data/normalization",
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

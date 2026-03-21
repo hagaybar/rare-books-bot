@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM91WPF4DTGKV54RMCN6WJND",
+  "taskId": "build-review-page",
+  "invocationKey": "metadata-copilot-workbench:S000023:build-review-page",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "frontend/src/pages/Review.tsx"
+    ],
+    "build_success": true,
+    "features": [
+      "timeline view",
+      "field/source filters",
+      "text search",
+      "pagination",
+      "CSV export",
+      "JSON export",
+      "summary bar"
+    ],
+    "files_modified": [
+      "frontend/src/types/metadata.ts",
+      "frontend/src/api/metadata.ts",
+      "frontend/src/hooks/useMetadata.ts",
+      "frontend/src/pages/Review.tsx"
+    ],
+    "success": true
+  },
+  "startedAt": "2026-03-21T20:40:33.313Z",
+  "finishedAt": "2026-03-21T20:40:33.313Z",
+  "value": {
+    "artifacts": [
+      "frontend/src/pages/Review.tsx"
+    ],
+    "build_success": true,
+    "features": [
+      "timeline view",
+      "field/source filters",
+      "text search",
+      "pagination",
+      "CSV export",
+      "JSON export",
+      "summary bar"
+    ],
+    "files_modified": [
+      "frontend/src/types/metadata.ts",
+      "frontend/src/api/metadata.ts",
+      "frontend/src/hooks/useMetadata.ts",
+      "frontend/src/pages/Review.tsx"
+    ],
+    "success": true
+  }
+}

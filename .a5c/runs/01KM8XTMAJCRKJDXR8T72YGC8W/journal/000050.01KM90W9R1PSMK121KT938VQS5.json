@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:20:10.625Z",
+  "data": {
+    "effectId": "01KM90W9QNMAGN0QTBN1YQZ6PF",
+    "invocationKey": "metadata-copilot-workbench:S000017:build-agent-chat-api",
+    "invocationHash": "71f9d146a6670bd4276bb4c39b8a42a4ee2e32e742cd8a7366f806eed47e2d56",
+    "stepId": "S000017",
+    "taskId": "build-agent-chat-api",
+    "kind": "agent",
+    "label": "Build agent chat endpoint for frontend integration",
+    "taskDefRef": "tasks/01KM90W9QNMAGN0QTBN1YQZ6PF/task.json"
+  },
+  "checksum": "fa2f45fa8571fb93d95d1292e205eb782540b93d3472247f0e76c17e87ab8afc"
+}

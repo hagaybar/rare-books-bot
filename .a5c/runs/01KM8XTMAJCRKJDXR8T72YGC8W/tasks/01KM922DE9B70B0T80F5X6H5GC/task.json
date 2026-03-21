@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM922DE9B70B0T80F5X6H5GC",
+  "taskId": "build-feedback-loop",
+  "invocationKey": "metadata-copilot-workbench:S000025:build-feedback-loop",
+  "stepId": "S000025",
+  "kind": "agent",
+  "title": "Build the HITL feedback loop (approve -> alias map -> re-index -> coverage update)",
+  "inputs": {
+    "aliasMapDir": "data/normalization",
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

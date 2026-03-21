@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM90VDKVT3PZF5761RT7VGCH",
+  "taskId": "test-specialist-agents",
+  "invocationKey": "metadata-copilot-workbench:S000016:test-specialist-agents",
+  "stepId": "S000016",
+  "kind": "shell",
+  "title": "Run all specialist agent tests",
+  "inputs": {
+    "agents": [
+      "place",
+      "date",
+      "publisher",
+      "agent"
+    ],
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

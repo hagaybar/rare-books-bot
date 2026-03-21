@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM914QN3FYM8VRH364EFWDG4",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "metadata-copilot-workbench:S000018:__sdk.breakpoint",
+  "stepId": "S000018",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Milestone 3 Complete: 4 specialist agents built (Place, Date, Publisher, Agent) with shared harness. Each agent can analyze gaps, cluster issues, cross-reference evidence, and propose fixes via LLM. Proceed to React frontend?",
+      "title": "Specialist Agents Review"
+    },
+    "requestedAt": "2026-03-21T20:24:47.011Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Milestone 3 Complete: 4 specialist agents built (Place, Date, Publisher, Agent) with shared harness. Each agent can analyze gaps, cluster issues, cross-reference evidence, and propose fixes via LLM. Proceed to React frontend?",
+      "title": "Specialist Agents Review"
+    },
+    "requestedAt": "2026-03-21T20:24:47.011Z"
+  }
+}

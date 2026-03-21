@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "files_created": ["scripts/metadata/feedback_loop.py", "tests/scripts/metadata/test_feedback_loop.py"],
+  "test_results": {"passed": 30, "failed": 0},
+  "methods": ["apply_correction", "apply_batch", "get_pending_corrections", "get_coverage_delta", "_renormalize_records", "_write_to_alias_map", "_log_correction"],
+  "artifacts": ["scripts/metadata/feedback_loop.py"]
+}

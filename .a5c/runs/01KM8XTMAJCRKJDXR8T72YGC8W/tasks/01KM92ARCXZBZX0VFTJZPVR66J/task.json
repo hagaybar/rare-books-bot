@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM92ARCXZBZX0VFTJZPVR66J",
+  "taskId": "run-integration-test",
+  "invocationKey": "metadata-copilot-workbench:S000026:run-integration-test",
+  "stepId": "S000026",
+  "kind": "agent",
+  "title": "Run full integration test of the complete workflow",
+  "inputs": {
+    "aliasMapDir": "data/normalization",
+    "dbPath": "data/index/bibliographic.db",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

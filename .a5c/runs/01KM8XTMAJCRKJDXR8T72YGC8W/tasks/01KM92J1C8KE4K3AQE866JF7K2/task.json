@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM92J1C8KE4K3AQE866JF7K2",
+  "taskId": "build-review-log",
+  "invocationKey": "metadata-copilot-workbench:S000027:build-review-log",
+  "stepId": "S000027",
+  "kind": "agent",
+  "title": "Build review log persistence",
+  "inputs": {
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "success": true,
+  "files_modified": ["app/api/metadata.py", "app/api/metadata_models.py"],
+  "files_created": ["tests/app/test_agent_chat.py"],
+  "endpoints_added": ["POST /metadata/agent/chat"],
+  "test_results": {"passed": 18, "failed": 0},
+  "artifacts": ["app/api/metadata.py", "tests/app/test_agent_chat.py"]
+}

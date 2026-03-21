@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T19:27:03.991Z",
+  "data": {
+    "effectId": "01KM8XV1S67S3P7AH88AJC4ZA7",
+    "invocationKey": "metadata-copilot-workbench:S000001:build-audit-module",
+    "invocationHash": "40cc6487f9ed3fe1ecde3ad75400c82c6f0cb713b2bdc184bfbc98173cf3a8a7",
+    "stepId": "S000001",
+    "taskId": "build-audit-module",
+    "kind": "agent",
+    "label": "Build normalization coverage audit module",
+    "taskDefRef": "tasks/01KM8XV1S67S3P7AH88AJC4ZA7/task.json"
+  },
+  "checksum": "9a1e6520d976708c5ac3606f491b7604f5357483b97c5e4f5ea9fe31ecbc1ddc"
+}

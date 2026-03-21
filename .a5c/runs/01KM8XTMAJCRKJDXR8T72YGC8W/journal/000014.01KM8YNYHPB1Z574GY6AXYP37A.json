@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T19:41:45.398Z",
+  "data": {
+    "effectId": "01KM8YNYHA5EQMZ9FRQGTT8HAE",
+    "invocationKey": "metadata-copilot-workbench:S000005:build-metadata-api",
+    "invocationHash": "d7122ed3fc8942087b60a1dcc8bd7967476e446880ad226d6826ef9b15dcd011",
+    "stepId": "S000005",
+    "taskId": "build-metadata-api",
+    "kind": "agent",
+    "label": "Build FastAPI metadata API router",
+    "taskDefRef": "tasks/01KM8YNYHA5EQMZ9FRQGTT8HAE/task.json"
+  },
+  "checksum": "e11318042729ee6e67546a0a34193fc7ad093bcd34d2ab70913479cf3a32b14f"
+}

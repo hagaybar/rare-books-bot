@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM9157TKQQ6X0Q5P17752X4C",
+  "taskId": "scaffold-react",
+  "invocationKey": "metadata-copilot-workbench:S000019:scaffold-react",
+  "stepId": "S000019",
+  "kind": "agent",
+  "title": "Scaffold React project with Vite + TypeScript",
+  "inputs": {
+    "frontendFramework": "react",
+    "outputDir": "metadata-copilot-output",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:25:03.583Z",
+  "data": {
+    "effectId": "01KM9157TKQQ6X0Q5P17752X4C",
+    "invocationKey": "metadata-copilot-workbench:S000019:scaffold-react",
+    "invocationHash": "a3739c660b7efd666fcecd354b2f87158712e6557f5c5f175c28b1a5712dd757",
+    "stepId": "S000019",
+    "taskId": "scaffold-react",
+    "kind": "agent",
+    "label": "Scaffold React project with Vite + TypeScript",
+    "taskDefRef": "tasks/01KM9157TKQQ6X0Q5P17752X4C/task.json"
+  },
+  "checksum": "8aeb04b9a5d519d6573d40e14b884a0fbbd88aceb133a3b9395f8a8422b8be26"
+}

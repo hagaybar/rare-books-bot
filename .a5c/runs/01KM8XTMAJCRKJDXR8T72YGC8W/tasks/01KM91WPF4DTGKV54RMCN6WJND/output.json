@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "files_modified": ["frontend/src/types/metadata.ts", "frontend/src/api/metadata.ts", "frontend/src/hooks/useMetadata.ts", "frontend/src/pages/Review.tsx"],
+  "build_success": true,
+  "features": ["timeline view", "field/source filters", "text search", "pagination", "CSV export", "JSON export", "summary bar"],
+  "artifacts": ["frontend/src/pages/Review.tsx"]
+}

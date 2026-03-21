@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-21T20:45:32.968Z",
+  "data": {
+    "effectId": "01KM92ARCXZBZX0VFTJZPVR66J",
+    "invocationKey": "metadata-copilot-workbench:S000026:run-integration-test",
+    "invocationHash": "6fb3cd9765280533f2afe37359b8f904262adb8c68065f01490af3bde43f7a5d",
+    "stepId": "S000026",
+    "taskId": "run-integration-test",
+    "kind": "agent",
+    "label": "Run full integration test of the complete workflow",
+    "taskDefRef": "tasks/01KM92ARCXZBZX0VFTJZPVR66J/task.json"
+  },
+  "checksum": "7444be4a6f903ddfdc1d77dc975c09ef742bb6000c6f7201732f9f209afc838b"
+}

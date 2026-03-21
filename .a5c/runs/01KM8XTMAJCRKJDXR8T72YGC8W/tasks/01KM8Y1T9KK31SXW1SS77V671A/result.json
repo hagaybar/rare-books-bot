@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KM8Y1T9KK31SXW1SS77V671A",
+  "taskId": "run-baseline-audit",
+  "invocationKey": "metadata-copilot-workbench:S000002:run-baseline-audit",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "data/metadata/baseline_audit.json"
+    ],
+    "audit_summary": {
+      "agent_name": {
+        "coverage": "100%",
+        "non_null": 4366,
+        "uniform_confidence": 0.8
+      },
+      "agent_role": {
+        "missing_roles": 1655,
+        "non_null": 4366,
+        "unmapped_roles": 122
+      },
+      "date": {
+        "coverage": "100%",
+        "high_confidence_count": 1279,
+        "low_confidence_count": 69,
+        "non_null": 2773
+      },
+      "place": {
+        "alias_mapped_count": 1569,
+        "coverage": "100%",
+        "non_null": 2773,
+        "unmapped_count": 1185
+      },
+      "publisher": {
+        "coverage": "100%",
+        "missing": 33,
+        "no_alias_map": 2740,
+        "non_null": 2773
+      },
+      "total_agent_rows": 4366,
+      "total_imprint_rows": 2773
+    },
+    "files_created": [
+      "data/metadata/baseline_audit.json"
+    ],
+    "files_modified": [
+      "scripts/metadata/audit.py"
+    ],
+    "success": true,
+    "top_issues": [
+      "1655 agent rows with empty role (confidence 0.50)",
+      "2740 publishers with no alias map (stuck at 0.80 confidence)",
+      "1185 places (43%) without alias map match (0.80 confidence)",
+      "69 unparsed dates including partial century patterns"
+    ]
+  },
+  "startedAt": "2026-03-21T19:32:26.323Z",
+  "finishedAt": "2026-03-21T19:32:26.323Z",
+  "value": {
+    "artifacts": [
+      "data/metadata/baseline_audit.json"
+    ],
+    "audit_summary": {
+      "agent_name": {
+        "coverage": "100%",
+        "non_null": 4366,
+        "uniform_confidence": 0.8
+      },
+      "agent_role": {
+        "missing_roles": 1655,
+        "non_null": 4366,
+        "unmapped_roles": 122
+      },
+      "date": {
+        "coverage": "100%",
+        "high_confidence_count": 1279,
+        "low_confidence_count": 69,
+        "non_null": 2773
+      },
+      "place": {
+        "alias_mapped_count": 1569,
+        "coverage": "100%",
+        "non_null": 2773,
+        "unmapped_count": 1185
+      },
+      "publisher": {
+        "coverage": "100%",
+        "missing": 33,
+        "no_alias_map": 2740,
+        "non_null": 2773
+      },
+      "total_agent_rows": 4366,
+      "total_imprint_rows": 2773
+    },
+    "files_created": [
+      "data/metadata/baseline_audit.json"
+    ],
+    "files_modified": [
+      "scripts/metadata/audit.py"
+    ],
+    "success": true,
+    "top_issues": [
+      "1655 agent rows with empty role (confidence 0.50)",
+      "2740 publishers with no alias map (stuck at 0.80 confidence)",
+      "1185 places (43%) without alias map match (0.80 confidence)",
+      "69 unparsed dates including partial century patterns"
+    ]
+  }
+}

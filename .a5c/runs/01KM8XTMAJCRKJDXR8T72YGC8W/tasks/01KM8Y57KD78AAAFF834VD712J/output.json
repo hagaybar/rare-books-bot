@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "files_created": [
+    "scripts/metadata/clustering.py",
+    "tests/scripts/metadata/test_clustering.py"
+  ],
+  "test_results": {"passed": 71, "failed": 0, "total": 71},
+  "cluster_types_supported": [
+    "near_match", "latin_place_names", "hebrew_place_names", "arabic_place_names",
+    "empty_place_values", "partial_century", "hebrew_gematria", "latin_convention",
+    "circa", "ambiguous_range", "empty_missing", "other_unparsed",
+    "variant_group", "high_frequency_unmapped", "low_frequency_unmapped",
+    "ambiguous_agent", "missing_role", "low_confidence_agent"
+  ],
+  "public_api": [
+    "cluster_field_gaps(field, flagged_items, db_path, alias_map) -> List[Cluster]",
+    "cluster_all_gaps(report, db_path, alias_maps) -> Dict[str, List[Cluster]]"
+  ],
+  "artifacts": ["scripts/metadata/clustering.py", "tests/scripts/metadata/test_clustering.py"]
+}

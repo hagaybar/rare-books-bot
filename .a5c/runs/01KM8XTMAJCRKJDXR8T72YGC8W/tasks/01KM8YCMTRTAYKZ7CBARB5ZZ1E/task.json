@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KM8YCMTRTAYKZ7CBARB5ZZ1E",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "metadata-copilot-workbench:S000004:__sdk.breakpoint",
+  "stepId": "S000004",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "fields": [
+          "date",
+          "place",
+          "publisher",
+          "agent"
+        ],
+        "summary": "Audit module built, baseline established, gaps clustered by frequency and type"
+      },
+      "question": "Milestone 1 Complete: Coverage audit shows normalization gaps across 4 fields. Review the baseline coverage report and gap clusters before building the API layer?",
+      "title": "Coverage Audit Review"
+    },
+    "requestedAt": "2026-03-21T19:36:40.536Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "fields": [
+          "date",
+          "place",
+          "publisher",
+          "agent"
+        ],
+        "summary": "Audit module built, baseline established, gaps clustered by frequency and type"
+      },
+      "question": "Milestone 1 Complete: Coverage audit shows normalization gaps across 4 fields. Review the baseline coverage report and gap clusters before building the API layer?",
+      "title": "Coverage Audit Review"
+    },
+    "requestedAt": "2026-03-21T19:36:40.536Z"
+  }
+}
