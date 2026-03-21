@@ -256,7 +256,32 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
 
     # Rule 6c: Hebrew letter year (Gematria) - e.g., תשל"ט, [תס"ט], תק"ח
     # Hebrew years often have quotes (geresh/gershayim) within them
-    # Pattern allows Hebrew letters mixed with quote characters
+    # IMPORTANT: Prefer bracketed Hebrew years [תצ"ו] over loose Hebrew text
+    # to avoid matching chronogram fragments like ב'א' ז'מ'ן' ה'י'ש'ו'ע'ה'
+
+    # First, try bracketed Hebrew year (highest confidence for Hebrew dates)
+    bracketed_hebrew = re.search(
+        r'\[([אבגדהוזחטיכךלמםנןסעפףצץקרשת]["\'\״\'׳אבגדהוזחטיכךלמםנןסעפףצץקרשת]{1,8})["\'\״\'׳]?\]',
+        raw_stripped
+    )
+    if bracketed_hebrew:
+        hebrew_text = bracketed_hebrew.group(1)
+        hebrew_year = parse_hebrew_year(hebrew_text)
+        if hebrew_year and 5000 <= hebrew_year <= 6000:
+            gregorian_year = hebrew_year - 3760
+            if 1000 <= gregorian_year <= 2100:
+                return DateNormalization(
+                    start=gregorian_year,
+                    end=gregorian_year,
+                    label=str(gregorian_year),
+                    confidence=0.85,  # Higher confidence for bracketed
+                    method="hebrew_gematria_bracketed",
+                    evidence_paths=[evidence_path],
+                    warnings=["hebrew_letter_year_converted"]
+                )
+
+    # Fall back to non-bracketed Hebrew year pattern
+    # Require minimum gematria value (>=100) to avoid chronogram fragments
     hebrew_pattern = re.search(
         r'[\[\(]?([אבגדהוזחטיכךלמםנןסעפףצץקרשת]["\'\״\'׳אבגדהוזחטיכךלמםנןסעפףצץקרשת]{1,8})["\'\״\'׳]?[\]\)]?',
         raw_stripped
@@ -264,7 +289,8 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
     if hebrew_pattern:
         hebrew_text = hebrew_pattern.group(1)  # Get captured group (Hebrew year only)
         hebrew_year = parse_hebrew_year(hebrew_text)
-        if hebrew_year and 5000 <= hebrew_year <= 6000:
+        # Require minimum value of 100 to avoid small chronogram fragments
+        if hebrew_year and 5100 <= hebrew_year <= 6000:
             # Hebrew year spans two Gregorian years (Tishrei to Elul)
             # Convert to primary Gregorian year (hebrew_year - 3760)
             gregorian_year = hebrew_year - 3760

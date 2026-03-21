@@ -595,6 +595,66 @@ curl -X POST http://localhost:8000/chat \
 - Deploy to production environment
 - Implement user-based rate limiting (vs IP-based)
 
+## Metadata Co-pilot Workbench
+
+Agent-driven HITL (Human-In-The-Loop) system for improving bibliographic metadata quality.
+
+### Architecture
+
+```
+React Frontend ──REST API──> FastAPI Backend ──> Grounding Layer + Specialist Agents + Action Layer
+```
+
+- **Backend**: `app/api/metadata.py` - 11 REST endpoints for coverage, issues, corrections, agent chat
+- **Agents**: `scripts/metadata/agents/` - 4 specialist agents (Place, Date, Publisher, Name)
+- **Frontend**: `frontend/` - React SPA with Dashboard, Workbench, Agent Chat, Review pages
+- **Feedback Loop**: `scripts/metadata/feedback_loop.py` - approve → alias map → re-normalize → coverage update
+
+### API Endpoints
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | /metadata/coverage | Coverage stats per field |
+| GET | /metadata/issues | Low-confidence records (paginated) |
+| GET | /metadata/unmapped | Unmapped values by frequency |
+| GET | /metadata/clusters | Gap clusters |
+| GET | /metadata/methods | Method distribution |
+| POST | /metadata/corrections | Submit correction |
+| POST | /metadata/corrections/batch | Batch corrections |
+| GET | /metadata/corrections/history | Correction audit trail |
+| POST | /metadata/primo-urls | Batch Primo URLs |
+| GET | /metadata/records/{mms_id}/primo | Single Primo URL |
+| POST | /metadata/agent/chat | Agent conversation |
+
+### Specialist Agents
+
+| Agent | File | Domain |
+|-------|------|--------|
+| PlaceAgent | `scripts/metadata/agents/place_agent.py` | Latin toponyms, Hebrew names, country codes |
+| DateAgent | `scripts/metadata/agents/date_agent.py` | Hebrew calendar, Latin conventions |
+| PublisherAgent | `scripts/metadata/agents/publisher_agent.py` | Printer dynasties, Latin variants |
+| NameAgent | `scripts/metadata/agents/name_agent.py` | VIAF/NLI authority, name forms |
+
+### Quick Start
+
+```bash
+# Start API server
+uvicorn app.api.main:app --reload
+
+# Start React frontend (separate terminal)
+cd frontend && npm run dev
+
+# Run metadata tests
+poetry run python -m pytest tests/scripts/metadata/ -v
+poetry run python -m pytest tests/integration/ -v
+
+# Run coverage audit
+poetry run python -m scripts.metadata.audit data/index/bibliographic.db --output data/metadata/baseline_audit.json
+
+# Apply a correction via CLI
+poetry run python -m scripts.metadata.feedback_loop --field place --raw "Lugduni Batavorum" --canonical leiden --db data/index/bibliographic.db
+```
+
 ## Common Commands
 
 ```bash

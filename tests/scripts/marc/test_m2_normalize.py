@@ -172,12 +172,13 @@ class TestHebrewGematria:
         assert "hebrew_letter_year_converted" in result.warnings
 
     def test_normalize_hebrew_gematria_tasat(self):
-        """Test normalizing תס"ט → 1709."""
+        """Test normalizing תס"ט → 1709 (bracketed)."""
         result = normalize_date('[תס"ט]', "test_path")
         # 5469 - 3760 = 1709
         assert result.start == 1709
         assert result.end == 1709
-        assert result.method == "hebrew_gematria"
+        assert result.method == "hebrew_gematria_bracketed"
+        assert result.confidence == 0.85
 
     def test_normalize_hebrew_gematria_takach(self):
         """Test normalizing תק"ח → 1748."""
@@ -196,6 +197,31 @@ class TestHebrewGematria:
         """Test parsing string without Hebrew letters returns None."""
         result = parse_hebrew_year('1234')
         assert result is None
+
+    def test_normalize_hebrew_chronogram_with_bracketed_year(self):
+        """Test that bracketed Hebrew year is preferred over chronogram fragments.
+
+        Bug fix: MMS 990012031510204146 had date string with chronogram phrase
+        ב'א' ז'מ'ן' ה'י'ש'ו'ע'ה' followed by actual year [תצ"ו].
+        The old code matched ב'א (gematria=3 → 5003-3760=1243) instead of
+        the correct [תצ"ו] (gematria=496 → 5496-3760=1736).
+        """
+        result = normalize_date("ב'א' ז'מ'ן' ה'י'ש'ו'ע'ה' [תצ\"ו]", "test_path")
+        # תצ"ו = ת(400) + צ(90) + ו(6) = 496 → 5496 - 3760 = 1736
+        assert result.start == 1736
+        assert result.end == 1736
+        assert result.method == "hebrew_gematria_bracketed"
+        assert result.confidence == 0.85
+        assert "hebrew_letter_year_converted" in result.warnings
+
+    def test_normalize_hebrew_chronogram_prefers_brackets(self):
+        """Test another chronogram case - bracketed year takes precedence."""
+        # Similar pattern: Hebrew phrase with quotes + bracketed year
+        result = normalize_date("ש'נ'ת' ה'ש'מ'ח'ה' [תר\"ל]", "test_path")
+        # תר"ל = ת(400) + ר(200) + ל(30) = 630 → 5630 - 3760 = 1870
+        assert result.start == 1870
+        assert result.end == 1870
+        assert result.method == "hebrew_gematria_bracketed"
 
 
 class TestPlaceNormalization:

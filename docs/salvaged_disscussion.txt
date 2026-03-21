@@ -1,0 +1,471 @@
+me: Analyze this repository and create a comprehensive CLAUDE.md file that explains the codebase structure, development workflows, and key conventions for AI assistants to follow. If one already exists, update it with the most recent state
+
+I'll analyze the current state of the repository to identify what needs updating in CLAUDE.md.
+
+Now let me read a few key files that have changed significantly to get precise details.
+
+Now let me check the git log for recent activity and read the current CLAUDE.md more carefully to understand what needs updating.
+
+Now I have a comprehensive understanding of the codebase. Let me update the CLAUDE.md with the current state.
+
+Now I have a complete picture. The CLAUDE.md needs significant updates to reflect:
+
+1. The two-phase conversational architecture (intent agent + exploration agent)
+2. The enrichment service (Wikidata/NLI/VIAF)
+3. The Streamlit Chat UI
+4. The aggregation engine
+5. Updated project structure (no longer a "shell template")
+6. LLM call logging
+7. QueryService
+8. Updated directory conventions
+
+Let me write the updated CLAUDE.md.
+
+Now I have a full picture. The CLAUDE.md is quite large and needs significant restructuring to reflect the current state. Key issues:
+
+1. "Project Structure" section says it's "largely a shell template" — no longer true
+2. Missing: Two-phase conversation system, Intent Agent, Exploration Agent, Aggregation Engine
+3. Missing: Entity enrichment pipeline (Wikidata/NLI/VIAF)
+4. Missing: Streamlit Chat UI (`app/ui_chat/`)
+5. Missing: LLM call logging with cost tracking
+6. Missing: QueryService unified interface
+7. Some sections are overly verbose (testing chatbot section is huge)
+8. Directory conventions are incomplete
+
+Let me write the updated CLAUDE.md.
+
+Done. Here's a summary of the CLAUDE.md update:
+
+**Key changes (313 insertions, 557 deletions):**
+
+1. **Added Architecture Overview** — New section with pipeline milestone table (M1→M6) and two-phase conversation model description
+2. **Added Two-Phase Conversation System** — Intent Agent (Phase 1, confidence threshold 0.85), Exploration Agent (Phase 2 with 7 intent types), and Aggregation Engine (deterministic SQL)
+3. **Added Entity Enrichment Pipeline** — Wikidata/NLI/VIAF multi-source fallback with cache-first architecture
+4. **Added Streamlit Chat UI** — `app/ui_chat/` section with Primo links and `run_chat_ui.sh`
+5. **Added LLM integration table** — Shows all 3 LLM integration points with their models and caches
+6. **Updated Project Structure** — Complete directory tree replacing the outdated "shell template" description (104 Python files, not a template anymore)
+7. **Added Implementation Status** — Clear completed vs postponed tracking
+8. **Consolidated verbose sections** — Reduced the chatbot testing section, streaming docs, and clarification flow from ~300 lines to concise reference entries
+9. **Added QueryService** — Unified query interface in key architecture notes
+
+
+me: Great, now I want to brainstorm with you about the project goals, it's current state, and the needed actions. I will begin. I have been away from the project for a few weeks and I am not sure about the details. But generally speaking, the idea is to take a marc xml of rare books collection, to enrich the data and normalize it as possible, in a way that would enable us to use the material as a data set for a specialized bot. What I would like to achieve is to give a much better quality then what a regular search engine can. I would like to be able to help historians of the book, and students, know about the potential of this data.
+
+
+Great context. Let me give you an honest snapshot of where things stand and then we can discuss the gap between current state and your vision.
+
+## Where You Are Now
+
+The **pipeline is solid**. M1→M3 (parse, normalize, index) works end-to-end, and M4→M5 (query compilation + evidence extraction) produces deterministic, traceable results. You also have a working chat UI with two-phase conversations.
+
+In short: a user can type a natural language query, get back matching records with MARC field-level evidence, and then explore that result set with follow-up questions.
+
+## The Gap
+
+What you've built is essentially a **smarter fielded search** — it translates natural language into SQL against normalized MARC data. That's valuable, but it's not yet the leap beyond a regular catalog search that you're describing.
+
+The real value for historians and students would come from things a catalog *can't* do:
+
+1. **Cross-record insights** — "What printing networks connected Amsterdam and Venice in the 1590s?" This requires reasoning across records, not just filtering them. Your aggregation engine is a start (top publishers, places by decade), but it's still counting, not connecting.
+
+2. **Contextual enrichment** — You have the Wikidata/NLI/VIAF pipeline, but it's not yet deeply integrated into the conversation. A historian asking "books by Aldus Manutius" would benefit from knowing his dates, his significance, his network of collaborators — things the enrichment service *can* provide but that don't yet flow naturally into responses.
+
+3. **Data quality awareness** — MARC data for rare books is notoriously inconsistent. Your normalization handles dates and places well, but the system doesn't yet surface *what it doesn't know*. "There are 47 records from this period with unparseable dates" is genuinely useful information for a researcher.
+
+4. **Narrative capability** — Your answer contract says "no narrative before CandidateSet." That's correct for the pipeline. But once the CandidateSet exists, the system could do much more — summarize trends, highlight outliers, explain what makes a particular subset historically interesting.
+
+## Key Question for You
+
+Where do you see the biggest leverage right now? I see three directions:
+
+- **Depth**: Make the enrichment + exploration phase much richer (connect entities, surface relationships, provide historical context)
+- **Breadth**: Improve data coverage — better normalization, handle more edge cases, map more places/publishers
+- **Usability**: Polish the chat experience — make the bot feel like a knowledgeable research librarian rather than a search interface
+
+These aren't mutually exclusive, but prioritizing helps. What resonates most with your vision for helping historians?
+
+
+
+me: I would start with something you did noted, and that is accuracy. I think the basic pilar of this project, is being able to trust the DB. The DB must accurately represent first all that we can deduce from the marc, and then from the enriched data. Now I have tried to go through normalizing information. For example canonizing dates, names, places. I feel I reached a barrier as far as I can progress without automated process that would methodically examine the source data, map it to the required DB fields and rank the outcome. Can you please suggest several options of preforming this methodically and accurately?
+
+
+This is the right priority. Trust in the data is foundational — everything else (exploration, enrichment, narrative) is worthless if the underlying normalized data is unreliable.
+
+Let me understand the problem more concretely before suggesting approaches. Let me check what you're actually dealing with.
+
+Good — now I have a clear picture of where normalization stands. Here's what I think the real problem is, and then the options.
+
+## The Core Problem
+
+Your normalization is **rule-complete but coverage-incomplete**. The *logic* for normalizing dates, places, agents, and publishers is solid and well-tested. But you don't have a systematic way to answer:
+
+- How many raw values are actually mapping successfully vs. falling through to low-confidence defaults?
+- Where are the remaining gaps concentrated?
+- How do I close those gaps without manually inspecting thousands of records?
+
+You've hit the ceiling of what hand-curated rules and alias maps can do alone. You need a **feedback loop** between the data and the normalization.
+
+## Three Approaches
+
+### Option A: Audit-First — Normalization Coverage Report
+
+Build a diagnostic pass over the indexed data that produces a **coverage report** per field:
+
+- For each normalized field (date, place, publisher, agent): count records by confidence band (0.0, 0.5, 0.8, 0.95, 0.99)
+- Export the low-confidence values grouped by frequency (the place that appears 200 times unmapped is higher priority than one appearing once)
+- Flag the "unparsed" dates, unmapped places, ambiguous agents
+
+This gives you a **prioritized work list**. You already have `scripts/normalization/extract_unmapped_places.py` doing a version of this for places — the idea is to generalize it across all fields.
+
+**Pros:** Simple, no LLM cost, immediately actionable
+**Cons:** Still requires human/LLM effort to actually resolve the gaps
+
+### Option B: LLM-Assisted Batch Normalization with Human Review
+
+You already have the pattern for this with `generate_place_alias_map.py` — LLM proposes mappings, human reviews. Extend this to:
+
+1. Run the audit (Option A) to find unmapped/low-confidence values
+2. Feed batches of raw values to an LLM with the field's controlled vocabulary as context
+3. LLM proposes `raw → normalized` mappings with its own confidence
+4. Output goes to a **review queue** (CSV or simple UI) where you accept/reject/edit
+5. Accepted mappings get added to the alias maps, pipeline re-runs
+
+This is basically the `place_alias_cache.jsonl` → `place_alias_map.json` pattern, generalized to all fields.
+
+**Pros:** Scalable, leverages what you've already built, human stays in the loop
+**Cons:** LLM costs, review bottleneck, need to handle disagreements
+
+### Option C: Validation Against External Authority Files
+
+For agents and subjects specifically, you have authority URIs from MARC `$0` subfields and the enrichment pipeline (NLI, Wikidata, VIAF). Use these as **ground truth anchors**:
+
+1. For records that have authority URIs — fetch the canonical form from the authority source
+2. Compare your normalized value against the authority's canonical form
+3. Where they agree: boost confidence. Where they diverge: flag for review
+4. Use the verified mappings to train alias maps for records *without* authority URIs
+
+This is particularly powerful for agents (where VIAF/NLI have canonical name forms) and subjects (where LCSH has controlled vocabulary).
+
+**Pros:** Grounded in authoritative sources, builds trust, leverages existing enrichment pipeline
+**Cons:** Not all records have authority URIs, external API rate limits, only covers agents/subjects well
+
+## My Recommendation
+
+**Start with A, then layer B and C on top.** The audit report is cheap, fast, and tells you exactly where to focus. Then use B (LLM-assisted mapping) for places/publishers where no authority exists, and C (authority validation) for agents/subjects where it does.
+
+The key insight is that all three feed into the same output: **better alias maps and confidence scores** — which your pipeline already knows how to consume.
+
+What's your reaction? Does one of these feel more aligned with what you were thinking, or do you see a different angle?
+
+
+me: I think we need a feedback loop, you are right. But I think about merging your steps into a utility that improves Metadata methodically with HITL. There should be some way of doing something like this: user - a librarian that has an access to the actual records on the library system - enters a dashboard, with maybe another bot dedicated to solving metadata challenges and improving the DB. In this dashboard, the human get a clear picture of gaps in DB knowledge. They can also query the agent about the metadata and get deterministic answers. For example: a user can see batch of records with dates of low trust rankings, or without dates at all. Then a user can ask the agent - give me a list of all the identifiers or even better, all the URLs for the Primo discovery for them. From there they could think of ways to solve or improve the situation.
+
+This is a compelling vision — a **metadata quality workbench** where a librarian systematically closes gaps with an AI assistant that knows the data. Let me explore what already exists that we can build on.
+Excellent findings. The key insight: **the data you need is already in the database** — confidence scores, methods, raw vs. normalized values — you just don't have a way to see it or act on it. Now let me design this properly.
+I've launched a design agent to work out the detailed architecture. While it's working, let me ask a couple of questions that will shape the plan significantly.
+
+I've launched a design agent to work out the detailed architecture. While it's working, let me ask a couple of questions that will shape the plan significantly.
+
+Interesting — a proper frontend framework instead of Streamlit. That changes the architecture significantly: you'd have a **React/Angular SPA** talking to a **FastAPI backend** (which you already have the pattern for in `app/api/`).
+
+This actually makes a lot of sense because:
+- Streamlit is great for prototyping but limiting for interactive workflows (batch selection, inline editing, drag-and-drop)
+- You already have FastAPI infrastructure that handles the chat — the metadata API would be a natural extension
+- A proper frontend gives you better table interactions, which is critical when a librarian is reviewing hundreds of records
+
+Let me wait for the design agent to finish and then adapt the plan to this frontend choice.
+
+The plan agent is still exploring. Let me share my thinking on the adapted architecture now, since we have a key design shift (React/Angular frontend instead of Streamlit).
+
+Here's how I see the **Metadata Quality Workbench** shaping up given your preferences:
+
+## Architecture: Two Layers
+
+**Backend:** New FastAPI routes in `app/api/` (or a separate `app/api/metadata.py` router)
+- Exposes metadata quality data as REST endpoints
+- Reuses the existing M3 database connection and aggregation patterns
+- Corrections endpoint writes directly to alias map files
+- No new database tables needed — everything is already in the M3 schema
+
+**Frontend:** React SPA (separate repo or `frontend/` directory)
+- Talks to the API
+- Proper data tables for batch review (something like AG Grid or TanStack Table)
+- Inline editing for normalization corrections
+- Batch Primo link generation
+
+## The Key API Endpoints
+
+I'd envision something like:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /metadata/coverage` | Overall coverage stats per field (% parsed, confidence distribution) |
+| `GET /metadata/issues?field=date&max_confidence=0.7` | Records with low-confidence or missing normalizations |
+| `GET /metadata/unmapped?field=place` | Raw values that don't map to any canonical form |
+| `GET /metadata/primo-urls` | Batch Primo URL generation for a list of MMS IDs |
+| `POST /metadata/corrections` | Submit a correction (e.g., raw place → canonical mapping) |
+| `GET /metadata/methods?field=place` | Distribution of normalization methods used |
+
+## The Librarian's Workflow
+
+1. **See the gaps** → Dashboard shows: "423 records have unparsed dates, 87 places unmapped, 12 agents ambiguous"
+2. **Drill into a category** → Table of unmapped places sorted by frequency: `"אמשטרדאם"` appears 34 times, `"Lugduni Batavorum"` appears 22 times...
+3. **Ask the agent** → "Show me all records from Lugduni Batavorum with their Primo links" → gets a deterministic SQL answer with clickable links
+4. **Fix it** → Types the canonical form "leiden", clicks approve → alias map updated immediately
+5. **See the impact** → Coverage dashboard refreshes, shows 22 more records now normalized
+
+## Frontend Choice
+
+Given this is a data-heavy tool with tables, filtering, and inline editing:
+
+- **React** with something like TanStack Table or AG Grid would give you the best table interaction
+- **Angular** works too if that's your team's preference, but React has a larger ecosystem for data table components
+- Either way, the backend API is the same
+
+Should I proceed with planning the API layer in detail? That's the part that lives in your existing codebase and is framework-agnostic. The frontend can be developed separately once the API is solid.
+
+
+me: I think your plan is a start, but I think this is a single feature (getting the gaps and human filling them), I think also a llm should be part of the operation. Giving advice, going over data samples, proposing solutions. I want an active agent, like you, helping solve the issues. This should be part of the plan.
+
+You're right — the dashboard alone is passive. What you really want is a **metadata co-pilot**: an agent that actively analyzes gaps, proposes fixes, explains its reasoning, and learns from the librarian's decisions.
+
+Let me think about this more concretely.
+
+The agent isn't just answering questions. It should be doing things like:
+
+- "I found 34 records with the place `לוגאנו`. Based on the MARC country code `sz` (Switzerland) and similar entries in your alias map, this is almost certainly **Lugano**. Want me to add this mapping?"
+- "These 12 records have dates I couldn't parse. Here are my best guesses with reasoning: `תק"ע` → 1810 (Hebrew year 5570, confidence 0.85). `ante 1600` → before 1600 (no start year determinable). Review?"
+- "Publisher `typis Elzevirianis` appears 8 times. Your map already has `elzevir` as a canonical publisher. This looks like the Latin form. Shall I map it?"
+
+The agent **cross-references** what it knows — the MARC fields, the existing alias maps, country codes, authority URIs, patterns from similar records — to make informed proposals rather than just showing you a list.
+
+Here's the critical distinction from a generic LLM chat:
+
+| Generic LLM | Metadata Co-pilot |
+|---|---|
+| "What do you want to know?" | "I found 3 clusters of unmapped places. Let's start with the highest-frequency group." |
+| Answers questions | Proposes solutions with evidence |
+| Stateless | Tracks what's been reviewed, approved, skipped |
+| Hallucinates freely | Grounded in MARC data + alias maps + authority files |
+
+## How the Agent Would Work
+
+**Grounding layer** (deterministic, no LLM):
+- Queries the M3 database for gaps (low confidence, unmapped, unparsed)
+- Cross-references existing alias maps, country codes, authority URIs
+- Generates candidate mappings using rule-based heuristics (Latin place name patterns, Hebrew date patterns, publisher name variants)
+
+**Reasoning layer** (LLM):
+- Takes the grounded evidence and proposes solutions with explanations
+- Groups related issues ("these 5 places are all Latin forms of Dutch cities")
+- Suggests investigation strategies ("these records all come from the same source file — the date format might be consistent")
+- Adapts based on the librarian's past decisions ("you've been mapping Italian place variants — here are 12 more I found")
+
+**Action layer** (HITL):
+- Every proposal is accept / reject / edit
+- Accepted changes go directly to alias maps
+- Rejected proposals get logged so the agent doesn't re-propose
+- The agent can batch related proposals ("approve all 8 Latin-to-English place mappings?")
+
+Good choices. Agent-driven with specialized agents per field. That gives you a system where the librarian opens the workbench and the relevant agent says: *"I've identified 47 unmapped places. The top priority cluster is 5 Latin place names appearing in 89 records total. Here's my proposal..."*
+
+Let me now put together a concrete plan that integrates everything — the dashboard, the specialized agents, the HITL feedback loop, and the API layer.
+
+Good choices. Agent-driven with specialized agents per field. Let me now put together the full picture.
+
+## Metadata Co-pilot — Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│                React Frontend                    │
+│  ┌───────────┐ ┌──────────┐ ┌────────────────┐  │
+│  │ Dashboard │ │ Workbench│ │ Agent Chat     │  │
+│  │ (coverage)│ │ (tables) │ │ (per field)    │  │
+│  └───────────┘ └──────────┘ └────────────────┘  │
+└──────────────────────┬──────────────────────────┘
+                       │ REST API
+┌──────────────────────┴──────────────────────────┐
+│              FastAPI Backend                     │
+│  /metadata/coverage    /metadata/issues          │
+│  /metadata/corrections /metadata/agent/chat      │
+└──────────────────────┬──────────────────────────┘
+                       │
+       ┌───────────────┼───────────────┐
+       │               │               │
+┌──────┴──────┐ ┌──────┴──────┐ ┌──────┴──────┐
+│  Grounding  │ │  Specialist │ │   Action    │
+│   Layer     │ │   Agents    │ │   Layer     │
+│             │ │             │ │             │
+│ M3 Database │ │ DateAgent   │ │ Alias maps  │
+│ Alias maps  │ │ PlaceAgent  │ │ Review log  │
+│ Country codes│ │ PublAgent   │ │ Re-index    │
+│ Auth URIs   │ │ AgentAgent  │ │ trigger     │
+└─────────────┘ │ SubjectAgent│ └─────────────┘
+                └─────────────┘
+```
+
+### The Specialist Agents
+
+Each agent knows its domain deeply:
+
+**DateAgent** — Knows Hebrew calendars, Latin date conventions, circa patterns, date ranges. Cross-references country codes and known publication patterns for the era. Can say: "This collection has 45 records from `source_file_3.xml` with dates in Hebrew Gematria format. I parsed 38 successfully. The remaining 7 use an unusual abbreviation pattern — here they are."
+
+**PlaceAgent** — Knows Latin toponyms, Hebrew place names, historical place name changes, country code cross-referencing. Can say: "The raw value `Amstelodami` with country code `ne` (Netherlands) is the Latin genitive of Amsterdam. Your map already has `amstelodami` → `amsterdam` but these 4 records use the nominative `Amstelodamum` which is missing."
+
+**PublisherAgent** — Knows publisher name patterns, printer dynasties, Latin/vernacular variants. Can cluster related publishers: "These 3 variants — `Plantin`, `ex officina Plantiniana`, `Christophe Plantin` — all refer to the Plantin press in Antwerp."
+
+**AgentAgent** — Knows name authority conventions, VIAF/NLI patterns. Can leverage authority URIs where they exist to validate or correct name forms for records that lack them.
+
+**SubjectAgent** — Knows LCSH vocabulary, can map vernacular subject terms to controlled headings.
+
+### What a Session Looks Like
+
+```
+AGENT (PlaceAgent): I've analyzed your place normalization coverage.
+
+Current state:
+  ✅ 2,847 records — places mapped with high confidence (≥0.95)
+  ⚠️  423 records — places mapped with base cleaning only (0.80)
+  ❌   87 records — places unmapped or missing
+
+I found 3 clusters worth addressing:
+
+Cluster 1: Latin place names (34 records, 12 unique values)
+  "Lugduni Batavorum" (22×) — likely Leiden (country: ne)
+  "Augustae Vindelicorum" (8×) — likely Augsburg (country: gw)
+  "Amstelodami" variant "Amstelodamum" (4×) — likely Amsterdam
+
+Cluster 2: Hebrew script places (18 records, 6 unique values)
+  "לובלין" (9×) — likely Lublin (country: pl)
+  "ליוורנו" (5×) — likely Livorno (country: it)
+  ...
+
+Shall I start with Cluster 1? I have high confidence in these 
+Latin mappings and can show you the Primo links to verify.
+
+LIBRARIAN: Yes, let's do cluster 1.
+
+AGENT: Here are the proposed mappings with evidence:
+
+| Raw Value | → Canonical | Evidence | Primo Links |
+|-----------|-------------|----------|-------------|
+| Lugduni Batavorum | leiden | country=ne, 22 records, Latin genitive of Leiden | [View 22 records] |
+| Augustae Vindelicorum | augsburg | country=gw, 8 records, Roman name for Augsburg | [View 8 records] |
+| Amstelodamum | amsterdam | country=ne, 4 records, variant already in map | [View 4 records] |
+
+[✅ Approve All] [Review individually] [Skip cluster]
+
+LIBRARIAN: [✅ Approve All]
+
+AGENT: Done. Added 3 mappings to place_alias_map.json.
+Updated coverage: 2,881 mapped (↑34), 389 base-only, 53 unmapped.
+
+Moving to Cluster 2 (Hebrew script places)...
+```
+
+### Key Design Principle
+
+The agent **does the detective work**, the librarian **makes the call**. The agent never changes data silently — but it does all the heavy lifting of finding patterns, cross-referencing evidence, clustering related issues, and presenting actionable proposals.
+
+This is fundamentally different from showing a librarian a table of 500 unmapped places sorted by frequency. The agent **triages, clusters, provides evidence, and proposes solutions** — turning a wall of data into a manageable conversation.
+
+Want me to draft a detailed implementation plan for this? I'd suggest starting with the backend API + one specialist agent (probably PlaceAgent, since you already have the most infrastructure for it) as a vertical slice, then expanding to the other agents.
+
+Good choices. Agent-driven with specialized agents per field. That gives you a system where the librarian opens the workbench and the relevant agent says: "I've identified 47 unmapped places. The top priority cluster is 5 Latin place names appearing in 89 records total. Here's my proposal..."
+
+Let me now put together a concrete plan that integrates everything — the dashboard, the specialized agents, the HITL feedback loop, and the API layer.
+
+Good choices. Agent-driven with specialized agents per field. Let me now put together the full picture.
+
+Metadata Co-pilot — Architecture
+┌─────────────────────────────────────────────────┐
+│                React Frontend                    │
+│  ┌───────────┐ ┌──────────┐ ┌────────────────┐  │
+│  │ Dashboard │ │ Workbench│ │ Agent Chat     │  │
+│  │ (coverage)│ │ (tables) │ │ (per field)    │  │
+│  └───────────┘ └──────────┘ └────────────────┘  │
+└──────────────────────┬──────────────────────────┘
+                       │ REST API
+┌──────────────────────┴──────────────────────────┐
+│              FastAPI Backend                     │
+│  /metadata/coverage    /metadata/issues          │
+│  /metadata/corrections /metadata/agent/chat      │
+└──────────────────────┬──────────────────────────┘
+                       │
+       ┌───────────────┼───────────────┐
+       │               │               │
+┌──────┴──────┐ ┌──────┴──────┐ ┌──────┴──────┐
+│  Grounding  │ │  Specialist │ │   Action    │
+│   Layer     │ │   Agents    │ │   Layer     │
+│             │ │             │ │             │
+│ M3 Database │ │ DateAgent   │ │ Alias maps  │
+│ Alias maps  │ │ PlaceAgent  │ │ Review log  │
+│ Country codes│ │ PublAgent   │ │ Re-index    │
+│ Auth URIs   │ │ AgentAgent  │ │ trigger     │
+└─────────────┘ │ SubjectAgent│ └─────────────┘
+                └─────────────┘
+
+The Specialist Agents
+Each agent knows its domain deeply:
+
+DateAgent — Knows Hebrew calendars, Latin date conventions, circa patterns, date ranges. Cross-references country codes and known publication patterns for the era. Can say: "This collection has 45 records from source_file_3.xml with dates in Hebrew Gematria format. I parsed 38 successfully. The remaining 7 use an unusual abbreviation pattern — here they are."
+
+PlaceAgent — Knows Latin toponyms, Hebrew place names, historical place name changes, country code cross-referencing. Can say: "The raw value Amstelodami with country code ne (Netherlands) is the Latin genitive of Amsterdam. Your map already has amstelodami → amsterdam but these 4 records use the nominative Amstelodamum which is missing."
+
+PublisherAgent — Knows publisher name patterns, printer dynasties, Latin/vernacular variants. Can cluster related publishers: "These 3 variants — Plantin, ex officina Plantiniana, Christophe Plantin — all refer to the Plantin press in Antwerp."
+
+AgentAgent — Knows name authority conventions, VIAF/NLI patterns. Can leverage authority URIs where they exist to validate or correct name forms for records that lack them.
+
+SubjectAgent — Knows LCSH vocabulary, can map vernacular subject terms to controlled headings.
+
+What a Session Looks Like
+AGENT (PlaceAgent): I've analyzed your place normalization coverage.
+
+Current state:
+  ✅ 2,847 records — places mapped with high confidence (≥0.95)
+  ⚠️  423 records — places mapped with base cleaning only (0.80)
+  ❌   87 records — places unmapped or missing
+
+I found 3 clusters worth addressing:
+
+Cluster 1: Latin place names (34 records, 12 unique values)
+  "Lugduni Batavorum" (22×) — likely Leiden (country: ne)
+  "Augustae Vindelicorum" (8×) — likely Augsburg (country: gw)
+  "Amstelodami" variant "Amstelodamum" (4×) — likely Amsterdam
+
+Cluster 2: Hebrew script places (18 records, 6 unique values)
+  "לובלין" (9×) — likely Lublin (country: pl)
+  "ליוורנו" (5×) — likely Livorno (country: it)
+  ...
+
+Shall I start with Cluster 1? I have high confidence in these 
+Latin mappings and can show you the Primo links to verify.
+
+LIBRARIAN: Yes, let's do cluster 1.
+
+AGENT: Here are the proposed mappings with evidence:
+
+| Raw Value | → Canonical | Evidence | Primo Links |
+|-----------|-------------|----------|-------------|
+| Lugduni Batavorum | leiden | country=ne, 22 records, Latin genitive of Leiden | [View 22 records] |
+| Augustae Vindelicorum | augsburg | country=gw, 8 records, Roman name for Augsburg | [View 8 records] |
+| Amstelodamum | amsterdam | country=ne, 4 records, variant already in map | [View 4 records] |
+
+[✅ Approve All] [Review individually] [Skip cluster]
+
+LIBRARIAN: [✅ Approve All]
+
+AGENT: Done. Added 3 mappings to place_alias_map.json.
+Updated coverage: 2,881 mapped (↑34), 389 base-only, 53 unmapped.
+
+Moving to Cluster 2 (Hebrew script places)...
+
+Key Design Principle
+The agent does the detective work, the librarian makes the call. The agent never changes data silently — but it does all the heavy lifting of finding patterns, cross-referencing evidence, clustering related issues, and presenting actionable proposals.
+
+This is fundamentally different from showing a librarian a table of 500 unmapped places sorted by frequency. The agent triages, clusters, provides evidence, and proposes solutions — turning a wall of data into a manageable conversation.
+
+Want me to draft a detailed implementation plan for this? I'd suggest starting with the backend API + one specialist agent (probably PlaceAgent, since you already have the most infrastructure for it) as a vertical slice, then expanding to the other agents.
+
+me: Yes, create a detailed plan, that includes specific tasks. It is important that while the agents should be grounded firmly in given Metadata, they would have access to llm to get the answer when they don't know. This is different from RAG where the queries comes from the users and the response from the data, here the queries can come "from the data" (based on deterministic analysis of it, or from the user, and the information is sent to llm for options, with special agent harnesses, that limit the llm to provide accurate results with very strict prompts.
+
