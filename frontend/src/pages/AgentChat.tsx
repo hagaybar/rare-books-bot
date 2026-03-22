@@ -430,13 +430,22 @@ function ClusterCards({
             <span>{c.value_count} values</span>
             <span>{c.total_records.toLocaleString()} records</span>
           </div>
-          <button
-            type="button"
-            onClick={() => onInvestigate(c.cluster_id)}
-            className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
-          >
-            Investigate &rarr;
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => onInvestigate(`propose:${c.cluster_id}`)}
+              className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 transition-colors font-medium"
+            >
+              Propose Mappings →
+            </button>
+            <button
+              type="button"
+              onClick={() => onInvestigate(`cluster:${c.cluster_id}`)}
+              className="text-xs text-gray-500 hover:text-gray-700 font-medium px-2 py-1.5"
+            >
+              Details
+            </button>
+          </div>
         </div>
       ))}
     </div>
@@ -613,8 +622,8 @@ export default function AgentChat() {
   );
 
   const handleInvestigate = useCallback(
-    (clusterId: string) => {
-      sendMessage(`cluster:${clusterId}`);
+    (message: string) => {
+      sendMessage(message);
     },
     [sendMessage]
   );
@@ -667,9 +676,34 @@ export default function AgentChat() {
           {/* Messages */}
           <div className="flex-1 p-4 overflow-y-auto">
             {messages.length === 0 && !agentMutation.isPending && (
-              <div className="flex items-center justify-center h-full text-gray-400 text-sm">
-                Start by asking the {FIELD_LABELS[activeField]} agent to analyze
-                clusters or propose normalizations.
+              <div className="flex flex-col items-center justify-center h-full text-center px-8">
+                <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-4">
+                  <span className="text-2xl">🔍</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  {FIELD_LABELS[activeField]} Normalization Agent
+                </h3>
+                <p className="text-gray-500 text-sm mb-6 max-w-md">
+                  This agent analyzes gaps in {FIELD_LABELS[activeField].toLowerCase()} normalization,
+                  clusters related issues, and proposes fixes using AI. Start by clicking
+                  the button below.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => sendMessage('Analyze')}
+                  className="bg-indigo-600 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+                >
+                  Start Analysis →
+                </button>
+                <div className="mt-8 text-left max-w-sm">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">How it works</p>
+                  <ol className="text-xs text-gray-400 space-y-1.5">
+                    <li>1. <strong>Analyze</strong> — Agent scans for normalization gaps</li>
+                    <li>2. <strong>Investigate cluster</strong> — Pick a cluster to explore</li>
+                    <li>3. <strong>Propose mappings</strong> — AI suggests canonical values</li>
+                    <li>4. <strong>Approve / Reject / Edit</strong> — You make the call</li>
+                  </ol>
+                </div>
               </div>
             )}
 
@@ -705,15 +739,15 @@ export default function AgentChat() {
                 disabled={agentMutation.isPending}
                 className="text-xs border border-indigo-200 text-indigo-600 px-3 py-1.5 rounded-md hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Analyze
+                Analyze Gaps
               </button>
               <button
                 type="button"
-                onClick={() => sendMessage('Show Clusters')}
+                onClick={() => sendMessage('propose:0')}
                 disabled={agentMutation.isPending}
-                className="text-xs border border-indigo-200 text-indigo-600 px-3 py-1.5 rounded-md hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-xs border border-green-200 text-green-600 px-3 py-1.5 rounded-md hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Show Clusters
+                Propose Mappings (Top Cluster)
               </button>
             </div>
 

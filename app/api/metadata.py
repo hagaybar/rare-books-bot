@@ -58,6 +58,7 @@ from scripts.metadata.clustering import (
     cluster_all_gaps,
     cluster_field_gaps,
 )
+from scripts.metadata.interaction_logger import interaction_logger
 
 router = APIRouter(prefix="/metadata", tags=["metadata"])
 
@@ -155,22 +156,22 @@ def _cluster_to_response(cluster: Cluster) -> ClusterResponse:
 
 
 # SQL column mappings per field for the issues endpoint.
-# Each entry: (table, mms_id_col, raw_col, norm_col, confidence_col, method_col)
+# Each entry: (table, raw_col, norm_col, confidence_col, method_col)
 _FIELD_COLUMN_MAP = {
     "date": (
-        "imprints", "mms_id", "date_raw",
+        "imprints", "date_raw",
         "date_start", "date_confidence", "date_method",
     ),
     "place": (
-        "imprints", "mms_id", "place_raw",
+        "imprints", "place_raw",
         "place_norm", "place_confidence", "place_method",
     ),
     "publisher": (
-        "imprints", "mms_id", "publisher_raw",
+        "imprints", "publisher_raw",
         "publisher_norm", "publisher_confidence", "publisher_method",
     ),
     "agent": (
-        "agents", "mms_id", "agent_raw",
+        "agents", "agent_raw",
         "agent_norm", "agent_confidence", "agent_method",
     ),
 }
@@ -187,11 +188,7 @@ _FIELD_COLUMN_MAP = {
     summary="Overall coverage stats per field",
 )
 async def get_coverage() -> CoverageResponse:
-    """Return overall normalization coverage statistics per field.
-
-    Generates a full coverage report from the bibliographic database,
-    including confidence distributions, method breakdowns, and flagged items.
-    """
+    """Return overall normalization coverage statistics per field."""
     db = _get_db_path()
     try:
         report = generate_coverage_report(db)
@@ -239,7 +236,7 @@ async def get_issues(
             detail=f"Unknown field: {field_str}",
         )
 
-    table, mms_col, raw_col, norm_col, conf_col, method_col = _FIELD_COLUMN_MAP[field_str]
+    table, raw_col, norm_col, conf_col, method_col = _FIELD_COLUMN_MAP[field_str]
     db = _get_db_path()
 
     try:
@@ -252,12 +249,13 @@ async def get_issues(
         )
         total = conn.execute(count_sql, (max_confidence,)).fetchone()[0]
 
-        # Fetch the page
+        # Fetch the page — JOIN with records to get mms_id
         data_sql = (
-            f"SELECT {mms_col}, {raw_col}, {norm_col}, {conf_col}, {method_col} "
-            f"FROM {table} "
-            f"WHERE {conf_col} IS NOT NULL AND {conf_col} <= ? "
-            f"ORDER BY {conf_col} ASC "
+            f"SELECT r.mms_id, t.{raw_col}, t.{norm_col}, t.{conf_col}, t.{method_col} "
+            f"FROM {table} t "
+            f"JOIN records r ON t.record_id = r.id "
+            f"WHERE t.{conf_col} IS NOT NULL AND t.{conf_col} <= ? "
+            f"ORDER BY t.{conf_col} ASC "
             f"LIMIT ? OFFSET ?"
         )
         rows = conn.execute(data_sql, (max_confidence, limit, offset)).fetchall()
@@ -678,6 +676,18 @@ async def post_correction(req: CorrectionRequest) -> CorrectionResponse:
     }
     _append_review_log(log_entry)
 
+    # Detailed interaction log for corrections
+    interaction_logger.log(
+        action="correction_applied",
+        field=req.field,
+        params={
+            "raw_value": req.raw_value,
+            "canonical_value": req.canonical_value,
+            "source": req.source,
+        },
+        result_summary={"records_affected": records_affected},
+    )
+
     return CorrectionResponse(
         success=True,
         alias_map_updated=str(alias_path),
@@ -1090,18 +1100,10 @@ def _proposals_to_api(proposals: list) -> list:
     summary="Chat with a specialist metadata agent",
 )
 async def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
-    """Interact with a specialist metadata agent via chat.
+    """Interact with a specialist metadata agent via chat."""
+    import time as _time
 
-    Routes based on message content:
-    - Empty or "analyze": runs full coverage analysis for the field.
-    - Starts with "propose:" or "cluster:": parses cluster reference and
-      returns proposed mappings or cluster details.
-    - Anything else: treated as a free-form question, returns grounding data.
-
-    The agent does NOT require an OpenAI API key for analysis or grounding
-    operations. Only ``propose_mappings`` needs the LLM; if the key is not
-    set, proposals are returned empty with an explanatory note.
-    """
+    _chat_start = _time.monotonic()
     field = req.field
     if field not in _VALID_AGENT_FIELDS:
         raise HTTPException(
@@ -1146,13 +1148,24 @@ async def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
         clusters_raw = getattr(analysis, "clusters", [])
         cluster_summaries = _clusters_to_summaries(clusters_raw)
 
-        return AgentChatResponse(
+        result = AgentChatResponse(
             response=response_text,
             proposals=[],
             clusters=cluster_summaries,
             field=field,
             action="analysis",
         )
+        interaction_logger.log(
+            action="agent_chat",
+            field=field,
+            params={"message": message[:200]},
+            result_summary={
+                "action": "analysis",
+                "clusters_count": len(cluster_summaries),
+            },
+            duration_ms=(_time.monotonic() - _chat_start) * 1000,
+        )
+        return result
 
     # --- Route: propose mappings for a cluster ---
     if message.lower().startswith("propose:"):
@@ -1231,7 +1244,7 @@ async def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
                 detail=f"Proposal generation failed: {exc}",
             )
 
-        return AgentChatResponse(
+        result = AgentChatResponse(
             response=(
                 f"Generated {len(proposals)} proposals for cluster "
                 f"'{target_cluster.cluster_id}'."
@@ -1241,6 +1254,18 @@ async def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
             field=field,
             action="proposals",
         )
+        interaction_logger.log(
+            action="agent_chat",
+            field=field,
+            params={"message": message[:200], "cluster": target_cluster.cluster_id},
+            result_summary={
+                "action": "proposals",
+                "proposals_count": len(proposals),
+                "cluster_type": target_cluster.cluster_type,
+            },
+            duration_ms=(_time.monotonic() - _chat_start) * 1000,
+        )
+        return result
 
     # --- Route: get cluster details ---
     if message.lower().startswith("cluster:"):
@@ -1350,13 +1375,25 @@ async def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
             f"Unable to retrieve grounding data for '{field}': {exc}"
         )
 
-    return AgentChatResponse(
+    result = AgentChatResponse(
         response=response_text,
         proposals=[],
         clusters=[],
         field=field,
         action="answer",
     )
+    interaction_logger.log(
+        action="agent_chat",
+        field=field,
+        params={"message": req.message[:200] if req.message else ""},
+        result_summary={
+            "action": result.action,
+            "proposals_count": len(result.proposals),
+            "clusters_count": len(result.clusters),
+        },
+        duration_ms=(_time.monotonic() - _chat_start) * 1000,
+    )
+    return result
 
 
 # TODO: Add WebSocket endpoint /ws/metadata/agent for streaming responses

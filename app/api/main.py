@@ -68,6 +68,7 @@ from scripts.query.compile import compile_query
 from scripts.query.execute import execute_plan
 from scripts.utils.logger import LoggerManager
 from scripts.enrichment import EnrichmentService, EntityType as EnrichmentEntityType
+from scripts.metadata.interaction_logger import interaction_logger
 
 # Initialize logger
 logger = LoggerManager.get_logger(__name__)
@@ -94,6 +95,72 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Middleware: log all /metadata/* interactions
+@app.middleware("http")
+async def log_metadata_interactions(request: Request, call_next):
+    """Log every /metadata/* request with timing and result status."""
+    if not request.url.path.startswith("/metadata"):
+        return await call_next(request)
+
+    import time as _time
+
+    start = _time.monotonic()
+    body_bytes = None
+
+    # Capture request body for POST endpoints
+    if request.method == "POST":
+        body_bytes = await request.body()
+        # Re-wrap the body so downstream handlers can read it
+        from starlette.requests import Request as StarletteRequest
+        import io
+
+        async def _receive():
+            return {"type": "http.request", "body": body_bytes}
+
+        request = Request(scope=request.scope, receive=_receive)
+
+    error_msg = None
+    status_code = 200
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        return response
+    except Exception as exc:
+        error_msg = str(exc)
+        status_code = 500
+        raise
+    finally:
+        elapsed = (_time.monotonic() - start) * 1000
+        params = dict(request.query_params)
+        if body_bytes:
+            try:
+                import json as _json
+                body = _json.loads(body_bytes)
+                # Summarize body — don't log huge payloads
+                if isinstance(body, dict):
+                    params.update({
+                        k: v for k, v in body.items()
+                        if k in ("field", "message", "source", "raw_value",
+                                 "canonical_value", "mms_ids")
+                    })
+                    if "mms_ids" in params and isinstance(params["mms_ids"], list):
+                        params["mms_ids_count"] = len(params["mms_ids"])
+                        del params["mms_ids"]
+                    if "corrections" in body:
+                        params["corrections_count"] = len(body["corrections"])
+            except Exception:
+                pass
+
+        interaction_logger.log(
+            action=f"{request.method} {request.url.path}",
+            field=params.get("field"),
+            params=params if params else None,
+            result_summary={"status_code": status_code},
+            duration_ms=elapsed,
+            error=error_msg,
+        )
+
 
 # Register metadata quality router
 app.include_router(metadata_router)
