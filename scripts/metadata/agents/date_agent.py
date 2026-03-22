@@ -236,6 +236,54 @@ class DateAgent:
 
         return proposals
 
+    def get_clusters(self) -> List[Cluster]:
+        """Group unparsed dates into clusters for the dashboard.
+
+        Returns clusters sorted by priority_score (highest first).
+        """
+        conn = self.harness.grounding._connect()
+        try:
+            report = generate_coverage_report_from_conn(conn)
+            return cluster_field_gaps(
+                field="date",
+                flagged_items=report.date_coverage.flagged_items,
+            )
+        finally:
+            conn.close()
+
+    def propose_mappings(self, cluster: Cluster) -> List[ProposedMapping]:
+        """LLM-assisted proposals for a cluster of date values.
+
+        Converts date-specific proposals back to ProposedMapping format
+        for uniform API handling.
+        """
+        unparsed = [
+            UnparsedDate(
+                mms_id="",
+                raw_value=v.raw_value,
+                current_confidence=v.confidence,
+                current_method=v.method,
+                pattern_type=classify_date_pattern(v.raw_value),
+            )
+            for v in cluster.values
+        ]
+        date_proposals = self.propose_dates(unparsed)
+        return [
+            ProposedMapping(
+                raw_value=dp.raw_value,
+                canonical_value=(
+                    f"{dp.date_start}-{dp.date_end}"
+                    if dp.date_start is not None
+                    else "unparsed"
+                ),
+                confidence=dp.confidence,
+                reasoning=dp.reasoning,
+                evidence_sources=[dp.method],
+                field="date",
+            )
+            for dp in date_proposals
+        ]
+
     def group_by_pattern(self) -> Dict[str, List[UnparsedDate]]:
         """Group unparsed dates by pattern type.
 

@@ -18,6 +18,8 @@ from dataclasses import dataclass, field as dc_field
 from typing import Any, Dict, List, Optional
 
 from scripts.metadata.agent_harness import AgentHarness, GapRecord, ProposedMapping
+from scripts.metadata.audit import generate_coverage_report_from_conn
+from scripts.metadata.clustering import Cluster, cluster_field_gaps
 
 
 # ---------------------------------------------------------------------------
@@ -288,6 +290,41 @@ class NameAgent:
             )
         finally:
             conn.close()
+
+    def get_clusters(self) -> List[Cluster]:
+        """Group low-confidence agent names into clusters for the dashboard.
+
+        Returns clusters sorted by priority_score (highest first).
+        """
+        conn = self.harness.grounding._connect()
+        try:
+            report = generate_coverage_report_from_conn(conn)
+            return cluster_field_gaps(
+                field="agent",
+                flagged_items=report.agent_name_coverage.flagged_items,
+            )
+        finally:
+            conn.close()
+
+    def propose_mappings(self, cluster: Cluster) -> List[ProposedMapping]:
+        """LLM-assisted proposals for a cluster of agent name values.
+
+        For each value in the cluster, asks the LLM for a canonical name form.
+        """
+        proposals: List[ProposedMapping] = []
+        for value in cluster.values:
+            evidence = {
+                "field": "agent",
+                "cluster_type": cluster.cluster_type,
+                "frequency": value.frequency,
+            }
+            proposal = self.harness.reasoning.propose_mapping(
+                raw_value=value.raw_value,
+                field="agent",
+                evidence=evidence,
+            )
+            proposals.append(proposal)
+        return proposals
 
     def get_without_authority(self) -> List[AgentRecord]:
         """Agents missing authority URIs.
