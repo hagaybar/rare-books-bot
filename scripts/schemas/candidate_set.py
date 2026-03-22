@@ -4,9 +4,12 @@ Defines the schema for query execution results.
 Every candidate must include evidence showing which fields matched.
 """
 
+import logging
 from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+logger = logging.getLogger(__name__)
 
 
 class Evidence(BaseModel):
@@ -20,6 +23,11 @@ class Evidence(BaseModel):
     matched_against: Any  # Plan value(s) that this matched
     source: str  # e.g., "db.imprints.publisher_norm" or "marc:264$b"
     confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
+    extraction_error: Optional[str] = Field(
+        None,
+        description="Error message when evidence extraction failed. "
+        "Non-None value indicates a partial/failed extraction."
+    )
 
 
 class Candidate(BaseModel):
@@ -41,6 +49,15 @@ class Candidate(BaseModel):
     publisher: Optional[str] = Field(None, description="Publisher name")
     subjects: List[str] = Field(default_factory=list, description="Subject headings (first 3)")
     description: Optional[str] = Field(None, description="Book description from MARC 500/520 notes")
+
+    @model_validator(mode='after')
+    def _warn_empty_evidence(self) -> 'Candidate':
+        """Warn if a candidate has no evidence (data pipeline should not fail)."""
+        if not self.evidence:
+            logger.warning(
+                "Candidate %s has empty evidence list", self.record_id
+            )
+        return self
 
 
 class CandidateSet(BaseModel):

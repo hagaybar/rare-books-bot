@@ -11,10 +11,10 @@ calls to the AgentHarness.reasoning layer. Adds date-specific logic on top.
 import json
 import re
 from collections import defaultdict
-from dataclasses import dataclass, field as dc_field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from scripts.metadata.agent_harness import AgentHarness, GapRecord, ProposedMapping
+from scripts.metadata.agent_harness import AgentHarness, ProposedMapping
 from scripts.metadata.audit import (
     LowConfidenceItem,
     generate_coverage_report_from_conn,

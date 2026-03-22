@@ -8,6 +8,13 @@ This module serves as the single source of truth for M3 database structure.
 If you modify m3_schema.sql, you MUST update this contract accordingly.
 """
 
+import logging
+import sqlite3
+from pathlib import Path
+from typing import List, Union
+
+logger = logging.getLogger(__name__)
+
 
 class M3Tables:
     """M3 database table names."""
@@ -182,3 +189,95 @@ class M3Aliases:
     SUBJECTS = "s"
     AGENTS = "a"
     AUTHORITY_ENRICHMENT = "ae"
+
+
+def _get_class_string_attrs(cls) -> List[str]:
+    """Extract all public string-valued class attributes (column names).
+
+    Args:
+        cls: A class whose public str attributes represent column names.
+
+    Returns:
+        Sorted list of column name strings.
+    """
+    return sorted(
+        v for k, v in vars(cls).items()
+        if not k.startswith("_") and isinstance(v, str)
+    )
+
+
+# Map each regular table name to its expected columns (derived from M3Columns).
+# FTS5 virtual tables are excluded because PRAGMA table_info returns no rows for them.
+EXPECTED_SCHEMA = {
+    M3Tables.RECORDS: _get_class_string_attrs(M3Columns.Records),
+    M3Tables.TITLES: _get_class_string_attrs(M3Columns.Titles),
+    M3Tables.IMPRINTS: _get_class_string_attrs(M3Columns.Imprints),
+    M3Tables.SUBJECTS: _get_class_string_attrs(M3Columns.Subjects),
+    M3Tables.AGENTS: _get_class_string_attrs(M3Columns.Agents),
+    M3Tables.LANGUAGES: _get_class_string_attrs(M3Columns.Languages),
+    M3Tables.NOTES: _get_class_string_attrs(M3Columns.Notes),
+    M3Tables.PHYSICAL_DESCRIPTIONS: _get_class_string_attrs(M3Columns.PhysicalDescriptions),
+    M3Tables.AUTHORITY_ENRICHMENT: _get_class_string_attrs(M3Columns.AuthorityEnrichment),
+}
+
+
+def validate_schema(db_path_or_conn: Union[Path, sqlite3.Connection]) -> List[str]:
+    """Validate that the database schema matches the M3 contract.
+
+    Checks that all expected tables exist and each table has the expected
+    columns. Logs warnings for mismatches but never raises exceptions.
+
+    Args:
+        db_path_or_conn: Path to a SQLite database file, or an existing
+            sqlite3.Connection.
+
+    Returns:
+        List of validation error strings. An empty list means the schema
+        is fully consistent with the contract.
+    """
+    errors: List[str] = []
+    own_conn = False
+
+    try:
+        if isinstance(db_path_or_conn, sqlite3.Connection):
+            conn = db_path_or_conn
+        else:
+            conn = sqlite3.connect(str(db_path_or_conn))
+            own_conn = True
+
+        # 1. Discover which tables actually exist
+        cursor = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        )
+        existing_tables = {row[0] for row in cursor.fetchall()}
+
+        for table_name, expected_columns in EXPECTED_SCHEMA.items():
+            # 2. Check table existence
+            if table_name not in existing_tables:
+                msg = f"M3 contract: missing table '{table_name}'"
+                logger.warning(msg)
+                errors.append(msg)
+                continue
+
+            # 3. Check columns via PRAGMA
+            col_cursor = conn.execute(f"PRAGMA table_info({table_name})")
+            actual_columns = {row[1] for row in col_cursor.fetchall()}
+
+            for col in expected_columns:
+                if col not in actual_columns:
+                    msg = (
+                        f"M3 contract: table '{table_name}' "
+                        f"missing column '{col}'"
+                    )
+                    logger.warning(msg)
+                    errors.append(msg)
+
+    except Exception as exc:
+        msg = f"M3 contract: schema validation failed with error: {exc}"
+        logger.warning(msg)
+        errors.append(msg)
+    finally:
+        if own_conn and "conn" in locals():
+            conn.close()
+
+    return errors

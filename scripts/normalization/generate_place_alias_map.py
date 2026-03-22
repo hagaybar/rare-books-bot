@@ -33,7 +33,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 # OpenAI SDK (Responses API)
 from openai import OpenAI
@@ -174,9 +174,9 @@ Task: Map one imprint place key to ONE English canonical key.
 Rules:
 1) Output must match the provided JSON schema (no prose).
 2) canonical must be lowercase ASCII; only letters/digits/spaces (no punctuation).
-3) If input already is a valid English key (e.g., "london", "paris"), decision="KEEP" and canonical MUST equal the input.
+3) If input is already a valid English key (e.g., "london"), decision="KEEP" and canonical MUST equal the input.
 4) If input is a clear variant/transliteration/Latin form that maps to a known modern place, decision="MAP".
-5) If multiple modern places are plausible (e.g., "frankfurt", "alexandria"), decision="AMBIGUOUS" and canonical=input unchanged.
+5) If multiple modern places are plausible (e.g., "frankfurt"), decision="AMBIGUOUS" and canonical=input unchanged.
 6) If you cannot determine, decision="UNKNOWN" and canonical=input unchanged.
 7) Do NOT add country/region qualifiers (avoid "paris france", "london uk").
 

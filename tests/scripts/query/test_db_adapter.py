@@ -3,9 +3,6 @@
 Validates SQL generation, filter value normalization, and JOIN logic.
 """
 
-import pytest
-import sqlite3
-from pathlib import Path
 
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
 from scripts.query.db_adapter import (

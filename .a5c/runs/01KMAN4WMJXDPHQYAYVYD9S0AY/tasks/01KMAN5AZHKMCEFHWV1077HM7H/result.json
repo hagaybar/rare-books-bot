@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAN5AZHKMCEFHWV1077HM7H",
+  "taskId": "fix-fastapi-lifespan",
+  "invocationKey": "fix-deprecated-apis:S000002:fix-fastapi-lifespan",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "app/api/main.py"
+    ],
+    "summary": "Migrated on_event startup/shutdown to lifespan context manager. All 16 API tests pass, zero on_event warnings."
+  },
+  "startedAt": "2026-03-22T11:35:50.658Z",
+  "finishedAt": "2026-03-22T11:35:50.658Z",
+  "value": {
+    "filesModified": [
+      "app/api/main.py"
+    ],
+    "summary": "Migrated on_event startup/shutdown to lifespan context manager. All 16 API tests pass, zero on_event warnings."
+  }
+}

@@ -1,0 +1,135 @@
+findings:
+  - id: FINDING-01
+    severity: P1
+    area: testing
+    description: >
+      11 metadata API tests (TestGetIssues) failing due to test fixture schema mismatch.
+      Fixture creates imprints table without record_id column but implementation JOINs on it.
+    evidence:
+      - file: tests/app/test_metadata_api.py
+        note: Fixture at line ~204-238 missing record_id column
+      - file: app/api/metadata.py
+        note: Line 259 JOINs on t.record_id
+    invariant: All tests pass; test fixtures match production schema
+    acceptance_criteria: pytest reports 0 failures in test_metadata_api.py
+
+  - id: FINDING-02
+    severity: P1
+    area: contract-enforcement
+    description: >
+      Evidence extraction failures are silently swallowed with print() in execute.py.
+      A query can return candidates with missing evidence, violating the Answer Contract.
+    evidence:
+      - file: scripts/query/execute.py
+        note: Lines 560-562 catch Exception and print warning instead of raising
+    invariant: Every candidate must have evidence for every filter that matched it
+    acceptance_criteria: >
+      Evidence extraction raises QueryExecutionError on failure;
+      CandidateSet validator rejects candidates with empty evidence lists
+
+  - id: FINDING-03
+    severity: P1
+    area: data-quality
+    description: >
+      Date normalization covers only 68.2% of imprints at high confidence (>=0.90).
+      881 of 2,773 imprints have date_confidence below 0.90.
+    evidence:
+      - file: data/index/bibliographic.db
+        note: "SELECT COUNT(*) FROM imprints WHERE date_confidence < 0.90 → 881"
+    invariant: Date normalization should reach >=90% high-confidence coverage
+    acceptance_criteria: >
+      Fewer than 280 imprints (10%) below 0.90 date confidence
+
+  - id: FINDING-04
+    severity: P2
+    area: code-health
+    description: 590 ruff lint errors, 176 auto-fixable. Mostly unused imports/variables.
+    evidence:
+      - file: "."
+        note: "ruff check . → 590 errors"
+    invariant: Zero lint errors on CI
+    acceptance_criteria: "ruff check . exits 0"
+
+  - id: FINDING-05
+    severity: P2
+    area: correctness
+    description: >
+      detect_script() in clustering.py has a tie-breaking bug. Hebrew is preferred
+      even when Latin characters dominate (e.g., "Amsterdam א" returns "hebrew").
+    evidence:
+      - file: scripts/metadata/clustering.py
+        note: Lines 102-103 use >= instead of > for hebrew_count vs arabic_count
+    invariant: Script detection returns the dominant script by character count
+    acceptance_criteria: detect_script("Amsterdam א") returns "latin"
+
+  - id: FINDING-06
+    severity: P2
+    area: correctness
+    description: >
+      FTS5 subject CONTAINS filter incorrectly adds "subjects" to outer JOIN set.
+      The EXISTS subquery is self-contained and needs no outer join.
+    evidence:
+      - file: scripts/query/db_adapter.py
+        note: Line 231 adds M3Tables.SUBJECTS to needed_joins for FTS5
+    invariant: FTS5 CONTAINS filters use self-contained EXISTS subqueries with no outer JOIN
+    acceptance_criteria: test_subject_contains passes; joins list empty for FTS5
+
+  - id: FINDING-07
+    severity: P2
+    area: maintainability
+    description: >
+      Two API files exceed 1,000 lines: metadata.py (1,484) and main.py (1,288).
+      Monolithic endpoint files increase coupling and make testing harder.
+    evidence:
+      - file: app/api/metadata.py
+        note: 1,484 lines
+      - file: app/api/main.py
+        note: 1,288 lines
+    invariant: No single file exceeds 800 lines
+    acceptance_criteria: Split into route modules (e.g., metadata/coverage.py, metadata/corrections.py)
+
+  - id: FINDING-08
+    severity: P2
+    area: deprecation
+    description: >
+      Pydantic v1-style class-based Config used in CanonicalRecord and ExtractionReport.
+      Will break in Pydantic v3.
+    evidence:
+      - file: scripts/marc/models.py
+        note: Lines 86, 232 use class Config instead of model_config = ConfigDict(...)
+    invariant: No Pydantic deprecation warnings
+    acceptance_criteria: pytest runs with 0 PydanticDeprecatedSince20 warnings
+
+  - id: FINDING-09
+    severity: P2
+    area: deprecation
+    description: >
+      FastAPI on_event("shutdown") is deprecated. Should use lifespan context manager.
+    evidence:
+      - file: app/api/main.py
+        note: Line 260 uses @app.on_event("shutdown")
+    invariant: No FastAPI deprecation warnings
+    acceptance_criteria: Migrate to lifespan handler; no DeprecationWarning in test output
+
+  - id: FINDING-10
+    severity: P3
+    area: testing
+    description: No test suite for React frontend (Dashboard, Workbench, AgentChat, Review pages).
+    evidence:
+      - file: frontend/
+        note: No test files found in frontend/src/
+    invariant: Frontend pages have at least smoke tests
+    acceptance_criteria: npm test passes with coverage for all 4 pages
+
+  - id: FINDING-11
+    severity: P3
+    area: contract-enforcement
+    description: >
+      CandidateSet Pydantic model has no validators beyond type hints.
+      Evidence list can be empty; no check that evidence maps to filters.
+    evidence:
+      - file: scripts/schemas/candidate_set.py
+        note: No @model_validator or @field_validator defined
+    invariant: CandidateSet rejects candidates with missing evidence
+    acceptance_criteria: >
+      Add model_validator that verifies evidence list is non-empty per candidate

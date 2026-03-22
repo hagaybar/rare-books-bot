@@ -1,7 +1,7 @@
 """Wizard components for guided QA sessions."""
 import sqlite3
 from datetime import datetime
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Tuple, Dict, Any
 import streamlit as st
 from app.ui_qa.config import QA_DB_PATH
 
@@ -22,7 +22,7 @@ def get_step_instruction(step_number: int, session_type: str) -> str:
     instructions = {
         ('SMOKE', 1): "Choose a canonical query or type your own. Set the result limit.",
         ('SMOKE', 2): "Run the query and verify the plan matches your intent.",
-        ('SMOKE', 3): "Label at least 10 candidates as TP (correct) or FP (incorrect). Override available if query returns fewer results.",
+        ('SMOKE', 3): "Label at least 10 candidates as TP (correct) or FP (incorrect). Override if fewer results.",
         ('SMOKE', 4): "Spot-check 3 random candidates to verify evidence quality.",
         ('SMOKE', 5): "Review session summary and assign a verdict.",
 
@@ -243,7 +243,7 @@ def compute_session_summary(session_id: int, query_id: int) -> Dict[str, Any]:
         try:
             tags = json.loads(row[0])
             all_tags.extend(tags)
-        except:
+        except Exception:
             pass
 
     conn.close()

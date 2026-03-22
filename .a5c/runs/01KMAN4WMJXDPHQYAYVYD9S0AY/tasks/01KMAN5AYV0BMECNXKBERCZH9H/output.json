@@ -1,0 +1,1 @@
+{"filesModified":["scripts/marc/models.py"],"summary":"Migrated 2 class Config to model_config=ConfigDict(). All 103 marc tests pass, zero deprecation warnings."}

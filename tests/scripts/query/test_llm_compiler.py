@@ -2,16 +2,13 @@
 
 import pytest
 import json
-import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 from scripts.query.llm_compiler import (
     build_user_prompt,
     load_cache,
     write_cache_entry,
     compile_query_llm,
-    CACHE_PATH,
 )
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
 from scripts.query.exceptions import QueryCompilationError

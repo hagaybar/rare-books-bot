@@ -243,11 +243,11 @@ def print_report(
     print("PLACE FREQUENCY ANALYSIS REPORT")
     print("=" * 80)
     print(f"\nInput: {marc_xml_path}")
-    print(f"\nRecords:")
+    print("\nRecords:")
     print(f"  Total records processed: {stats['total_records']}")
     print(f"  Records with places: {stats['records_with_places']}")
     print(f"  Records without places: {stats['records_without_places']}")
-    print(f"\nPlaces:")
+    print("\nPlaces:")
     print(f"  Total raw place strings: {stats['total_raw_places']}")
     print(f"  Unique place_norm values: {len(frequency)}")
     print(f"  Missing/empty after normalization: {stats['missing_place_count']}")
@@ -293,7 +293,7 @@ def main():
     # Print report
     print_report(marc_xml_path, frequency, stats)
 
-    print(f"\n✅ Output files:")
+    print("\n✅ Output files:")
     print(f"  Frequency CSV: {freq_csv_path}")
     print(f"  Examples JSON: {examples_json_path}")
 

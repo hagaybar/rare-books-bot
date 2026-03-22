@@ -1,0 +1,1 @@
+{"passed":1097,"failed":0,"warnings":8,"summary":"All 1097 tests pass. Deprecation warnings reduced from 14 to 8. Remaining 8 are json_encoders warnings from Pydantic internals (separate migration). class Config and on_event warnings eliminated."}

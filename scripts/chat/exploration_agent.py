@@ -10,10 +10,7 @@ The exploration agent uses OpenAI's Responses API with Pydantic schema enforceme
 """
 
 import os
-import json
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from openai import OpenAI, AuthenticationError, RateLimitError, APITimeoutError, APIError
 from pydantic import BaseModel, Field, ConfigDict
@@ -24,7 +21,7 @@ from scripts.chat.models import (
     ExplorationIntent,
     ConversationPhase,
 )
-from scripts.schemas.query_plan import QueryPlan, Filter, FilterField, FilterOp
+from scripts.schemas.query_plan import QueryPlan
 from scripts.query.exceptions import QueryCompilationError
 from scripts.utils.llm_logger import log_llm_call
 

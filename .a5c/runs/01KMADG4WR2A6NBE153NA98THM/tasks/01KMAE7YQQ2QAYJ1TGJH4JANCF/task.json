@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAE7YQQ2QAYJ1TGJH4JANCF",
+  "taskId": "fix-metadata-api-tests",
+  "invocationKey": "fix-phase1-phase2:S000001:fix-metadata-api-tests",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Fix 11 metadata API test failures",
+  "labels": [
+    "phase1",
+    "test-fix"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMAE7YQQ2QAYJ1TGJH4JANCF/input.json",
+    "outputJsonPath": "tasks/01KMAE7YQQ2QAYJ1TGJH4JANCF/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

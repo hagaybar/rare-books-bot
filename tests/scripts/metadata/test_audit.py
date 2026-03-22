@@ -5,16 +5,12 @@ confidence distributions, method breakdowns, and flagged item detection.
 """
 
 import sqlite3
-from pathlib import Path
 
 import pytest
 
 from scripts.metadata.audit import (
     CoverageReport,
     FieldCoverage,
-    ConfidenceBand,
-    MethodBreakdown,
-    LowConfidenceItem,
     _assign_band,
     _build_confidence_distribution,
     build_date_coverage,

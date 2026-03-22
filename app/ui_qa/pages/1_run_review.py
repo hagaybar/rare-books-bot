@@ -101,7 +101,7 @@ if run_button:
                     status="ERROR",
                     error_message=str(e)
                 )
-            except:
+            except Exception:
                 pass
 
 # Display Results Section
@@ -199,7 +199,7 @@ if 'current_result' in st.session_state:
         selected_candidate = result.candidates[selected_idx]
 
         with st.sidebar:
-            st.header(f"Candidate Detail")
+            st.header("Candidate Detail")
             st.subheader(f"📄 {selected_candidate.record_id}")
 
             st.write(f"**Rationale:** {selected_candidate.match_rationale}")
@@ -240,7 +240,7 @@ if 'current_result' in st.session_state:
                 import json
                 try:
                     current_issue_tags = json.loads(current_issue_tags)
-                except:
+                except Exception:
                     current_issue_tags = []
             else:
                 current_issue_tags = []

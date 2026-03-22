@@ -103,7 +103,10 @@ def process_m1_to_m2(
 def main():
     """Main CLI entry point."""
     if len(sys.argv) < 3:
-        print("Usage: python -m scripts.marc.m2_normalize <input_m1.jsonl> <output_m1m2.jsonl> [place_alias.json] [publisher_alias.json] [agent_alias.json]")
+        print(
+            "Usage: python -m scripts.marc.m2_normalize <input_m1.jsonl> <output_m1m2.jsonl>"
+            " [place_alias.json] [publisher_alias.json] [agent_alias.json]"
+        )
         print()
         print("Example with place alias map:")
         print("  python -m scripts.marc.m2_normalize \\")
@@ -130,7 +133,7 @@ def main():
         print(f"Error: Input file not found: {input_path}")
         sys.exit(1)
 
-    print(f"Processing M1 → M1+M2 enrichment...")
+    print("Processing M1 → M1+M2 enrichment...")
     print(f"  Input:  {input_path}")
     print(f"  Output: {output_path}")
     if place_alias_path and place_alias_path.exists():
@@ -141,8 +144,8 @@ def main():
 
     stats = process_m1_to_m2(input_path, output_path, place_alias_path, publisher_alias_path, agent_alias_path)
 
-    print(f"✅ M2 enrichment complete!")
-    print(f"\nStatistics:")
+    print("✅ M2 enrichment complete!")
+    print("\nStatistics:")
     print(f"  Total records: {stats['total_records']}")
     print(f"  Enriched records: {stats['enriched_records']}")
     print(f"  Total imprints: {stats['total_imprints']}")

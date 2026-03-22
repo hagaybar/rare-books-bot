@@ -1,0 +1,1 @@
+{"passed":1076,"failed":0,"summary":"Full test suite: 1076 passed, 0 failures. Phase 1 complete. Also fixed a regression in test_publisher_authority.py where detect_script test had wrong assertion."}

@@ -8,17 +8,14 @@ calls to the AgentHarness.reasoning layer. Adds place-specific logic on top.
 """
 
 import json
-import sqlite3
-from dataclasses import dataclass, field as dc_field
-from pathlib import Path
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from scripts.metadata.agent_harness import AgentHarness, GapRecord, ProposedMapping
 from scripts.metadata.audit import (
-    LowConfidenceItem,
     generate_coverage_report_from_conn,
 )
-from scripts.metadata.clustering import Cluster, ClusterValue, cluster_field_gaps
+from scripts.metadata.clustering import Cluster, cluster_field_gaps
 
 
 # ---------------------------------------------------------------------------

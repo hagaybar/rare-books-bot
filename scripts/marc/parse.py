@@ -3,10 +3,9 @@
 This module implements M1: MARC XML → Canonical JSONL
 """
 
-import json
 import traceback
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import List, Optional
 from collections import Counter
 
 import pymarc
@@ -92,10 +91,22 @@ def extract_imprints(record: pymarc.Record) -> List[ImprintData]:
                 manufacturer_vals = field.get_subfields('f')
 
                 imprint = ImprintData(
-                    place=SourcedValue(value=place_vals[0], source=[_make_source_ref(tag, occ, 'a')]) if place_vals else None,
-                    publisher=SourcedValue(value=publisher_vals[0], source=[_make_source_ref(tag, occ, 'b')]) if publisher_vals else None,
-                    date=SourcedValue(value=date_vals[0], source=[_make_source_ref(tag, occ, 'c')]) if date_vals else None,
-                    manufacturer=SourcedValue(value=manufacturer_vals[0], source=[_make_source_ref(tag, occ, 'f')]) if manufacturer_vals else SourcedValue(value=None, source=[]),
+                    place=(
+                        SourcedValue(value=place_vals[0], source=[_make_source_ref(tag, occ, 'a')])
+                        if place_vals else None
+                    ),
+                    publisher=(
+                        SourcedValue(value=publisher_vals[0], source=[_make_source_ref(tag, occ, 'b')])
+                        if publisher_vals else None
+                    ),
+                    date=(
+                        SourcedValue(value=date_vals[0], source=[_make_source_ref(tag, occ, 'c')])
+                        if date_vals else None
+                    ),
+                    manufacturer=(
+                        SourcedValue(value=manufacturer_vals[0], source=[_make_source_ref(tag, occ, 'f')])
+                        if manufacturer_vals else SourcedValue(value=None, source=[])
+                    ),
                     source_tags=[tag]
                 )
                 imprints.append(imprint)
@@ -222,9 +233,18 @@ def extract_subjects(record: pymarc.Record) -> List[SubjectData]:
                 source=sources,
                 parts=parts_dict,
                 source_tag=tag,
-                scheme=SourcedValue(value=scheme_val, source=[_make_source_ref(tag, occ, '2')]) if scheme_val else None,
-                heading_lang=SourcedValue(value=heading_lang_val, source=[_make_source_ref(tag, occ, '9')]) if heading_lang_val else None,
-                authority_uri=SourcedValue(value=authority_uri_val, source=[_make_source_ref(tag, occ, '0')]) if authority_uri_val else None
+                scheme=(
+                    SourcedValue(value=scheme_val, source=[_make_source_ref(tag, occ, '2')])
+                    if scheme_val else None
+                ),
+                heading_lang=(
+                    SourcedValue(value=heading_lang_val, source=[_make_source_ref(tag, occ, '9')])
+                    if heading_lang_val else None
+                ),
+                authority_uri=(
+                    SourcedValue(value=authority_uri_val, source=[_make_source_ref(tag, occ, '0')])
+                    if authority_uri_val else None
+                )
             ))
 
     return subjects
@@ -295,7 +315,9 @@ def _get_agent_type(tag: str) -> str:
         return 'personal'  # default fallback
 
 
-def _extract_personal_agent(field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int) -> Optional[AgentData]:
+def _extract_personal_agent(
+    field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int
+) -> Optional[AgentData]:
     """Extract personal name agent (100/700).
 
     Args:
@@ -319,17 +341,25 @@ def _extract_personal_agent(field: pymarc.Field, tag: str, occurrence: int, entr
     return AgentData(
         name=SourcedValue(value=name_vals[0], source=[_make_source_ref(tag, occurrence, 'a')]),
         entry_role=entry_role,
-        dates=SourcedValue(value=dates_vals[0], source=[_make_source_ref(tag, occurrence, 'd')]) if dates_vals else None,
+        dates=(
+            SourcedValue(value=dates_vals[0], source=[_make_source_ref(tag, occurrence, 'd')])
+            if dates_vals else None
+        ),
         function=function_sv,
         source_tags=[tag],
         agent_type='personal',
         agent_index=agent_index,
         role_source=role_source,
-        authority_uri=SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')]) if authority_uri_vals else None
+        authority_uri=(
+            SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')])
+            if authority_uri_vals else None
+        )
     )
 
 
-def _extract_corporate_agent(field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int) -> Optional[AgentData]:
+def _extract_corporate_agent(
+    field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int
+) -> Optional[AgentData]:
     """Extract corporate body agent (110/710).
 
     Args:
@@ -373,11 +403,16 @@ def _extract_corporate_agent(field: pymarc.Field, tag: str, occurrence: int, ent
         agent_type='corporate',
         agent_index=agent_index,
         role_source=role_source,
-        authority_uri=SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')]) if authority_uri_vals else None
+        authority_uri=(
+            SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')])
+            if authority_uri_vals else None
+        )
     )
 
 
-def _extract_meeting_agent(field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int) -> Optional[AgentData]:
+def _extract_meeting_agent(
+    field: pymarc.Field, tag: str, occurrence: int, entry_role: str, agent_index: int
+) -> Optional[AgentData]:
     """Extract meeting name agent (111/711).
 
     Args:
@@ -435,7 +470,10 @@ def _extract_meeting_agent(field: pymarc.Field, tag: str, occurrence: int, entry
         agent_type='meeting',
         agent_index=agent_index,
         role_source=role_source,
-        authority_uri=SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')]) if authority_uri_vals else None
+        authority_uri=(
+            SourcedValue(value=authority_uri_vals[0], source=[_make_source_ref(tag, occurrence, '0')])
+            if authority_uri_vals else None
+        )
     )
 
 
@@ -852,12 +890,12 @@ if __name__ == "__main__":
     print(f"Parsing {input_file}...")
     report = parse_marc_xml_file(input_file, output_file, report_file)
 
-    print(f"\nExtraction Report:")
+    print("\nExtraction Report:")
     print(f"  Source file: {report.source_file}")
     print(f"  Total records: {report.total_records}")
     print(f"  Successful: {report.successful_extractions}")
     print(f"  Failed: {report.failed_extractions}")
-    print(f"\nField Coverage:")
+    print("\nField Coverage:")
     print(f"  With title: {report.records_with_title}")
     print(f"  With imprints: {report.records_with_imprints}")
     print(f"  With languages (041$a): {report.records_with_languages}")

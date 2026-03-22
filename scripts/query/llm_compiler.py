@@ -12,8 +12,8 @@ from datetime import datetime, timezone
 
 from openai import OpenAI, AuthenticationError, RateLimitError, APITimeoutError, APIError
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
-from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
+from typing import List
+from scripts.schemas import QueryPlan, Filter
 from scripts.query.exceptions import QueryCompilationError
 from scripts.utils.llm_logger import log_llm_call
 

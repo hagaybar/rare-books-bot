@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAE7YRRCJ0PG4669AF66BP0",
+  "taskId": "fix-fts-join",
+  "invocationKey": "fix-phase1-phase2:S000003:fix-fts-join",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "scripts/query/db_adapter.py"
+    ],
+    "summary": "Removed unnecessary subjects JOIN for FTS5 CONTAINS filter. All 33 tests pass."
+  },
+  "startedAt": "2026-03-22T09:34:45.485Z",
+  "finishedAt": "2026-03-22T09:34:45.485Z",
+  "value": {
+    "filesModified": [
+      "scripts/query/db_adapter.py"
+    ],
+    "summary": "Removed unnecessary subjects JOIN for FTS5 CONTAINS filter. All 33 tests pass."
+  }
+}

@@ -21,7 +21,6 @@ import asyncio
 import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-from urllib.parse import quote
 
 import httpx
 

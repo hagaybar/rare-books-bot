@@ -249,7 +249,7 @@ Examples:
     print("No LLM calls - all processing is deterministic")
 
     total_start = time.time()
-    success = True
+    _success = True  # reserved for future stage-failure tracking
 
     # Determine which stages to run
     run_m1 = args.full is not None

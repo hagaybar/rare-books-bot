@@ -1,0 +1,1 @@
+{"filesModified":["scripts/query/db_adapter.py"],"summary":"Removed unnecessary subjects JOIN for FTS5 CONTAINS filter. All 33 tests pass."}

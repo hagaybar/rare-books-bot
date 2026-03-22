@@ -6,7 +6,7 @@ import shutil  # For cleanup
 import sys  # Added for the new test
 
 # Import the logger components to be tested
-from scripts.utils.logger import LoggerManager, JsonLogFormatter
+from scripts.utils.logger import LoggerManager
 
 # Define a directory for test logs
 TEST_LOG_DIR = "test_logs"

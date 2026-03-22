@@ -1,6 +1,5 @@
 """QA database operations for query testing and labeling."""
 import sqlite3
-from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 import json
@@ -312,10 +311,10 @@ def export_gold_set() -> Dict[str, Any]:
         labels = get_labels_for_query(query_id)
 
         # expected_includes = TP + FN
-        expected_includes = [l['record_id'] for l in labels if l['label'] in ['TP', 'FN']]
+        expected_includes = [lbl['record_id'] for lbl in labels if lbl['label'] in ['TP', 'FN']]
 
         # expected_excludes = FP
-        expected_excludes = [l['record_id'] for l in labels if l['label'] == 'FP']
+        expected_excludes = [lbl['record_id'] for lbl in labels if lbl['label'] == 'FP']
 
         # Only include queries that have at least one label
         if expected_includes or expected_excludes:

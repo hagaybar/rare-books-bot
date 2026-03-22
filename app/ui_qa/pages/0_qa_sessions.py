@@ -9,7 +9,6 @@ sys.path.append(str(ROOT))
 import streamlit as st
 import pandas as pd
 import json
-from datetime import datetime
 from app.ui_qa.db import (
     get_session_by_status,
     get_recent_sessions,
@@ -178,7 +177,7 @@ if recent_sessions:
         try:
             config = json.loads(session['session_config_json'])
             query_text = config.get('query_text', 'N/A')
-        except:
+        except Exception:
             query_text = 'N/A'
 
         # Calculate completion percentage
@@ -270,7 +269,7 @@ if recent_sessions:
             try:
                 config = json.loads(selected_session['session_config_json'])
                 st.json(config)
-            except:
+            except Exception:
                 st.write("Error parsing configuration")
 
         # Show summary if available
@@ -293,7 +292,7 @@ if recent_sessions:
                         if summary.get('user_notes'):
                             st.write("**Notes:**")
                             st.write(summary['user_notes'])
-                except:
+                except Exception:
                     st.write("Error parsing summary")
 
         # Show notes if available

@@ -1,9 +1,8 @@
 """Tests for enhanced agent extraction (Stage 2) and authority URI extraction."""
 
-import pytest
 from pymarc import Record, Field, Subfield
 
-from scripts.marc.parse import extract_agents, extract_subjects, AgentData
+from scripts.marc.parse import extract_agents, extract_subjects
 
 
 class TestPersonalNameExtraction:

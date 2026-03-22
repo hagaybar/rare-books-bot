@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAEK8CEQR70RWY95VCC0XJJ",
+  "taskId": "fix-lint",
+  "invocationKey": "fix-phase1-phase2:S000005:fix-lint",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Auto-fix ruff lint errors",
+  "labels": [
+    "lint",
+    "phase1"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMAEK8CEQR70RWY95VCC0XJJ/input.json",
+    "outputJsonPath": "tasks/01KMAEK8CEQR70RWY95VCC0XJJ/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

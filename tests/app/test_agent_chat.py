@@ -13,8 +13,7 @@ without needing a real database or LLM.
 """
 
 from dataclasses import dataclass, field as dc_field
-from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest

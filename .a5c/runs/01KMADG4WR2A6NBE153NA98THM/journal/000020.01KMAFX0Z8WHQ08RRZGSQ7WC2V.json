@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T10:01:57.480Z",
+  "data": {
+    "effectId": "01KMAFX0YW5VH280PK5MD08NPH",
+    "invocationKey": "fix-phase1-phase2:S000010:full-verify",
+    "invocationHash": "d1076e22582ddfa7a7198235b8300a1517267edb052f6880a4a109ce43761c8c",
+    "stepId": "S000010",
+    "taskId": "full-verify",
+    "kind": "shell",
+    "label": "verification",
+    "taskDefRef": "tasks/01KMAFX0YW5VH280PK5MD08NPH/task.json",
+    "labels": [
+      "verification",
+      "phase2-full"
+    ]
+  },
+  "checksum": "7e7647b751385165f1c42580c951c0d1af687af2da436b96171d0e3f58bab8d6"
+}

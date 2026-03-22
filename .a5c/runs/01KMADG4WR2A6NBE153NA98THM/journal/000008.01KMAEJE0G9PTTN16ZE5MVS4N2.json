@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T09:38:41.808Z",
+  "data": {
+    "effectId": "01KMAEJE04941QFZ4YX0F84XXX",
+    "invocationKey": "fix-phase1-phase2:S000004:run-tests",
+    "invocationHash": "35fa77dc5539419965a1d30df454f65c542c4a3a2884eff4a70e38e0dd63ccec",
+    "stepId": "S000004",
+    "taskId": "run-tests",
+    "kind": "shell",
+    "label": "verification",
+    "taskDefRef": "tasks/01KMAEJE04941QFZ4YX0F84XXX/task.json",
+    "labels": [
+      "verification",
+      "phase1a"
+    ]
+  },
+  "checksum": "e8fa1b92dc6033d1e0aff3242d54ff206687ac96449fb517d96fb51029d9cee2"
+}

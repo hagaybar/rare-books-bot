@@ -9,14 +9,12 @@ sys.path.append(str(ROOT))
 import streamlit as st
 import pandas as pd
 import json
-from datetime import datetime, timedelta
 from app.ui_qa.db import (
     get_label_stats,
     get_worst_queries,
     get_query_by_id,
     get_labels_for_query
 )
-from app.ui_qa.config import ISSUE_TAGS, LABEL_TYPES
 
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
@@ -89,7 +87,7 @@ for row in issue_tag_data:
             if tag not in tag_counts:
                 tag_counts[tag] = 0
             tag_counts[tag] += row['count']
-    except:
+    except Exception:
         pass
 
 if tag_counts:
@@ -170,7 +168,7 @@ if worst_queries:
                 try:
                     plan_data = json.loads(query['plan_json'])
                     st.json(plan_data)
-                except:
+                except Exception:
                     st.write("Error parsing plan")
 
         with col2:

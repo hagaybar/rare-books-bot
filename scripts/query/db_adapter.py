@@ -4,17 +4,26 @@ Maps M4 filter fields to M3 database schema and generates SQL.
 Handles JOIN strategy, normalization, and evidence field extraction.
 """
 
+import logging
 import sqlite3
 import re
 from pathlib import Path
-from typing import Tuple, Dict, List, Optional
+from typing import Tuple, Dict, List
 
 from scripts.schemas import QueryPlan, FilterField, FilterOp
-from scripts.marc.m3_contract import M3Tables, M3Columns, M3Aliases
+from scripts.marc.m3_contract import M3Tables, M3Columns, M3Aliases, validate_schema
+
+logger = logging.getLogger(__name__)
+
+# Module-level flag so schema validation runs at most once per process.
+_schema_validated = False
 
 
 def get_connection(db_path: Path) -> sqlite3.Connection:
     """Get database connection with row_factory for dict-like access.
+
+    On the first call per process, runs M3 schema validation and logs
+    warnings for any mismatches. Validation never blocks queries.
 
     Args:
         db_path: Path to SQLite database
@@ -22,8 +31,22 @@ def get_connection(db_path: Path) -> sqlite3.Connection:
     Returns:
         Connection with row_factory configured
     """
+    global _schema_validated
+
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
+
+    if not _schema_validated:
+        _schema_validated = True
+        errors = validate_schema(conn)
+        if errors:
+            logger.warning(
+                "M3 schema validation found %d issue(s) — queries may "
+                "return unexpected results. Issues: %s",
+                len(errors),
+                "; ".join(errors),
+            )
+
     return conn
 
 
@@ -170,7 +193,10 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
                 # Overlap match: record's date range overlaps with query range
                 start_param = f"{param_prefix}_year_start"
                 end_param = f"{param_prefix}_year_end"
-                condition = f"({M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_END} >= :{start_param} AND {M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_START} <= :{end_param})"
+                condition = (
+                    f"({M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_END} >= :{start_param}"
+                    f" AND {M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_START} <= :{end_param})"
+                )
                 params[start_param] = filter.start
                 params[end_param] = filter.end
             else:
@@ -227,18 +253,21 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             conditions.append(condition)
 
         elif filter.field == FilterField.SUBJECT:
-            # Add subjects table to joins so subject_value is available for evidence
-            needed_joins.add(M3Tables.SUBJECTS)
             if filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
                 # FTS5 content table is 'subjects', so we need to join through subjects to records
                 param_name = f"{param_prefix}_subject"
+                subj_tbl = M3Tables.SUBJECTS
+                subj_fts = M3Tables.SUBJECTS_FTS
+                subj_id = M3Columns.Subjects.ID
+                subj_rid = M3Columns.Subjects.RECORD_ID
+                rec_id = M3Columns.Records.ID
                 condition = f"""EXISTS (
                     SELECT 1
-                    FROM {M3Tables.SUBJECTS_FTS}
-                    JOIN {M3Tables.SUBJECTS} ON {M3Tables.SUBJECTS_FTS}.rowid = {M3Tables.SUBJECTS}.{M3Columns.Subjects.ID}
-                    WHERE {M3Tables.SUBJECTS}.{M3Columns.Subjects.RECORD_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.ID}
-                    AND {M3Tables.SUBJECTS_FTS} MATCH :{param_name}
+                    FROM {subj_fts}
+                    JOIN {subj_tbl} ON {subj_fts}.rowid = {subj_tbl}.{subj_id}
+                    WHERE {subj_tbl}.{subj_rid} = {M3Aliases.RECORDS}.{rec_id}
+                    AND {subj_fts} MATCH :{param_name}
                 )"""
                 params[param_name] = normalize_filter_value(filter.field, filter.value, filter.op)
             else:
@@ -267,11 +296,13 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             needed_joins.add(M3Tables.AGENTS)
             if filter.op == FilterOp.EQUALS:
                 param_name = f"{param_prefix}_agent_norm"
-                condition = f"LOWER(REPLACE({M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}, ',', '')) = LOWER(:{param_name})"
+                agent_col = f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}"
+                condition = f"LOWER(REPLACE({agent_col}, ',', '')) = LOWER(:{param_name})"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
             elif filter.op == FilterOp.CONTAINS:
                 param_name = f"{param_prefix}_agent_norm"
-                condition = f"LOWER(REPLACE({M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}, ',', '')) LIKE LOWER(:{param_name})"
+                agent_col = f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}"
+                condition = f"LOWER(REPLACE({agent_col}, ',', '')) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent_norm")
@@ -388,19 +419,34 @@ def build_join_clauses(needed_joins: List[str]) -> str:
 
     # Imprints is the most common join
     if M3Tables.IMPRINTS in needed_joins:
-        joins.append(f"JOIN {M3Tables.IMPRINTS} {M3Aliases.IMPRINTS} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.IMPRINTS}.{M3Columns.Imprints.RECORD_ID}")
+        joins.append(
+            f"JOIN {M3Tables.IMPRINTS} {M3Aliases.IMPRINTS}"
+            f" ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.IMPRINTS}.{M3Columns.Imprints.RECORD_ID}"
+        )
 
     if M3Tables.LANGUAGES in needed_joins:
-        joins.append(f"LEFT JOIN {M3Tables.LANGUAGES} {M3Aliases.LANGUAGES} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.LANGUAGES}.{M3Columns.Languages.RECORD_ID}")
+        joins.append(
+            f"LEFT JOIN {M3Tables.LANGUAGES} {M3Aliases.LANGUAGES}"
+            f" ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.LANGUAGES}.{M3Columns.Languages.RECORD_ID}"
+        )
 
     if M3Tables.TITLES in needed_joins:
-        joins.append(f"LEFT JOIN {M3Tables.TITLES} {M3Aliases.TITLES} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.TITLES}.{M3Columns.Titles.RECORD_ID}")
+        joins.append(
+            f"LEFT JOIN {M3Tables.TITLES} {M3Aliases.TITLES}"
+            f" ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.TITLES}.{M3Columns.Titles.RECORD_ID}"
+        )
 
     if M3Tables.SUBJECTS in needed_joins:
-        joins.append(f"LEFT JOIN {M3Tables.SUBJECTS} {M3Aliases.SUBJECTS} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.SUBJECTS}.{M3Columns.Subjects.RECORD_ID}")
+        joins.append(
+            f"LEFT JOIN {M3Tables.SUBJECTS} {M3Aliases.SUBJECTS}"
+            f" ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.SUBJECTS}.{M3Columns.Subjects.RECORD_ID}"
+        )
 
     if M3Tables.AGENTS in needed_joins:
-        joins.append(f"LEFT JOIN {M3Tables.AGENTS} {M3Aliases.AGENTS} ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.AGENTS}.{M3Columns.Agents.RECORD_ID}")
+        joins.append(
+            f"LEFT JOIN {M3Tables.AGENTS} {M3Aliases.AGENTS}"
+            f" ON {M3Aliases.RECORDS}.{M3Columns.Records.ID} = {M3Aliases.AGENTS}.{M3Columns.Agents.RECORD_ID}"
+        )
 
     return "\n".join(joins)
 

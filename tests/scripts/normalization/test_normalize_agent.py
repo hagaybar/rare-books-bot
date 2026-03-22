@@ -1,6 +1,5 @@
 """Tests for agent and role normalization (Stage 3)."""
 
-import pytest
 from scripts.normalization.normalize_agent import (
     normalize_agent_base,
     normalize_role_base,

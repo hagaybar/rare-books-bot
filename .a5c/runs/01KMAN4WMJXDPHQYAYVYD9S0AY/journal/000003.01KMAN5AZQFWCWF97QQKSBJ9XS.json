@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T11:33:52.759Z",
+  "data": {
+    "effectId": "01KMAN5AZHKMCEFHWV1077HM7H",
+    "invocationKey": "fix-deprecated-apis:S000002:fix-fastapi-lifespan",
+    "invocationHash": "1dcf146e29f0001ac6fbf91138a8002fe71dd344138bede95281237ad2ceb257",
+    "stepId": "S000002",
+    "taskId": "fix-fastapi-lifespan",
+    "kind": "agent",
+    "label": "Migrate FastAPI on_event to lifespan handler",
+    "taskDefRef": "tasks/01KMAN5AZHKMCEFHWV1077HM7H/task.json"
+  },
+  "checksum": "d03d10d7049ff01043bf6d7e131eca86b886a998ba2ef5d26f8cd9f837f5cfa8"
+}

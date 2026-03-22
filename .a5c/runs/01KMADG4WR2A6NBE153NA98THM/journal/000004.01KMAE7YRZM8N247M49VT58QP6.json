@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T09:32:58.527Z",
+  "data": {
+    "effectId": "01KMAE7YRRCJ0PG4669AF66BP0",
+    "invocationKey": "fix-phase1-phase2:S000003:fix-fts-join",
+    "invocationHash": "ac0e4f1435b1b83caadff7ef1d414c1f50cdbcd9cd1f246adfe5eb4bdaf71414",
+    "stepId": "S000003",
+    "taskId": "fix-fts-join",
+    "kind": "agent",
+    "label": "phase1",
+    "taskDefRef": "tasks/01KMAE7YRRCJ0PG4669AF66BP0/task.json",
+    "labels": [
+      "phase1",
+      "bug-fix"
+    ]
+  },
+  "checksum": "32dde252c6bd4aed650a9be17ed4e4314240e46897cfd362f3cc88ba3dd3ec9f"
+}

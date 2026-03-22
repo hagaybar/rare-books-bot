@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAN953FT4DKR6DR8S97E34W",
+  "taskId": "verify-no-deprecations",
+  "invocationKey": "fix-deprecated-apis:S000003:verify-no-deprecations",
+  "status": "ok",
+  "result": {
+    "failed": 0,
+    "passed": 1097,
+    "summary": "All 1097 tests pass. Deprecation warnings reduced from 14 to 8. Remaining 8 are json_encoders warnings from Pydantic internals (separate migration). class Config and on_event warnings eliminated.",
+    "warnings": 8
+  },
+  "startedAt": "2026-03-22T11:36:39.612Z",
+  "finishedAt": "2026-03-22T11:36:39.612Z",
+  "value": {
+    "failed": 0,
+    "passed": 1097,
+    "summary": "All 1097 tests pass. Deprecation warnings reduced from 14 to 8. Remaining 8 are json_encoders warnings from Pydantic internals (separate migration). class Config and on_event warnings eliminated.",
+    "warnings": 8
+  }
+}

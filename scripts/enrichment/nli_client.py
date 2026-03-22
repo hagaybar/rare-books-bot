@@ -43,7 +43,6 @@ import httpx
 
 from scripts.enrichment.models import (
     NLIAuthorityIdentifiers,
-    EnrichmentSource,
 )
 
 
@@ -522,7 +521,8 @@ def parse_nli_html_for_identifiers(html_content: str) -> dict:
         identifiers["viaf_id"] = viaf_match.group(1)
 
     # Extract ISNI (pattern: 0000 0000 0000 0000 or similar)
-    isni_match = re.search(r'isni[^>]*>.*?(\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4})', container_html, re.IGNORECASE | re.DOTALL)
+    isni_pattern = r'isni[^>]*>.*?(\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4})'
+    isni_match = re.search(isni_pattern, container_html, re.IGNORECASE | re.DOTALL)
     if isni_match:
         identifiers["isni_id"] = isni_match.group(1)
 

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAG4B3FAN69ZQ12SEZ61NKW",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "fix-phase1-phase2:S000011:__sdk.breakpoint",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Approve"
+  },
+  "startedAt": "2026-03-22T10:12:02.212Z",
+  "finishedAt": "2026-03-22T10:12:02.212Z",
+  "value": {
+    "approved": true,
+    "response": "Approve"
+  }
+}

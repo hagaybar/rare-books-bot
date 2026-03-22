@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAFPJM8BKC97TBGQPNTGGFT",
+  "taskId": "add-candidateset-validators",
+  "invocationKey": "fix-phase1-phase2:S000008:add-candidateset-validators",
+  "stepId": "S000008",
+  "kind": "agent",
+  "title": "Add CandidateSet validators",
+  "labels": [
+    "contract",
+    "phase2"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMAFPJM8BKC97TBGQPNTGGFT/input.json",
+    "outputJsonPath": "tasks/01KMAFPJM8BKC97TBGQPNTGGFT/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

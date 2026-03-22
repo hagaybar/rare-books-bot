@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAN5AYV0BMECNXKBERCZH9H",
+  "taskId": "fix-pydantic-config",
+  "invocationKey": "fix-deprecated-apis:S000001:fix-pydantic-config",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Migrate Pydantic class Config to ConfigDict",
+  "io": {
+    "inputJsonPath": "tasks/01KMAN5AYV0BMECNXKBERCZH9H/input.json",
+    "outputJsonPath": "tasks/01KMAN5AYV0BMECNXKBERCZH9H/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -127,3 +127,7 @@ tests/*.csv
 
 # LLM call logs (generated)
 logs/
+
+# Babysitter ephemeral state (cache, lock files, session state)
+.a5c/cache/
+.a5c/runs/*/run.lock

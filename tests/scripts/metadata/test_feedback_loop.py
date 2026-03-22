@@ -6,13 +6,12 @@ Uses in-memory SQLite with a subset of the M3 schema.
 from __future__ import annotations
 
 import json
-import os
 import sqlite3
 from pathlib import Path
 
 import pytest
 
-from scripts.metadata.feedback_loop import CorrectionResult, FeedbackLoop
+from scripts.metadata.feedback_loop import FeedbackLoop
 
 
 # ---------------------------------------------------------------------------

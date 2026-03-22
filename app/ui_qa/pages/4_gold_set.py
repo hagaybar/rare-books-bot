@@ -86,7 +86,9 @@ if queries_with_labels:
 
     # Show confirmation state
     if st.session_state.get(f'confirm_delete_{query_id_to_delete}', False):
-        st.warning("⚠️ **Confirmation required!** Click 'Delete Query' again to permanently delete this query and all its labels.")
+        st.warning(
+            "**Confirmation required!** Click 'Delete Query' again to permanently delete this query and all labels."
+        )
         if st.button("Cancel"):
             st.session_state[f'confirm_delete_{query_id_to_delete}'] = False
             st.rerun()
@@ -345,4 +347,4 @@ st.code(f"""poetry run python -m app.qa regress \\
     --gold {gold_path_input} \\
     --db {db_path_input}""", language="bash")
 
-st.info("💡 Add this command to your CI pipeline (GitHub Actions, GitLab CI, etc.) to automatically run regression tests.")
+st.info("Add this command to your CI pipeline (GitHub Actions, GitLab CI) to run regression tests automatically.")

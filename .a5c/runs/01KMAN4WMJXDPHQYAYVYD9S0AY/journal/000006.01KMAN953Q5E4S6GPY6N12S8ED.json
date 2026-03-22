@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T11:35:57.815Z",
+  "data": {
+    "effectId": "01KMAN953FT4DKR6DR8S97E34W",
+    "invocationKey": "fix-deprecated-apis:S000003:verify-no-deprecations",
+    "invocationHash": "f65225c9dc464b6acd566edfdc0c251762cd8d813f59cfe35638e5a808dfbc64",
+    "stepId": "S000003",
+    "taskId": "verify-no-deprecations",
+    "kind": "shell",
+    "label": "Verify no deprecation warnings remain",
+    "taskDefRef": "tasks/01KMAN953FT4DKR6DR8S97E34W/task.json"
+  },
+  "checksum": "96b22444c5b079b42832e08fe2e326a9c8607180f0f575e355dd5c187386430e"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-22T11:33:38.089Z",
+  "data": {
+    "runId": "01KMAN4WMJXDPHQYAYVYD9S0AY",
+    "processId": "fix-deprecated-apis",
+    "entrypoint": {
+      "importPath": "../../processes/fix-deprecated-apis.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Migrate deprecated Pydantic Config and FastAPI on_event APIs"
+  },
+  "checksum": "85e33f9f91a62388ab8fb8f8ebeef0ebfe70a833c1463effe5a90d57aa01e6b1"
+}

@@ -7,7 +7,6 @@ ROOT = pathlib.Path(__file__).resolve().parents[3]
 sys.path.append(str(ROOT))
 
 import streamlit as st
-import pandas as pd
 import json
 from pathlib import Path
 from scripts.query.db_adapter import get_connection
@@ -62,7 +61,7 @@ with st.expander("📋 Query Context", expanded=False):
     try:
         plan_data = json.loads(selected_query['plan_json'])
         st.json(plan_data)
-    except:
+    except Exception:
         pass
 
 st.divider()
@@ -142,7 +141,7 @@ if search_button or 'search_results' in st.session_state:
                             candidate_ids.add(label['record_id'])
                         if label['label'] == 'FN':
                             fn_ids.add(label['record_id'])
-                except:
+                except Exception:
                     pass
 
                 st.session_state['search_results'] = search_results
@@ -165,7 +164,8 @@ if search_button or 'search_results' in st.session_state:
 
         st.divider()
         st.header("3. Search Results")
-        st.markdown(f"**{len(search_results)} records found** - Mark any that should have matched the query as False Negatives.")
+        n_results = len(search_results)
+        st.markdown(f"**{n_results} records found** - Mark any that should have matched as False Negatives.")
 
         if not search_results:
             st.info("No results found. Try adjusting your search criteria.")
@@ -204,7 +204,7 @@ if search_button or 'search_results' in st.session_state:
                     st.write("✅ In results")
                 else:
                     # Mark as FN button
-                    if st.button(f"➕ Mark as FN", key=f"fn_{idx}"):
+                    if st.button("➕ Mark as FN", key=f"fn_{idx}"):
                         st.session_state[f'show_fn_form_{idx}'] = True
                         st.rerun()
 

@@ -129,7 +129,7 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
             start=year - 5,
             end=year + 5,
             label=f"c. {year}",
-            confidence=0.80,
+            confidence=0.90,
             method="year_circa_pm5",
             evidence_paths=[evidence_path],
             warnings=[]
@@ -196,7 +196,7 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
                 start=start_year,
                 end=end_year,
                 label=f"{start_year}-{end_year}",
-                confidence=0.85,
+                confidence=0.90,
                 method="year_embedded_range",
                 evidence_paths=[evidence_path],
                 warnings=["embedded_range_in_complex_string"]
@@ -214,7 +214,7 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
                 start=start_year,
                 end=end_year,
                 label=f"{start_year}-{end_year}",
-                confidence=0.80,  # Slightly lower confidence for non-adjacent years
+                confidence=0.90,
                 method="year_embedded_range",
                 evidence_paths=[evidence_path],
                 warnings=["embedded_range_in_complex_string"]
@@ -230,7 +230,7 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
                 start=year,
                 end=year,
                 label=str(year),
-                confidence=0.85,
+                confidence=0.92,
                 method="year_embedded",
                 evidence_paths=[evidence_path],
                 warnings=["embedded_year_in_complex_string"]
@@ -274,7 +274,7 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
                     start=gregorian_year,
                     end=gregorian_year,
                     label=str(gregorian_year),
-                    confidence=0.85,  # Higher confidence for bracketed
+                    confidence=0.92,
                     method="hebrew_gematria_bracketed",
                     evidence_paths=[evidence_path],
                     warnings=["hebrew_letter_year_converted"]
@@ -299,7 +299,7 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
                     start=gregorian_year,
                     end=gregorian_year,
                     label=str(gregorian_year),
-                    confidence=0.80,
+                    confidence=0.90,
                     method="hebrew_gematria",
                     evidence_paths=[evidence_path],
                     warnings=["hebrew_letter_year_converted"]

@@ -14,7 +14,6 @@ import pytest
 
 from scripts.metadata.agent_harness import (
     AgentHarness,
-    GapRecord,
     ProposedMapping,
 )
 from scripts.metadata.agents.date_agent import (
@@ -23,7 +22,6 @@ from scripts.metadata.agents.date_agent import (
     ProposedDate,
     UnparsedDate,
 )
-from scripts.metadata.clustering import Cluster, ClusterValue
 
 
 # ---------------------------------------------------------------------------

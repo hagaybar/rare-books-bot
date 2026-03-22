@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T09:58:26.205Z",
+  "data": {
+    "effectId": "01KMAFPJMPYXT31RNFX3H5PQQ9",
+    "invocationKey": "fix-phase1-phase2:S000009:add-schema-runtime-validation",
+    "invocationHash": "3adaf0db39f8a97739116bf01006b7f3ee32fdf826acd2a3227af2db7bf4db84",
+    "stepId": "S000009",
+    "taskId": "add-schema-runtime-validation",
+    "kind": "agent",
+    "label": "phase2",
+    "taskDefRef": "tasks/01KMAFPJMPYXT31RNFX3H5PQQ9/task.json",
+    "labels": [
+      "phase2",
+      "contract"
+    ]
+  },
+  "checksum": "f4ceef02f7cc9cbcacbb0133ab7c0f01886bacfb6e984b6f27da2c883414c4fb"
+}

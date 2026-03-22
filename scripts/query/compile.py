@@ -8,7 +8,6 @@ for more robust and flexible query understanding.
 import json
 import hashlib
 from pathlib import Path
-from typing import Optional
 
 from scripts.query.llm_compiler import compile_query_llm as compile_query
 from scripts.schemas import QueryPlan

@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T09:39:08.826Z",
+  "data": {
+    "effectId": "01KMAEK8CEQR70RWY95VCC0XJJ",
+    "invocationKey": "fix-phase1-phase2:S000005:fix-lint",
+    "invocationHash": "3376b401f9eb08605f3e67303a1e26033820772a9c9e40df33ba3e9fe4474420",
+    "stepId": "S000005",
+    "taskId": "fix-lint",
+    "kind": "agent",
+    "label": "phase1",
+    "taskDefRef": "tasks/01KMAEK8CEQR70RWY95VCC0XJJ/task.json",
+    "labels": [
+      "phase1",
+      "lint"
+    ]
+  },
+  "checksum": "cd254a58c169ea6cba37e712206110bf5ee9cf9f40aea7b0caf49c5b07961034"
+}

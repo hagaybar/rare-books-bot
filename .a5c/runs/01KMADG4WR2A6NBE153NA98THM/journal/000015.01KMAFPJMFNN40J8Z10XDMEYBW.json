@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T09:58:26.192Z",
+  "data": {
+    "effectId": "01KMAFPJM8BKC97TBGQPNTGGFT",
+    "invocationKey": "fix-phase1-phase2:S000008:add-candidateset-validators",
+    "invocationHash": "50bddaea27f466b4cbeb0f62a8db138a7bf66c1e4c9082a8494569ee9c880ce9",
+    "stepId": "S000008",
+    "taskId": "add-candidateset-validators",
+    "kind": "agent",
+    "label": "phase2",
+    "taskDefRef": "tasks/01KMAFPJM8BKC97TBGQPNTGGFT/task.json",
+    "labels": [
+      "phase2",
+      "contract"
+    ]
+  },
+  "checksum": "01d00e3d5a0ad2b988d202543fd21ae6b8cc8b2def524a73f0badb3b00c585c1"
+}

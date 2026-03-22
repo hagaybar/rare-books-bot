@@ -6,7 +6,7 @@ low-confidence values ranked by frequency.
 """
 
 import sqlite3
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 

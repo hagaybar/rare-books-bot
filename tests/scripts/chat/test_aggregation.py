@@ -4,7 +4,6 @@ Tests the is_overview_query() function that distinguishes between
 general collection overview requests and specific search queries.
 """
 
-import pytest
 
 from scripts.chat.aggregation import is_overview_query
 

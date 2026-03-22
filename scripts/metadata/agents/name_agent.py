@@ -14,10 +14,10 @@ calls to the AgentHarness.reasoning layer. Adds name-specific logic on top.
 import re
 import sqlite3
 import unicodedata
-from dataclasses import dataclass, field as dc_field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from scripts.metadata.agent_harness import AgentHarness, GapRecord, ProposedMapping
+from scripts.metadata.agent_harness import AgentHarness, ProposedMapping
 from scripts.metadata.audit import generate_coverage_report_from_conn
 from scripts.metadata.clustering import Cluster, cluster_field_gaps
 

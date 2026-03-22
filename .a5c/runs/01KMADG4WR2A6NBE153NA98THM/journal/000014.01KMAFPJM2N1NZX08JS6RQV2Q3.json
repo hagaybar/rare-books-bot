@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T09:58:26.178Z",
+  "data": {
+    "effectId": "01KMAFPJKPWGDRV25818R6B30Z",
+    "invocationKey": "fix-phase1-phase2:S000007:fix-evidence-extraction",
+    "invocationHash": "001832c91fa4c0fb3433f28bc4965599d080575c3c3cbb6f9d7f45f45e2d59b3",
+    "stepId": "S000007",
+    "taskId": "fix-evidence-extraction",
+    "kind": "agent",
+    "label": "phase2",
+    "taskDefRef": "tasks/01KMAFPJKPWGDRV25818R6B30Z/task.json",
+    "labels": [
+      "phase2",
+      "contract"
+    ]
+  },
+  "checksum": "eeb0c60c4c41468946cf974cb79aaaf8d843bc9588259757fe2e1fd1f09292d2"
+}

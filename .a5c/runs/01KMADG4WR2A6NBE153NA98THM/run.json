@@ -1,0 +1,14 @@
+{
+  "runId": "01KMADG4WR2A6NBE153NA98THM",
+  "request": "fix-phase1-phase2",
+  "processId": "fix-phase1-phase2",
+  "entrypoint": {
+    "importPath": "../../processes/fix-phase1-phase2.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/fix-phase1-phase2.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-22T09:19:58.369Z",
+  "prompt": "Fix Phase 1 (13 failing tests + lint) and Phase 2 (evidence extraction, CandidateSet validators, M3 schema validation) from 2026-03-22 audit",
+  "completionProof": "4aa9803b3deddea0fc4dec1f7ab301ad"
+}

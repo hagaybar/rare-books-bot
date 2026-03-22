@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAFK6D6T1AD0RQGFCTJFEG6",
+  "taskId": "full-verify",
+  "invocationKey": "fix-phase1-phase2:S000006:full-verify",
+  "status": "ok",
+  "result": {
+    "failed": 0,
+    "passed": 1076,
+    "summary": "Full test suite: 1076 passed, 0 failures. Phase 1 complete. Also fixed a regression in test_publisher_authority.py where detect_script test had wrong assertion."
+  },
+  "startedAt": "2026-03-22T09:58:20.581Z",
+  "finishedAt": "2026-03-22T09:58:20.581Z",
+  "value": {
+    "failed": 0,
+    "passed": 1076,
+    "summary": "Full test suite: 1076 passed, 0 failures. Phase 1 complete. Also fixed a regression in test_publisher_authority.py where detect_script test had wrong assertion."
+  }
+}

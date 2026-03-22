@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAE7YQQ2QAYJ1TGJH4JANCF",
+  "taskId": "fix-metadata-api-tests",
+  "invocationKey": "fix-phase1-phase2:S000001:fix-metadata-api-tests",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "tests/app/test_metadata_api.py"
+    ],
+    "summary": "Fixed issues_db fixture: added records table, replaced mms_id with record_id FK, updated all INSERT statements.",
+    "testsFixed": 13
+  },
+  "startedAt": "2026-03-22T09:34:36.394Z",
+  "finishedAt": "2026-03-22T09:34:36.394Z",
+  "value": {
+    "filesModified": [
+      "tests/app/test_metadata_api.py"
+    ],
+    "summary": "Fixed issues_db fixture: added records table, replaced mms_id with record_id FK, updated all INSERT statements.",
+    "testsFixed": 13
+  }
+}

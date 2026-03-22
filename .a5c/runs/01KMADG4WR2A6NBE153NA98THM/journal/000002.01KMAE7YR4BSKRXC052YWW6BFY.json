@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T09:32:58.500Z",
+  "data": {
+    "effectId": "01KMAE7YQQ2QAYJ1TGJH4JANCF",
+    "invocationKey": "fix-phase1-phase2:S000001:fix-metadata-api-tests",
+    "invocationHash": "5827b2731967a43dfcf291a417a0a058476b6fac1a464e7f88be48bffc685802",
+    "stepId": "S000001",
+    "taskId": "fix-metadata-api-tests",
+    "kind": "agent",
+    "label": "phase1",
+    "taskDefRef": "tasks/01KMAE7YQQ2QAYJ1TGJH4JANCF/task.json",
+    "labels": [
+      "phase1",
+      "test-fix"
+    ]
+  },
+  "checksum": "ebb321b5b0649be25d257cba4cd5dcef5b7c62a5cb8d953e3aa30f2a49c24761"
+}

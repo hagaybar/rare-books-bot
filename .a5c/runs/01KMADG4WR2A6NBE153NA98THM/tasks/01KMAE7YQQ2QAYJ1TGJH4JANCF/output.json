@@ -1,0 +1,1 @@
+{"filesModified":["tests/app/test_metadata_api.py"],"testsFixed":13,"summary":"Fixed issues_db fixture: added records table, replaced mms_id with record_id FK, updated all INSERT statements."}

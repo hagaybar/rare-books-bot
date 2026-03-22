@@ -39,7 +39,7 @@ dependencies = [
 ]
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -48,6 +48,20 @@ quote-style = "preserve"
 [tool.ruff.lint]
 select = ["E", "F"]
 ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+# These files use sys.path manipulation before imports (Streamlit pages, CLI entry points)
+"app/cli.py" = ["E402"]
+"app/qa.py" = ["E402"]
+"app/ui_chat/main.py" = ["E402"]
+"app/ui_qa/main.py" = ["E402"]
+"app/ui_qa/pages/*.py" = ["E402"]
+"scripts/metadata/populate_publisher_authority.py" = ["E402"]
+# LLM prompt strings and agent system prompts are intentionally long
+"scripts/query/llm_compiler.py" = ["E501"]
+"scripts/chat/intent_agent.py" = ["E501"]
+"scripts/chat/exploration_agent.py" = ["E501"]
+"tests/scripts/metadata/test_publisher_authority_real_db.py" = ["E402"]
 
 [tool.poetry]
 package-mode = false

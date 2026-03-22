@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAFPJM8BKC97TBGQPNTGGFT",
+  "taskId": "add-candidateset-validators",
+  "invocationKey": "fix-phase1-phase2:S000008:add-candidateset-validators",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "scripts/schemas/candidate_set.py",
+      "tests/scripts/query/test_candidate_set.py"
+    ],
+    "summary": "Added @model_validator to Candidate that warns on empty evidence. 7 tests added for warnings and confidence bounds. All 24 candidate_set tests pass.",
+    "testsAdded": 7,
+    "validatorsAdded": 1
+  },
+  "startedAt": "2026-03-22T10:01:00.512Z",
+  "finishedAt": "2026-03-22T10:01:00.512Z",
+  "value": {
+    "filesModified": [
+      "scripts/schemas/candidate_set.py",
+      "tests/scripts/query/test_candidate_set.py"
+    ],
+    "summary": "Added @model_validator to Candidate that warns on empty evidence. 7 tests added for warnings and confidence bounds. All 24 candidate_set tests pass.",
+    "testsAdded": 7,
+    "validatorsAdded": 1
+  }
+}

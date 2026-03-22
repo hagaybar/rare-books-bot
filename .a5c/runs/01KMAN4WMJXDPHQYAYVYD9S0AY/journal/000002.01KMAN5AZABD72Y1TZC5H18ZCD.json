@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T11:33:52.746Z",
+  "data": {
+    "effectId": "01KMAN5AYV0BMECNXKBERCZH9H",
+    "invocationKey": "fix-deprecated-apis:S000001:fix-pydantic-config",
+    "invocationHash": "60148fb623dbd989421b9168a8f36b5ca689127521631dde796884ccf6636c7f",
+    "stepId": "S000001",
+    "taskId": "fix-pydantic-config",
+    "kind": "agent",
+    "label": "Migrate Pydantic class Config to ConfigDict",
+    "taskDefRef": "tasks/01KMAN5AYV0BMECNXKBERCZH9H/task.json"
+  },
+  "checksum": "5bb0f40920041da08ad6c0674bec2227e94dce51ede02995df5991a5252f909e"
+}

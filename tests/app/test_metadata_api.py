@@ -20,9 +20,7 @@ enough schema and data to exercise the SQL queries directly.
 """
 
 import sqlite3
-import tempfile
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -201,11 +199,19 @@ def issues_db(tmp_path):
     db_path = tmp_path / "test_bib.db"
     conn = sqlite3.connect(str(db_path))
 
-    # Create minimal imprints table with mms_id column (as expected by endpoint code)
+    # Create records table (master table with mms_id)
+    conn.execute("""
+        CREATE TABLE records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mms_id TEXT NOT NULL
+        )
+    """)
+
+    # Create minimal imprints table with record_id FK (as expected by endpoint code)
     conn.execute("""
         CREATE TABLE imprints (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            mms_id TEXT,
+            record_id INTEGER NOT NULL REFERENCES records(id),
             date_raw TEXT,
             date_start INTEGER,
             date_confidence REAL,
@@ -221,11 +227,11 @@ def issues_db(tmp_path):
         )
     """)
 
-    # Create minimal agents table with mms_id column
+    # Create minimal agents table with record_id FK
     conn.execute("""
         CREATE TABLE agents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            mms_id TEXT,
+            record_id INTEGER NOT NULL REFERENCES records(id),
             agent_raw TEXT NOT NULL,
             agent_norm TEXT NOT NULL,
             agent_confidence REAL NOT NULL,
@@ -237,20 +243,29 @@ def issues_db(tmp_path):
         )
     """)
 
+    # Insert records (one per MMS ID, id values 1-8)
+    mms_ids = ["MMS001", "MMS002", "MMS003", "MMS004",
+               "MMS005", "MMS006", "MMS007", "MMS008"]
+    conn.executemany(
+        "INSERT INTO records (mms_id) VALUES (?)",
+        [(m,) for m in mms_ids],
+    )
+
     # Insert test imprints with varying confidence levels
+    # record_id corresponds to records.id (1-8 matching MMS001-MMS008)
     imprint_rows = [
-        ("MMS001", "1650", 1650, 0.99, "exact", "Paris", "paris", 0.95, "alias_map", "Elsevier", "elsevier", 0.95, "alias_map"),
-        ("MMS002", "[1700]", 1700, 0.90, "bracketed", "London", "london", 0.95, "alias_map", "C. Fosset", "fosset", 0.80, "base_clean"),
-        ("MMS003", "ca. 1550", 1550, 0.80, "circa", "אמשטרדם", "amsterdam", 0.80, "base_clean", "Unknown", None, 0.30, "base_clean"),
-        ("MMS004", None, None, None, "missing", "Lugduni", None, 0.30, "base_clean", None, None, None, None),
-        ("MMS005", "1500-1599", 1500, 0.85, "range", "[Berlin]", "berlin", 0.80, "base_clean", "Oxford", "oxford", 0.95, "alias_map"),
-        ("MMS006", "???", None, 0.0, "unparsed", "Venice", "venice", 0.95, "alias_map", "Press", None, 0.50, "base_clean"),
-        ("MMS007", "1680", 1680, 0.99, "exact", "Rome", "rome", 0.95, "alias_map", "Printer A", "printer_a", 0.70, "base_clean"),
-        ("MMS008", "1720", 1720, 0.99, "exact", "Madrid", "madrid", 0.90, "alias_map", "Printer B", "printer_b", 0.60, "base_clean"),
+        (1, "1650", 1650, 0.99, "exact", "Paris", "paris", 0.95, "alias_map", "Elsevier", "elsevier", 0.95, "alias_map"),
+        (2, "[1700]", 1700, 0.90, "bracketed", "London", "london", 0.95, "alias_map", "C. Fosset", "fosset", 0.80, "base_clean"),
+        (3, "ca. 1550", 1550, 0.80, "circa", "אמשטרדם", "amsterdam", 0.80, "base_clean", "Unknown", None, 0.30, "base_clean"),
+        (4, None, None, None, "missing", "Lugduni", None, 0.30, "base_clean", None, None, None, None),
+        (5, "1500-1599", 1500, 0.85, "range", "[Berlin]", "berlin", 0.80, "base_clean", "Oxford", "oxford", 0.95, "alias_map"),
+        (6, "???", None, 0.0, "unparsed", "Venice", "venice", 0.95, "alias_map", "Press", None, 0.50, "base_clean"),
+        (7, "1680", 1680, 0.99, "exact", "Rome", "rome", 0.95, "alias_map", "Printer A", "printer_a", 0.70, "base_clean"),
+        (8, "1720", 1720, 0.99, "exact", "Madrid", "madrid", 0.90, "alias_map", "Printer B", "printer_b", 0.60, "base_clean"),
     ]
     conn.executemany(
         """INSERT INTO imprints
-           (mms_id, date_raw, date_start, date_confidence, date_method,
+           (record_id, date_raw, date_start, date_confidence, date_method,
             place_raw, place_norm, place_confidence, place_method,
             publisher_raw, publisher_norm, publisher_confidence, publisher_method)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
@@ -258,15 +273,16 @@ def issues_db(tmp_path):
     )
 
     # Insert test agents with varying confidence
+    # record_id 1-4 map to MMS001-MMS004
     agent_rows = [
-        ("MMS001", "John Smith", "smith, john", 0.95, "base_clean", "printer", "printer", 0.90, "relator_code"),
-        ("MMS002", "Jan de Vries", "vries, jan de", 0.70, "base_clean", "prt", "printer", 0.95, "relator_code"),
-        ("MMS003", "Unknown Author", "unknown author", 0.30, "ambiguous", None, "author", 0.50, "inferred"),
-        ("MMS004", "Ibn Sina", "ibn sina", 0.60, "base_clean", "aut", "author", 0.95, "relator_code"),
+        (1, "John Smith", "smith, john", 0.95, "base_clean", "printer", "printer", 0.90, "relator_code"),
+        (2, "Jan de Vries", "vries, jan de", 0.70, "base_clean", "prt", "printer", 0.95, "relator_code"),
+        (3, "Unknown Author", "unknown author", 0.30, "ambiguous", None, "author", 0.50, "inferred"),
+        (4, "Ibn Sina", "ibn sina", 0.60, "base_clean", "aut", "author", 0.95, "relator_code"),
     ]
     conn.executemany(
         """INSERT INTO agents
-           (mms_id, agent_raw, agent_norm, agent_confidence, agent_method,
+           (record_id, agent_raw, agent_norm, agent_confidence, agent_method,
             role_raw, role_norm, role_confidence, role_method)
            VALUES (?,?,?,?,?,?,?,?,?)""",
         agent_rows,

@@ -6,9 +6,6 @@ with the reference query from M4 specifications.
 
 import pytest
 import sqlite3
-import json
-import tempfile
-from pathlib import Path
 
 from scripts.query.compile import compile_query
 from scripts.query.execute import execute_plan

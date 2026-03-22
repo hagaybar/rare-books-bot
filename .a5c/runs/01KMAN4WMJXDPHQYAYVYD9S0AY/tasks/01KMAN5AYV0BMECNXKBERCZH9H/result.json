@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAN5AYV0BMECNXKBERCZH9H",
+  "taskId": "fix-pydantic-config",
+  "invocationKey": "fix-deprecated-apis:S000001:fix-pydantic-config",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "scripts/marc/models.py"
+    ],
+    "summary": "Migrated 2 class Config to model_config=ConfigDict(). All 103 marc tests pass, zero deprecation warnings."
+  },
+  "startedAt": "2026-03-22T11:35:50.522Z",
+  "finishedAt": "2026-03-22T11:35:50.522Z",
+  "value": {
+    "filesModified": [
+      "scripts/marc/models.py"
+    ],
+    "summary": "Migrated 2 class Config to model_config=ConfigDict(). All 103 marc tests pass, zero deprecation warnings."
+  }
+}

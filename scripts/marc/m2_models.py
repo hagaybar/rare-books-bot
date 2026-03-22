@@ -73,7 +73,9 @@ class RoleNormalization(BaseModel):
     role_raw: Optional[str] = Field(None, description="Original role string from M1 (may be None)")
     role_norm: str = Field(..., description="Normalized role from controlled vocabulary")
     role_confidence: float = Field(..., ge=0.0, le=1.0, description="Role mapping confidence (0-1)")
-    role_method: str = Field(..., description="Normalization method: 'relator_code', 'relator_term', 'inferred', or 'manual_map'")
+    role_method: str = Field(
+        ..., description="Normalization method: 'relator_code', 'relator_term', 'inferred', or 'manual_map'"
+    )
 
 
 class M2Enrichment(BaseModel):

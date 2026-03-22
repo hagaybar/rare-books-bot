@@ -6,9 +6,8 @@ groups that a librarian can review as batches. All clustering is deterministic
 """
 
 import re
-import unicodedata
 from collections import defaultdict
-from dataclasses import dataclass, field as dc_field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -95,6 +94,10 @@ def detect_script(text: str) -> str:
         return "hebrew"
     if arabic_count > hebrew_count and arabic_count > latin_count:
         return "arabic"
+
+    # If Latin clearly dominates, return latin
+    if latin_count > hebrew_count and latin_count > arabic_count:
+        return "latin"
 
     # Mixed script tie-breaking: prefer non-Latin scripts when present,
     # since Latin characters commonly appear in otherwise Hebrew/Arabic

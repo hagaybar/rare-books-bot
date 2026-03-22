@@ -18,8 +18,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from scripts.chat.models import ActiveSubgroup
-from scripts.chat.exploration_agent import AggregationResult, ExplorationRequest
+from scripts.chat.exploration_agent import AggregationResult
 from scripts.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAE7YRATF5JB6H41H6CJMJ4",
+  "taskId": "fix-detect-script",
+  "invocationKey": "fix-phase1-phase2:S000002:fix-detect-script",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "scripts/metadata/clustering.py"
+    ],
+    "summary": "Fixed detect_script() tie-breaking: added latin dominance check. All 71 tests pass."
+  },
+  "startedAt": "2026-03-22T09:34:45.354Z",
+  "finishedAt": "2026-03-22T09:34:45.354Z",
+  "value": {
+    "filesModified": [
+      "scripts/metadata/clustering.py"
+    ],
+    "summary": "Fixed detect_script() tie-breaking: added latin dominance check. All 71 tests pass."
+  }
+}

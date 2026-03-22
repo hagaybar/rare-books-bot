@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAFPJKPWGDRV25818R6B30Z",
+  "taskId": "fix-evidence-extraction",
+  "invocationKey": "fix-phase1-phase2:S000007:fix-evidence-extraction",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Make evidence extraction fail-closed",
+  "labels": [
+    "contract",
+    "phase2"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMAFPJKPWGDRV25818R6B30Z/input.json",
+    "outputJsonPath": "tasks/01KMAFPJKPWGDRV25818R6B30Z/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

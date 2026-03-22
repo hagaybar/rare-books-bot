@@ -3,8 +3,8 @@
 Validates evidence structure, candidate format, and result set schema.
 """
 
+import logging
 import pytest
-from datetime import datetime
 from pydantic import ValidationError
 
 from scripts.schemas import Evidence, Candidate, CandidateSet
@@ -121,6 +121,90 @@ class TestCandidate:
         """Candidate missing match_rationale should fail."""
         with pytest.raises(ValidationError):
             Candidate(record_id="990011964120204146")
+
+    def test_empty_evidence_logs_warning(self, caplog):
+        """Candidate with empty evidence should log a warning (not raise)."""
+        with caplog.at_level(logging.WARNING, logger="scripts.schemas.candidate_set"):
+            c = Candidate(
+                record_id="990099999999999999",
+                match_rationale="publisher_norm='test'"
+            )
+        assert c.record_id == "990099999999999999"
+        assert any(
+            "990099999999999999" in msg and "empty evidence" in msg
+            for msg in caplog.messages
+        ), f"Expected warning about empty evidence, got: {caplog.messages}"
+
+    def test_candidate_with_evidence_no_warning(self, caplog):
+        """Candidate with evidence should NOT emit a warning."""
+        with caplog.at_level(logging.WARNING, logger="scripts.schemas.candidate_set"):
+            c = Candidate(
+                record_id="990011964120204146",
+                match_rationale="publisher_norm='oxford'",
+                evidence=[
+                    Evidence(
+                        field="publisher_norm",
+                        value="oxford",
+                        operator="=",
+                        matched_against="oxford",
+                        source="db.imprints.publisher_norm"
+                    )
+                ]
+            )
+        assert len(c.evidence) == 1
+        warning_msgs = [
+            msg for msg in caplog.messages
+            if "empty evidence" in msg
+        ]
+        assert warning_msgs == [], f"Unexpected warnings: {warning_msgs}"
+
+
+class TestEvidenceConfidenceValidation:
+    """Tests for Evidence confidence field boundary validation."""
+
+    def test_confidence_at_lower_bound(self):
+        """Confidence of 0.0 should be valid."""
+        e = Evidence(
+            field="test", value="v", operator="=",
+            matched_against="v", source="db.test",
+            confidence=0.0
+        )
+        assert e.confidence == 0.0
+
+    def test_confidence_at_upper_bound(self):
+        """Confidence of 1.0 should be valid."""
+        e = Evidence(
+            field="test", value="v", operator="=",
+            matched_against="v", source="db.test",
+            confidence=1.0
+        )
+        assert e.confidence == 1.0
+
+    def test_confidence_above_upper_bound_fails(self):
+        """Confidence > 1.0 should raise ValidationError."""
+        with pytest.raises(ValidationError):
+            Evidence(
+                field="test", value="v", operator="=",
+                matched_against="v", source="db.test",
+                confidence=1.01
+            )
+
+    def test_confidence_below_lower_bound_fails(self):
+        """Confidence < 0.0 should raise ValidationError."""
+        with pytest.raises(ValidationError):
+            Evidence(
+                field="test", value="v", operator="=",
+                matched_against="v", source="db.test",
+                confidence=-0.01
+            )
+
+    def test_confidence_none_is_valid(self):
+        """Confidence of None (absent) should be valid."""
+        e = Evidence(
+            field="test", value="v", operator="=",
+            matched_against="v", source="db.test"
+        )
+        assert e.confidence is None
 
 
 class TestCandidateSet:

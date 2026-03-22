@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T09:32:58.513Z",
+  "data": {
+    "effectId": "01KMAE7YRATF5JB6H41H6CJMJ4",
+    "invocationKey": "fix-phase1-phase2:S000002:fix-detect-script",
+    "invocationHash": "9c76a100880d2ba86f287ecaac6bd298d57e4f016efd18ef6cc9e04eb6e60a3a",
+    "stepId": "S000002",
+    "taskId": "fix-detect-script",
+    "kind": "agent",
+    "label": "phase1",
+    "taskDefRef": "tasks/01KMAE7YRATF5JB6H41H6CJMJ4/task.json",
+    "labels": [
+      "phase1",
+      "bug-fix"
+    ]
+  },
+  "checksum": "f7009cb772c876287b891b511ae17f8c9499842b6b646fbd96edd85639b2499b"
+}

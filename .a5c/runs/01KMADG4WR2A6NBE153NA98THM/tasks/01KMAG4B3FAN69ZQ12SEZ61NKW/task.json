@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAG4B3FAN69ZQ12SEZ61NKW",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "fix-phase1-phase2:S000011:__sdk.breakpoint",
+  "stepId": "S000011",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Phase 1 and Phase 2 fixes complete. Review changes and approve?",
+      "title": "Final Review"
+    },
+    "requestedAt": "2026-03-22T10:05:57.231Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {},
+      "question": "Phase 1 and Phase 2 fixes complete. Review changes and approve?",
+      "title": "Final Review"
+    },
+    "requestedAt": "2026-03-22T10:05:57.231Z"
+  }
+}

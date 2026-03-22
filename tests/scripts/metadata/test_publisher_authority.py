@@ -633,10 +633,10 @@ class TestDetectScript:
         result = detect_script("דפוס וינדראמינה Press")
         assert result == "hebrew"
 
-    def test_mixed_hebrew_latin_equal_counts(self):
-        """Even with equal char counts, Hebrew wins over Latin for mixed strings."""
-        result = detect_script("דפוס bragadin")
-        assert result == "hebrew"
+    def test_mixed_hebrew_latin_latin_dominant(self):
+        """When Latin characters dominate, return latin."""
+        result = detect_script("דפוס bragadin")  # Hebrew=4, Latin=8
+        assert result == "latin"
 
     def test_punctuation_only(self):
         """Punctuation-only should return 'other'."""

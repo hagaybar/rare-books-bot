@@ -5,9 +5,12 @@ CandidateSet with per-record evidence and match rationale.
 """
 
 import json
+import logging
 import sqlite3
 from pathlib import Path
 from typing import List, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 from scripts.schemas import QueryPlan, CandidateSet, Candidate, Evidence, FilterField, FilterOp
 from scripts.query.db_adapter import build_full_query, get_connection, fetch_candidates
@@ -298,7 +301,7 @@ def extract_evidence_for_filter(
             value=row["title_value"] if "title_value" in row.keys() else None,
             operator="MATCH",
             matched_against=filter_obj.value,
-            source=f"db.titles.value (FTS5)",
+            source="db.titles.value (FTS5)",
             confidence=None
         )
 
@@ -308,7 +311,7 @@ def extract_evidence_for_filter(
             value=row["subject_value"] if "subject_value" in row.keys() else None,
             operator="MATCH",
             matched_against=filter_obj.value,
-            source=f"db.subjects.value (FTS5)",
+            source="db.subjects.value (FTS5)",
             confidence=None
         )
 
@@ -318,7 +321,7 @@ def extract_evidence_for_filter(
             value=row["agent_value"] if "agent_value" in row.keys() else None,
             operator="LIKE",
             matched_against=filter_obj.value,
-            source=f"db.agents.value",
+            source="db.agents.value",
             confidence=None
         )
 
@@ -558,8 +561,20 @@ def execute_plan(
                     evidence = extract_evidence_for_filter(filter_obj, row)
                     evidence_list.append(evidence)
                 except Exception as e:
-                    # Log but don't fail on evidence extraction errors
-                    print(f"Warning: Failed to extract evidence for {filter_obj.field}: {e}")
+                    # Log and mark but don't fail on evidence extraction errors
+                    logger.warning(
+                        "Failed to extract evidence for %s: %s",
+                        filter_obj.field, e,
+                    )
+                    evidence_list.append(Evidence(
+                        field=str(filter_obj.field),
+                        value=None,
+                        operator="UNKNOWN",
+                        matched_against=getattr(filter_obj, "value", None),
+                        source="extraction_failed",
+                        confidence=None,
+                        extraction_error=str(e),
+                    ))
 
             # Build match rationale
             rationale = build_match_rationale(plan, row)

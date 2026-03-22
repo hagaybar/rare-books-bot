@@ -154,7 +154,7 @@ if selected_table:
             sql += f" WHERE ({' OR '.join(conditions)})"
             params = [f"%{search_text}%"] * len(search_columns)
 
-        sql += f" LIMIT ?"
+        sql += " LIMIT ?"
         params.append(limit)
 
         # Execute query

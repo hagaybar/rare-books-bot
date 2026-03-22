@@ -160,11 +160,11 @@ def main() -> None:
 
     # Summary statistics
     total_records = sum(item["count"] for item in unmapped)
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"  Unmapped variants: {len(unmapped)}")
     print(f"  Total records affected: {total_records}")
     if unmapped:
-        print(f"\nTop 10 unmapped by frequency:")
+        print("\nTop 10 unmapped by frequency:")
         for item in unmapped[:10]:
             print(f"  {item['place_norm']}: {item['count']} records")
 

@@ -26,7 +26,6 @@ from app.ui_qa.db import (
     insert_query_run,
     upsert_label,
     get_query_by_id,
-    get_labels_for_query,
     get_random_labeled_candidates,
     get_label_for_candidate
 )
@@ -278,7 +277,7 @@ def render_step_2():
                 st.session_state['plan_matches_intent'] = False
 
                 # Optional: What's wrong?
-                whats_wrong = st.text_area(
+                _whats_wrong = st.text_area(
                     "What's wrong with the plan? (optional)",
                     key="plan_whats_wrong"
                 )
@@ -373,7 +372,11 @@ def render_step_3():
 
             candidates_data.append({
                 'Record ID': candidate.record_id,
-                'Rationale': candidate.match_rationale[:80] + '...' if len(candidate.match_rationale) > 80 else candidate.match_rationale,
+                'Rationale': (
+                    candidate.match_rationale[:80] + '...'
+                    if len(candidate.match_rationale) > 80
+                    else candidate.match_rationale
+                ),
                 'Evidence Count': len(candidate.evidence),
                 'Label': current_label
             })
@@ -395,7 +398,7 @@ def render_step_3():
             selected_candidate = candidates[selected_idx]
 
             with st.sidebar:
-                st.subheader(f"📝 Label Candidate")
+                st.subheader("📝 Label Candidate")
                 st.write(f"**Record ID:** {selected_candidate.record_id}")
                 st.write(f"**Rationale:** {selected_candidate.match_rationale}")
 
@@ -513,7 +516,10 @@ def render_step_4_smoke():
                 query_result = service.execute_plan(plan_obj, options=QueryOptions(compute_facets=False))
 
                 # Find this candidate
-                candidate = next((c for c in query_result.candidate_set.candidates if c.record_id == cand_data['record_id']), None)
+                candidate = next(
+                    (c for c in query_result.candidate_set.candidates if c.record_id == cand_data['record_id']),
+                    None
+                )
 
                 if candidate:
                     st.write(f"**Rationale:** {candidate.match_rationale}")
@@ -541,7 +547,7 @@ def render_step_4_smoke():
 
     # Skip option
     st.markdown("### Or Skip Evidence Check")
-    skip_reason = st.text_area(
+    _skip_reason = st.text_area(
         "Reason for skipping (if any)",
         key="evidence_skip_reason"
     )
@@ -567,7 +573,7 @@ def render_step_4_recall():
         service = QueryService(db_path)
         query_result = service.execute_plan(plan_obj, options=QueryOptions(compute_facets=False))
         existing_ids = {c.record_id for c in query_result.candidate_set.candidates}
-    except:
+    except Exception:
         existing_ids = set()
 
     st.divider()

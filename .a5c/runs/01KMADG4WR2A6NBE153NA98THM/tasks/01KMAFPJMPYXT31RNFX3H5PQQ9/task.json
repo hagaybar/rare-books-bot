@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAFPJMPYXT31RNFX3H5PQQ9",
+  "taskId": "add-schema-runtime-validation",
+  "invocationKey": "fix-phase1-phase2:S000009:add-schema-runtime-validation",
+  "stepId": "S000009",
+  "kind": "agent",
+  "title": "Add M3 schema runtime validation",
+  "labels": [
+    "contract",
+    "phase2"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMAFPJMPYXT31RNFX3H5PQQ9/input.json",
+    "outputJsonPath": "tasks/01KMAFPJMPYXT31RNFX3H5PQQ9/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

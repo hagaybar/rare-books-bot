@@ -11,7 +11,7 @@ import sqlite3
 import sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import Dict, Optional, Set, List
+from typing import Dict, Set
 
 # Load MARC country code mapping
 COUNTRY_CODE_MAP = None
@@ -589,9 +589,9 @@ def print_report(stats: dict, db_path: Path):
     print("M3 INDEXING REPORT")
     print("=" * 80)
     print(f"\nDatabase: {db_path}")
-    print(f"\nRecords:")
+    print("\nRecords:")
     print(f"  Total records indexed: {stats['total_records']}")
-    print(f"\nIndexed entities:")
+    print("\nIndexed entities:")
     print(f"  Titles: {stats['titles']}")
     print(f"  Imprints: {stats['imprints']}")
     print(f"  Subjects: {stats['subjects']}")
@@ -606,7 +606,7 @@ def print_report(stats: dict, db_path: Path):
         if 'error' in enrich:
             print(f"\nEnrichment: FAILED ({enrich['error']})")
         else:
-            print(f"\nAuthority URI Enrichment:")
+            print("\nAuthority URI Enrichment:")
             print(f"  Total URIs: {enrich.get('total', 0)}")
             print(f"  Enriched (Wikidata): {enrich.get('enriched', 0)}")
             print(f"  Already cached: {enrich.get('cached', 0)}")

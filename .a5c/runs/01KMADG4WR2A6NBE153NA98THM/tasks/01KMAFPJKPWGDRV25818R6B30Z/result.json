@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAFPJKPWGDRV25818R6B30Z",
+  "taskId": "fix-evidence-extraction",
+  "invocationKey": "fix-phase1-phase2:S000007:fix-evidence-extraction",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "scripts/query/execute.py",
+      "scripts/schemas/candidate_set.py",
+      "tests/scripts/query/test_execute.py"
+    ],
+    "summary": "Replaced print() with logging.warning(). Added extraction_error field to Evidence. On failure, Evidence entry appended with extraction_error set. 3 tests added. All 169 query tests pass.",
+    "testsAdded": 3
+  },
+  "startedAt": "2026-03-22T10:01:00.371Z",
+  "finishedAt": "2026-03-22T10:01:00.371Z",
+  "value": {
+    "filesModified": [
+      "scripts/query/execute.py",
+      "scripts/schemas/candidate_set.py",
+      "tests/scripts/query/test_execute.py"
+    ],
+    "summary": "Replaced print() with logging.warning(). Added extraction_error field to Evidence. On failure, Evidence entry appended with extraction_error set. 3 tests added. All 169 query tests pass.",
+    "testsAdded": 3
+  }
+}

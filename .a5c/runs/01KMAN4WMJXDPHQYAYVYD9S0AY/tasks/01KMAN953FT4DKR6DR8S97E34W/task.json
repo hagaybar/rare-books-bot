@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAN953FT4DKR6DR8S97E34W",
+  "taskId": "verify-no-deprecations",
+  "invocationKey": "fix-deprecated-apis:S000003:verify-no-deprecations",
+  "stepId": "S000003",
+  "kind": "shell",
+  "title": "Verify no deprecation warnings remain",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

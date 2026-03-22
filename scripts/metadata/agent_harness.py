@@ -13,7 +13,7 @@ import sqlite3
 from dataclasses import dataclass, field as dc_field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 
 # ---------------------------------------------------------------------------
@@ -284,7 +284,8 @@ class GroundingLayer:
 # ---------------------------------------------------------------------------
 
 # System prompt template for propose_mapping.
-_PROPOSE_MAPPING_PROMPT = """You are a bibliographic metadata specialist working with rare book catalogs (15th-19th century).
+_PROPOSE_MAPPING_PROMPT = """\
+You are a bibliographic metadata specialist working with rare book catalogs (15th-19th century).
 Given a raw MARC metadata value, propose the canonical English form.
 
 FIELD: {field}

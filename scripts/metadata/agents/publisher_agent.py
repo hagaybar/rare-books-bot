@@ -13,19 +13,15 @@ calls to the AgentHarness.reasoning layer. Adds publisher-specific logic on top.
 """
 
 import re
-import sqlite3
-from dataclasses import dataclass, field as dc_field
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any, Dict, List
 
 from scripts.metadata.agent_harness import AgentHarness, GapRecord, ProposedMapping
 from scripts.metadata.audit import (
-    LowConfidenceItem,
     generate_coverage_report_from_conn,
 )
 from scripts.metadata.clustering import (
     Cluster,
-    ClusterValue,
     cluster_field_gaps,
     _normalize_for_matching,
 )

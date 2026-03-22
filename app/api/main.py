@@ -12,6 +12,7 @@ Two-Phase Conversation Support:
 """
 
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
@@ -42,17 +43,13 @@ from scripts.chat.intent_agent import (
     interpret_query,
     generate_clarification_prompt,
     format_interpretation_for_user,
-    CONFIDENCE_THRESHOLD,
 )
 from scripts.chat.exploration_agent import (
     interpret_exploration_request,
     format_aggregation_response,
     format_metadata_response,
     format_refinement_response,
-    format_new_query_response,
     ExplorationIntent,
-    ExplorationRequest,
-    ExplorationResponse,
 )
 from scripts.chat.aggregation import (
     execute_aggregation,
@@ -65,7 +62,6 @@ from scripts.chat.aggregation import (
 )
 from scripts.query import QueryService, QueryOptions, QueryCompilationError
 from scripts.query.compile import compile_query
-from scripts.query.execute import execute_plan
 from scripts.utils.logger import LoggerManager
 from scripts.enrichment import EnrichmentService, EntityType as EnrichmentEntityType
 from scripts.metadata.interaction_logger import interaction_logger
@@ -76,11 +72,63 @@ logger = LoggerManager.get_logger(__name__)
 # Initialize rate limiter (10 requests per minute per session)
 limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
 
+# Global state (initialized during lifespan startup)
+session_store: Optional[SessionStore] = None
+db_path: Optional[Path] = None
+enrichment_service: Optional[EnrichmentService] = None
+query_service: Optional[QueryService] = None
+
+
+@asynccontextmanager
+async def lifespan(app):
+    """Manage application startup and shutdown lifecycle."""
+    global session_store, db_path, enrichment_service, query_service
+
+    # --- Startup ---
+    # Get paths from environment or use defaults
+    sessions_db = Path(os.getenv("SESSIONS_DB_PATH", "data/chat/sessions.db"))
+    bib_db = Path(os.getenv("BIBLIOGRAPHIC_DB_PATH", "data/index/bibliographic.db"))
+    enrichment_db = Path(os.getenv("ENRICHMENT_DB_PATH", "data/enrichment/cache.db"))
+
+    # Ensure directories exist
+    sessions_db.parent.mkdir(parents=True, exist_ok=True)
+    enrichment_db.parent.mkdir(parents=True, exist_ok=True)
+
+    # Initialize session store
+    session_store = SessionStore(sessions_db)
+    db_path = bib_db
+
+    # Initialize enrichment service
+    enrichment_service = EnrichmentService(cache_db_path=enrichment_db)
+
+    # Initialize query service
+    query_service = QueryService(bib_db)
+
+    logger.info(
+        "API started",
+        extra={
+            "sessions_db": str(sessions_db),
+            "bibliographic_db": str(bib_db),
+            "enrichment_db": str(enrichment_db),
+        },
+    )
+
+    yield
+
+    # --- Shutdown ---
+    if session_store is not None:
+        session_store.close()
+    if enrichment_service is not None:
+        enrichment_service.close()
+    logger.info("API shutdown")
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Rare Books Discovery API",
     description="Conversational interface for bibliographic discovery over MARC records",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Add rate limiter to app state
@@ -112,8 +160,6 @@ async def log_metadata_interactions(request: Request, call_next):
     if request.method == "POST":
         body_bytes = await request.body()
         # Re-wrap the body so downstream handlers can read it
-        from starlette.requests import Request as StarletteRequest
-        import io
 
         async def _receive():
             return {"type": "http.request", "body": body_bytes}
@@ -164,12 +210,6 @@ async def log_metadata_interactions(request: Request, call_next):
 
 # Register metadata quality router
 app.include_router(metadata_router)
-
-# Global state (initialized on startup)
-session_store: Optional[SessionStore] = None
-db_path: Optional[Path] = None
-enrichment_service: Optional[EnrichmentService] = None
-query_service: Optional[QueryService] = None
 
 
 def get_session_store() -> SessionStore:
@@ -222,49 +262,6 @@ def get_query_service() -> QueryService:
         )
     return query_service
 
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize application state on startup."""
-    global session_store, db_path, enrichment_service, query_service
-
-    # Get paths from environment or use defaults
-    sessions_db = Path(os.getenv("SESSIONS_DB_PATH", "data/chat/sessions.db"))
-    bib_db = Path(os.getenv("BIBLIOGRAPHIC_DB_PATH", "data/index/bibliographic.db"))
-    enrichment_db = Path(os.getenv("ENRICHMENT_DB_PATH", "data/enrichment/cache.db"))
-
-    # Ensure directories exist
-    sessions_db.parent.mkdir(parents=True, exist_ok=True)
-    enrichment_db.parent.mkdir(parents=True, exist_ok=True)
-
-    # Initialize session store
-    session_store = SessionStore(sessions_db)
-    db_path = bib_db
-
-    # Initialize enrichment service
-    enrichment_service = EnrichmentService(cache_db_path=enrichment_db)
-
-    # Initialize query service
-    query_service = QueryService(bib_db)
-
-    logger.info(
-        "API started",
-        extra={
-            "sessions_db": str(sessions_db),
-            "bibliographic_db": str(bib_db),
-            "enrichment_db": str(enrichment_db),
-        },
-    )
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown."""
-    if session_store is not None:
-        session_store.close()
-    if enrichment_service is not None:
-        enrichment_service.close()
-    logger.info("API shutdown")
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -752,21 +749,29 @@ async def handle_corpus_exploration_phase(
 
             if "latin" in question_lower:
                 count = execute_count_query(bib_db, active_subgroup.record_ids, "count_language", "lat")
-                answer = f"There are {count or 0} books in Latin in this collection of {len(active_subgroup.record_ids)} books."
+                total = len(active_subgroup.record_ids)
+                answer = f"There are {count or 0} books in Latin in this collection of {total} books."
             elif "hebrew" in question_lower:
                 count = execute_count_query(bib_db, active_subgroup.record_ids, "count_language", "heb")
                 answer = f"There are {count or 0} books in Hebrew in this collection."
             elif "earliest" in question_lower or "oldest" in question_lower:
                 earliest = execute_count_query(bib_db, active_subgroup.record_ids, "earliest_date")
-                answer = f"The earliest book in this collection is from {earliest}." if earliest else "No date information available."
-            elif "latest" in question_lower or "newest" in question_lower or "most recent" in question_lower:
+                answer = (
+                    f"The earliest book in this collection is from {earliest}."
+                    if earliest else "No date information available."
+                )
+            elif any(w in question_lower for w in ("latest", "newest", "most recent")):
                 latest = execute_count_query(bib_db, active_subgroup.record_ids, "latest_date")
-                answer = f"The most recent book in this collection is from {latest}." if latest else "No date information available."
+                answer = (
+                    f"The most recent book in this collection is from {latest}."
+                    if latest else "No date information available."
+                )
             elif "how many" in question_lower or "count" in question_lower:
                 answer = f"There are {len(active_subgroup.record_ids)} books in this collection."
                 count = len(active_subgroup.record_ids)
             else:
-                answer = f"This collection contains {len(active_subgroup.record_ids)} books. {exploration_request.explanation}"
+                n_books = len(active_subgroup.record_ids)
+                answer = f"This collection contains {n_books} books. {exploration_request.explanation}"
 
             exploration_response = format_metadata_response(answer, count, exploration_request)
 
@@ -839,7 +844,9 @@ async def handle_corpus_exploration_phase(
                 )
 
                 # Format comparison message
-                parts = [f"Comparison of {exploration_request.comparison_field} in this collection of {len(active_subgroup.record_ids)} books:"]
+                n_books = len(active_subgroup.record_ids)
+                field_name = exploration_request.comparison_field
+                parts = [f"Comparison of {field_name} in this collection of {n_books} books:"]
                 parts.append("")
                 for value, count in sorted(comparison_results.items(), key=lambda x: -x[1]):
                     pct = (count / len(active_subgroup.record_ids) * 100) if active_subgroup.record_ids else 0
@@ -919,7 +926,12 @@ async def handle_corpus_exploration_phase(
                 if links:
                     parts.append(f"\n**External links:** {' | '.join(links)}")
 
-                parts.append(f"\n\n*Source: {enrichment_result.sources_used[0].value if enrichment_result.sources_used else 'unknown'} (confidence: {enrichment_result.confidence:.0%})*")
+                source = (
+                    enrichment_result.sources_used[0].value
+                    if enrichment_result.sources_used else "unknown"
+                )
+                conf = enrichment_result.confidence
+                parts.append(f"\n\n*Source: {source} (confidence: {conf:.0%})*")
 
                 message = "\n".join(parts)
                 suggested_followups = [
@@ -985,7 +997,7 @@ async def handle_corpus_exploration_phase(
 
     except QueryCompilationError as e:
         # API error in exploration agent
-        error_msg = f"Error processing exploration request: {str(e)}"
+        _error_msg = f"Error processing exploration request: {str(e)}"
         response = ChatResponse(
             message="I had trouble understanding that request. Could you rephrase?",
             session_id=session.session_id,
@@ -1072,7 +1084,7 @@ async def websocket_chat(websocket: WebSocket):
     """
     await websocket.accept()
     store = get_session_store()
-    bib_db = get_db_path()
+    _bib_db = get_db_path()  # retained for potential future use
 
     try:
         # Receive initial message
@@ -1279,10 +1291,10 @@ async def websocket_chat(websocket: WebSocket):
                 "type": "error",
                 "message": f"Internal error: {str(e)}"
             })
-        except:
+        except Exception:
             pass
     finally:
         try:
             await websocket.close()
-        except:
+        except Exception:
             pass

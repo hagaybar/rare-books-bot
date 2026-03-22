@@ -9,12 +9,9 @@ import pytest
 from scripts.metadata.audit import (
     CoverageReport,
     FieldCoverage,
-    ConfidenceBand,
     LowConfidenceItem,
 )
 from scripts.metadata.clustering import (
-    Cluster,
-    ClusterValue,
     classify_date_pattern,
     cluster_all_gaps,
     cluster_field_gaps,

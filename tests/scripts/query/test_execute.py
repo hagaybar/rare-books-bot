@@ -3,14 +3,13 @@
 Validates SQL execution, evidence extraction, and CandidateSet generation.
 """
 
+import logging
 import pytest
 import sqlite3
 import json
-import tempfile
-from pathlib import Path
-from datetime import datetime
+from unittest.mock import patch, MagicMock
 
-from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp, CandidateSet
+from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp, CandidateSet, Evidence
 from scripts.query.execute import (
     load_plan_from_file,
     extract_evidence_for_filter,
@@ -422,3 +421,93 @@ class TestExecutePlanFromFile:
         # Verify candidate set
         assert candidate_set.total_count >= 0
         assert len(candidate_set.sql) > 0
+
+
+class TestEvidenceExtractionFailure:
+    """Tests that evidence extraction failures are logged and marked, not silently swallowed."""
+
+    def test_extraction_error_logged_and_marked(self, test_db, caplog):
+        """When extract_evidence_for_filter raises, should log warning and include error evidence."""
+        plan = QueryPlan(
+            query_text="books by oxford university press",
+            filters=[
+                Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="oxford university press")
+            ]
+        )
+
+        # Patch extract_evidence_for_filter to raise an exception
+        with patch(
+            "scripts.query.execute.extract_evidence_for_filter",
+            side_effect=ValueError("simulated extraction failure"),
+        ), caplog.at_level(logging.WARNING, logger="scripts.query.execute"):
+            candidate_set = execute_plan(plan, test_db)
+
+        # Should still return candidates (fail-visible, not fail-closed)
+        assert candidate_set.total_count >= 1
+
+        # Each candidate should have an evidence entry marking the failure
+        for candidate in candidate_set.candidates:
+            assert len(candidate.evidence) >= 1
+            error_evidence = [e for e in candidate.evidence if e.extraction_error is not None]
+            assert len(error_evidence) == 1, "Expected exactly one error evidence entry per failed filter"
+            assert "simulated extraction failure" in error_evidence[0].extraction_error
+            assert error_evidence[0].source == "extraction_failed"
+            assert error_evidence[0].operator == "UNKNOWN"
+
+        # Should have logged a warning
+        assert any("simulated extraction failure" in rec.message for rec in caplog.records)
+        assert any(rec.levelno == logging.WARNING for rec in caplog.records)
+
+    def test_partial_evidence_on_mixed_success(self, test_db, caplog):
+        """When one filter succeeds and another fails, should have both evidence entries."""
+        plan = QueryPlan(
+            query_text="latin books 1500-1599",
+            filters=[
+                Filter(field=FilterField.LANGUAGE, op=FilterOp.EQUALS, value="lat"),
+                Filter(field=FilterField.YEAR, op=FilterOp.RANGE, start=1500, end=1599),
+            ]
+        )
+
+        original_fn = extract_evidence_for_filter
+
+        def selective_fail(filter_obj, row, field_prefix=""):
+            """Fail only on YEAR filters, succeed on others."""
+            if filter_obj.field == FilterField.YEAR:
+                raise RuntimeError("date extraction broke")
+            return original_fn(filter_obj, row, field_prefix)
+
+        with patch(
+            "scripts.query.execute.extract_evidence_for_filter",
+            side_effect=selective_fail,
+        ), caplog.at_level(logging.WARNING, logger="scripts.query.execute"):
+            candidate_set = execute_plan(plan, test_db)
+
+        assert candidate_set.total_count >= 1
+
+        for candidate in candidate_set.candidates:
+            # Should have 2 evidence entries: 1 success + 1 failure
+            assert len(candidate.evidence) == 2
+
+            good = [e for e in candidate.evidence if e.extraction_error is None]
+            bad = [e for e in candidate.evidence if e.extraction_error is not None]
+            assert len(good) == 1, "Expected one successful evidence entry"
+            assert len(bad) == 1, "Expected one error evidence entry"
+            assert good[0].field == "language_code"
+            assert "date extraction broke" in bad[0].extraction_error
+
+    def test_extraction_error_field_on_evidence_model(self):
+        """Evidence model should accept extraction_error field."""
+        # Normal evidence (no error)
+        normal = Evidence(
+            field="test", value="val", operator="=",
+            matched_against="val", source="db.test",
+        )
+        assert normal.extraction_error is None
+
+        # Error evidence
+        error_ev = Evidence(
+            field="test", value=None, operator="UNKNOWN",
+            matched_against=None, source="extraction_failed",
+            extraction_error="something went wrong",
+        )
+        assert error_ev.extraction_error == "something went wrong"

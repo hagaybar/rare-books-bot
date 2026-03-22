@@ -23,7 +23,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from scripts.schemas import QueryPlan, CandidateSet, FilterField
+from scripts.schemas import QueryPlan, FilterField
 from scripts.query.models import (
     QueryResult,
     QueryOptions,
@@ -33,7 +33,6 @@ from scripts.query.models import (
 from scripts.query.compile import compile_query
 from scripts.query.execute import execute_plan
 from scripts.query.db_adapter import build_full_query
-from scripts.query.exceptions import QueryCompilationError
 from scripts.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)

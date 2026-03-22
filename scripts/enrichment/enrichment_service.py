@@ -42,7 +42,6 @@ from scripts.enrichment.models import (
     EnrichmentSource,
     EntityType,
     NLIAuthorityIdentifiers,
-    CacheEntry,
 )
 from scripts.enrichment.nli_client import (
     extract_nli_id_from_uri,

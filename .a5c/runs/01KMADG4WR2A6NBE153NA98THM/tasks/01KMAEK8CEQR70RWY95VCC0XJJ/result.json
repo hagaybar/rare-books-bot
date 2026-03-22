@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAEK8CEQR70RWY95VCC0XJJ",
+  "taskId": "fix-lint",
+  "invocationKey": "fix-phase1-phase2:S000005:fix-lint",
+  "status": "ok",
+  "result": {
+    "errorsAfter": 33,
+    "errorsBefore": 589,
+    "summary": "Reduced lint errors from 589 to 33 (0 in production, 33 in tests). Auto-fixed 176 via ruff --fix, manually fixed bare excepts, unused vars, line-length. Re-applied detect_script fix that was reverted during lint cleanup."
+  },
+  "startedAt": "2026-03-22T09:56:27.617Z",
+  "finishedAt": "2026-03-22T09:56:27.617Z",
+  "value": {
+    "errorsAfter": 33,
+    "errorsBefore": 589,
+    "summary": "Reduced lint errors from 589 to 33 (0 in production, 33 in tests). Auto-fixed 176 via ruff --fix, manually fixed bare excepts, unused vars, line-length. Re-applied detect_script fix that was reverted during lint cleanup."
+  }
+}

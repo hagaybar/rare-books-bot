@@ -4,7 +4,6 @@ Deterministic, rule-based normalization for agent names and roles.
 No LLM calls. All normalization is reversible and confidence-scored.
 """
 
-import re
 import unicodedata
 from typing import Optional, Tuple
 

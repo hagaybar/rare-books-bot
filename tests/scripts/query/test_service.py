@@ -6,10 +6,8 @@ across all interfaces (CLI, API, Streamlit, QA).
 
 import pytest
 import sqlite3
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 
-from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp, CandidateSet
+from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
 from scripts.query.models import (
     QueryResult,
     QueryOptions,
@@ -21,7 +19,6 @@ from scripts.query.service import (
     WARNING_LOW_CONFIDENCE,
     WARNING_EMPTY_FILTERS,
     WARNING_BROAD_DATE_RANGE,
-    WARNING_VAGUE_QUERY,
     WARNING_ZERO_RESULTS,
 )
 

@@ -4,10 +4,7 @@ Verifies logging of LLM API calls with cost tracking and prompt capture.
 """
 
 import json
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
 
 import pytest
 
@@ -15,7 +12,6 @@ from scripts.utils.llm_logger import (
     LLMLogger,
     log_llm_call,
     get_llm_logger,
-    PRICING_PER_1M_TOKENS,
 )
 
 

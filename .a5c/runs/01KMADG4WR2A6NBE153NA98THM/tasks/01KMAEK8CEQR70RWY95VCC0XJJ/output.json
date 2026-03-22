@@ -1,0 +1,1 @@
+{"errorsBefore":589,"errorsAfter":33,"summary":"Reduced lint errors from 589 to 33 (0 in production, 33 in tests). Auto-fixed 176 via ruff --fix, manually fixed bare excepts, unused vars, line-length. Re-applied detect_script fix that was reverted during lint cleanup."}

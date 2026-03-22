@@ -1,0 +1,1 @@
+{"filesModified":["app/api/main.py"],"summary":"Migrated on_event startup/shutdown to lifespan context manager. All 16 API tests pass, zero on_event warnings."}

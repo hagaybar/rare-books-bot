@@ -1,0 +1,1 @@
+{"filesModified":["scripts/marc/m3_contract.py","scripts/query/db_adapter.py","tests/scripts/marc/test_m3_contract.py"],"testsAdded":9,"summary":"Added validate_schema() to m3_contract.py. Integrated into db_adapter.get_connection() with once-per-process flag. Warns on missing tables/columns, never blocks. 9 tests added. All 136 marc/query tests pass."}

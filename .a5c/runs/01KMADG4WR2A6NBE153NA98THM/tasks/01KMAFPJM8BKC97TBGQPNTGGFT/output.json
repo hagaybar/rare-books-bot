@@ -1,0 +1,1 @@
+{"filesModified":["scripts/schemas/candidate_set.py","tests/scripts/query/test_candidate_set.py"],"validatorsAdded":1,"testsAdded":7,"summary":"Added @model_validator to Candidate that warns on empty evidence. 7 tests added for warnings and confidence bounds. All 24 candidate_set tests pass."}

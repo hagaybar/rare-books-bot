@@ -9,7 +9,7 @@ Key functions:
 - generate_followups: Context-aware follow-up question suggestions
 """
 
-from typing import List, Optional
+from typing import List
 from scripts.schemas import CandidateSet, Candidate, Evidence
 
 

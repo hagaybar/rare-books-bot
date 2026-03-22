@@ -335,7 +335,10 @@ class SessionStore:
             query = "SELECT session_id FROM chat_sessions WHERE user_id = ? ORDER BY updated_at DESC"
             params = (user_id,)
         else:
-            query = "SELECT session_id FROM chat_sessions WHERE user_id = ? AND expired_at IS NULL ORDER BY updated_at DESC"
+            query = (
+                "SELECT session_id FROM chat_sessions"
+                " WHERE user_id = ? AND expired_at IS NULL ORDER BY updated_at DESC"
+            )
             params = (user_id,)
 
         cursor = conn.execute(query, params)

@@ -35,12 +35,12 @@ class TestDateNormalization:
         assert result.warnings == []
 
     def test_circa_with_dot(self):
-        """Test circa with dot (confidence=0.80, ±5 years)."""
+        """Test circa with dot (confidence=0.90, ±5 years)."""
         result = normalize_date("c. 1680", "test_path")
         assert result.start == 1675
         assert result.end == 1685
         assert result.method == "year_circa_pm5"
-        assert result.confidence == 0.80
+        assert result.confidence == 0.90
         assert result.warnings == []
 
     def test_circa_without_dot(self):
@@ -49,7 +49,7 @@ class TestDateNormalization:
         assert result.start == 1675
         assert result.end == 1685
         assert result.method == "year_circa_pm5"
-        assert result.confidence == 0.80
+        assert result.confidence == 0.90
 
     def test_range_with_hyphen(self):
         """Test year range with hyphen (confidence=0.90)."""
@@ -94,12 +94,12 @@ class TestDateNormalization:
         assert result.confidence == 0.90
 
     def test_embedded_range(self):
-        """Test embedded range detection with non-adjacent years (confidence=0.80)."""
+        """Test embedded range detection with non-adjacent years (confidence=0.90)."""
         result = normalize_date('תרס"א 1900-תרס"ה 1904', "test_path")
         assert result.start == 1900
         assert result.end == 1904
         assert result.method == "year_embedded_range"
-        assert result.confidence == 0.80  # Lower confidence for non-adjacent years
+        assert result.confidence == 0.90
         assert "embedded_range_in_complex_string" in result.warnings
 
     def test_embedded_range_simple(self):
@@ -108,15 +108,15 @@ class TestDateNormalization:
         assert result.start == 1650
         assert result.end == 1660
         assert result.method == "year_embedded_range"
-        assert result.confidence == 0.85
+        assert result.confidence == 0.90
 
     def test_embedded_year(self):
-        """Test embedded year with warning (confidence=0.85)."""
+        """Test embedded year with warning (confidence=0.92)."""
         result = normalize_date("ו\"עשו לי מק\"דש ושכנת\"י ב\"תוכם [תק\"ח] 1748", "test_path")
         assert result.start == 1748
         assert result.end == 1748
         assert result.method == "year_embedded"
-        assert result.confidence == 0.85
+        assert result.confidence == 0.92
         assert "embedded_year_in_complex_string" in result.warnings
 
     def test_unparsed(self):
@@ -168,7 +168,7 @@ class TestHebrewGematria:
         assert result.start == 1979
         assert result.end == 1979
         assert result.method == "hebrew_gematria"
-        assert result.confidence == 0.80
+        assert result.confidence == 0.90
         assert "hebrew_letter_year_converted" in result.warnings
 
     def test_normalize_hebrew_gematria_tasat(self):
@@ -178,7 +178,7 @@ class TestHebrewGematria:
         assert result.start == 1709
         assert result.end == 1709
         assert result.method == "hebrew_gematria_bracketed"
-        assert result.confidence == 0.85
+        assert result.confidence == 0.92
 
     def test_normalize_hebrew_gematria_takach(self):
         """Test normalizing תק"ח → 1748."""
@@ -211,7 +211,7 @@ class TestHebrewGematria:
         assert result.start == 1736
         assert result.end == 1736
         assert result.method == "hebrew_gematria_bracketed"
-        assert result.confidence == 0.85
+        assert result.confidence == 0.92
         assert "hebrew_letter_year_converted" in result.warnings
 
     def test_normalize_hebrew_chronogram_prefers_brackets(self):

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAE7YRATF5JB6H41H6CJMJ4",
+  "taskId": "fix-detect-script",
+  "invocationKey": "fix-phase1-phase2:S000002:fix-detect-script",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Fix detect_script() logic bug",
+  "labels": [
+    "bug-fix",
+    "phase1"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMAE7YRATF5JB6H41H6CJMJ4/input.json",
+    "outputJsonPath": "tasks/01KMAE7YRATF5JB6H41H6CJMJ4/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

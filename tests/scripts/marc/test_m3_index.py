@@ -5,7 +5,6 @@ Tests the full M3 pipeline: schema creation, indexing, and query functions.
 
 import json
 import sqlite3
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -15,7 +14,6 @@ from scripts.marc.m3_query import (
     query_by_publisher_and_date_range,
     query_by_place_and_date_range,
     query_by_subject,
-    query_by_agent,
     query_by_title,
     get_record_by_mms_id
 )

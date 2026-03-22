@@ -4,20 +4,15 @@ Uses in-memory SQLite fixtures to test against real schema without requiring
 the production database. LLM calls are mocked via the harness.reasoning layer.
 """
 
-import json
 import sqlite3
 from pathlib import Path
-from typing import Dict, List
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from scripts.metadata.agent_harness import (
     AgentHarness,
-    GapRecord,
-    GroundingLayer,
     ProposedMapping,
-    ReasoningLayer,
 )
 from scripts.metadata.agents.name_agent import (
     AgentAnalysis,

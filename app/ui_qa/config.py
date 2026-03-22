@@ -33,7 +33,7 @@ CANONICAL_QUERIES = [
     {"id": 1, "query_text": "books between 1500 and 1599", "description": "Basic date range (16th century)"},
     {"id": 2, "query_text": "books between 1550 and 1560", "description": "Narrow date range (decade)"},
     {"id": 3, "query_text": "books printed in Venice between 1550 and 1575", "description": "Place + date"},
-    {"id": 4, "query_text": "books printed in Paris between 1500 and 1550", "description": "Place + date (early century)"},
+    {"id": 4, "query_text": "books printed in Paris between 1500 and 1550", "description": "Place + date (early)"},
     {"id": 5, "query_text": "books published by Oxford between 1500 and 1600", "description": "Publisher + date"},
     {"id": 6, "query_text": "books published by Aldus Manutius", "description": "Specific publisher"},
     {"id": 7, "query_text": "books in Latin between 1500 and 1600", "description": "Language + date"},

@@ -5,7 +5,6 @@ Tests Message, ChatSession, and ChatResponse Pydantic models.
 
 from datetime import datetime
 
-import pytest
 
 from scripts.chat.models import ChatResponse, ChatSession, Message
 from scripts.schemas import CandidateSet, Filter, FilterField, FilterOp, QueryPlan

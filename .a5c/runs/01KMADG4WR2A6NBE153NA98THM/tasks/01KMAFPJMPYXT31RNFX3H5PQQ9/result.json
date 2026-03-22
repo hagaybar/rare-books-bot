@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAFPJMPYXT31RNFX3H5PQQ9",
+  "taskId": "add-schema-runtime-validation",
+  "invocationKey": "fix-phase1-phase2:S000009:add-schema-runtime-validation",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "scripts/marc/m3_contract.py",
+      "scripts/query/db_adapter.py",
+      "tests/scripts/marc/test_m3_contract.py"
+    ],
+    "summary": "Added validate_schema() to m3_contract.py. Integrated into db_adapter.get_connection() with once-per-process flag. Warns on missing tables/columns, never blocks. 9 tests added. All 136 marc/query tests pass.",
+    "testsAdded": 9
+  },
+  "startedAt": "2026-03-22T10:01:00.648Z",
+  "finishedAt": "2026-03-22T10:01:00.648Z",
+  "value": {
+    "filesModified": [
+      "scripts/marc/m3_contract.py",
+      "scripts/query/db_adapter.py",
+      "tests/scripts/marc/test_m3_contract.py"
+    ],
+    "summary": "Added validate_schema() to m3_contract.py. Integrated into db_adapter.get_connection() with once-per-process flag. Warns on missing tables/columns, never blocks. 9 tests added. All 136 marc/query tests pass.",
+    "testsAdded": 9
+  }
+}

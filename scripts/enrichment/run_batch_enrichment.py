@@ -198,7 +198,7 @@ def main():
         return
 
     # Run enrichment
-    print(f"\nStarting batch enrichment...")
+    print("\nStarting batch enrichment...")
     print(f"  Batch size: {args.batch_size}")
     print(f"  Rate limit delay: {args.delay}s")
     estimated_time = len(agents) / args.batch_size * (args.delay + 2)
@@ -214,7 +214,7 @@ def main():
     )
 
     print(f"\n{'='*60}")
-    print(f"Enrichment complete!")
+    print("Enrichment complete!")
     print(f"  Successful: {successful}")
     print(f"  Not found:  {failed}")
     print(f"  Total:      {successful + failed}")

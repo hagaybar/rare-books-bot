@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAFK6D6T1AD0RQGFCTJFEG6",
+  "taskId": "full-verify",
+  "invocationKey": "fix-phase1-phase2:S000006:full-verify",
+  "stepId": "S000006",
+  "kind": "shell",
+  "title": "Full verification: phase1-full",
+  "labels": [
+    "phase1-full",
+    "verification"
+  ],
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "scope": "phase1-full"
+  }
+}

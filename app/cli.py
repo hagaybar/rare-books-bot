@@ -60,13 +60,13 @@ def parse_marc(
     )
 
     # Print summary
-    typer.echo(f"\n✅ Parsing complete!")
-    typer.echo(f"\nExtraction Report:")
+    typer.echo("\n✅ Parsing complete!")
+    typer.echo("\nExtraction Report:")
     typer.echo(f"  Source file: {report.source_file}")
     typer.echo(f"  Total records: {report.total_records}")
     typer.echo(f"  Successful: {report.successful_extractions}")
     typer.echo(f"  Failed: {report.failed_extractions}")
-    typer.echo(f"\nField Coverage:")
+    typer.echo("\nField Coverage:")
     typer.echo(f"  With title: {report.records_with_title}")
     typer.echo(f"  With imprints: {report.records_with_imprints}")
     typer.echo(f"  With languages (041$a): {report.records_with_languages}")
@@ -202,7 +202,6 @@ def query(
 
     If --session-id is provided, saves query and results to session history.
     """
-    import json
     from datetime import datetime
     from scripts.query import QueryService, QueryOptions, QueryCompilationError
     from scripts.query.compile import write_plan_to_file
@@ -212,7 +211,10 @@ def query(
     if not db.exists():
         typer.echo(f"Error: Database not found: {db}")
         typer.echo("\nHint: Have you run M3 indexing yet?")
-        typer.echo("  python -m scripts.marc.m3_index data/m2/records_m1m2.jsonl data/index/bibliographic.db scripts/marc/m3_schema.sql")
+        typer.echo(
+            "  python -m scripts.marc.m3_index data/m2/records_m1m2.jsonl"
+            " data/index/bibliographic.db scripts/marc/m3_schema.sql"
+        )
         raise typer.Exit(code=1)
 
     # Generate output directory if not provided
@@ -249,18 +251,18 @@ def query(
         if result.query_plan.debug and "patterns_matched" in result.query_plan.debug:
             typer.echo(f"  ✓ Patterns matched: {', '.join(result.query_plan.debug['patterns_matched'])}")
         typer.echo(f"  ✓ Query executed in {result.execution_time_ms:.1f}ms")
-        typer.echo(f"  ✓ SQL written to: sql.txt")
-        typer.echo(f"  ✓ Results written to: candidates.json")
+        typer.echo("  ✓ SQL written to: sql.txt")
+        typer.echo("  ✓ Results written to: candidates.json")
 
         # Show warnings if any
         if result.warnings:
-            typer.echo(f"\n⚠ Warnings:")
+            typer.echo("\n⚠ Warnings:")
             for warning in result.warnings:
                 typer.echo(f"  - [{warning.code}] {warning.message}")
 
     except QueryCompilationError as e:
         # LLM compilation failure - display helpful error message
-        typer.echo(f"  ✗ Query compilation failed\n")
+        typer.echo("  ✗ Query compilation failed\n")
         typer.echo(str(e))
         raise typer.Exit(code=1)
     except Exception as e:
@@ -273,20 +275,20 @@ def query(
     # Print summary
     candidate_set = result.candidate_set
     typer.echo(f"\n{'='*60}")
-    typer.echo(f"Query Results Summary")
+    typer.echo("Query Results Summary")
     typer.echo(f"{'='*60}")
     typer.echo(f"Query: {query_text}")
     typer.echo(f"Candidates found: {candidate_set.total_count}")
     typer.echo(f"Plan hash: {candidate_set.plan_hash[:16]}...")
     typer.echo(f"\nOutput directory: {out}")
-    typer.echo(f"  - plan.json     (QueryPlan)")
-    typer.echo(f"  - sql.txt       (Executed SQL)")
-    typer.echo(f"  - candidates.json (CandidateSet with evidence)")
+    typer.echo("  - plan.json     (QueryPlan)")
+    typer.echo("  - sql.txt       (Executed SQL)")
+    typer.echo("  - candidates.json (CandidateSet with evidence)")
     typer.echo(f"{'='*60}")
 
     # Show sample of results if any
     if candidate_set.candidates:
-        typer.echo(f"\nSample results (showing first 3):")
+        typer.echo("\nSample results (showing first 3):")
         for i, candidate in enumerate(candidate_set.candidates[:3], 1):
             typer.echo(f"\n{i}. Record ID: {candidate.record_id}")
             typer.echo(f"   Match: {candidate.match_rationale}")

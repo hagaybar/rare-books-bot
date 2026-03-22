@@ -480,7 +480,7 @@ def run_tests():
                     roundtrip_ok = False
 
         if roundtrip_ok:
-            print(f"  Roundtrip: OK")
+            print("  Roundtrip: OK")
         else:
             all_roundtrips_passed = False
 

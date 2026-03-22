@@ -51,7 +51,7 @@ from scripts.metadata.audit import (
     FieldCoverage,
     generate_coverage_report,
 )
-from scripts.metadata.agent_harness import AgentHarness, ProposedMapping
+from scripts.metadata.agent_harness import AgentHarness
 from scripts.metadata.agents.date_agent import DateAgent
 from scripts.metadata.agents.name_agent import NameAgent
 from scripts.metadata.agents.place_agent import PlaceAgent
