@@ -72,8 +72,9 @@ class AgentAnalysis:
     total_agents: int
     with_authority: int  # Have authority URI
     without_authority: int
-    low_confidence_count: int  # confidence < 0.8
+    low_confidence_count: int  # confidence <= 0.8
     missing_role_count: int
+    clusters: List  # List[Cluster] — gap clusters for the dashboard
     top_gaps: List[AgentRecord]
 
 
@@ -228,9 +229,9 @@ class NameAgent:
             # Without authority URI
             without_auth = total - with_auth
 
-            # Low confidence (< 0.8)
+            # Low confidence (<= 0.8)
             low_conf = conn.execute(
-                "SELECT COUNT(*) FROM agents WHERE agent_confidence < 0.8"
+                "SELECT COUNT(*) FROM agents WHERE agent_confidence <= 0.8"
             ).fetchone()[0]
 
             # Missing role
@@ -248,7 +249,7 @@ class NameAgent:
                        a.role_raw, a.role_norm, a.authority_uri
                 FROM agents a
                 JOIN records r ON r.id = a.record_id
-                WHERE a.agent_confidence < 0.8
+                WHERE a.agent_confidence <= 0.8
                   AND a.agent_raw IS NOT NULL
                   AND a.agent_raw != ''
                 """
@@ -280,12 +281,20 @@ class NameAgent:
                 reverse=True,
             )[:20]
 
+            # Build clusters from audit flagged items
+            report = generate_coverage_report_from_conn(conn)
+            clusters = cluster_field_gaps(
+                field="agent",
+                flagged_items=report.agent_name_coverage.flagged_items,
+            )
+
             return AgentAnalysis(
                 total_agents=total,
                 with_authority=with_auth,
                 without_authority=without_auth,
                 low_confidence_count=low_conf,
                 missing_role_count=missing_role,
+                clusters=clusters,
                 top_gaps=top_gaps,
             )
         finally:

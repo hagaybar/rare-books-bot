@@ -317,7 +317,7 @@ def build_agent_name_coverage(conn: sqlite3.Connection) -> FieldCoverage:
         """SELECT agent_raw, agent_norm, agent_confidence,
                   agent_method, COUNT(*) AS freq
            FROM agents
-           WHERE agent_method = 'ambiguous' OR agent_confidence < 0.80
+           WHERE agent_method = 'ambiguous' OR agent_confidence <= 0.80
            GROUP BY agent_raw
            ORDER BY freq DESC
            LIMIT 100""",
