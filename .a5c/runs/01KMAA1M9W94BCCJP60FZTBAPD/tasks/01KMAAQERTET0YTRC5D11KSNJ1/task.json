@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAAQERTET0YTRC5D11KSNJ1",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "publisher-authority-records:S000004:__sdk.breakpoint",
+  "stepId": "S000004",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "summary": "Schema designed and tested on sample publishers"
+      },
+      "question": "Schema tested on 14 publishers. Review the schema design and test results before creating the final authority table. The schema, test data, and any issues found will be presented for your review. Proceed with refinement and final implementation?",
+      "title": "Publisher Authority Schema Review"
+    },
+    "requestedAt": "2026-03-22T08:31:32.122Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "summary": "Schema designed and tested on sample publishers"
+      },
+      "question": "Schema tested on 14 publishers. Review the schema design and test results before creating the final authority table. The schema, test data, and any issues found will be presented for your review. Proceed with refinement and final implementation?",
+      "title": "Publisher Authority Schema Review"
+    },
+    "requestedAt": "2026-03-22T08:31:32.122Z"
+  }
+}

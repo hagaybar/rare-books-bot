@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "researchFile": "data/normalization/publisher_research.json",
+  "files_created": ["data/normalization/publisher_research.json", "data/normalization/publisher_aliases/publisher_alias_map.json"],
+  "total_researched": 29,
+  "total_unresearched": 62,
+  "total_alias_entries": 39,
+  "artifacts": ["data/normalization/publisher_research.json", "data/normalization/publisher_aliases/publisher_alias_map.json"]
+}

@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "publishersTested": 14,
+  "total_variants": 26,
+  "total_imprints_linked": 176,
+  "all_roundtrips_passed": true,
+  "issues": ["detect_script mixed Hebrew-Latin returns latin instead of hebrew"],
+  "suggested_refinements": [
+    "Add branch/sub_entity field for printing dynasties",
+    "Add priority/rank to variants for display ordering",
+    "Add primary_language field to publisher_authorities",
+    "Add persistent authority_id FK to imprints table"
+  ],
+  "report_path": "data/metadata/publisher_authority_test_report.json",
+  "artifacts": ["data/metadata/publisher_authority_test_report.json", "tests/scripts/metadata/test_publisher_authority_real_db.py"]
+}

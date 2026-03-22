@@ -605,7 +605,7 @@ Agent-driven HITL (Human-In-The-Loop) system for improving bibliographic metadat
 React Frontend ──REST API──> FastAPI Backend ──> Grounding Layer + Specialist Agents + Action Layer
 ```
 
-- **Backend**: `app/api/metadata.py` - 11 REST endpoints for coverage, issues, corrections, agent chat
+- **Backend**: `app/api/metadata.py` - 12 REST endpoints for coverage, issues, corrections, agent chat, publisher authorities
 - **Agents**: `scripts/metadata/agents/` - 4 specialist agents (Place, Date, Publisher, Name)
 - **Frontend**: `frontend/` - React SPA with Dashboard, Workbench, Agent Chat, Review pages
 - **Feedback Loop**: `scripts/metadata/feedback_loop.py` - approve → alias map → re-normalize → coverage update
@@ -625,6 +625,7 @@ React Frontend ──REST API──> FastAPI Backend ──> Grounding Layer + S
 | POST | /metadata/primo-urls | Batch Primo URLs |
 | GET | /metadata/records/{mms_id}/primo | Single Primo URL |
 | POST | /metadata/agent/chat | Agent conversation |
+| GET | /metadata/publishers | Publisher authority records |
 
 ### Specialist Agents
 
@@ -653,6 +654,40 @@ poetry run python -m scripts.metadata.audit data/index/bibliographic.db --output
 
 # Apply a correction via CLI
 poetry run python -m scripts.metadata.feedback_loop --field place --raw "Lugduni Batavorum" --canonical leiden --db data/index/bibliographic.db
+```
+
+## Publisher Authority Records
+
+Internal publisher identification system for the rare books collection.
+
+### Tables
+- `publisher_authorities` -- canonical publisher identities (228 records: 203 unresearched, 18 printing houses, 3 bibliophile societies, 2 unknown markers, 1 modern publisher, 1 private press)
+- `publisher_variants` -- name forms linking to authorities (266 variants across Latin, Hebrew, and other scripts)
+
+### Key Properties
+- Every authority has at least one variant; every variant references a valid authority
+- Confidence scores are always set (never null), range 0.0-1.0
+- Missing-marker records (e.g. publisher unknown, privatdruck) are flagged with `is_missing_marker = 1`
+- 834 imprints are currently matchable via variant forms
+
+### API Endpoint
+- `GET /metadata/publishers` -- list all publisher authorities with variant counts and imprint counts
+  - Optional query parameter: `type` (e.g., `printing_house`, `unresearched`)
+
+### Usage
+```python
+from scripts.metadata.publisher_authority import PublisherAuthorityStore
+store = PublisherAuthorityStore(Path("data/index/bibliographic.db"))
+authority = store.search_by_variant("ex officina elzeviriana")
+```
+
+### Testing
+```bash
+# Unit tests (in-memory DB)
+poetry run python -m pytest tests/scripts/metadata/test_publisher_authority.py -v
+
+# Integration tests (real DB)
+poetry run python -m pytest tests/integration/test_publisher_authority.py -v
 ```
 
 ## Common Commands

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMABFZ8GPGZC3C8RYTYNDTQZ",
+  "taskId": "verify-authority-records",
+  "invocationKey": "publisher-authority-records:S000007:verify-authority-records",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Verify authority records and write integration tests",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

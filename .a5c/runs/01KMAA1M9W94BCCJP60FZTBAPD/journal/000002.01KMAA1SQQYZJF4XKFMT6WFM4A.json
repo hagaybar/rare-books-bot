@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T08:19:42.455Z",
+  "data": {
+    "effectId": "01KMAA1SQ6GKBEBP181EGERN67",
+    "invocationKey": "publisher-authority-records:S000001:save-research-data",
+    "invocationHash": "9268fc585e49ef0bf7b4f336853cf27612913413544daf51f7f3305b078433c5",
+    "stepId": "S000001",
+    "taskId": "save-research-data",
+    "kind": "agent",
+    "label": "Save all publisher research data to structured file",
+    "taskDefRef": "tasks/01KMAA1SQ6GKBEBP181EGERN67/task.json"
+  },
+  "checksum": "15d4f80b0ecf1c5a296c278fdc06462ea74463a62e84c66e0acd2ce1df2c833e"
+}

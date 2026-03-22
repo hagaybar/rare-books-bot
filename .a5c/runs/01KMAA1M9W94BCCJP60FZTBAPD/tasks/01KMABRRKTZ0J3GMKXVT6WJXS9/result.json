@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMABRRKTZ0J3GMKXVT6WJXS9",
+  "taskId": "run-tests",
+  "invocationKey": "publisher-authority-records:S000008:run-tests",
+  "status": "ok",
+  "result": {
+    "all_tests_green": true,
+    "duration": "0.08s",
+    "failed": 0,
+    "passed": 85,
+    "success": true
+  },
+  "startedAt": "2026-03-22T08:50:01.102Z",
+  "finishedAt": "2026-03-22T08:50:01.102Z",
+  "value": {
+    "all_tests_green": true,
+    "duration": "0.08s",
+    "failed": 0,
+    "passed": 85,
+    "success": true
+  }
+}

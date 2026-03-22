@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAB0YSEQRC2MZP1M5C5KPV0",
+  "taskId": "refine-schema",
+  "invocationKey": "publisher-authority-records:S000005:refine-schema",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Refine schema based on test results",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "schemaDesign": {
+      "artifacts": [
+        "scripts/marc/publisher_authority_schema.sql",
+        "scripts/metadata/publisher_authority.py"
+      ],
+      "files_created": [
+        "scripts/marc/publisher_authority_schema.sql",
+        "scripts/metadata/publisher_authority.py",
+        "tests/scripts/metadata/test_publisher_authority.py"
+      ],
+      "models": [
+        "PublisherAuthority",
+        "PublisherVariant",
+        "PublisherAuthorityStore"
+      ],
+      "schemaVersion": "v1",
+      "success": true,
+      "tables": [
+        "publisher_authorities",
+        "publisher_variants"
+      ],
+      "test_results": {
+        "failed": 0,
+        "passed": 52
+      }
+    },
+    "schemaTest": {
+      "all_roundtrips_passed": true,
+      "artifacts": [
+        "data/metadata/publisher_authority_test_report.json",
+        "tests/scripts/metadata/test_publisher_authority_real_db.py"
+      ],
+      "issues": [
+        "detect_script mixed Hebrew-Latin returns latin instead of hebrew"
+      ],
+      "publishersTested": 14,
+      "report_path": "data/metadata/publisher_authority_test_report.json",
+      "success": true,
+      "suggested_refinements": [
+        "Add branch/sub_entity field for printing dynasties",
+        "Add priority/rank to variants for display ordering",
+        "Add primary_language field to publisher_authorities",
+        "Add persistent authority_id FK to imprints table"
+      ],
+      "total_imprints_linked": 176,
+      "total_variants": 26
+    }
+  }
+}

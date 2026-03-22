@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAAGMPVMGBG20FKXF8A18DA",
+  "taskId": "test-schema",
+  "invocationKey": "publisher-authority-records:S000003:test-schema",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Test schema on 10-15 publishers from research",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "researchFile": "data/normalization/publisher_research.json",
+    "schemaDesign": {
+      "artifacts": [
+        "scripts/marc/publisher_authority_schema.sql",
+        "scripts/metadata/publisher_authority.py"
+      ],
+      "files_created": [
+        "scripts/marc/publisher_authority_schema.sql",
+        "scripts/metadata/publisher_authority.py",
+        "tests/scripts/metadata/test_publisher_authority.py"
+      ],
+      "models": [
+        "PublisherAuthority",
+        "PublisherVariant",
+        "PublisherAuthorityStore"
+      ],
+      "schemaVersion": "v1",
+      "success": true,
+      "tables": [
+        "publisher_authorities",
+        "publisher_variants"
+      ],
+      "test_results": {
+        "failed": 0,
+        "passed": 52
+      }
+    }
+  }
+}

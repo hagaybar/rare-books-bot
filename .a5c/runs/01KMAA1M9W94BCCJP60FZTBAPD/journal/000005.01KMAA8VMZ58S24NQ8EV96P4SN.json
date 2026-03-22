@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T08:23:33.791Z",
+  "data": {
+    "effectId": "01KMAA8VMKDXQM20N4TFQSG28B",
+    "invocationKey": "publisher-authority-records:S000002:design-schema",
+    "invocationHash": "a183db866b0a73fddf31f46e2f91d3f463eb4b172e745655d583ff8db2e6a078",
+    "stepId": "S000002",
+    "taskId": "design-schema",
+    "kind": "agent",
+    "label": "Design publisher authority record schema",
+    "taskDefRef": "tasks/01KMAA8VMKDXQM20N4TFQSG28B/task.json"
+  },
+  "checksum": "347d5ac1c380d6420f2ddba4e94793febb2f2012a7322a474191cebf16e577ed"
+}

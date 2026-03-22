@@ -326,3 +326,52 @@ class AgentChatResponse(BaseModel):
     action: str = Field(
         ..., description="Action performed: 'analysis', 'proposals', or 'answer'"
     )
+
+
+# ---------------------------------------------------------------------------
+# Publisher authority response models
+# ---------------------------------------------------------------------------
+
+
+class PublisherVariantResponse(BaseModel):
+    """A single name variant for a publisher authority."""
+
+    variant_form: str = Field(..., description="The name form as it appears in records")
+    script: str = Field(..., description="Script type: latin, hebrew, arabic, other")
+    language: Optional[str] = Field(None, description="ISO 639 language code")
+    is_primary: bool = Field(..., description="Whether this is the primary display form")
+
+
+class PublisherAuthorityResponse(BaseModel):
+    """A canonical publisher identity with metadata summary."""
+
+    id: int = Field(..., description="Authority record ID")
+    canonical_name: str = Field(..., description="Canonical English name")
+    type: str = Field(
+        ...,
+        description="Publisher type: printing_house, private_press, "
+        "modern_publisher, bibliophile_society, unknown_marker, unresearched",
+    )
+    confidence: float = Field(..., description="Confidence score (0.0-1.0)")
+    dates_active: Optional[str] = Field(None, description="Active date range string")
+    location: Optional[str] = Field(None, description="Primary location")
+    is_missing_marker: bool = Field(
+        ..., description="True if this represents 'publisher unknown'"
+    )
+    variant_count: int = Field(..., description="Number of name variants")
+    imprint_count: int = Field(..., description="Number of linked imprints")
+    variants: List[PublisherVariantResponse] = Field(
+        default_factory=list, description="Name variants for this authority"
+    )
+    viaf_id: Optional[str] = Field(None, description="VIAF authority ID")
+    wikidata_id: Optional[str] = Field(None, description="Wikidata Q-number")
+    cerl_id: Optional[str] = Field(None, description="CERL Thesaurus ID")
+
+
+class PublisherAuthorityListResponse(BaseModel):
+    """Paginated list of publisher authorities."""
+
+    total: int = Field(..., description="Total number of matching authorities")
+    items: List[PublisherAuthorityResponse] = Field(
+        ..., description="Publisher authority records"
+    )

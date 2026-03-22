@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAB0YSEQRC2MZP1M5C5KPV0",
+  "taskId": "refine-schema",
+  "invocationKey": "publisher-authority-records:S000005:refine-schema",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/marc/publisher_authority_schema.sql",
+      "scripts/metadata/publisher_authority.py"
+    ],
+    "bug_fixed": "detect_script mixed Hebrew-Latin classification",
+    "files_modified": [
+      "scripts/marc/publisher_authority_schema.sql",
+      "scripts/metadata/publisher_authority.py",
+      "scripts/metadata/clustering.py",
+      "scripts/marc/m3_schema.sql",
+      "tests/scripts/metadata/test_publisher_authority.py"
+    ],
+    "new_columns": [
+      "publisher_authorities.branch",
+      "publisher_authorities.primary_language",
+      "publisher_variants.priority"
+    ],
+    "schemaVersion": "v2",
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 66
+    }
+  },
+  "startedAt": "2026-03-22T08:40:50.592Z",
+  "finishedAt": "2026-03-22T08:40:50.592Z",
+  "value": {
+    "artifacts": [
+      "scripts/marc/publisher_authority_schema.sql",
+      "scripts/metadata/publisher_authority.py"
+    ],
+    "bug_fixed": "detect_script mixed Hebrew-Latin classification",
+    "files_modified": [
+      "scripts/marc/publisher_authority_schema.sql",
+      "scripts/metadata/publisher_authority.py",
+      "scripts/metadata/clustering.py",
+      "scripts/marc/m3_schema.sql",
+      "tests/scripts/metadata/test_publisher_authority.py"
+    ],
+    "new_columns": [
+      "publisher_authorities.branch",
+      "publisher_authorities.primary_language",
+      "publisher_variants.priority"
+    ],
+    "schemaVersion": "v2",
+    "success": true,
+    "test_results": {
+      "failed": 0,
+      "passed": 66
+    }
+  }
+}

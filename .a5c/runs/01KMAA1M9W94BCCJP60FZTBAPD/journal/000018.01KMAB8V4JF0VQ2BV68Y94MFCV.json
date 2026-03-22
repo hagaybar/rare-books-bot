@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T08:41:01.842Z",
+  "data": {
+    "effectId": "01KMAB8V46BF1WS43DTDAH7EYS",
+    "invocationKey": "publisher-authority-records:S000006:create-authority-records",
+    "invocationHash": "6ec49acf3141a72cf464b9371effdcb0ccb5c4b344e8bda2164199a613952420",
+    "stepId": "S000006",
+    "taskId": "create-authority-records",
+    "kind": "agent",
+    "label": "Create publisher authority records in database for all researched publishers",
+    "taskDefRef": "tasks/01KMAB8V46BF1WS43DTDAH7EYS/task.json"
+  },
+  "checksum": "ca9b712123b5bc181dc1fdff98b4a802dc642415774da6893224715c4ba98c2f"
+}

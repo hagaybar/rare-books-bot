@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "schemaVersion": "v2",
+  "files_modified": ["scripts/marc/publisher_authority_schema.sql", "scripts/metadata/publisher_authority.py", "scripts/metadata/clustering.py", "scripts/marc/m3_schema.sql", "tests/scripts/metadata/test_publisher_authority.py"],
+  "test_results": {"passed": 66, "failed": 0},
+  "new_columns": ["publisher_authorities.branch", "publisher_authorities.primary_language", "publisher_variants.priority"],
+  "bug_fixed": "detect_script mixed Hebrew-Latin classification",
+  "artifacts": ["scripts/marc/publisher_authority_schema.sql", "scripts/metadata/publisher_authority.py"]
+}

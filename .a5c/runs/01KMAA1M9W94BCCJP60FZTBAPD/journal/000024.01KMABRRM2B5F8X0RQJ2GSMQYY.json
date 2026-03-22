@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T08:49:43.554Z",
+  "data": {
+    "effectId": "01KMABRRKTZ0J3GMKXVT6WJXS9",
+    "invocationKey": "publisher-authority-records:S000008:run-tests",
+    "invocationHash": "7e2534bbfc424d386e32ff7c7e404821caadcc5e97f3a935188bfc5a659428e3",
+    "stepId": "S000008",
+    "taskId": "run-tests",
+    "kind": "shell",
+    "label": "Run all publisher authority tests",
+    "taskDefRef": "tasks/01KMABRRKTZ0J3GMKXVT6WJXS9/task.json"
+  },
+  "checksum": "b1d3089611836041d97f75caa3834df67106f22695cc10c7d3909c55e87801c9"
+}

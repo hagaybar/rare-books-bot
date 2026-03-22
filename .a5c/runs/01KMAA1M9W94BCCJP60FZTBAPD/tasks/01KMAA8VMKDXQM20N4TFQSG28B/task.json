@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAA8VMKDXQM20N4TFQSG28B",
+  "taskId": "design-schema",
+  "invocationKey": "publisher-authority-records:S000002:design-schema",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Design publisher authority record schema",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "researchFile": "data/normalization/publisher_research.json",
+    "schemaPath": "scripts/marc/m3_schema.sql"
+  }
+}

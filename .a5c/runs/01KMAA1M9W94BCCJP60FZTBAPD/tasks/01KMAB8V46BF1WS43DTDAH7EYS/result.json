@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAB8V46BF1WS43DTDAH7EYS",
+  "taskId": "create-authority-records",
+  "invocationKey": "publisher-authority-records:S000006:create-authority-records",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/metadata/populate_publisher_authority.py",
+      "logs/publisher_authority_creation.jsonl"
+    ],
+    "log_path": "logs/publisher_authority_creation.jsonl",
+    "merges": [
+      "Blaeu entries merged",
+      "Orphanage Press entries merged",
+      "Aldine Press entries merged",
+      "Elzevir entries merged"
+    ],
+    "recordsCreated": 228,
+    "researched_created": 25,
+    "success": true,
+    "total_imprints_linked": 835,
+    "total_variants": 266,
+    "unresearched_created": 203
+  },
+  "startedAt": "2026-03-22T08:44:35.209Z",
+  "finishedAt": "2026-03-22T08:44:35.209Z",
+  "value": {
+    "artifacts": [
+      "scripts/metadata/populate_publisher_authority.py",
+      "logs/publisher_authority_creation.jsonl"
+    ],
+    "log_path": "logs/publisher_authority_creation.jsonl",
+    "merges": [
+      "Blaeu entries merged",
+      "Orphanage Press entries merged",
+      "Aldine Press entries merged",
+      "Elzevir entries merged"
+    ],
+    "recordsCreated": 228,
+    "researched_created": 25,
+    "success": true,
+    "total_imprints_linked": 835,
+    "total_variants": 266,
+    "unresearched_created": 203
+  }
+}

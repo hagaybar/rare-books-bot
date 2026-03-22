@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T08:36:43.450Z",
+  "data": {
+    "effectId": "01KMAB0YSEQRC2MZP1M5C5KPV0",
+    "invocationKey": "publisher-authority-records:S000005:refine-schema",
+    "invocationHash": "845181af98e58a7dd100468448ffbc942df10ed7440016e21c1ce07c164461c1",
+    "stepId": "S000005",
+    "taskId": "refine-schema",
+    "kind": "agent",
+    "label": "Refine schema based on test results",
+    "taskDefRef": "tasks/01KMAB0YSEQRC2MZP1M5C5KPV0/task.json"
+  },
+  "checksum": "d574ff2ac5491c95134ddf9ac23bc4d9659de58f6fc66ac39928a8c64693eece"
+}

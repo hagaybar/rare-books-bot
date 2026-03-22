@@ -282,3 +282,65 @@ CREATE INDEX idx_enrichment_authority_uri ON authority_enrichment(authority_uri)
 CREATE INDEX idx_enrichment_wikidata ON authority_enrichment(wikidata_id);
 CREATE INDEX idx_enrichment_nli ON authority_enrichment(nli_id);
 CREATE INDEX idx_enrichment_viaf ON authority_enrichment(viaf_id);
+
+-- ==============================================================================
+-- PUBLISHER AUTHORITY TABLES
+-- ==============================================================================
+
+-- Publisher authorities (one row per canonical publisher identity)
+CREATE TABLE IF NOT EXISTS publisher_authorities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    canonical_name TEXT NOT NULL,
+    canonical_name_lower TEXT NOT NULL,
+    type TEXT NOT NULL CHECK(type IN (
+        'printing_house', 'private_press', 'modern_publisher',
+        'bibliophile_society', 'unknown_marker', 'unresearched'
+    )),
+    dates_active TEXT,
+    date_start INTEGER,
+    date_end INTEGER,
+    location TEXT,
+    notes TEXT,
+    sources TEXT,
+    confidence REAL NOT NULL DEFAULT 0.5,
+    is_missing_marker INTEGER NOT NULL DEFAULT 0,
+    viaf_id TEXT,
+    wikidata_id TEXT,
+    cerl_id TEXT,
+    branch TEXT,
+    primary_language TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pub_auth_canonical_lower
+    ON publisher_authorities(canonical_name_lower);
+CREATE INDEX IF NOT EXISTS idx_pub_auth_type
+    ON publisher_authorities(type);
+CREATE INDEX IF NOT EXISTS idx_pub_auth_location
+    ON publisher_authorities(location);
+CREATE INDEX IF NOT EXISTS idx_pub_auth_branch
+    ON publisher_authorities(branch);
+CREATE INDEX IF NOT EXISTS idx_pub_auth_primary_language
+    ON publisher_authorities(primary_language);
+
+-- Publisher variants (one row per name variant, FK to publisher_authorities)
+CREATE TABLE IF NOT EXISTS publisher_variants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    authority_id INTEGER NOT NULL REFERENCES publisher_authorities(id) ON DELETE CASCADE,
+    variant_form TEXT NOT NULL,
+    variant_form_lower TEXT NOT NULL,
+    script TEXT DEFAULT 'latin',
+    language TEXT,
+    is_primary INTEGER NOT NULL DEFAULT 0,
+    priority INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_pub_var_authority
+    ON publisher_variants(authority_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pub_var_form_lower
+    ON publisher_variants(variant_form_lower);
+CREATE INDEX IF NOT EXISTS idx_pub_var_script
+    ON publisher_variants(script);

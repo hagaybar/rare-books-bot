@@ -1,0 +1,14 @@
+{
+  "runId": "01KMAA1M9W94BCCJP60FZTBAPD",
+  "request": "publisher-authority-records",
+  "processId": "publisher-authority-records",
+  "entrypoint": {
+    "importPath": "../../processes/publisher-authority-records.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/publisher-authority-records.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-22T08:19:36.902Z",
+  "prompt": "Save publisher research data and create internal publisher authority record system with schema design, testing, refinement, and database implementation",
+  "completionProof": "7ead1ef8d8ddda57623e3252c4de2487"
+}

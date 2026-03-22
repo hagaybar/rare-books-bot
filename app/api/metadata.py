@@ -41,6 +41,9 @@ from app.api.metadata_models import (
     PrimoUrlEntry,
     PrimoUrlRequest,
     PrimoUrlResponse,
+    PublisherAuthorityListResponse,
+    PublisherAuthorityResponse,
+    PublisherVariantResponse,
     UnmappedValue,
 )
 from scripts.metadata.audit import (
@@ -1394,6 +1397,88 @@ async def agent_chat(req: AgentChatRequest) -> AgentChatResponse:
         duration_ms=(_time.monotonic() - _chat_start) * 1000,
     )
     return result
+
+
+# ---------------------------------------------------------------------------
+# Publisher authority endpoint
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/publishers",
+    response_model=PublisherAuthorityListResponse,
+    summary="List publisher authority records",
+    description=(
+        "Returns publisher authorities with variant counts and imprint counts. "
+        "Optionally filter by publisher type."
+    ),
+)
+def list_publisher_authorities(
+    type: Optional[str] = Query(
+        None,
+        description=(
+            "Filter by publisher type: printing_house, private_press, "
+            "modern_publisher, bibliophile_society, unknown_marker, unresearched"
+        ),
+    ),
+):
+    """Return publisher authority records with variant and imprint counts."""
+    from scripts.metadata.publisher_authority import PublisherAuthorityStore
+
+    db_path = _get_db_path()
+    if not db_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Bibliographic database not available",
+        )
+
+    valid_types = {
+        "printing_house",
+        "private_press",
+        "modern_publisher",
+        "bibliophile_society",
+        "unknown_marker",
+        "unresearched",
+    }
+    if type is not None and type not in valid_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid type '{type}'. Must be one of: {sorted(valid_types)}",
+        )
+
+    store = PublisherAuthorityStore(db_path)
+    authorities = store.list_all(type_filter=type)
+
+    items = []
+    for auth in authorities:
+        imprint_count = store.link_to_imprints(auth.id)
+        items.append(
+            PublisherAuthorityResponse(
+                id=auth.id,
+                canonical_name=auth.canonical_name,
+                type=auth.type,
+                confidence=auth.confidence,
+                dates_active=auth.dates_active,
+                location=auth.location,
+                is_missing_marker=auth.is_missing_marker,
+                variant_count=len(auth.variants),
+                imprint_count=imprint_count,
+                variants=[
+                    PublisherVariantResponse(
+                        variant_form=v.variant_form,
+                        script=v.script,
+                        language=v.language,
+                        is_primary=v.is_primary,
+                    )
+                    for v in auth.variants
+                ],
+                viaf_id=auth.viaf_id,
+                wikidata_id=auth.wikidata_id,
+                cerl_id=auth.cerl_id,
+            )
+        )
+
+    return PublisherAuthorityListResponse(total=len(items), items=items)
 
 
 # TODO: Add WebSocket endpoint /ws/metadata/agent for streaming responses

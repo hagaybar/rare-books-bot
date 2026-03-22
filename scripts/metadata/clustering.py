@@ -95,6 +95,14 @@ def detect_script(text: str) -> str:
         return "hebrew"
     if arabic_count > hebrew_count and arabic_count > latin_count:
         return "arabic"
+
+    # Mixed script tie-breaking: prefer non-Latin scripts when present,
+    # since Latin characters commonly appear in otherwise Hebrew/Arabic
+    # strings (e.g., "דפוס bragadin" is Hebrew context with a Latin name).
+    if hebrew_count > 0 and hebrew_count >= arabic_count:
+        return "hebrew"
+    if arabic_count > 0:
+        return "arabic"
     return "latin"
 
 

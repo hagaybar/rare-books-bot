@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAAQERTET0YTRC5D11KSNJ1",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "publisher-authority-records:S000004:__sdk.breakpoint",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Approved. Apply refined schema with branch, primary_language, priority fields. No FK on imprints."
+  },
+  "startedAt": "2026-03-22T08:36:31.224Z",
+  "finishedAt": "2026-03-22T08:36:31.224Z",
+  "value": {
+    "approved": true,
+    "response": "Approved. Apply refined schema with branch, primary_language, priority fields. No FK on imprints."
+  }
+}

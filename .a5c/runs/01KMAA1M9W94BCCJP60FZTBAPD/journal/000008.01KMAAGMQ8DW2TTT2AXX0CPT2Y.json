@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T08:27:48.840Z",
+  "data": {
+    "effectId": "01KMAAGMPVMGBG20FKXF8A18DA",
+    "invocationKey": "publisher-authority-records:S000003:test-schema",
+    "invocationHash": "c0287601a16d7b023b0362594f8c60465cf57d3d361d7719b21a291d774feeea",
+    "stepId": "S000003",
+    "taskId": "test-schema",
+    "kind": "agent",
+    "label": "Test schema on 10-15 publishers from research",
+    "taskDefRef": "tasks/01KMAAGMPVMGBG20FKXF8A18DA/task.json"
+  },
+  "checksum": "1f4b52e3624f55a1fb57bccc1a8104fe511943645052c6c0530031c7e8dd2ee0"
+}

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAB8V46BF1WS43DTDAH7EYS",
+  "taskId": "create-authority-records",
+  "invocationKey": "publisher-authority-records:S000006:create-authority-records",
+  "stepId": "S000006",
+  "kind": "agent",
+  "title": "Create publisher authority records in database for all researched publishers",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "researchFile": "data/normalization/publisher_research.json",
+    "schemaPath": "scripts/marc/m3_schema.sql",
+    "schemaRefine": {
+      "artifacts": [
+        "scripts/marc/publisher_authority_schema.sql",
+        "scripts/metadata/publisher_authority.py"
+      ],
+      "bug_fixed": "detect_script mixed Hebrew-Latin classification",
+      "files_modified": [
+        "scripts/marc/publisher_authority_schema.sql",
+        "scripts/metadata/publisher_authority.py",
+        "scripts/metadata/clustering.py",
+        "scripts/marc/m3_schema.sql",
+        "tests/scripts/metadata/test_publisher_authority.py"
+      ],
+      "new_columns": [
+        "publisher_authorities.branch",
+        "publisher_authorities.primary_language",
+        "publisher_variants.priority"
+      ],
+      "schemaVersion": "v2",
+      "success": true,
+      "test_results": {
+        "failed": 0,
+        "passed": 66
+      }
+    }
+  }
+}

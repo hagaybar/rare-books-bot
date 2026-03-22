@@ -1,0 +1,1319 @@
+{
+  "metadata": {
+    "created": "2026-03-22T08:20:00Z",
+    "version": "1.0",
+    "total_publishers": 91,
+    "total_researched": 29,
+    "total_unresearched": 62,
+    "description": "Publisher research for rare books bibliographic database"
+  },
+  "publishers": [
+    {
+      "normalized_form": "חמו\"ל",
+      "canonical_name": "[publisher unknown]",
+      "confidence": 0.95,
+      "type": "unknown_marker",
+      "dates_active": null,
+      "location": null,
+      "notes": "Hebrew abbreviation for חסר מו\"ל (publisher missing). Cataloging convention, not a publisher.",
+      "sources": [],
+      "variants": [
+        "[חמו\"ל]",
+        "חמו\"ל,"
+      ],
+      "is_missing_marker": true,
+      "frequency": 84
+    },
+    {
+      "normalized_form": "ex officina elzeviriana",
+      "canonical_name": "House of Elzevir",
+      "confidence": 0.95,
+      "type": "printing_house",
+      "dates_active": "1583-1712",
+      "location": "Leiden/Amsterdam, Netherlands",
+      "notes": "Elzevir family printing house. Famous for elegant small-format editions.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/House_of_Elzevir"
+      ],
+      "variants": [
+        "ex officina elseviriorum",
+        "Ex officina Elzeviriana,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 7
+    },
+    {
+      "normalized_form": "nella stamparia bragadina",
+      "canonical_name": "Bragadin Press, Venice",
+      "confidence": 0.98,
+      "type": "printing_house",
+      "dates_active": "1550-1710",
+      "location": "Venice, Italy",
+      "notes": "Hebrew printing house founded by Alvise Bragadin. Near-monopoly on Hebrew printing in Venice.",
+      "sources": [
+        "https://www.encyclopedia.com/religion/encyclopedias-almanacs-transcripts-and-maps/bragadinideg"
+      ],
+      "variants": [
+        "g. bragadin",
+        "G. Bragadin",
+        "Nella Stamparia Bragadina"
+      ],
+      "is_missing_marker": false,
+      "frequency": 10
+    },
+    {
+      "normalized_form": "nella stamparia vendramina",
+      "canonical_name": "Vendramin Press, Venice",
+      "confidence": 0.98,
+      "type": "printing_house",
+      "dates_active": "1630-1750",
+      "location": "Venice, Italy",
+      "notes": "Hebrew press founded by Giovanni Vendramin. Last great Venetian Hebrew press.",
+      "sources": [
+        "http://omeka.wustl.edu/omeka/exhibits/show/brisman/item/8390"
+      ],
+      "variants": [
+        "Nella Stamparia Vendramina",
+        "דפוס וינדראמינה",
+        "בדפוס וינדראמין"
+      ],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "a. a. m. stols",
+      "canonical_name": "A.A.M. Stols",
+      "confidence": 0.99,
+      "type": "private_press",
+      "dates_active": "1922-1942",
+      "location": "Maastricht, Netherlands",
+      "notes": "Alexander (Sander) Stols, Dutch printer known for limited bibliophile editions.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/A._A._M._Stols"
+      ],
+      "variants": [
+        "A. A. M. Stols,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 10
+    },
+    {
+      "normalized_form": "f. dummler",
+      "canonical_name": "Ferdinand Dummler, Berlin",
+      "confidence": 0.95,
+      "type": "printing_house",
+      "dates_active": "1808-1870s",
+      "location": "Berlin, Germany",
+      "notes": "Ferdinand Dummler (1777-1846), German publisher. Published E.T.A. Hoffmann.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Ferdinand_D%C3%BCmmler_(publisher)"
+      ],
+      "variants": [
+        "F. Dummler,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 8
+    },
+    {
+      "normalized_form": "verdiere",
+      "canonical_name": "Verdiere, Paris",
+      "confidence": 0.9,
+      "type": "printing_house",
+      "dates_active": "1812-1875",
+      "location": "Paris, France",
+      "notes": "Charles-Hippolyte Verdiere, Parisian bookseller-publisher at 25 Quai des Augustins.",
+      "sources": [
+        "https://data.bnf.fr/15507780/charles-hippolyte_verdiere/"
+      ],
+      "variants": [
+        "Verdiere,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 16
+    },
+    {
+      "normalized_form": "insel",
+      "canonical_name": "Insel Verlag",
+      "confidence": 0.98,
+      "type": "modern_publisher",
+      "dates_active": "1901-present",
+      "location": "Leipzig/Berlin, Germany",
+      "notes": "German literary publisher. Famous for Insel-Bucherei series. Now part of Suhrkamp.",
+      "sources": [
+        "https://www.britannica.com/topic/Insel-Verlag"
+      ],
+      "variants": [
+        "Insel,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 15
+    },
+    {
+      "normalized_form": "aldus",
+      "canonical_name": "Aldine Press, Venice",
+      "confidence": 0.95,
+      "type": "printing_house",
+      "dates_active": "1494-1597",
+      "location": "Venice, Italy",
+      "notes": "Founded by Aldus Manutius. Revolutionized printing with italic type and portable octavo books.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Aldine_Press"
+      ],
+      "variants": [
+        "Aldus,",
+        "in aedibus aldi et andreae"
+      ],
+      "is_missing_marker": false,
+      "frequency": 5
+    },
+    {
+      "normalized_form": "ex officina finceliana",
+      "canonical_name": "Officina Finceliana, Wittenberg",
+      "confidence": 0.6,
+      "type": "printing_house",
+      "dates_active": "17th century",
+      "location": "Wittenberg, Germany",
+      "notes": "Printing house in Wittenberg, limited documentation. Associated with printer Michael Meyer.",
+      "sources": [],
+      "variants": [
+        "Ex officina Finceliana,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "apud s. gryphium",
+      "canonical_name": "Sebastian Gryphius, Lyon",
+      "confidence": 0.99,
+      "type": "printing_house",
+      "dates_active": "1523-1556",
+      "location": "Lyon, France",
+      "notes": "Sebastian Gryphius (1493-1556), leading printer in Lyon. Published estimated half of European academic textbooks.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Sebastian_Gryphius"
+      ],
+      "variants": [
+        "Apud S. Gryphium,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "ex officina c. plantini",
+      "canonical_name": "Christophe Plantin, Antwerp",
+      "confidence": 0.99,
+      "type": "printing_house",
+      "dates_active": "1555-1589",
+      "location": "Antwerp, Belgium",
+      "notes": "Christophe Plantin, largest typographical enterprise in 16th-century Europe. Famous for Biblia Polyglotta.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Christophe_Plantin"
+      ],
+      "variants": [
+        "ex officina C. Plantini,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "apud janssonio-waesbergios",
+      "canonical_name": "Janssonius van Waesberge, Amsterdam",
+      "confidence": 0.98,
+      "type": "printing_house",
+      "dates_active": "1675-1750",
+      "location": "Amsterdam, Netherlands",
+      "notes": "Publishing firm of Johannes Janssonius van Waesberge and sons.",
+      "sources": [
+        "https://gate.unigre.it/mediawiki/index.php/Janssonius_van_Waesberge,_Johannes"
+      ],
+      "variants": [
+        "Apud Janssonio-Waesbergios,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "apud i. & c. blaeu",
+      "canonical_name": "Blaeu, Amsterdam",
+      "confidence": 0.98,
+      "type": "printing_house",
+      "dates_active": "1638-1642",
+      "location": "Amsterdam, Netherlands",
+      "notes": "Joan & Cornelis Blaeu, sons of Willem. Premier Dutch cartographic publishers.",
+      "sources": [
+        "https://apps.lib.umich.edu/online-exhibits/exhibits/show/rediscoveringvignaud/the-low-countries/low-country-maps/blaeu"
+      ],
+      "variants": [
+        "Apud I. & C. Blaeu,",
+        "apud g. & i. blaeu"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "apud g. & i. blaeu",
+      "canonical_name": "Blaeu, Amsterdam",
+      "confidence": 0.98,
+      "type": "printing_house",
+      "dates_active": "1630-1638",
+      "location": "Amsterdam, Netherlands",
+      "notes": "Willem (Guilielmus) & Joan Blaeu. Partnership before Willem's death in 1638.",
+      "sources": [
+        "https://apps.lib.umich.edu/online-exhibits/exhibits/show/rediscoveringvignaud/the-low-countries/low-country-maps/blaeu"
+      ],
+      "variants": [
+        "Apud G. & I. Blaeu,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "ex officina elseviriorum",
+      "canonical_name": "House of Elzevir",
+      "confidence": 0.95,
+      "type": "printing_house",
+      "dates_active": "1583-1712",
+      "location": "Leiden, Netherlands",
+      "notes": "Variant Latin form of Elzevir. Likely Leiden branch.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/House_of_Elzevir"
+      ],
+      "variants": [
+        "Ex Officina Elseviriorum,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "impensis orphanotrophei",
+      "canonical_name": "Francke Orphanage Press, Halle",
+      "confidence": 0.97,
+      "type": "printing_house",
+      "dates_active": "1698-1800s",
+      "location": "Halle, Germany",
+      "notes": "Press of the Franckesche Stiftungen (Francke Foundations). Major Pietist publisher.",
+      "sources": [
+        "https://www.britannica.com/topic/Franckesche-Stiftungen"
+      ],
+      "variants": [
+        "Impensis Orphanotrophei,",
+        "typis et impensis orphanotrophei",
+        "typis & sumptibus orphanotrophei"
+      ],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "typis et impensis orphanotrophei",
+      "canonical_name": "Francke Orphanage Press, Halle",
+      "confidence": 0.97,
+      "type": "printing_house",
+      "dates_active": "1698-1800s",
+      "location": "Halle, Germany",
+      "notes": "Fuller form: printed by and at the expense of the orphanage. Same press.",
+      "sources": [
+        "https://www.britannica.com/topic/Franckesche-Stiftungen"
+      ],
+      "variants": [
+        "Typis et impensis Orphanotrophei,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "in aedibus aldi et andreae",
+      "canonical_name": "Aldine Press, Venice",
+      "confidence": 0.99,
+      "type": "printing_house",
+      "dates_active": "1508-1529",
+      "location": "Venice, Italy",
+      "notes": "Aldine Press under joint imprint of Aldus Manutius and Andrea Torresani.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Aldine_Press"
+      ],
+      "variants": [
+        "In aedibus Aldi et Andreae,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "דניאל זאניטי",
+      "canonical_name": "Daniel Zanetti, Venice",
+      "confidence": 0.97,
+      "type": "printing_house",
+      "dates_active": "1596-1608",
+      "location": "Venice, Italy",
+      "notes": "Venetian Hebrew printer. Published 60+ Hebrew titles.",
+      "sources": [
+        "https://www.sothebys.com/en/auctions/ecatalogue/2014/important-judaica-n09239/lot.68.html"
+      ],
+      "variants": [
+        "דניאל זאניטי,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "דפוס דניאל בומבירגי",
+      "canonical_name": "Daniel Bomberg, Venice",
+      "confidence": 0.99,
+      "type": "printing_house",
+      "dates_active": "1516-1549",
+      "location": "Venice, Italy",
+      "notes": "Flemish-born Christian printer. Most prominent Hebrew printer of 16th century. Published first complete Talmud.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Daniel_Bomberg"
+      ],
+      "variants": [
+        "בבית דניאל בומבירגי",
+        "דפוס דניאל בומבירגי,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "רוברטוס סטפניוס",
+      "canonical_name": "Robert Estienne, Paris",
+      "confidence": 0.98,
+      "type": "printing_house",
+      "dates_active": "1526-1559",
+      "location": "Paris, France",
+      "notes": "Robert I Estienne, Printer to the King for Latin, Hebrew, and Greek. Published complete Hebrew Bible.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Robert_Estienne"
+      ],
+      "variants": [
+        "רוברטוס סטפניוס ובביתו,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "קורנילייו אדיל קינד",
+      "canonical_name": "Cornelio Adelkind, Venice",
+      "confidence": 0.97,
+      "type": "printing_house",
+      "dates_active": "1520-1560",
+      "location": "Venice, Italy",
+      "notes": "Italian-Jewish printer. Supervised publication of first Talmud editions at Bomberg press.",
+      "sources": [
+        "https://www.encyclopedia.com/religion/encyclopedias-almanacs-transcripts-and-maps/adelkind-israel-cornelius"
+      ],
+      "variants": [
+        "קורנילייו אדיל קינד,",
+        "קורנ\"ילייו אדי\"ל קינ\"ד"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "במצות אמברוסיאו פרוביניאו ובביתו",
+      "canonical_name": "Ambrosius Froben, Basel",
+      "confidence": 0.92,
+      "type": "printing_house",
+      "dates_active": "1560-1602",
+      "location": "Basel, Switzerland",
+      "notes": "Grandson of Johann Froben. Published nearly complete Hebrew Talmud (1578-80).",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Ambrosius_Frobenius"
+      ],
+      "variants": [
+        "במצות אמברוסיאו פרוביניאו ובביתו,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "מארקו אנטוניאו יושטיניאן",
+      "canonical_name": "Marco Antonio Giustiniani, Venice",
+      "confidence": 0.98,
+      "type": "printing_house",
+      "dates_active": "1545-1552",
+      "location": "Venice, Italy",
+      "notes": "Venetian patrician with Hebrew press. Rivalry with Bragadin led to papal Talmud burning decree (1553).",
+      "sources": [
+        "https://www.encyclopedia.com/religion/encyclopedias-almanacs-transcripts-and-maps/giustiniani-marco-antoniodeg"
+      ],
+      "variants": [
+        "מארקו אנטוניאו יושטיניאן,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "soncino-gesellschaft",
+      "canonical_name": "Soncino Society, Berlin",
+      "confidence": 0.99,
+      "type": "bibliophile_society",
+      "dates_active": "1924-1937",
+      "location": "Berlin, Germany",
+      "notes": "Jewish bibliophile society. Published 105 titles covering Jewish culture before dissolution.",
+      "sources": [
+        "https://www.jewishvirtuallibrary.org/soncino-gesellschaft-der-freunde-des-juedischen-buches"
+      ],
+      "variants": [
+        "[Soncino-Gesellschaft],"
+      ],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "berliner bibliophilen abend",
+      "canonical_name": "Berliner Bibliophilen Abend",
+      "confidence": 0.98,
+      "type": "bibliophile_society",
+      "dates_active": "1905-present",
+      "location": "Berlin, Germany",
+      "notes": "German bibliophile society. Private press publications for members.",
+      "sources": [
+        "https://de.wikipedia.org/wiki/Berliner_Bibliophilen_Abend"
+      ],
+      "variants": [
+        "[Berliner Bibliophilen Abend],"
+      ],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "grolier club",
+      "canonical_name": "Grolier Club, New York",
+      "confidence": 0.99,
+      "type": "bibliophile_society",
+      "dates_active": "1884-present",
+      "location": "New York, USA",
+      "notes": "Oldest bibliophilic club in North America. Named after Jean Grolier de Servieres.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Grolier_Club"
+      ],
+      "variants": [
+        "Grolier Club,"
+      ],
+      "is_missing_marker": false,
+      "frequency": 0
+    },
+    {
+      "normalized_form": "privatdruck",
+      "canonical_name": "[privately printed]",
+      "confidence": 0.99,
+      "type": "unknown_marker",
+      "dates_active": null,
+      "location": null,
+      "notes": "German for private print. Not a publisher name. Indicates limited-edition not available in trade.",
+      "sources": [
+        "https://de.wikipedia.org/wiki/Privatdruck"
+      ],
+      "variants": [
+        "Privatdruck,"
+      ],
+      "is_missing_marker": true,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "s.n.",
+      "canonical_name": "s.n.",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 100 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 100
+    },
+    {
+      "normalized_form": "publisher not identified",
+      "canonical_name": "publisher not identified",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 29 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 29
+    },
+    {
+      "normalized_form": "j. murray",
+      "canonical_name": "j. murray",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 6 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 6
+    },
+    {
+      "normalized_form": "committee of the palestine exploration fund",
+      "canonical_name": "committee of the palestine exploration fund",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 5 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 5
+    },
+    {
+      "normalized_form": "h. colburn",
+      "canonical_name": "h. colburn",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 5 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 5
+    },
+    {
+      "normalized_form": "printed for t. egerton",
+      "canonical_name": "printed for t. egerton",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 5 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 5
+    },
+    {
+      "normalized_form": "university press",
+      "canonical_name": "university press",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 5 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 5
+    },
+    {
+      "normalized_form": "בדפוס ובבית שלמה בן יוסף פרופס",
+      "canonical_name": "בדפוס ובבית שלמה בן יוסף פרופס",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 5 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 5
+    },
+    {
+      "normalized_form": "e. rouveyre",
+      "canonical_name": "e. rouveyre",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "f. l'honore",
+      "canonical_name": "f. l'honore",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "f. maurer",
+      "canonical_name": "f. maurer",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "j. f. hartknoch",
+      "canonical_name": "j. f. hartknoch",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "little, brown",
+      "canonical_name": "little, brown",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "officinas graficas do museu comercial de lisboa",
+      "canonical_name": "officinas graficas do museu comercial de lisboa",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "typis seminarii, apud joannem manfrè",
+      "canonical_name": "typis seminarii, apud joannem manfrè",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "בבית ובדפוס שלמה בן יוסף כ\"ץ פרופס",
+      "canonical_name": "בבית ובדפוס שלמה בן יוסף כ\"ץ פרופס",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "געדרוקט בייא אנטאן שמיד",
+      "canonical_name": "געדרוקט בייא אנטאן שמיד",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "י' רבינזון",
+      "canonical_name": "י' רבינזון",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "מסדה",
+      "canonical_name": "מסדה",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 4 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 4
+    },
+    {
+      "normalized_form": "a. marcus",
+      "canonical_name": "a. marcus",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "a. mylius",
+      "canonical_name": "a. mylius",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "a. quantin",
+      "canonical_name": "a. quantin",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "apud johannem luzac",
+      "canonical_name": "apud johannem luzac",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "art et metiers",
+      "canonical_name": "art et metiers",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "barrois l'aine",
+      "canonical_name": "barrois l'aine",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "by pieter vander aa, boekverkooper",
+      "canonical_name": "by pieter vander aa, boekverkooper",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "c. f. voss",
+      "canonical_name": "c. f. voss",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "d. siegert",
+      "canonical_name": "d. siegert",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "delaunay",
+      "canonical_name": "delaunay",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "e. arnold",
+      "canonical_name": "e. arnold",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "ex officina christiani schroederi, acad. typogr.",
+      "canonical_name": "ex officina christiani schroederi, acad. typogr.",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "exlibristen",
+      "canonical_name": "exlibristen",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "f. bruckmann",
+      "canonical_name": "f. bruckmann",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "g. j. goschen",
+      "canonical_name": "g. j. goschen",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "gesellschaft der bibliophilen",
+      "canonical_name": "gesellschaft der bibliophilen",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "glade press",
+      "canonical_name": "glade press",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "h. s. saunders",
+      "canonical_name": "h. s. saunders",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "hachette",
+      "canonical_name": "hachette",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "j. fellgibel",
+      "canonical_name": "j. fellgibel",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "j. g. cotta",
+      "canonical_name": "j. g. cotta",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "j. gay",
+      "canonical_name": "j. gay",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "labyrinthos",
+      "canonical_name": "labyrinthos",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "m. nijhoff",
+      "canonical_name": "m. nijhoff",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "magimel",
+      "canonical_name": "magimel",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "o. v. holten",
+      "canonical_name": "o. v. holten",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "p. vorms",
+      "canonical_name": "p. vorms",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "printed for h. colburn",
+      "canonical_name": "printed for h. colburn",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "sumpt. haered. lanckisianorum",
+      "canonical_name": "sumpt. haered. lanckisianorum",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "t. egerton",
+      "canonical_name": "t. egerton",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "x. havermans",
+      "canonical_name": "x. havermans",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "בבית דוד די קאשטרו תארטס",
+      "canonical_name": "בבית דוד די קאשטרו תארטס",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "בדפוס השותפים אברהם יצחק קאשטילו והמשכיל אליעזר סעדון",
+      "canonical_name": "בדפוס השותפים אברהם יצחק קאשטילו והמשכיל אליעזר סעדון",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "בדפוס ובבית שלמה בן יוסף כ\"ץ פרופס",
+      "canonical_name": "בדפוס ובבית שלמה בן יוסף כ\"ץ פרופס",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "בדפוס יחיאל מיכל מייא",
+      "canonical_name": "בדפוס יחיאל מיכל מייא",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "בדפוס ליב זוסמנש",
+      "canonical_name": "בדפוס ליב זוסמנש",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "געדרוקט בייא א. שמיד",
+      "canonical_name": "געדרוקט בייא א. שמיד",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "ויצינצו קונטי",
+      "canonical_name": "ויצינצו קונטי",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "י' רובינזון",
+      "canonical_name": "י' רובינזון",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "ל. קיניג",
+      "canonical_name": "ל. קיניג",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "מחברות לספרות",
+      "canonical_name": "מחברות לספרות",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "מקור",
+      "canonical_name": "מקור",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    },
+    {
+      "normalized_form": "עכשיו",
+      "canonical_name": "עכשיו",
+      "confidence": 0.5,
+      "type": "unresearched",
+      "dates_active": null,
+      "location": null,
+      "notes": "Unresearched publisher. Appears 3 times in database.",
+      "sources": [],
+      "variants": [],
+      "is_missing_marker": false,
+      "frequency": 3
+    }
+  ]
+}

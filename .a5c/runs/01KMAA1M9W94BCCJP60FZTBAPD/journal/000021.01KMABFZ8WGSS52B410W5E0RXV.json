@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T08:44:55.452Z",
+  "data": {
+    "effectId": "01KMABFZ8GPGZC3C8RYTYNDTQZ",
+    "invocationKey": "publisher-authority-records:S000007:verify-authority-records",
+    "invocationHash": "8060f6326849457027b8f776f419468b3d376cefff005d67e9024de733e2c1a4",
+    "stepId": "S000007",
+    "taskId": "verify-authority-records",
+    "kind": "agent",
+    "label": "Verify authority records and write integration tests",
+    "taskDefRef": "tasks/01KMABFZ8GPGZC3C8RYTYNDTQZ/task.json"
+  },
+  "checksum": "f07b534f00ed95740d5f39467ec61ce6ae0ba7a42d58f6872a90db274a6ed6b5"
+}

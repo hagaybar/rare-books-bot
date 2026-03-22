@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAA1SQ6GKBEBP181EGERN67",
+  "taskId": "save-research-data",
+  "invocationKey": "publisher-authority-records:S000001:save-research-data",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Save all publisher research data to structured file",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

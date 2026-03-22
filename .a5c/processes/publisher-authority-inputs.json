@@ -1,0 +1,5 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "dbPath": "data/index/bibliographic.db",
+  "schemaPath": "scripts/marc/m3_schema.sql"
+}

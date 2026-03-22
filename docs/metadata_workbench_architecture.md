@@ -151,6 +151,8 @@ tests/integration/
 | `agents` | Audit, GroundingLayer, NameAgent | FeedbackLoop (UPDATE agent_norm, agent_confidence) |
 | `authority_enrichment` | NameAgent (validate_against_authority) | Not written by workbench |
 | `records` | GroundingLayer (mms_id lookups) | Not written by workbench |
+| `publisher_authorities` | PublisherAuthorityStore, /metadata/publishers API | PublisherAuthorityStore.create/update |
+| `publisher_variants` | PublisherAuthorityStore, variant search | PublisherAuthorityStore.create/add_variant |
 
 ### Alias Map Files
 

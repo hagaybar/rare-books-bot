@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "recordsCreated": 228,
+  "researched_created": 25,
+  "unresearched_created": 203,
+  "total_variants": 266,
+  "total_imprints_linked": 835,
+  "merges": ["Blaeu entries merged", "Orphanage Press entries merged", "Aldine Press entries merged", "Elzevir entries merged"],
+  "log_path": "logs/publisher_authority_creation.jsonl",
+  "artifacts": ["scripts/metadata/populate_publisher_authority.py", "logs/publisher_authority_creation.jsonl"]
+}

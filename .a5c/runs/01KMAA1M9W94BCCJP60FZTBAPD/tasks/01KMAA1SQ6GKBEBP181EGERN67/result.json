@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAA1SQ6GKBEBP181EGERN67",
+  "taskId": "save-research-data",
+  "invocationKey": "publisher-authority-records:S000001:save-research-data",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "data/normalization/publisher_research.json",
+      "data/normalization/publisher_aliases/publisher_alias_map.json"
+    ],
+    "files_created": [
+      "data/normalization/publisher_research.json",
+      "data/normalization/publisher_aliases/publisher_alias_map.json"
+    ],
+    "researchFile": "data/normalization/publisher_research.json",
+    "success": true,
+    "total_alias_entries": 39,
+    "total_researched": 29,
+    "total_unresearched": 62
+  },
+  "startedAt": "2026-03-22T08:23:24.162Z",
+  "finishedAt": "2026-03-22T08:23:24.162Z",
+  "value": {
+    "artifacts": [
+      "data/normalization/publisher_research.json",
+      "data/normalization/publisher_aliases/publisher_alias_map.json"
+    ],
+    "files_created": [
+      "data/normalization/publisher_research.json",
+      "data/normalization/publisher_aliases/publisher_alias_map.json"
+    ],
+    "researchFile": "data/normalization/publisher_research.json",
+    "success": true,
+    "total_alias_entries": 39,
+    "total_researched": 29,
+    "total_unresearched": 62
+  }
+}

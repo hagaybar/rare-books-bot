@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMABFZ8GPGZC3C8RYTYNDTQZ",
+  "taskId": "verify-authority-records",
+  "invocationKey": "publisher-authority-records:S000007:verify-authority-records",
+  "status": "ok",
+  "result": {
+    "api_endpoint_added": "GET /metadata/publishers",
+    "artifacts": [
+      "tests/integration/test_publisher_authority.py",
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "db_stats": {
+      "authorities": 228,
+      "imprints_linked": 834,
+      "orphans": 0,
+      "variants": 266
+    },
+    "docs_updated": [
+      "CLAUDE.md",
+      "docs/metadata_workbench_architecture.md"
+    ],
+    "integration_tests_count": 19,
+    "success": true,
+    "unit_tests_count": 66,
+    "verification_passed": true
+  },
+  "startedAt": "2026-03-22T08:49:31.747Z",
+  "finishedAt": "2026-03-22T08:49:31.747Z",
+  "value": {
+    "api_endpoint_added": "GET /metadata/publishers",
+    "artifacts": [
+      "tests/integration/test_publisher_authority.py",
+      "app/api/metadata.py",
+      "app/api/metadata_models.py"
+    ],
+    "db_stats": {
+      "authorities": 228,
+      "imprints_linked": 834,
+      "orphans": 0,
+      "variants": 266
+    },
+    "docs_updated": [
+      "CLAUDE.md",
+      "docs/metadata_workbench_architecture.md"
+    ],
+    "integration_tests_count": 19,
+    "success": true,
+    "unit_tests_count": 66,
+    "verification_passed": true
+  }
+}
