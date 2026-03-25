@@ -711,7 +711,23 @@ def _handle_aggregate(
             ),
         }
 
-        sql_template = field_map.get(params.field)
+        # Normalize field name aliases (LLM may use variant names)
+        field_aliases = {
+            "imprint_place": "place",
+            "city": "place",
+            "location": "place",
+            "country": "place",
+            "date": "date_decade",
+            "year": "date_decade",
+            "decade": "date_decade",
+            "century": "date_decade",
+            "agent_norm": "agent",
+            "author": "agent",
+            "printer": "agent",
+        }
+        normalized_field = field_aliases.get(params.field, params.field)
+
+        sql_template = field_map.get(normalized_field)
         if not sql_template:
             return AggregationResult(field=params.field, facets=[], total_records=0)
 
