@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import type { Cluster } from '../../types/metadata';
 
 interface ClusterCardProps {
@@ -88,7 +89,16 @@ export default function ClusterCard({ cluster, onProposeMappings, isProposing }:
               ))}
             </tbody>
           </table>
-          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-end">
+          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+            <Link
+              to={`/operator/agent?cluster=${cluster.cluster_id}&field=${cluster.field}`}
+              className="text-sm text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-1"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              Ask agent
+            </Link>
             <button
               onClick={() => onProposeMappings(cluster.cluster_id)}
               disabled={isProposing}
