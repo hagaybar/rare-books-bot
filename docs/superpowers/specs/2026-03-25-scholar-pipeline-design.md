@@ -86,6 +86,7 @@ class InterpretationPlan(BaseModel):
     execution_steps: list[ExecutionStep]       # Steps for the deterministic executor
     directives: list[ScholarlyDirective]       # Instructions for the narrator
     confidence: float                         # 0.0-1.0
+    clarification: str | None = None          # If set, ask this instead of executing
 
 class ExecutionStep(BaseModel):
     action: StepAction                        # Fixed enum of executor actions
@@ -484,11 +485,46 @@ The current ~600 lines of routing/formatting logic in `handle_query_definition_p
 ```python
 async def handle_chat(request, session, store, bib_db):
     plan = await interpret(request.message, session)
+
+    if plan.clarification:
+        return clarification_response(plan, session)
+
     execution_result = execute_plan(plan, bib_db)
     response = await narrate(request.message, execution_result, session)
     store.add_message(session.session_id, response)
     return response
 ```
+
+### Clarification Flow
+
+The interpreter can set `clarification` instead of (or alongside) generating execution steps. This replaces the old hardcoded `clarification.py` module with LLM-driven ambiguity detection.
+
+**When the interpreter clarifies:**
+- Confidence < 0.7 (genuinely ambiguous query)
+- Contradictory signals (e.g., "Hebrew books in Latin" — language conflict)
+- Ambiguous entity (e.g., "Karo" could be Joseph Karo or another figure)
+- Missing critical context (e.g., "compare these" with no prior session)
+
+**What a clarification looks like:**
+
+```json
+{
+  "intents": ["entity_exploration"],
+  "reasoning": "User asks about 'Karo' — could be Joseph Karo (1488-1575, Shulchan Aruch) or another figure.",
+  "execution_steps": [],
+  "directives": [],
+  "confidence": 0.55,
+  "clarification": "Could you clarify which Karo you mean? Our collection includes works by Joseph Karo (1488-1575), the author of the Shulchan Aruch. Is that who you're looking for, or someone else?"
+}
+```
+
+**Key difference from old system:** The LLM generates contextual, helpful clarifications (it knows the collection and can suggest specific options) rather than generic "please be more specific" messages. The clarification is stored in session history, so the user's response ("yes, the Shulchan Aruch author") becomes context for the next interpretation.
+
+**Clarification with partial plan:** The interpreter may set `clarification` AND include execution steps. This means "I'm going to try this interpretation, but I'm not fully confident — here's what I'd like to confirm." The pipeline can choose to either:
+- Short-circuit and ask (conservative, default for confidence < 0.7)
+- Execute the partial plan and present results with the clarification attached (for confidence 0.7-0.85)
+
+The confidence threshold is configurable: `CLARIFICATION_THRESHOLD = 0.7`.
 
 ### Session Follow-Up Mechanics
 
@@ -543,6 +579,7 @@ Stage 3 can stream token-by-token via the OpenAI streaming API.
 | Failure | Behavior |
 |---------|----------|
 | Interpreter LLM fails | Return "I'm having trouble understanding that, could you rephrase?" |
+| Interpreter sets `clarification` | Short-circuit: return clarification to user, skip executor + narrator |
 | Executor step returns empty | Mark `status: "empty"`, continue. Narrator acknowledges absence. |
 | Executor step errors | Mark `status: "error"`, continue other steps. Narrator works with what succeeded. |
 | Narrator LLM fails | Fall back to structured summary from `ExecutionResult` (no LLM needed) |
@@ -550,13 +587,44 @@ Stage 3 can stream token-by-token via the OpenAI streaming API.
 
 ### Cost and Latency
 
-Two LLM calls per query (interpreter + narrator). Expected latency: ~1-2s interpreter + ~50-200ms executor + ~1-2s narrator = **~2-4s total**. This is acceptable given WebSocket streaming shows progress throughout.
+Two LLM calls per query (interpreter + narrator), or one if clarification short-circuits.
 
-Cost control measures:
-- Interpreter prompt is compact (~1K tokens system + query). Output is structured JSON (~500 tokens).
-- Narrator receives truncated record data (max 30 records, ~4K tokens). Output is the narrative (~500-1500 tokens).
-- For simple retrievals with <5 results, total token usage is ~3-4K input + ~2K output per query.
-- No retry loops — LLM failures fall back to structured summaries, not re-attempts.
+**Latency**: ~1-2s interpreter + ~50-200ms executor + ~1-2s narrator = **~2-4s total**. Acceptable given WebSocket streaming shows progress throughout.
+
+**Token budget per query** (at $1.25/M input, $10.00/M output):
+
+| Component | Input Tokens | Output Tokens |
+|-----------|-------------|---------------|
+| Interpreter system prompt | ~1,000 | — |
+| Interpreter context (session, query) | ~300-500 | — |
+| Interpreter output (JSON plan) | — | ~400-700 |
+| Narrator system prompt | ~600 | — |
+| Narrator execution data (up to 30 records) | ~2,000-4,500 | — |
+| Narrator output (narrative) | — | ~600-1,500 |
+| **Totals** | **~4,000-6,500** | **~1,000-2,200** |
+
+**Cost per query by complexity:**
+
+| Query Type | Input | Output | Cost |
+|-----------|-------|--------|------|
+| Simple retrieval (<5 results) | ~3,500 | ~800 | ~$0.012 |
+| Average query | ~5,250 | ~1,500 | ~$0.022 |
+| Complex comparison (30+ records) | ~7,000 | ~2,200 | ~$0.031 |
+| Clarification (1 LLM call, no narrator) | ~1,500 | ~400 | ~$0.006 |
+
+**Monthly cost estimates:**
+
+| Usage Level | Queries/Day | Monthly Cost |
+|-------------|-------------|-------------|
+| Light (research tool) | ~50 | ~$33 |
+| Moderate (internal team) | ~200 | ~$132 |
+| Heavy (public-facing) | ~1,000 | ~$660 |
+
+**Cost control measures:**
+- Clarification short-circuits save the narrator call (~50% cost reduction for ambiguous queries)
+- Narrator receives max 30 records (truncated), capping input size
+- No retry loops — LLM failures fall back to structured summaries, not re-attempts
+- Interpreter plan caching possible for repeated identical queries (via `compute_plan_hash`)
 
 ## Module Disposition
 
@@ -569,7 +637,7 @@ Cost control measures:
 | `scripts/chat/formatter.py` | `narrator.py` |
 | `scripts/chat/narrative_agent.py` | `narrator.py` |
 | `scripts/chat/thematic_context.py` | Narrator uses scholarly knowledge directly |
-| `scripts/chat/clarification.py` | Narrator handles ambiguity naturally |
+| `scripts/chat/clarification.py` | Interpreter's `clarification` field replaces hardcoded ambiguity detection |
 | `scripts/chat/curator.py` | Narrator + curation_engine scoring |
 | `scripts/chat/exploration_agent.py` | Interpreter + executor replace exploration phase routing. Migrate `AggregationResult` model to `aggregation.py` or `plan_models.py` before removing. |
 | `scripts/query/llm_compiler.py` | Interpreter replaces LLM query compilation |
@@ -695,10 +763,39 @@ The `summary.md` file contains aggregate scores and comparison to the baseline h
 | NO_COMPARISON | Q1, Q4, Q5 | 36/75 | ~55/75 |
 | **Total** | | **153/500 (31%)** | **~378/500 (76%)** |
 
+## Data Contract: Executor ↔ Database
+
+Each executor handler depends on specific tables and columns. This contract is enforced at startup via a health check and tested in CI.
+
+| Handler | Required Tables | Required Columns | Status |
+|---------|----------------|-----------------|--------|
+| `resolve_agent` | `agent_authorities`, `agent_aliases` | `canonical_name_lower`, `alias_form_lower`, `alias_type`, `authority_id` | Populated (2,421 authorities, 6,418 aliases) |
+| `resolve_publisher` | `publisher_authorities`, `publisher_variants` | `canonical_name_lower`, `variant_form_lower`, `authority_id` | Populated (228 authorities, 265 variants) |
+| `retrieve` | `records`, `imprints`, `agents`, `subjects`, `titles` | Standard M1/M2/M3 columns per `m3_contract.py` | Populated (2,796 records) |
+| `aggregate` | Same as `retrieve` | Normalized columns: `date_start`, `place_norm`, `publisher_norm`, `country_name` | Populated |
+| `find_connections` | `agents` | `record_id`, `agent_norm`, `authority_uri` | Populated (4,366 agent records) |
+| `enrich` | `authority_enrichment` | `authority_uri`, `wikidata_id`, `wikipedia_url`, `person_info`, `nli_id`, `viaf_id` | Populated |
+| `sample` | Same as `retrieve` | Plus `date_start` for "earliest", scoring fields for "notable" | Populated |
+| Link collection | `authority_enrichment` | `wikipedia_url`, `wikidata_id`, `nli_id`, `viaf_id` | Populated |
+| Link collection | (computed) | Primo URL via `_generate_primo_url(mms_id)` | Available |
+
+**Startup health check** (`/health` endpoint extension):
+
+The existing health endpoint checks `database_connected`. This is extended to verify:
+1. All required tables exist
+2. Each table has at least one row (guards against empty migrations)
+3. Required columns are present (via `PRAGMA table_info`)
+
+If any check fails, the health endpoint reports `"executor_ready": false` with details on which handler is broken. The API still starts (graceful degradation), but the affected handlers return `status: "error"` with a clear message.
+
+**Contract evolution**: When a new executor handler is added, its table/column requirements must be added to this contract and to the startup health check. The `m3_contract.py` module already defines the M1/M2/M3 schema; this data contract extends it to cover M4+ (query/enrichment) tables.
+
 ## Prerequisites
 
 Before implementation begins:
 
-1. **Agent alias tables must exist**: Run `poetry run python -m app.cli seed-agent-authorities` to create and populate `agent_authorities` and `agent_aliases` tables. The executor's `resolve_agent` handler depends on these.
+1. **Agent alias tables must exist**: Run `poetry run python -m app.cli seed-agent-authorities` to create and populate `agent_authorities` and `agent_aliases` tables. The executor's `resolve_agent` handler depends on these. **Status: Already populated** (2,421 authorities, 6,418 aliases).
 
 2. **OpenAI API key**: Required for both interpreter and narrator LLM calls. Set `OPENAI_API_KEY` environment variable.
+
+3. **All prerequisite tables populated**: Verify via `curl http://localhost:8000/health` — the extended health check should report `"executor_ready": true`.
