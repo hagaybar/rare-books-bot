@@ -51,8 +51,28 @@ class HealthResponse(BaseModel):
         status: Health status (healthy, degraded, unhealthy)
         database_connected: Whether database connection is working
         session_store_ok: Whether session store is operational
+        executor_ready: Whether required DB tables for the executor exist
     """
 
     status: str = Field(..., description="Overall health status")
     database_connected: bool = Field(..., description="Database connection status")
     session_store_ok: bool = Field(..., description="Session store operational status")
+    executor_ready: bool = Field(False, description="Whether executor required tables exist")
+
+
+class HealthExtendedResponse(BaseModel):
+    """Response from /health/extended endpoint.
+
+    Provides detailed system information about database files and their status.
+
+    Attributes:
+        db_file_size_bytes: Size of the bibliographic database in bytes
+        db_last_modified: ISO-8601 timestamp of last database modification
+        qa_db_exists: Whether the QA database file exists
+        qa_db_size_bytes: Size of the QA database in bytes (0 if not present)
+    """
+
+    db_file_size_bytes: int = Field(..., description="Bibliographic DB file size in bytes")
+    db_last_modified: Optional[str] = Field(None, description="ISO-8601 timestamp of last DB modification")
+    qa_db_exists: bool = Field(..., description="Whether QA database exists")
+    qa_db_size_bytes: int = Field(0, description="QA database file size in bytes")
