@@ -999,7 +999,7 @@ def _handle_enrich(
 
             canonical_name = enrich_row["canonical_name"] or agent_name
 
-            agent_summaries.append(AgentSummary(
+            agent_summary = AgentSummary(
                 canonical_name=canonical_name,
                 variants=variants,
                 birth_year=person_info.get("birth_year"),
@@ -1008,7 +1008,27 @@ def _handle_enrich(
                 description=enrich_row["description"],
                 record_count=record_count,
                 links=links,
-            ))
+            )
+
+            # Enrich with Wikipedia data if available
+            try:
+                wikidata_id = enrich_row["wikidata_id"] if "wikidata_id" in enrich_row.keys() else None
+                wiki_row = conn.execute(
+                    """SELECT summary_extract FROM wikipedia_cache
+                       WHERE wikidata_id = ? AND language = 'en'
+                       AND summary_extract IS NOT NULL""",
+                    (wikidata_id,),
+                ).fetchone() if wikidata_id else None
+            except Exception:
+                wiki_row = None  # Table may not exist
+
+            if wiki_row and wiki_row["summary_extract"]:
+                wp_text = wiki_row["summary_extract"]
+                if len(wp_text) > len(agent_summary.description or ""):
+                    agent_summary.description = wp_text[:500]
+                agent_summary.wikipedia_context = wp_text
+
+            agent_summaries.append(agent_summary)
 
         return EnrichmentBundle(agents=agent_summaries)
     finally:

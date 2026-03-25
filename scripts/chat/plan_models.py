@@ -210,6 +210,7 @@ class AgentSummary(BaseModel):
     description: str | None = None
     record_count: int = 0
     links: list[GroundingLink] = Field(default_factory=list)
+    wikipedia_context: str | None = None  # Extended bio from Wikipedia
 
 
 class EnrichmentBundle(BaseModel):

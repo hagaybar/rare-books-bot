@@ -51,6 +51,9 @@ EVIDENCE RULES (non-negotiable):
    in the provided grounding data.
 6. When links are available (Primo, Wikipedia, Wikidata), weave them
    naturally into the response as references.
+7. When Wikipedia context is provided for an agent, use it to inform your
+   narrative with richer biographical detail. Do not quote it verbatim.
+   Wikipedia context is general scholarly knowledge, not collection evidence.
 
 RESPONSE FORMAT:
 - Use markdown for structure (headers, bold, lists, links).
@@ -281,6 +284,8 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
             if agent.description:
                 parts.append(f"    Description: {agent.description}")
             parts.append(f"    Records in collection: {agent.record_count}")
+            if agent.wikipedia_context:
+                parts.append(f"    Wikipedia context: {agent.wikipedia_context[:800]}")
             if agent.links:
                 link_strs = [f"[{lnk.label}]({lnk.url})" for lnk in agent.links]
                 parts.append(f"    Links: {', '.join(link_strs)}")
