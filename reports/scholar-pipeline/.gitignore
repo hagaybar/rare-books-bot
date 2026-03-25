@@ -1,0 +1,5 @@
+# Ignore evidence run directories (timestamped output)
+# Keep .gitkeep to track the directory structure
+*/
+!.gitkeep
+!.gitignore

@@ -398,21 +398,34 @@ class ScholarResponse(BaseModel):
 class ExecutionStepLLM(BaseModel):
     """Simplified execution step schema for the LLM.
 
-    Uses ``str`` action and ``dict`` params instead of typed unions,
-    which are easier for the OpenAI Responses API to handle.
+    Uses ``str`` action and a JSON-encoded ``str`` for params instead
+    of typed unions, which are compatible with the OpenAI Responses API
+    (which requires ``additionalProperties: false`` on all objects).
     The interpreter converts these to typed ``ExecutionStep`` objects.
     """
 
     action: str
-    params: dict
+    params: str  # JSON-encoded dict; parsed in _convert_llm_plan()
     label: str
     depends_on: list[int] = Field(default_factory=list)
+
+
+class ScholarlyDirectiveLLM(BaseModel):
+    """LLM-facing version of ScholarlyDirective.
+
+    Uses ``str`` for params to satisfy OpenAI structured output
+    requirements (``additionalProperties: false``).
+    """
+
+    directive: str
+    params: str = ""  # JSON-encoded dict; parsed in _convert_llm_plan()
+    label: str = ""
 
 
 class InterpretationPlanLLM(BaseModel):
     """LLM output schema for the Interpreter.
 
-    Uses ``ExecutionStepLLM`` (string action + dict params) instead
+    Uses ``ExecutionStepLLM`` (string action + JSON params) instead
     of the typed ``ExecutionStep`` union. The interpreter validates
     and converts this to a typed ``InterpretationPlan``.
     """
@@ -420,6 +433,6 @@ class InterpretationPlanLLM(BaseModel):
     intents: list[str]
     reasoning: str
     execution_steps: list[ExecutionStepLLM]
-    directives: list[ScholarlyDirective]
+    directives: list[ScholarlyDirectiveLLM]
     confidence: float = Field(ge=0.0, le=1.0)
     clarification: str | None = None

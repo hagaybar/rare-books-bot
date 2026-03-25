@@ -211,32 +211,32 @@ def test_connection_graph():
 
 
 def test_llm_facing_step_model():
-    """ExecutionStepLLM uses string action and dict params for OpenAI schema."""
+    """ExecutionStepLLM uses string action and JSON-string params for OpenAI schema."""
     from scripts.chat.plan_models import ExecutionStepLLM
     step = ExecutionStepLLM(
         action="resolve_agent",
-        params={"name": "Joseph Karo", "variants": []},
+        params='{"name": "Joseph Karo", "variants": []}',
         label="Resolve Karo",
     )
     assert step.action == "resolve_agent"
-    assert isinstance(step.params, dict)
+    assert isinstance(step.params, str)
 
 
 def test_llm_facing_plan_model():
     """InterpretationPlanLLM uses ExecutionStepLLM for OpenAI Responses API."""
-    from scripts.chat.plan_models import InterpretationPlanLLM, ExecutionStepLLM, ScholarlyDirective
+    from scripts.chat.plan_models import InterpretationPlanLLM, ExecutionStepLLM, ScholarlyDirectiveLLM
     plan = InterpretationPlanLLM(
         intents=["retrieval"],
         reasoning="Simple query",
         execution_steps=[
             ExecutionStepLLM(
                 action="retrieve",
-                params={"filters": [], "scope": "full_collection"},
+                params='{"filters": [], "scope": "full_collection"}',
                 label="Find books",
             )
         ],
         directives=[
-            ScholarlyDirective(directive="interpret", params={}, label="Interpret results"),
+            ScholarlyDirectiveLLM(directive="interpret", params="{}", label="Interpret results"),
         ],
         confidence=0.90,
     )

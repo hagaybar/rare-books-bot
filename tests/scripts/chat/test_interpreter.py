@@ -4,7 +4,7 @@ All tests mock the OpenAI client -- no API key needed.
 """
 import asyncio
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -14,6 +14,7 @@ from scripts.chat.plan_models import (
     ExecutionStep,
     ExecutionStepLLM,
     ScholarlyDirective,
+    ScholarlyDirectiveLLM,
     StepAction,
     ResolveAgentParams,
     RetrieveParams,
@@ -74,11 +75,11 @@ class TestConvertLLMPlan:
             execution_steps=[
                 ExecutionStepLLM(
                     action="retrieve",
-                    params={
+                    params=json.dumps({
                         "filters": [
                             {"field": "imprint_place", "op": "EQUALS", "value": "venice"}
                         ],
-                    },
+                    }),
                     label="Books from Venice",
                 ),
             ],
@@ -101,7 +102,7 @@ class TestConvertLLMPlan:
             execution_steps=[
                 ExecutionStepLLM(
                     action="resolve_agent",
-                    params={"name": "Joseph Karo", "variants": ["Caro, Joseph"]},
+                    params=json.dumps({"name": "Joseph Karo", "variants": ["Caro, Joseph"]}),
                     label="Resolve Karo",
                 ),
             ],
@@ -122,7 +123,7 @@ class TestConvertLLMPlan:
             execution_steps=[
                 ExecutionStepLLM(
                     action="aggregate",
-                    params={"field": "date_decade", "scope": "$step_0", "limit": 20},
+                    params=json.dumps({"field": "date_decade", "scope": "$step_0", "limit": 20}),
                     label="Temporal distribution",
                 ),
             ],
@@ -142,12 +143,12 @@ class TestConvertLLMPlan:
             execution_steps=[
                 ExecutionStepLLM(
                     action="retrieve",
-                    params={"filters": []},
+                    params=json.dumps({"filters": []}),
                     label="S0",
                 ),
                 ExecutionStepLLM(
                     action="aggregate",
-                    params={"field": "date_decade", "scope": "$step_0"},
+                    params=json.dumps({"field": "date_decade", "scope": "$step_0"}),
                     label="S1",
                     depends_on=[0],
                 ),
@@ -163,9 +164,9 @@ class TestConvertLLMPlan:
 
         llm_plan = _make_llm_plan(
             directives=[
-                ScholarlyDirective(
+                ScholarlyDirectiveLLM(
                     directive="expand",
-                    params={"focus": "Joseph Karo"},
+                    params=json.dumps({"focus": "Joseph Karo"}),
                     label="Expand on Karo",
                 ),
             ],
@@ -197,12 +198,12 @@ class TestConvertLLMPlan:
             execution_steps=[
                 ExecutionStepLLM(
                     action="nonexistent_action",
-                    params={"foo": "bar"},
+                    params=json.dumps({"foo": "bar"}),
                     label="Bad step",
                 ),
                 ExecutionStepLLM(
                     action="retrieve",
-                    params={"filters": []},
+                    params=json.dumps({"filters": []}),
                     label="Good step",
                 ),
             ],
@@ -221,16 +222,16 @@ class TestConvertLLMPlan:
             execution_steps=[
                 ExecutionStepLLM(
                     action="resolve_agent",
-                    params={"name": "Karo"},
+                    params=json.dumps({"name": "Karo"}),
                     label="Resolve",
                 ),
                 ExecutionStepLLM(
                     action="retrieve",
-                    params={
+                    params=json.dumps({
                         "filters": [
                             {"field": "agent_norm", "op": "EQUALS", "value": "$step_0"}
                         ],
-                    },
+                    }),
                     label="Retrieve by agent",
                     depends_on=[0],
                 ),

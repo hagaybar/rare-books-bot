@@ -13,6 +13,7 @@ Replaces: intent_agent.py, analytical_router.py, clarification.py
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
@@ -88,7 +89,7 @@ Classify the query into one or more intents (mixed intents are supported):
 
 # EXECUTION STEP TYPES
 
-Each step has an `action` (string) and `params` (dict).  Available actions:
+Each step has an `action` (string) and `params` (JSON-encoded string).  Available actions:
 
 ## resolve_agent
 Look up a person (author, printer, translator) in the agent authority tables.
@@ -166,7 +167,8 @@ Initial vocabulary:
 | contextualize | Place results in historical/intellectual context |
 | teach | Frame for pedagogical use |
 
-Each directive has: {"directive": "...", "params": {...}, "label": "..."}
+Each directive has: {"directive": "...", "params": "...", "label": "..."}
+The `params` field is a JSON-encoded string (e.g. '{"scope": "$step_0"}').
 Directive params may contain $step_N references for the narrator.
 
 # FILTER FIELDS
@@ -237,7 +239,7 @@ Query: "Hebrew books printed in Venice in the 16th century"
   "intents": ["retrieval"],
   "reasoning": "Clear bibliographic query with language, place, and date filters.",
   "execution_steps": [
-    {"action": "retrieve", "params": {"filters": [{"field": "language", "op": "EQUALS", "value": "heb"}, {"field": "imprint_place", "op": "EQUALS", "value": "venice"}, {"field": "year", "op": "RANGE", "start": 1501, "end": 1600}]}, "label": "Hebrew books from Venice, 16th century", "depends_on": []}
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"language\", \"op\": \"EQUALS\", \"value\": \"heb\"}, {\"field\": \"imprint_place\", \"op\": \"EQUALS\", \"value\": \"venice\"}, {\"field\": \"year\", \"op\": \"RANGE\", \"start\": 1501, \"end\": 1600}]}", "label": "Hebrew books from Venice, 16th century", "depends_on": []}
   ],
   "directives": [],
   "confidence": 0.95,
@@ -250,14 +252,14 @@ Query: "Who was Joseph Karo?"
   "intents": ["entity_exploration"],
   "reasoning": "User asks about Joseph Karo — need to resolve the agent, find works, and provide scholarly context.",
   "execution_steps": [
-    {"action": "resolve_agent", "params": {"name": "Joseph Karo", "variants": ["קארו, יוסף בן אפרים", "Caro, Joseph"]}, "label": "Resolve Karo", "depends_on": []},
-    {"action": "retrieve", "params": {"filters": [{"field": "agent_norm", "op": "EQUALS", "value": "$step_0"}]}, "label": "Find works by Karo", "depends_on": [0]},
-    {"action": "enrich", "params": {"targets": "$step_0", "fields": ["bio", "links"]}, "label": "Get biographical data", "depends_on": [0]},
-    {"action": "find_connections", "params": {"agents": ["$step_0"], "depth": 1}, "label": "Find connected figures", "depends_on": [0]}
+    {"action": "resolve_agent", "params": "{\"name\": \"Joseph Karo\", \"variants\": [\"\\u05e7\\u05d0\\u05e8\\u05d5, \\u05d9\\u05d5\\u05e1\\u05e3 \\u05d1\\u05df \\u05d0\\u05e4\\u05e8\\u05d9\\u05dd\", \"Caro, Joseph\"]}", "label": "Resolve Karo", "depends_on": []},
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"agent_norm\", \"op\": \"EQUALS\", \"value\": \"$step_0\"}]}", "label": "Find works by Karo", "depends_on": [0]},
+    {"action": "enrich", "params": "{\"targets\": \"$step_0\", \"fields\": [\"bio\", \"links\"]}", "label": "Get biographical data", "depends_on": [0]},
+    {"action": "find_connections", "params": "{\"agents\": [\"$step_0\"], \"depth\": 1}", "label": "Find connected figures", "depends_on": [0]}
   ],
   "directives": [
-    {"directive": "expand", "params": {"focus": "Joseph Karo", "aspect": "biographical and intellectual significance"}, "label": "Expand on Karo"},
-    {"directive": "contextualize", "params": {"theme": "Jewish legal codification"}, "label": "Historical context"}
+    {"directive": "expand", "params": "{\"focus\": \"Joseph Karo\", \"aspect\": \"biographical and intellectual significance\"}", "label": "Expand on Karo"},
+    {"directive": "contextualize", "params": "{\"theme\": \"Jewish legal codification\"}", "label": "Historical context"}
   ],
   "confidence": 0.92,
   "clarification": null
@@ -269,14 +271,14 @@ Query: "Compare Venice and Amsterdam as Hebrew printing centers"
   "intents": ["comparison", "analytical"],
   "reasoning": "Comparative query requiring two retrievals and cross-analysis.",
   "execution_steps": [
-    {"action": "retrieve", "params": {"filters": [{"field": "imprint_place", "op": "EQUALS", "value": "venice"}, {"field": "language", "op": "EQUALS", "value": "heb"}]}, "label": "Hebrew books from Venice", "depends_on": []},
-    {"action": "retrieve", "params": {"filters": [{"field": "imprint_place", "op": "EQUALS", "value": "amsterdam"}, {"field": "language", "op": "EQUALS", "value": "heb"}]}, "label": "Hebrew books from Amsterdam", "depends_on": []},
-    {"action": "aggregate", "params": {"field": "date_decade", "scope": "$step_0"}, "label": "Venice temporal distribution", "depends_on": [0]},
-    {"action": "aggregate", "params": {"field": "date_decade", "scope": "$step_1"}, "label": "Amsterdam temporal distribution", "depends_on": [1]}
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"imprint_place\", \"op\": \"EQUALS\", \"value\": \"venice\"}, {\"field\": \"language\", \"op\": \"EQUALS\", \"value\": \"heb\"}]}", "label": "Hebrew books from Venice", "depends_on": []},
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"imprint_place\", \"op\": \"EQUALS\", \"value\": \"amsterdam\"}, {\"field\": \"language\", \"op\": \"EQUALS\", \"value\": \"heb\"}]}", "label": "Hebrew books from Amsterdam", "depends_on": []},
+    {"action": "aggregate", "params": "{\"field\": \"date_decade\", \"scope\": \"$step_0\"}", "label": "Venice temporal distribution", "depends_on": [0]},
+    {"action": "aggregate", "params": "{\"field\": \"date_decade\", \"scope\": \"$step_1\"}", "label": "Amsterdam temporal distribution", "depends_on": [1]}
   ],
   "directives": [
-    {"directive": "compare", "params": {"set_a": "$step_0", "set_b": "$step_1", "lens": "printing center development"}, "label": "Compare the two centers"},
-    {"directive": "contextualize", "params": {"theme": "Migration of Hebrew printing from Mediterranean to Northern Europe"}, "label": "Historical arc"}
+    {"directive": "compare", "params": "{\"set_a\": \"$step_0\", \"set_b\": \"$step_1\", \"lens\": \"printing center development\"}", "label": "Compare the two centers"},
+    {"directive": "contextualize", "params": "{\"theme\": \"Migration of Hebrew printing from Mediterranean to Northern Europe\"}", "label": "Historical arc"}
   ],
   "confidence": 0.95,
   "clarification": null
@@ -311,6 +313,7 @@ IMPORTANT RULES:
 - Use ISO 639-2 language codes (lat, heb, eng, fre, ger, ita, spa)
 - Set depends_on whenever a step references a prior step via $step_N
 - Every $step_N reference must point to a valid prior step index
+- The `params` field in execution_steps and directives MUST be a JSON-encoded string, NOT a raw object. For example: "params": "{\"name\": \"Karo\"}" — not "params": {"name": "Karo"}
 """
 
 
@@ -465,7 +468,7 @@ def _convert_llm_step(llm_step: ExecutionStepLLM) -> ExecutionStep:
     """
     action = StepAction(llm_step.action)
     params_model = _ACTION_PARAMS_MODEL[action]
-    raw_params = dict(llm_step.params)
+    raw_params = json.loads(llm_step.params) if isinstance(llm_step.params, str) else dict(llm_step.params)
 
     # Special handling for RetrieveParams: convert filter dicts to Filter objects
     if action == StepAction.RETRIEVE and "filters" in raw_params:
@@ -506,11 +509,28 @@ def _convert_llm_plan(llm_plan: InterpretationPlanLLM) -> InterpretationPlan:
             )
             continue
 
+    # Convert LLM directives (JSON string params) to typed directives
+    typed_directives: list[ScholarlyDirective] = []
+    for d in llm_plan.directives:
+        params_dict = {}
+        if d.params:
+            try:
+                params_dict = json.loads(d.params) if isinstance(d.params, str) else dict(d.params)
+            except (json.JSONDecodeError, TypeError):
+                params_dict = {}
+        typed_directives.append(
+            ScholarlyDirective(
+                directive=d.directive,
+                params=params_dict,
+                label=d.label,
+            )
+        )
+
     return InterpretationPlan(
         intents=list(llm_plan.intents),
         reasoning=llm_plan.reasoning,
         execution_steps=typed_steps,
-        directives=list(llm_plan.directives),
+        directives=typed_directives,
         confidence=llm_plan.confidence,
         clarification=llm_plan.clarification,
     )
