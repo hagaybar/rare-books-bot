@@ -256,7 +256,7 @@ def test_websocket_creates_session(client):
         # Verify we got progress messages
         progress_msgs = [m for m in messages if m["type"] == "progress"]
         assert len(progress_msgs) > 0
-        assert any("Compiling query" in m["message"] for m in progress_msgs)
+        assert any("Interpreting" in m["message"] for m in progress_msgs)
 
 
 def test_websocket_with_existing_session(client):

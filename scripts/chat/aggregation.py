@@ -18,8 +18,19 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from scripts.chat.exploration_agent import AggregationResult
+from pydantic import BaseModel
+
+from scripts.chat.models import ComparisonFacets, ComparisonResult
 from scripts.utils.logger import LoggerManager
+
+
+class AggregationResult(BaseModel):
+    """Result of an aggregation query."""
+
+    field: str
+    results: List[Dict[str, Any]]  # e.g., [{"value": "Oxford", "count": 42}, ...]
+    total_in_subgroup: int
+    query_description: str
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -813,3 +824,436 @@ def execute_comparison(
         results[value] = count or 0
 
     return results
+
+
+def execute_comparison_enhanced(
+    db_path: Path,
+    record_ids: List[str],
+    field: str,
+    values: List[str],
+) -> ComparisonResult:
+    """Execute a multi-faceted comparison between field values.
+
+    For each value, queries: record counts, date ranges (MIN/MAX),
+    language distribution, top agents, and top subjects.
+    Cross-value queries: shared agents and subject overlap.
+
+    Args:
+        db_path: Path to bibliographic database.
+        record_ids: List of MMS IDs in the subgroup.
+        field: Field to compare (place, publisher, language, country).
+        values: Values to compare (e.g., ["venice", "amsterdam"]).
+
+    Returns:
+        ComparisonResult with ComparisonFacets populated.
+    """
+    if not values:
+        return ComparisonResult(
+            field=field,
+            values=values,
+            facets=ComparisonFacets(),
+            total_in_subgroup=len(record_ids),
+        )
+
+    # Map field to the column used for filtering
+    field_column_map = {
+        "place": ("imprints", "place_norm"),
+        "country": ("imprints", "country_name"),
+        "publisher": ("imprints", "publisher_norm"),
+        "language": ("languages", "code"),
+    }
+
+    table, column = field_column_map.get(field, ("imprints", "place_norm"))
+
+    conn = sqlite3.connect(str(db_path))
+    try:
+        placeholders = ",".join("?" * len(record_ids))
+
+        counts: Dict[str, int] = {}
+        date_ranges: Dict[str, Any] = {}
+        language_dist: Dict[str, Dict[str, int]] = {}
+        top_agents: Dict[str, List[Dict[str, Any]]] = {}
+        top_subjects: Dict[str, List[Dict[str, Any]]] = {}
+
+        # Per-value queries
+        for value in values:
+            value_lower = value.lower()
+
+            if table == "languages":
+                # Language-based filtering
+                rec_filter = f"""
+                    SELECT DISTINCT r.id FROM records r
+                    JOIN languages l ON r.id = l.record_id
+                    WHERE r.mms_id IN ({placeholders})
+                      AND LOWER(l.code) = LOWER(?)
+                """
+                rec_params: list = [*record_ids, value_lower]
+            else:
+                # Imprints-based filtering
+                rec_filter = f"""
+                    SELECT DISTINCT r.id FROM records r
+                    JOIN imprints i ON r.id = i.record_id
+                    WHERE r.mms_id IN ({placeholders})
+                      AND LOWER(i.{column}) = LOWER(?)
+                """
+                rec_params = [*record_ids, value_lower]
+
+            # 1. Count
+            count_sql = f"SELECT COUNT(*) FROM ({rec_filter})"
+            row = conn.execute(count_sql, rec_params).fetchone()
+            counts[value] = row[0] if row else 0
+
+            # 2. Date range
+            date_sql = f"""
+                SELECT MIN(i2.date_start), MAX(i2.date_start)
+                FROM imprints i2
+                WHERE i2.record_id IN ({rec_filter})
+                  AND i2.date_start IS NOT NULL
+            """
+            row = conn.execute(date_sql, rec_params).fetchone()
+            date_ranges[value] = (row[0], row[1]) if row else (None, None)
+
+            # 3. Language distribution
+            lang_sql = f"""
+                SELECT l2.code, COUNT(DISTINCT l2.record_id)
+                FROM languages l2
+                WHERE l2.record_id IN ({rec_filter})
+                GROUP BY l2.code
+                ORDER BY COUNT(DISTINCT l2.record_id) DESC
+            """
+            lang_rows = conn.execute(lang_sql, rec_params).fetchall()
+            language_dist[value] = {r[0]: r[1] for r in lang_rows}
+
+            # 4. Top agents
+            agent_sql = f"""
+                SELECT a.agent_norm, COUNT(DISTINCT a.record_id)
+                FROM agents a
+                WHERE a.record_id IN ({rec_filter})
+                GROUP BY a.agent_norm
+                ORDER BY COUNT(DISTINCT a.record_id) DESC
+                LIMIT 5
+            """
+            agent_rows = conn.execute(agent_sql, rec_params).fetchall()
+            top_agents[value] = [
+                {"agent": r[0], "count": r[1]} for r in agent_rows
+            ]
+
+            # 5. Top subjects
+            subj_sql = f"""
+                SELECT s.value, COUNT(DISTINCT s.record_id)
+                FROM subjects s
+                WHERE s.record_id IN ({rec_filter})
+                GROUP BY s.value
+                ORDER BY COUNT(DISTINCT s.record_id) DESC
+                LIMIT 5
+            """
+            subj_rows = conn.execute(subj_sql, rec_params).fetchall()
+            top_subjects[value] = [
+                {"subject": r[0], "count": r[1]} for r in subj_rows
+            ]
+
+        # Cross-value queries (only if >=2 values)
+        shared_agents: List[str] = []
+        subject_overlap: List[str] = []
+
+        if len(values) >= 2:
+            # Shared agents: agents appearing in records from ALL compared values
+            # Build record filter per value, then find intersection
+            agent_sets: List[set] = []
+            for value in values:
+                value_lower = value.lower()
+                if table == "languages":
+                    rec_filter = f"""
+                        SELECT DISTINCT r.id FROM records r
+                        JOIN languages l ON r.id = l.record_id
+                        WHERE r.mms_id IN ({placeholders})
+                          AND LOWER(l.code) = LOWER(?)
+                    """
+                    params: list = [*record_ids, value_lower]
+                else:
+                    rec_filter = f"""
+                        SELECT DISTINCT r.id FROM records r
+                        JOIN imprints i ON r.id = i.record_id
+                        WHERE r.mms_id IN ({placeholders})
+                          AND LOWER(i.{column}) = LOWER(?)
+                    """
+                    params = [*record_ids, value_lower]
+
+                agents_sql = f"""
+                    SELECT DISTINCT a.agent_norm
+                    FROM agents a
+                    WHERE a.record_id IN ({rec_filter})
+                """
+                rows = conn.execute(agents_sql, params).fetchall()
+                agent_sets.append({r[0] for r in rows})
+
+            if agent_sets:
+                common_agents = agent_sets[0]
+                for s in agent_sets[1:]:
+                    common_agents = common_agents & s
+                shared_agents = sorted(common_agents)
+
+            # Subject overlap
+            subject_sets: List[set] = []
+            for value in values:
+                value_lower = value.lower()
+                if table == "languages":
+                    rec_filter = f"""
+                        SELECT DISTINCT r.id FROM records r
+                        JOIN languages l ON r.id = l.record_id
+                        WHERE r.mms_id IN ({placeholders})
+                          AND LOWER(l.code) = LOWER(?)
+                    """
+                    params = [*record_ids, value_lower]
+                else:
+                    rec_filter = f"""
+                        SELECT DISTINCT r.id FROM records r
+                        JOIN imprints i ON r.id = i.record_id
+                        WHERE r.mms_id IN ({placeholders})
+                          AND LOWER(i.{column}) = LOWER(?)
+                    """
+                    params = [*record_ids, value_lower]
+
+                subj_sql = f"""
+                    SELECT DISTINCT s.value
+                    FROM subjects s
+                    WHERE s.record_id IN ({rec_filter})
+                """
+                rows = conn.execute(subj_sql, params).fetchall()
+                subject_sets.append({r[0] for r in rows})
+
+            if subject_sets:
+                common_subjects = subject_sets[0]
+                for s in subject_sets[1:]:
+                    common_subjects = common_subjects & s
+                subject_overlap = sorted(common_subjects)
+
+        total = sum(counts.values())
+
+        return ComparisonResult(
+            field=field,
+            values=values,
+            facets=ComparisonFacets(
+                counts=counts,
+                date_ranges=date_ranges,
+                language_distribution=language_dist,
+                top_agents=top_agents,
+                top_subjects=top_subjects,
+                shared_agents=shared_agents,
+                subject_overlap=subject_overlap,
+            ),
+            total_in_subgroup=total,
+        )
+
+    finally:
+        conn.close()
+
+
+# =============================================================================
+# Full-Collection Aggregation (no record_id filter)
+# =============================================================================
+
+# SQL templates without WHERE record_id IN (...) clause
+_FULL_COLLECTION_QUERIES = {
+    "publisher": """
+        SELECT publisher_norm as value, COUNT(DISTINCT record_id) as count
+        FROM imprints
+        WHERE publisher_norm IS NOT NULL AND publisher_norm != ''
+        GROUP BY publisher_norm
+        ORDER BY count DESC
+        LIMIT ?
+    """,
+    "place": """
+        SELECT place_norm as value, COUNT(DISTINCT record_id) as count
+        FROM imprints
+        WHERE place_norm IS NOT NULL AND place_norm != ''
+        GROUP BY place_norm
+        ORDER BY count DESC
+        LIMIT ?
+    """,
+    "country": """
+        SELECT country_name as value, COUNT(DISTINCT record_id) as count
+        FROM imprints
+        WHERE country_name IS NOT NULL AND country_name != ''
+        GROUP BY country_name
+        ORDER BY count DESC
+        LIMIT ?
+    """,
+    "language": """
+        SELECT l.code as value, COUNT(DISTINCT l.record_id) as count
+        FROM languages l
+        GROUP BY l.code
+        ORDER BY count DESC
+        LIMIT ?
+    """,
+    "date_decade": """
+        SELECT
+            (date_start / 10 * 10) as decade_start,
+            CAST((date_start / 10 * 10) AS TEXT) || 's' as value,
+            COUNT(DISTINCT record_id) as count
+        FROM imprints
+        WHERE date_start IS NOT NULL
+        GROUP BY decade_start
+        ORDER BY decade_start ASC
+        LIMIT ?
+    """,
+    "date_century": """
+        SELECT
+            ((date_start - 1) / 100 + 1) as century_num,
+            CASE
+                WHEN (date_start - 1) / 100 + 1 = 15 THEN '15th century'
+                WHEN (date_start - 1) / 100 + 1 = 16 THEN '16th century'
+                WHEN (date_start - 1) / 100 + 1 = 17 THEN '17th century'
+                WHEN (date_start - 1) / 100 + 1 = 18 THEN '18th century'
+                WHEN (date_start - 1) / 100 + 1 = 19 THEN '19th century'
+                ELSE CAST((date_start - 1) / 100 + 1 AS TEXT) || 'th century'
+            END as value,
+            COUNT(DISTINCT record_id) as count
+        FROM imprints
+        WHERE date_start IS NOT NULL
+        GROUP BY century_num
+        ORDER BY century_num ASC
+        LIMIT ?
+    """,
+    "subject": """
+        SELECT s.value as value, COUNT(DISTINCT s.record_id) as count
+        FROM subjects s
+        GROUP BY s.value
+        ORDER BY count DESC
+        LIMIT ?
+    """,
+    "agent": """
+        SELECT a.agent_norm as value, COUNT(DISTINCT a.record_id) as count
+        FROM agents a
+        GROUP BY a.agent_norm
+        ORDER BY count DESC
+        LIMIT ?
+    """,
+}
+
+
+def execute_aggregation_full_collection(
+    db_path: Path,
+    field: str,
+    filters: Optional[List[Dict[str, Any]]] = None,
+    limit: int = 20,
+) -> AggregationResult:
+    """Execute an aggregation query over the full collection (or a filtered subset).
+
+    Unlike execute_aggregation(), this does NOT require a pre-computed list
+    of record IDs. It runs directly against the full database, optionally
+    applying implied filters first.
+
+    Args:
+        db_path: Path to bibliographic database.
+        field: Field to aggregate (publisher, place, date_decade, etc.).
+        filters: Optional implied filters from analytical detection, e.g.
+            [{"field": "language", "value": "heb"}].
+        limit: Maximum results to return.
+
+    Returns:
+        AggregationResult with grouped data.
+
+    Raises:
+        ValueError: If field is not supported.
+    """
+    if filters:
+        # Filtered-then-aggregate flow: get matching record IDs first,
+        # then delegate to the standard execute_aggregation().
+        record_ids = get_all_record_ids(db_path, filters=filters)
+        return execute_aggregation(db_path, record_ids, field, limit=limit)
+
+    if field not in _FULL_COLLECTION_QUERIES:
+        raise ValueError(
+            f"Unsupported aggregation field: {field}. "
+            f"Supported: {list(_FULL_COLLECTION_QUERIES.keys())}"
+        )
+
+    query = _FULL_COLLECTION_QUERIES[field]
+
+    conn = sqlite3.connect(str(db_path))
+    try:
+        # Count total records
+        total_cursor = conn.execute("SELECT COUNT(*) FROM records")
+        total = total_cursor.fetchone()[0]
+
+        cursor = conn.execute(query, [limit])
+        rows = cursor.fetchall()
+
+        columns = [desc[0] for desc in cursor.description]
+        results = []
+        for row in rows:
+            result = dict(zip(columns, row))
+            if "value" not in result:
+                result["value"] = str(row[1]) if len(row) > 1 else str(row[0])
+            if "count" not in result:
+                result["count"] = row[-1]
+            results.append({"value": result["value"], "count": result["count"]})
+
+        logger.info(
+            "Executed full-collection aggregation",
+            extra={"field": field, "results_count": len(results)},
+        )
+
+        return AggregationResult(
+            field=field,
+            results=results,
+            total_in_subgroup=total,
+            query_description=f"Top {limit} {field} values across full collection ({total} books)",
+        )
+    finally:
+        conn.close()
+
+
+def get_all_record_ids(
+    db_path: Path,
+    filters: Optional[List[Dict[str, Any]]] = None,
+) -> List[str]:
+    """Get all record MMS IDs, optionally filtered.
+
+    Supports implied filters from analytical query detection:
+      - {"field": "language", "value": "heb"}
+      - {"field": "year", "start": 1500, "end": 1599}
+      - {"field": "place", "value": "venice"}
+
+    Args:
+        db_path: Path to bibliographic database.
+        filters: Optional list of filter dicts.
+
+    Returns:
+        List of MMS ID strings.
+    """
+    conn = sqlite3.connect(str(db_path))
+    try:
+        if not filters:
+            cursor = conn.execute("SELECT mms_id FROM records")
+            return [row[0] for row in cursor.fetchall()]
+
+        # Build filtered query with JOINs as needed
+        joins = []
+        conditions = []
+        params: list = []
+
+        for f in filters:
+            fld = f.get("field")
+            if fld == "language":
+                joins.append("JOIN languages l ON r.id = l.record_id")
+                conditions.append("LOWER(l.code) = LOWER(?)")
+                params.append(f["value"])
+            elif fld == "year":
+                joins.append("JOIN imprints i_yr ON r.id = i_yr.record_id")
+                conditions.append("i_yr.date_start >= ? AND i_yr.date_start <= ?")
+                params.extend([f["start"], f["end"]])
+            elif fld == "place":
+                joins.append("JOIN imprints i_pl ON r.id = i_pl.record_id")
+                conditions.append("LOWER(i_pl.place_norm) = LOWER(?)")
+                params.append(f["value"])
+
+        join_sql = " ".join(joins)
+        where_sql = " AND ".join(conditions) if conditions else "1=1"
+        query = f"SELECT DISTINCT r.mms_id FROM records r {join_sql} WHERE {where_sql}"
+
+        cursor = conn.execute(query, params)
+        return [row[0] for row in cursor.fetchall()]
+    finally:
+        conn.close()
