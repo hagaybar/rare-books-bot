@@ -454,6 +454,98 @@ def _convert_filter_dict(f: dict) -> Filter:
     )
 
 
+def _repair_json_string(s: str) -> str:
+    """Attempt to fix unescaped double-quotes inside JSON string values.
+
+    Hebrew abbreviations (e.g. רמב"ם) contain a gershayim character
+    that is a literal ASCII double-quote.  When the LLM emits these
+    inside a JSON string value without escaping, ``json.loads`` fails.
+
+    Strategy: walk the string character-by-character, tracking whether
+    we are inside a JSON string.  When we encounter a ``"`` that is
+    *inside* a string but is neither the opening nor the closing quote
+    of that string (i.e. the next non-whitespace after it is NOT a
+    JSON structural character like ``:,]}``), we escape it as ``\\"``.
+
+    Args:
+        s: A JSON string that may contain unescaped internal quotes.
+
+    Returns:
+        Repaired JSON string.
+    """
+    result: list[str] = []
+    i = 0
+    n = len(s)
+    in_string = False
+
+    while i < n:
+        ch = s[i]
+
+        if ch == "\\" and in_string:
+            # Escaped character -- consume both chars
+            result.append(s[i : i + 2])
+            i += 2
+            continue
+
+        if ch == '"':
+            if not in_string:
+                # Opening quote of a string
+                in_string = True
+                result.append(ch)
+                i += 1
+                continue
+
+            # We are inside a string and hit a quote.
+            # Determine if this is the *closing* quote by peeking
+            # ahead: if the next non-whitespace is a JSON structural
+            # character (:,]}) or end-of-string, treat it as closing.
+            j = i + 1
+            while j < n and s[j] in " \t\r\n":
+                j += 1
+            if j >= n or s[j] in ":,]}":
+                # Closing quote
+                in_string = False
+                result.append(ch)
+                i += 1
+                continue
+
+            # Otherwise it's an unescaped interior quote -- escape it
+            result.append('\\"')
+            i += 1
+            continue
+
+        result.append(ch)
+        i += 1
+
+    return "".join(result)
+
+
+def _parse_json_params(raw: str) -> dict:
+    """Parse a JSON params string, repairing Hebrew gershayim if needed.
+
+    Tries ``json.loads`` first.  On ``JSONDecodeError``, attempts to
+    repair unescaped internal quotes and retries.  If repair also fails,
+    the original error is raised.
+
+    Args:
+        raw: JSON-encoded params string from the LLM.
+
+    Returns:
+        Parsed dict.
+
+    Raises:
+        json.JSONDecodeError: If the string cannot be parsed even after repair.
+    """
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as original_err:
+        repaired = _repair_json_string(raw)
+        try:
+            return json.loads(repaired)
+        except json.JSONDecodeError:
+            raise original_err
+
+
 def _convert_llm_step(llm_step: ExecutionStepLLM) -> ExecutionStep:
     """Convert a single LLM step to a typed ExecutionStep.
 
@@ -468,7 +560,7 @@ def _convert_llm_step(llm_step: ExecutionStepLLM) -> ExecutionStep:
     """
     action = StepAction(llm_step.action)
     params_model = _ACTION_PARAMS_MODEL[action]
-    raw_params = json.loads(llm_step.params) if isinstance(llm_step.params, str) else dict(llm_step.params)
+    raw_params = _parse_json_params(llm_step.params) if isinstance(llm_step.params, str) else dict(llm_step.params)
 
     # Special handling for RetrieveParams: convert filter dicts to Filter objects
     if action == StepAction.RETRIEVE and "filters" in raw_params:
@@ -486,6 +578,71 @@ def _convert_llm_step(llm_step: ExecutionStepLLM) -> ExecutionStep:
     )
 
 
+def _remap_single_ref(ref: str, old_to_new: dict[int, int]) -> str | None:
+    """Remap a single ``$step_N`` reference string using *old_to_new*.
+
+    Returns the remapped string, or ``None`` if the referenced step
+    was skipped (not present in *old_to_new*).  Non-reference strings
+    are returned unchanged.
+    """
+    m = _STEP_REF_RE.match(ref)
+    if not m:
+        return ref
+    old_idx = int(m.group(1))
+    if old_idx not in old_to_new:
+        return None
+    return f"$step_{old_to_new[old_idx]}"
+
+
+def _remap_step_refs_in_params(
+    params,
+    old_to_new: dict[int, int],
+) -> None:
+    """Remap ``$step_N`` references inside typed params after step skipping.
+
+    Mutates *params* in place.  Handles ``scope``, ``targets``,
+    ``agents`` list, and ``filters[].value``.
+    """
+    # scope (RetrieveParams, AggregateParams, SampleParams)
+    scope = getattr(params, "scope", None)
+    if isinstance(scope, str):
+        remapped = _remap_single_ref(scope, old_to_new)
+        if remapped is None:
+            remapped = "full_collection"
+        if remapped != scope:
+            params.scope = remapped
+
+    # targets (EnrichParams)
+    targets = getattr(params, "targets", None)
+    if isinstance(targets, str):
+        remapped = _remap_single_ref(targets, old_to_new)
+        if remapped is not None and remapped != targets:
+            params.targets = remapped
+
+    # agents list (FindConnectionsParams)
+    agents = getattr(params, "agents", None)
+    if isinstance(agents, list):
+        new_agents = []
+        for agent in agents:
+            if isinstance(agent, str):
+                remapped = _remap_single_ref(agent, old_to_new)
+                if remapped is not None:
+                    new_agents.append(remapped)
+            else:
+                new_agents.append(agent)
+        params.agents = new_agents
+
+    # filters (RetrieveParams)
+    filters = getattr(params, "filters", None)
+    if isinstance(filters, list):
+        for f in filters:
+            val = getattr(f, "value", None)
+            if isinstance(val, str):
+                remapped = _remap_single_ref(val, old_to_new)
+                if remapped is not None and remapped != val:
+                    f.value = remapped
+
+
 def _convert_llm_plan(llm_plan: InterpretationPlanLLM) -> InterpretationPlan:
     """Convert an ``InterpretationPlanLLM`` to a typed ``InterpretationPlan``.
 
@@ -499,15 +656,28 @@ def _convert_llm_plan(llm_plan: InterpretationPlanLLM) -> InterpretationPlan:
         Typed InterpretationPlan.
     """
     typed_steps: list[ExecutionStep] = []
+    # Track original-index -> new-index for surviving steps
+    old_to_new: dict[int, int] = {}
 
     for i, llm_step in enumerate(llm_plan.execution_steps):
         try:
             typed_steps.append(_convert_llm_step(llm_step))
+            old_to_new[i] = len(typed_steps) - 1
         except (ValueError, KeyError, TypeError) as exc:
             logger.warning(
                 "Skipping step %d (action=%r): %s", i, llm_step.action, exc
             )
             continue
+
+    # Remap depends_on and $step_N param references: translate old
+    # indices to new ones, dropping references to skipped steps.
+    for step in typed_steps:
+        step.depends_on = [
+            old_to_new[dep]
+            for dep in step.depends_on
+            if dep in old_to_new
+        ]
+        _remap_step_refs_in_params(step.params, old_to_new)
 
     # Convert LLM directives (JSON string params) to typed directives
     typed_directives: list[ScholarlyDirective] = []

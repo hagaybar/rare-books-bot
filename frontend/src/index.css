@@ -1,1 +1,29 @@
 @import "tailwindcss";
+
+/*
+ * Link styling for markdown content rendered inside chat bubbles.
+ * Ensures links are clearly visible against both light and dark backgrounds.
+ */
+.chat-markdown-content a {
+  color: #2563eb; /* blue-600: high contrast on white/light backgrounds */
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.chat-markdown-content a:hover {
+  color: #1d4ed8; /* blue-700 */
+  text-decoration: underline;
+}
+
+/* Dark-background contexts (e.g. agent narrative in blue-50 or grounding panel) */
+.bg-blue-50 .chat-markdown-content a,
+.bg-gray-800 .chat-markdown-content a {
+  color: #60a5fa; /* blue-400: bright blue for dark backgrounds */
+}
+
+.bg-blue-50 .chat-markdown-content a:hover,
+.bg-gray-800 .chat-markdown-content a:hover {
+  color: #93bbfd;
+  text-decoration: underline;
+}

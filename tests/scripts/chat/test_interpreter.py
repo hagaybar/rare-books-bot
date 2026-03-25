@@ -544,3 +544,198 @@ class TestBuildUserPrompt:
 
         prompt = _build_user_prompt("hello", session_context=None)
         assert "hello" in prompt
+
+
+# =============================================================================
+# Hebrew gershayim JSON repair (Issue 1)
+# =============================================================================
+
+
+class TestHebrewGershayimRepair:
+    """Verify that Hebrew abbreviations with gershayim parse correctly."""
+
+    def test_convert_step_with_escaped_gershayim(self):
+        """Already-escaped gershayim parses normally."""
+        from scripts.chat.interpreter import _convert_llm_step
+
+        # The escaped form: \" inside the Hebrew string
+        params_json = '{"name": "Maimonides", "variants": ["\\u05e8\\u05de\\u05d1\\"\\u05dd", "Rambam"]}'
+        step = ExecutionStepLLM(
+            action="resolve_agent",
+            params=params_json,
+            label="Resolve Rambam",
+        )
+        result = _convert_llm_step(step)
+        assert result.params.name == "Maimonides"
+        assert len(result.params.variants) == 2
+
+    def test_convert_step_with_hebrew_gershayim(self):
+        r"""Broken gershayim (unescaped \" inside string value) is repaired."""
+        from scripts.chat.interpreter import _convert_llm_step
+
+        # Broken form: the raw " inside רמב"ם is NOT escaped
+        # This is: {"name": "Maimonides", "variants": ["רמב"ם", "Rambam"]}
+        params_json = '{"name": "Maimonides", "variants": ["\u05e8\u05de\u05d1"\u05dd", "Rambam"]}'
+        step = ExecutionStepLLM(
+            action="resolve_agent",
+            params=params_json,
+            label="Resolve Rambam",
+        )
+        result = _convert_llm_step(step)
+        assert result.params.name == "Maimonides"
+        assert len(result.params.variants) == 2
+        # The first variant should contain the gershayim character
+        assert '"' in result.params.variants[0] or '\u05dd' in result.params.variants[0]
+
+    def test_repair_json_string_basic(self):
+        """_repair_json_string fixes interior quotes."""
+        from scripts.chat.interpreter import _repair_json_string
+        import json
+
+        broken = '{"name": "Maimonides", "variants": ["\u05e8\u05de\u05d1"\u05dd", "Rambam"]}'
+        repaired = _repair_json_string(broken)
+        parsed = json.loads(repaired)
+        assert parsed["name"] == "Maimonides"
+        assert len(parsed["variants"]) == 2
+
+    def test_repair_json_string_no_change_needed(self):
+        """_repair_json_string returns valid JSON unchanged."""
+        from scripts.chat.interpreter import _repair_json_string
+        import json
+
+        valid = '{"name": "Maimonides", "variants": ["Rambam"]}'
+        repaired = _repair_json_string(valid)
+        assert json.loads(repaired) == json.loads(valid)
+
+    def test_parse_json_params_valid(self):
+        """_parse_json_params handles valid JSON."""
+        from scripts.chat.interpreter import _parse_json_params
+
+        result = _parse_json_params('{"name": "Karo"}')
+        assert result == {"name": "Karo"}
+
+    def test_parse_json_params_broken_gershayim(self):
+        """_parse_json_params repairs broken gershayim."""
+        from scripts.chat.interpreter import _parse_json_params
+
+        broken = '{"name": "Maimonides", "variants": ["\u05e8\u05de\u05d1"\u05dd", "Rambam"]}'
+        result = _parse_json_params(broken)
+        assert result["name"] == "Maimonides"
+        assert len(result["variants"]) == 2
+
+
+# =============================================================================
+# Step index remapping after skip (Issue 2)
+# =============================================================================
+
+
+class TestStepIndexRemapping:
+    """Verify depends_on and $step_N refs are remapped when steps are skipped."""
+
+    def test_convert_plan_remaps_depends_on_after_skip(self):
+        """Skipping step 0 remaps depends_on for surviving steps."""
+        from scripts.chat.interpreter import _convert_llm_plan
+
+        llm_plan = _make_llm_plan(
+            execution_steps=[
+                # Step 0: invalid action -- will be skipped
+                ExecutionStepLLM(
+                    action="nonexistent_action",
+                    params=json.dumps({"foo": "bar"}),
+                    label="Bad step",
+                ),
+                # Step 1: depends on step 0 (which is skipped)
+                ExecutionStepLLM(
+                    action="retrieve",
+                    params=json.dumps({"filters": []}),
+                    label="Retrieve",
+                    depends_on=[0],
+                ),
+                # Step 2: depends on step 1 (which becomes new index 0)
+                ExecutionStepLLM(
+                    action="aggregate",
+                    params=json.dumps({"field": "date_decade", "scope": "$step_1"}),
+                    label="Aggregate",
+                    depends_on=[1],
+                ),
+            ],
+        )
+
+        plan = _convert_llm_plan(llm_plan)
+
+        # Only 2 surviving steps
+        assert len(plan.execution_steps) == 2
+
+        # Step 0 (was step 1): depends_on ref to skipped step 0 is removed
+        assert plan.execution_steps[0].depends_on == []
+        assert plan.execution_steps[0].action == StepAction.RETRIEVE
+
+        # Step 1 (was step 2): depends_on remapped from [1] to [0]
+        assert plan.execution_steps[1].depends_on == [0]
+        assert plan.execution_steps[1].action == StepAction.AGGREGATE
+        # Scope $step_1 should be remapped to $step_0
+        assert plan.execution_steps[1].params.scope == "$step_0"
+
+    def test_convert_plan_no_skip_no_change(self):
+        """When no steps are skipped, depends_on is unchanged."""
+        from scripts.chat.interpreter import _convert_llm_plan
+
+        llm_plan = _make_llm_plan(
+            execution_steps=[
+                ExecutionStepLLM(
+                    action="resolve_agent",
+                    params=json.dumps({"name": "Karo"}),
+                    label="Resolve",
+                ),
+                ExecutionStepLLM(
+                    action="retrieve",
+                    params=json.dumps({
+                        "filters": [
+                            {"field": "agent_norm", "op": "EQUALS", "value": "$step_0"}
+                        ],
+                    }),
+                    label="Retrieve",
+                    depends_on=[0],
+                ),
+            ],
+        )
+
+        plan = _convert_llm_plan(llm_plan)
+        assert len(plan.execution_steps) == 2
+        assert plan.execution_steps[1].depends_on == [0]
+        assert plan.execution_steps[1].params.filters[0].value == "$step_0"
+
+    def test_convert_plan_middle_step_skipped(self):
+        """Skipping a middle step remaps later references correctly."""
+        from scripts.chat.interpreter import _convert_llm_plan
+
+        llm_plan = _make_llm_plan(
+            execution_steps=[
+                # Step 0: valid
+                ExecutionStepLLM(
+                    action="retrieve",
+                    params=json.dumps({"filters": []}),
+                    label="S0",
+                ),
+                # Step 1: invalid -- skipped
+                ExecutionStepLLM(
+                    action="nonexistent_action",
+                    params=json.dumps({"x": 1}),
+                    label="Bad",
+                ),
+                # Step 2: depends on step 0 (unchanged) and step 1 (dropped)
+                ExecutionStepLLM(
+                    action="aggregate",
+                    params=json.dumps({"field": "date_decade", "scope": "$step_0"}),
+                    label="S2",
+                    depends_on=[0, 1],
+                ),
+            ],
+        )
+
+        plan = _convert_llm_plan(llm_plan)
+        assert len(plan.execution_steps) == 2
+        # Step 1 (was step 2): depends_on only [0] (ref to skipped step 1 removed)
+        assert plan.execution_steps[1].depends_on == [0]
+        # scope $step_0 stays $step_0 (step 0 not skipped)
+        assert plan.execution_steps[1].params.scope == "$step_0"

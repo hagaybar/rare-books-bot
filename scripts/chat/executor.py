@@ -1204,7 +1204,100 @@ def _collect_grounding(
                 source="primo",
             ))
 
-        # Add agent links
+        # 5. Collect agent external links from authority_enrichment
+        # for agents found in records, even without an explicit enrich step.
+        enriched_names = {a.canonical_name for a in agent_summaries}
+
+        # Gather unique authority_uris from agents on the grounded records
+        placeholders = ",".join("?" for _ in all_mms)
+        auth_rows = conn.execute(
+            f"""SELECT DISTINCT a.authority_uri, a.agent_norm
+                FROM agents a
+                JOIN records r ON a.record_id = r.id
+                WHERE r.mms_id IN ({placeholders})
+                  AND a.authority_uri IS NOT NULL""",
+            all_mms,
+        ).fetchall()
+
+        for arow in auth_rows:
+            agent_name = arow["agent_norm"]
+            authority_uri = arow["authority_uri"]
+
+            # Skip agents already covered by an enrich step
+            if agent_name and agent_name in enriched_names:
+                continue
+
+            enrich_row = conn.execute(
+                """SELECT ae.*, aa.canonical_name AS aa_name,
+                          aa.date_start, aa.date_end
+                   FROM authority_enrichment ae
+                   LEFT JOIN agent_authorities aa
+                       ON aa.authority_uri = ae.authority_uri
+                   WHERE ae.authority_uri = ?""",
+                (authority_uri,),
+            ).fetchone()
+            if not enrich_row:
+                continue
+
+            # Build agent links
+            agent_links: List[GroundingLink] = []
+            display_name = enrich_row["aa_name"] or agent_name or authority_uri
+            if enrich_row["wikipedia_url"]:
+                agent_links.append(GroundingLink(
+                    entity_type="agent",
+                    entity_id=display_name,
+                    label=f"Wikipedia: {enrich_row['label'] or display_name}",
+                    url=enrich_row["wikipedia_url"],
+                    source="wikipedia",
+                ))
+            if enrich_row["wikidata_id"]:
+                agent_links.append(GroundingLink(
+                    entity_type="agent",
+                    entity_id=display_name,
+                    label=f"Wikidata: {enrich_row['wikidata_id']}",
+                    url=f"https://www.wikidata.org/wiki/{enrich_row['wikidata_id']}",
+                    source="wikidata",
+                ))
+            if enrich_row["viaf_id"]:
+                agent_links.append(GroundingLink(
+                    entity_type="agent",
+                    entity_id=display_name,
+                    label=f"VIAF: {enrich_row['viaf_id']}",
+                    url=f"https://viaf.org/viaf/{enrich_row['viaf_id']}",
+                    source="viaf",
+                ))
+            if enrich_row["nli_id"]:
+                agent_links.append(GroundingLink(
+                    entity_type="agent",
+                    entity_id=display_name,
+                    label=f"NLI: {enrich_row['nli_id']}",
+                    url=f"https://www.nli.org.il/en/authorities/{enrich_row['nli_id']}",
+                    source="nli",
+                ))
+
+            if agent_links:
+                # Parse person_info for bio data
+                person_info = {}
+                if enrich_row["person_info"]:
+                    try:
+                        person_info = json.loads(enrich_row["person_info"])
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+
+                agent_summaries.append(AgentSummary(
+                    canonical_name=display_name,
+                    variants=[],
+                    birth_year=person_info.get("birth_year"),
+                    death_year=person_info.get("death_year"),
+                    occupations=person_info.get("occupations", []),
+                    description=enrich_row["description"],
+                    links=agent_links,
+                ))
+                enriched_names.add(display_name)
+                if agent_name:
+                    enriched_names.add(agent_name)
+
+        # Add agent links from all agent summaries
         for agent in agent_summaries:
             links.extend(agent.links)
 

@@ -54,13 +54,12 @@ EVIDENCE RULES (non-negotiable):
 
 RESPONSE FORMAT:
 - Use markdown for structure (headers, bold, lists, links).
-- Provide 2-4 suggested follow-up questions.
-- Output a JSON object with these fields:
-  {
-    "narrative": "<markdown text>",
-    "suggested_followups": ["question 1", "question 2", ...],
-    "confidence": <0.0-1.0 self-assessed confidence in response quality>
-  }
+
+IMPORTANT: Do NOT include suggested follow-up questions or confidence scores
+in your narrative text. These are handled as separate structured fields.
+Your narrative should end with the scholarly content only -- never add
+sections like "Suggested Followups", "Confidence", or similar headings.
+The narrative field must contain ONLY the scholarly response.
 """
 
 

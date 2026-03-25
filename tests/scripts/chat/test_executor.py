@@ -886,3 +886,101 @@ def test_resolve_scope_previous_results_no_context():
 
     result = _resolve_scope("$previous_results", {}, None)
     assert result == []
+
+
+# =============================================================================
+# Agent external links in grounding without enrich step (Issue 5)
+# =============================================================================
+
+
+def test_grounding_collects_agent_links_without_enrich_step(test_db):
+    """Grounding collects Wikipedia/Wikidata/VIAF/NLI links for agents
+    found in records, even when no explicit enrich step was planned."""
+    from scripts.chat.executor import _collect_grounding
+    from scripts.chat.plan_models import GroundingLink
+
+    # Only a retrieve step, no enrich step
+    step_results = {
+        0: StepResult(
+            step_index=0, action="retrieve", label="Retrieve",
+            status="ok",
+            data=RecordSet(
+                mms_ids=["990001234"],
+                total_count=1,
+                filters_applied=[],
+            ),
+            record_count=1,
+        ),
+    }
+
+    grounding, _truncated = _collect_grounding(step_results, test_db)
+
+    # Record 990001234 has agents Karo and Bomberg.
+    # Both have authority_enrichment entries with wikipedia_url, wikidata_id, etc.
+    wiki_links = [lnk for lnk in grounding.links if lnk.source == "wikipedia"]
+    wikidata_links = [lnk for lnk in grounding.links if lnk.source == "wikidata"]
+    viaf_links = [lnk for lnk in grounding.links if lnk.source == "viaf"]
+    nli_links = [lnk for lnk in grounding.links if lnk.source == "nli"]
+
+    # Should have at least Wikipedia and Wikidata links for agents
+    assert len(wiki_links) >= 1, f"Expected Wikipedia links, got: {grounding.links}"
+    assert len(wikidata_links) >= 1, f"Expected Wikidata links, got: {grounding.links}"
+    assert len(viaf_links) >= 1, f"Expected VIAF links, got: {grounding.links}"
+    assert len(nli_links) >= 1, f"Expected NLI links, got: {grounding.links}"
+
+    # Agent summaries should be created for the enriched agents
+    assert len(grounding.agents) >= 1
+    # Check that at least one agent has links
+    agents_with_links = [a for a in grounding.agents if a.links]
+    assert len(agents_with_links) >= 1
+
+
+def test_grounding_agent_links_not_duplicated_with_enrich_step(test_db):
+    """When an enrich step already provides agent links, they are not duplicated."""
+    from scripts.chat.executor import _collect_grounding
+    from scripts.chat.plan_models import EnrichmentBundle, GroundingLink
+
+    karo_name = "\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd"
+    karo_links = [
+        GroundingLink(
+            entity_type="agent", entity_id=karo_name,
+            label="Wikipedia: Joseph Karo",
+            url="https://en.wikipedia.org/wiki/Joseph_Karo",
+            source="wikipedia",
+        ),
+    ]
+
+    step_results = {
+        0: StepResult(
+            step_index=0, action="retrieve", label="Retrieve",
+            status="ok",
+            data=RecordSet(
+                mms_ids=["990001234"],
+                total_count=1,
+                filters_applied=[],
+            ),
+            record_count=1,
+        ),
+        1: StepResult(
+            step_index=1, action="enrich", label="Enrich",
+            status="ok",
+            data=EnrichmentBundle(agents=[
+                AgentSummary(
+                    canonical_name=karo_name,
+                    variants=["Joseph Karo"],
+                    links=karo_links,
+                ),
+            ]),
+            record_count=None,
+        ),
+    }
+
+    grounding, _truncated = _collect_grounding(step_results, test_db)
+
+    # Count how many Wikipedia links there are for Karo
+    karo_wiki = [
+        lnk for lnk in grounding.links
+        if lnk.source == "wikipedia" and "Karo" in lnk.label
+    ]
+    # Should not be duplicated (exactly 1 from the enrich step)
+    assert len(karo_wiki) == 1
