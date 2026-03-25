@@ -111,16 +111,17 @@ def normalize_filter_value(field: FilterField, raw_value: str, op: FilterOp = No
         Normalized value
     """
     if field in [FilterField.PUBLISHER, FilterField.IMPRINT_PLACE]:
-        # M2 normalization: casefold, strip brackets, remove punctuation
+        # M2 normalization: casefold, strip brackets, remove trailing punctuation
         value = raw_value.casefold()
         # Remove brackets
         value = re.sub(r'[\[\]]', '', value)
-        # Remove punctuation except spaces and hyphens
-        value = re.sub(r'[^\w\s\-]', '', value)
+        # Remove punctuation except spaces, hyphens, and commas
+        # (commas are meaningful in publisher/place names like "aldine press, venice")
+        value = re.sub(r'[^\w\s\-,]', '', value)
         # Collapse multiple spaces
         value = re.sub(r'\s+', ' ', value)
-        # Strip leading/trailing whitespace
-        value = value.strip()
+        # Strip leading/trailing whitespace and trailing commas
+        value = value.strip().rstrip(',').strip()
         return value
     elif field == FilterField.LANGUAGE:
         # Languages are ISO 639-2 codes, lowercase

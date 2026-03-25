@@ -497,30 +497,61 @@ def _handle_resolve_publisher(
 
         for candidate in candidates_to_try:
             row = conn.execute(
-                """SELECT pa.canonical_name
+                """SELECT pa.id, pa.canonical_name_lower
                    FROM publisher_authorities pa
                    JOIN publisher_variants pv ON pv.authority_id = pa.id
                    WHERE pv.variant_form_lower = ?""",
                 (candidate.lower(),),
             ).fetchone()
             if row:
-                canonical = row["canonical_name"]
-                if canonical not in matched_canonical:
-                    matched_canonical.append(canonical)
+                # Collect actual publisher_norm values from imprints that
+                # belong to any variant of this authority
+                norm_rows = conn.execute(
+                    """SELECT DISTINCT i.publisher_norm
+                       FROM imprints i
+                       WHERE LOWER(i.publisher_norm) IN (
+                           SELECT pv.variant_form_lower
+                           FROM publisher_variants pv
+                           WHERE pv.authority_id = ?
+                       )""",
+                    (row["id"],),
+                ).fetchall()
+                for nr in norm_rows:
+                    v = nr["publisher_norm"]
+                    if v and v not in matched_canonical:
+                        matched_canonical.append(v)
+                # Also include the canonical name (in case it appears directly)
+                cn = row["canonical_name_lower"]
+                if cn and cn not in matched_canonical:
+                    matched_canonical.append(cn)
                 match_method = "variant_exact"
 
         # Try direct canonical_name_lower match
         if not matched_canonical:
             for candidate in candidates_to_try:
                 row = conn.execute(
-                    """SELECT canonical_name FROM publisher_authorities
+                    """SELECT id, canonical_name_lower FROM publisher_authorities
                        WHERE canonical_name_lower = ?""",
                     (candidate.lower(),),
                 ).fetchone()
                 if row:
-                    canonical = row["canonical_name"]
-                    if canonical not in matched_canonical:
-                        matched_canonical.append(canonical)
+                    norm_rows = conn.execute(
+                        """SELECT DISTINCT i.publisher_norm
+                           FROM imprints i
+                           WHERE LOWER(i.publisher_norm) IN (
+                               SELECT pv.variant_form_lower
+                               FROM publisher_variants pv
+                               WHERE pv.authority_id = ?
+                           )""",
+                        (row["id"],),
+                    ).fetchall()
+                    for nr in norm_rows:
+                        v = nr["publisher_norm"]
+                        if v and v not in matched_canonical:
+                            matched_canonical.append(v)
+                    cn = row["canonical_name_lower"]
+                    if cn and cn not in matched_canonical:
+                        matched_canonical.append(cn)
                     match_method = "canonical_exact"
 
         # Token-based fallback on variants
@@ -578,16 +609,18 @@ def _handle_retrieve(
 
     # Resolve $step_N references in filter values
     resolved_filters = []
+    multi_value_map: Dict[int, List[str]] = {}  # filter_index -> all resolved values
     for f in params.filters:
         if isinstance(f.value, str):
             match = _STEP_REF_RE.match(f.value)
             if match:
                 values = _resolve_step_ref(f.value, step_results, context="value")
                 if isinstance(values, list) and values:
-                    # Use first matched value for CONTAINS/EQUALS
                     resolved_filters.append(
                         f.model_copy(update={"value": values[0]})
                     )
+                    if len(values) > 1:
+                        multi_value_map[len(resolved_filters) - 1] = values
                     continue
         resolved_filters.append(f)
 
@@ -599,6 +632,21 @@ def _handle_retrieve(
         # Build query from filters
         plan = QueryPlan(query_text="executor_retrieve", filters=resolved_filters)
         where_clause, sql_params, needed_joins = build_where_clause(plan, conn=conn)
+
+        # Replace single-value EQUALS with IN(...) for multi-value resolved filters
+        for filter_idx, all_values in multi_value_map.items():
+            f = resolved_filters[filter_idx]
+            # Find the param key used by build_where_clause for this filter
+            param_key = f"filter_{filter_idx}_{f.field.value}"
+            if param_key in sql_params:
+                # Replace LOWER(col) = LOWER(:param) with LOWER(col) IN (...)
+                old_cond = f"LOWER(:{param_key})"
+                values_sql = ", ".join(f"LOWER('{v}')" for v in all_values)
+                where_clause = where_clause.replace(
+                    f"= {old_cond}",
+                    f"IN ({values_sql})"
+                )
+                del sql_params[param_key]
 
         select_columns = build_select_columns(needed_joins)
         join_clauses = build_join_clauses(needed_joins)
