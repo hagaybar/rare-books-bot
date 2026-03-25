@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMARSBQC5C3B82EVPS96QQKP",
+  "taskId": "deep-repo-analysis",
+  "invocationKey": "notebooklm-context-builder:S000001:deep-repo-analysis",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Deep repository analysis",
+  "io": {
+    "inputJsonPath": "tasks/01KMARSBQC5C3B82EVPS96QQKP/input.json",
+    "outputJsonPath": "tasks/01KMARSBQC5C3B82EVPS96QQKP/output.json"
+  },
+  "inputs": {
+    "repoRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

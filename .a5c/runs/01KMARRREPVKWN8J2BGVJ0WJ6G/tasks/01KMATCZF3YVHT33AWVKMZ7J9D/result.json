@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMATCZF3YVHT33AWVKMZ7J9D",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "notebooklm-context-builder:S000004:__sdk.breakpoint",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Auto-approved by user authorization. Quality score 97/100, all documents passing."
+  },
+  "startedAt": "2026-03-22T13:05:32.361Z",
+  "finishedAt": "2026-03-22T13:05:32.361Z",
+  "value": {
+    "approved": true,
+    "response": "Auto-approved by user authorization. Quality score 97/100, all documents passing."
+  }
+}

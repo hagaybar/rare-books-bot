@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T10:25:37.643Z",
+  "data": {
+    "effectId": "01KMJ8EGTXW36DTE2ZN9P1GJPS",
+    "invocationKey": "scholar-pipeline:S000013:verify-phase",
+    "invocationHash": "10414c5145abbe5fe0ae4291b74382c21a6f9fccced6d566346da81489083bb9",
+    "stepId": "S000013",
+    "taskId": "verify-phase",
+    "kind": "shell",
+    "label": "Verify: final-all-tests",
+    "taskDefRef": "tasks/01KMJ8EGTXW36DTE2ZN9P1GJPS/task.json"
+  },
+  "checksum": "d9c98549bb90ec4256a6eeb4d2607af678fea1620497c52bd42c8fe1c53a7ca3"
+}

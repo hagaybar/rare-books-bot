@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGM7FN0KEA9D0K7V193SNT5",
+  "taskId": "e3-engine",
+  "invocationKey": "implement-historian-enhancements:S000016:e3-engine",
+  "stepId": "S000016",
+  "kind": "agent",
+  "title": "E3: Implement cross-reference engine",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

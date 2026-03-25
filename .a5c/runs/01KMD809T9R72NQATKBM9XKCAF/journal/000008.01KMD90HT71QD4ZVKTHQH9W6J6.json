@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T11:59:16.295Z",
+  "data": {
+    "effectId": "01KMD90HSVGNTF6Y3VKDCBQEFC",
+    "invocationKey": "empirical-verification:S000004:cross-reference",
+    "invocationHash": "5c566baa7f907d4ef61ffc1b39962fc65c3905878a7fd3ad0ba19960c5daa337",
+    "stepId": "S000004",
+    "taskId": "cross-reference",
+    "kind": "agent",
+    "label": "empirical",
+    "taskDefRef": "tasks/01KMD90HSVGNTF6Y3VKDCBQEFC/task.json",
+    "labels": [
+      "empirical",
+      "cross-reference",
+      "alignment"
+    ]
+  },
+  "checksum": "a8f5a05a5dc52490b8f4056088df91722c759ca28161f0e0d4720746a0ed1e24"
+}

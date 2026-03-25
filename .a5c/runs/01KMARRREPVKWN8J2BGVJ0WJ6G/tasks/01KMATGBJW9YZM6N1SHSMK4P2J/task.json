@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMATGBJW9YZM6N1SHSMK4P2J",
+  "taskId": "verify-notebook",
+  "invocationKey": "notebooklm-context-builder:S000006:verify-notebook",
+  "stepId": "S000006",
+  "kind": "agent",
+  "title": "Verify NotebookLM coverage with test questions",
+  "io": {
+    "inputJsonPath": "tasks/01KMATGBJW9YZM6N1SHSMK4P2J/input.json",
+    "outputJsonPath": "tasks/01KMATGBJW9YZM6N1SHSMK4P2J/output.json"
+  },
+  "inputs": {
+    "notebookName": "Rare Books Bot",
+    "notebookUrl": "https://notebooklm.google.com/notebook/7472ca6f-417a-47a1-9f8c-dd87a9e25b17"
+  }
+}

@@ -1,0 +1,538 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMD9ERW86VQ5K3A5ZPW13GQS",
+  "taskId": "report-refinement",
+  "invocationKey": "empirical-verification:S000005:report-refinement",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Phase 5: Refine reports based on empirical findings",
+  "labels": [
+    "refinement",
+    "report",
+    "verification"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMD9ERW86VQ5K3A5ZPW13GQS/input.json",
+    "outputJsonPath": "tasks/01KMD9ERW86VQ5K3A5ZPW13GQS/result.json"
+  },
+  "inputs": {
+    "apiVerify": {
+      "endpointShapes": {
+        "/chat": {
+          "candidateFields": [
+            "record_id",
+            "match_rationale",
+            "evidence",
+            "title",
+            "author",
+            "date_start",
+            "date_end",
+            "place_norm",
+            "place_raw",
+            "publisher",
+            "subjects",
+            "description"
+          ],
+          "chatResponseFields": [
+            "message",
+            "candidate_set",
+            "suggested_followups",
+            "clarification_needed",
+            "session_id",
+            "phase",
+            "confidence",
+            "metadata"
+          ],
+          "evidenceFields": [
+            "field",
+            "value",
+            "operator",
+            "matched_against",
+            "source",
+            "confidence",
+            "extraction_error"
+          ],
+          "responseFields": [
+            "success",
+            "response",
+            "error"
+          ]
+        },
+        "/health": {
+          "responseFields": [
+            "status",
+            "database_connected",
+            "session_store_ok"
+          ]
+        },
+        "/metadata/agent/chat": {
+          "actionEnum": [
+            "analysis",
+            "proposals",
+            "answer"
+          ],
+          "responseFields": [
+            "response",
+            "proposals",
+            "clusters",
+            "field",
+            "action"
+          ]
+        },
+        "/metadata/coverage": {
+          "responseFields": [
+            "date_coverage",
+            "place_coverage",
+            "publisher_coverage",
+            "agent_name_coverage",
+            "agent_role_coverage",
+            "total_imprint_rows",
+            "total_agent_rows"
+          ]
+        },
+        "/metadata/issues": {
+          "responseFields": [
+            "field",
+            "max_confidence",
+            "total",
+            "limit",
+            "offset",
+            "items"
+          ]
+        },
+        "/metadata/publishers": {
+          "itemFields": [
+            "id",
+            "canonical_name",
+            "type",
+            "confidence",
+            "variant_count",
+            "imprint_count",
+            "variants"
+          ],
+          "responseFields": [
+            "total",
+            "items"
+          ]
+        },
+        "/ws/chat": {
+          "messageTypes": [
+            "session_created",
+            "progress",
+            "batch",
+            "complete",
+            "error"
+          ],
+          "notes": "No intent agent, no phase/confidence, no facets"
+        }
+      },
+      "gaps": [
+        {
+          "actuallyProvided": "no",
+          "expectedBy": "performance monitoring",
+          "field": "execution_time_ms",
+          "impact": "Computed but not exposed in ChatResponse"
+        },
+        {
+          "actuallyProvided": "no",
+          "expectedBy": "faceted navigation",
+          "field": "facets (FacetCounts)",
+          "impact": "Computed but discarded — never serialized to response"
+        },
+        {
+          "actuallyProvided": "partial",
+          "expectedBy": "query transparency",
+          "field": "query_plan",
+          "impact": "Available via session history but not in ChatResponse"
+        },
+        {
+          "actuallyProvided": "no",
+          "expectedBy": "query quality indicators",
+          "field": "warnings (QueryWarning[])",
+          "impact": "Produced by QueryService but not forwarded"
+        },
+        {
+          "actuallyProvided": "no",
+          "expectedBy": "parity with HTTP",
+          "field": "WebSocket phase/confidence",
+          "impact": "Two-phase impossible over WebSocket"
+        },
+        {
+          "actuallyProvided": "partial",
+          "expectedBy": "per-filter indicators",
+          "field": "filter.confidence",
+          "impact": "Schema allows but LLM always returns null"
+        },
+        {
+          "actuallyProvided": "no",
+          "expectedBy": "direct record links",
+          "field": "Primo URL on Candidate",
+          "impact": "Requires separate API call"
+        }
+      ],
+      "recommendations": [
+        "Surface execution_time_ms in ChatResponse",
+        "Pass FacetCounts through to ChatResponse",
+        "Add query_plan or parsed filters to ChatResponse",
+        "Forward QueryWarning[] to ChatResponse.metadata",
+        "Bring WebSocket to parity with POST /chat",
+        "Embed Primo URLs on Candidate objects",
+        "Standardize metadata dict keys",
+        "Add pagination to /unmapped, /methods, /clusters"
+      ],
+      "surprises": [
+        {
+          "description": "MARC 500/520 notes available for previews",
+          "field": "Candidate.description"
+        },
+        {
+          "description": "Up to 3 subject headings as list",
+          "field": "Candidate.subjects"
+        },
+        {
+          "description": "Both raw and normalized available",
+          "field": "Candidate.place_raw + place_norm"
+        },
+        {
+          "description": "Exact SQL exposed for debug panel",
+          "field": "CandidateSet.sql"
+        },
+        {
+          "description": "Polymorphic dict varies by context",
+          "field": "ChatResponse.metadata"
+        },
+        {
+          "description": "Phase 2 includes bar_chart/pie_chart/table hint",
+          "field": "ExplorationResponse.visualization_hint"
+        },
+        {
+          "description": "Error field for partial evidence extraction",
+          "field": "Evidence.extraction_error"
+        },
+        {
+          "description": "Action field dictates UI state machine",
+          "field": "AgentChatResponse.action"
+        }
+      ]
+    },
+    "crossRef": {
+      "confirmedAssumptions": [
+        "Candidate objects have all fields for result cards",
+        "Evidence structure supports display (field, value, operator, source, confidence)",
+        "Agent chat API well-structured with proposals and clusters",
+        "Corrections API supports single and batch operations",
+        "Two-phase flow works via POST /chat HTTP endpoint",
+        "Place/date/language queries produce correct results"
+      ],
+      "criticalMisalignments": [
+        "WebSocket has NO two-phase support",
+        "ALL /diagnostics/* API endpoints missing — 2 screens blocked",
+        "FacetCounts computed then DISCARDED before reaching ChatResponse",
+        "Per-filter confidence always null — visualization unbuildable",
+        "Binary confidence — four-band visualization misleading for place/publisher"
+      ],
+      "overallVerdict": "5 PARTIALLY_ALIGNED, 2 CONFIRMED, 2 MISALIGNED. Operator tier best supported. Diagnostics tier requires significant backend work. Biggest conceptual issue: 'issues' framing obsolete with only 121 low-conf records — real gaps are Hebrew publishers (553), agents (4366), unresearched authorities (202).",
+      "screenAlignments": [
+        {
+          "gaps": [
+            "WebSocket no two-phase",
+            "FacetCounts discarded",
+            "execution_time not exposed",
+            "filter confidence always null",
+            "Primo URLs not on Candidate"
+          ],
+          "name": "Chat",
+          "path": "/",
+          "rating": "PARTIALLY_ALIGNED"
+        },
+        {
+          "gaps": [
+            "Binary confidence (not four-band)",
+            "Only 121 low-conf records total",
+            "No trend-over-time infrastructure",
+            "Dashboard will look too healthy"
+          ],
+          "name": "Coverage Dashboard",
+          "path": "/operator/coverage",
+          "rating": "PARTIALLY_ALIGNED"
+        },
+        {
+          "gaps": [
+            "Only 121 issues total — nearly empty",
+            "Confidence slider useless in 0.5-0.95",
+            "Real gaps are Hebrew publishers (553) and agents (4366)",
+            "No date corrections via API"
+          ],
+          "name": "Issues Workbench",
+          "path": "/operator/workbench",
+          "rating": "PARTIALLY_ALIGNED"
+        },
+        {
+          "gaps": [
+            "89% publisher authorities are stubs",
+            "authority_enrichment empty"
+          ],
+          "name": "Agent Chat",
+          "path": "/operator/agent",
+          "rating": "CONFIRMED"
+        },
+        {
+          "gaps": [
+            "No revert endpoint",
+            "No search/date filter params"
+          ],
+          "name": "Correction Review",
+          "path": "/operator/review",
+          "rating": "CONFIRMED"
+        },
+        {
+          "gaps": [
+            "ZERO /diagnostics/* endpoints exist",
+            "QA database has no HTTP API",
+            "query_plan not in ChatResponse"
+          ],
+          "name": "Query Debugger",
+          "path": "/diagnostics/query",
+          "rating": "MISALIGNED"
+        },
+        {
+          "gaps": [
+            "ZERO /diagnostics/* endpoints exist",
+            "No schema or statistics endpoints"
+          ],
+          "name": "Database Explorer",
+          "path": "/diagnostics/db",
+          "rating": "MISALIGNED"
+        },
+        {
+          "gaps": [
+            "No CRUD endpoints",
+            "No match preview",
+            "89% are empty stubs",
+            "All enrichment IDs null"
+          ],
+          "name": "Publisher Authorities",
+          "path": "/admin/publishers",
+          "rating": "PARTIALLY_ALIGNED"
+        },
+        {
+          "gaps": [
+            "Only basic health check exists",
+            "No metrics infrastructure",
+            "No log viewing"
+          ],
+          "name": "System Health",
+          "path": "/admin/health",
+          "rating": "PARTIALLY_ALIGNED"
+        }
+      ]
+    },
+    "dbProbe": {
+      "anomalies": [
+        "38 records have no imprints (Faitlovitch Ethiopic manuscripts)",
+        "553 publisher_norm values (20.2%) are in Hebrew script, not transliterated",
+        "1,924 agent roles (44.1%) classified as 'other'",
+        "All 4,366 agents use base_clean only -- no alias map normalization",
+        "202 of 227 publisher authorities (89%) are unresearched stubs",
+        "Binary confidence distribution -- no 0.5-0.95 middle ground for place/publisher",
+        "'frankfurt' and 'frankfurt am main' are separate normalized values",
+        "authority_enrichment table is empty (0 rows)",
+        "61 dates (2.2%) are unparsed"
+      ],
+      "confidenceDistributions": {
+        "date": {
+          "0-0.5": 69,
+          "0.5-0.8": 0,
+          "0.8-0.95": 1306,
+          "0.95-1.0": 1398,
+          "null": 0
+        },
+        "place": {
+          "0-0.5": 19,
+          "0.5-0.8": 0,
+          "0.8-0.95": 0,
+          "0.95-1.0": 2754,
+          "null": 0
+        },
+        "publisher": {
+          "0-0.5": 33,
+          "0.5-0.8": 0,
+          "0.8-0.95": 0,
+          "0.95-1.0": 2740,
+          "null": 0
+        }
+      },
+      "coverageRates": {
+        "date": "97.5%",
+        "place": "99.3%",
+        "publisher": "98.8%"
+      },
+      "dateRange": {
+        "max": 2025,
+        "min": 1244
+      },
+      "summary": "2,796 records spanning 1244-2025. Strong normalization coverage (97-99%). Binary confidence model. Biggest gaps: agent normalization (100% base_clean), Hebrew publisher names (20.2%), unresearched publisher authorities (89%).",
+      "tableCounts": {
+        "agents": 4366,
+        "authority_enrichment": 0,
+        "imprints": 2773,
+        "languages": 3197,
+        "notes": 8037,
+        "publisher_authorities": 227,
+        "publisher_variants": 265,
+        "records": 2796,
+        "subjects": 5415,
+        "titles": 4791
+      },
+      "topValues": {
+        "places": [
+          [
+            "paris",
+            356
+          ],
+          [
+            "london",
+            230
+          ],
+          [
+            "amsterdam",
+            196
+          ],
+          [
+            "venice",
+            164
+          ],
+          [
+            "berlin",
+            123
+          ]
+        ],
+        "publishers": [
+          [
+            "[publisher unknown]",
+            115
+          ],
+          [
+            "[sine nomine]",
+            100
+          ],
+          [
+            "insel verlag",
+            16
+          ],
+          [
+            "verdiere, paris",
+            16
+          ]
+        ]
+      }
+    },
+    "pipelineTest": {
+      "edgeCases": [
+        {
+          "behavior": "FALSE BROADENING: silently remapped to 'Philosophy', returned 67 irrelevant results",
+          "query": "books about quantum physics"
+        },
+        {
+          "behavior": "Correctly returned all 2796 with EMPTY_FILTERS warning",
+          "query": "books"
+        },
+        {
+          "behavior": "Interpreted as place filter, 164 results, no ambiguity warning",
+          "query": "Venice"
+        }
+      ],
+      "issues": [
+        "HIGH: Publisher variant matching misses historical name forms (Elsevier/Elzevir: 1/16 found)",
+        "HIGH: Subject retry false broadening — zero results silently remapped to wrong subject",
+        "MEDIUM: Subject evidence value is always null",
+        "MEDIUM: QueryPlan filter confidence always null — LOW_CONFIDENCE warning can never fire",
+        "LOW: Agent evidence source shows marc:unknown instead of 100/700",
+        "LOW: Empty-filter queries return all records with empty evidence"
+      ],
+      "queryResults": [
+        {
+          "evidenceShape": "1 Evidence per candidate: field=place_norm, confidence=0.95",
+          "issues": [],
+          "planFilters": [
+            "imprint_place EQUALS 'amsterdam'"
+          ],
+          "query": "books published in Amsterdam",
+          "resultCount": 196
+        },
+        {
+          "evidenceShape": "1 Evidence per candidate: date overlap",
+          "issues": [],
+          "planFilters": [
+            "year RANGE 1501-1600"
+          ],
+          "query": "books from the 16th century",
+          "resultCount": 217
+        },
+        {
+          "evidenceShape": "2 Evidence objects",
+          "issues": [],
+          "planFilters": [
+            "language='heb'",
+            "place='venice'"
+          ],
+          "query": "Hebrew books printed in Venice",
+          "resultCount": 100
+        },
+        {
+          "evidenceShape": "Evidence value field is always null",
+          "issues": [
+            "Subject evidence value is always null"
+          ],
+          "planFilters": [
+            "subject CONTAINS 'Medicine'"
+          ],
+          "query": "books about medicine",
+          "resultCount": 15
+        },
+        {
+          "evidenceShape": "1 Evidence",
+          "issues": [
+            "Only 1 of 16 Elzevir records matched — publisher variant gap"
+          ],
+          "planFilters": [
+            "publisher CONTAINS 'elsevier'"
+          ],
+          "query": "books published by Elsevier",
+          "resultCount": 1
+        },
+        {
+          "evidenceShape": "3 Evidence objects",
+          "issues": [],
+          "planFilters": [
+            "language+place+date"
+          ],
+          "query": "Hebrew books printed in Amsterdam in the 17th century",
+          "resultCount": 46
+        },
+        {
+          "evidenceShape": "Agent source shows marc:unknown",
+          "issues": [
+            "Agent evidence source incorrect"
+          ],
+          "planFilters": [
+            "agent CONTAINS 'maimonides'"
+          ],
+          "query": "books by Maimonides",
+          "resultCount": 7
+        }
+      ],
+      "structureFindings": {
+        "artifactFiles": [
+          "plan.json",
+          "sql.txt",
+          "candidates.json"
+        ],
+        "candidateSetShape": "CandidateSet{query_text, plan_hash, sql, candidates[], total_count}",
+        "evidenceFormat": "Evidence{field, value(often null), operator, matched_against, source(marc tag), confidence, extraction_error}",
+        "queryPlanFormat": "QueryPlan{version, query_text, filters[Filter{field, op, value/start/end, confidence(always null)}], limit, debug}"
+      }
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

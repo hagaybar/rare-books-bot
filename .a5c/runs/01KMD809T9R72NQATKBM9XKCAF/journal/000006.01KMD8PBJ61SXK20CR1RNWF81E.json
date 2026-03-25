@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T11:53:42.214Z",
+  "data": {
+    "effectId": "01KMD8PBHT8R1XWJ1YXS95J2BM",
+    "invocationKey": "empirical-verification:S000003:api-response-verify",
+    "invocationHash": "58db1082a50bb084b27c91978f92e5ce8ae81f77febe85c0fb07fd71a3b7c882",
+    "stepId": "S000003",
+    "taskId": "api-response-verify",
+    "kind": "agent",
+    "label": "empirical",
+    "taskDefRef": "tasks/01KMD8PBHT8R1XWJ1YXS95J2BM/task.json",
+    "labels": [
+      "empirical",
+      "api",
+      "verification"
+    ]
+  },
+  "checksum": "f27559a2d8890df2535eafb7abac86b7121cdd04388f4bacc0a2ed9b3c70ef80"
+}

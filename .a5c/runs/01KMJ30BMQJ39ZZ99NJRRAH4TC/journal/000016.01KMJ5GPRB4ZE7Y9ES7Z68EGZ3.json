@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T09:34:23.499Z",
+  "data": {
+    "effectId": "01KMJ5GPQZCJ5HDGC3W5DBZXC2",
+    "invocationKey": "scholar-pipeline:S000008:verify-phase",
+    "invocationHash": "3aa29cafa90517c9d815c7461264331aa142db14d451a4ebd3d04c785627997d",
+    "stepId": "S000008",
+    "taskId": "verify-phase",
+    "kind": "shell",
+    "label": "Verify: phase3-handlers",
+    "taskDefRef": "tasks/01KMJ5GPQZCJ5HDGC3W5DBZXC2/task.json"
+  },
+  "checksum": "61da761e6b8392218081572ae6144303aa7c840ecc8102a7143b64be86d945c2"
+}

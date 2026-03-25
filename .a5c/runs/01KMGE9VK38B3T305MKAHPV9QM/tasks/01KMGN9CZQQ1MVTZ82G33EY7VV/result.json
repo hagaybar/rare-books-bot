@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGN9CZQQ1MVTZ82G33EY7VV",
+  "taskId": "e4-thematic-impl",
+  "invocationKey": "implement-historian-enhancements:S000023:e4-thematic-impl",
+  "status": "ok",
+  "result": {
+    "fileCreated": "scripts/chat/thematic_context.py",
+    "summary": "Thematic context (~480 lines) with 8 scholarly entries, significance scoring, notable items. All 13 tests pass.",
+    "testsFailed": 0,
+    "testsPassed": 13
+  },
+  "startedAt": "2026-03-24T19:35:33.621Z",
+  "finishedAt": "2026-03-24T19:35:33.621Z",
+  "value": {
+    "fileCreated": "scripts/chat/thematic_context.py",
+    "summary": "Thematic context (~480 lines) with 8 scholarly entries, significance scoring, notable items. All 13 tests pass.",
+    "testsFailed": 0,
+    "testsPassed": 13
+  }
+}

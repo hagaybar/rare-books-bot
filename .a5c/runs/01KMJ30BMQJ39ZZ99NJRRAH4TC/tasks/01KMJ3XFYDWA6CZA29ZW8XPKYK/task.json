@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ3XFYDWA6CZA29ZW8XPKYK",
+  "taskId": "implement-task",
+  "invocationKey": "scholar-pipeline:S000005:implement-task",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Implement Task 5: Narrator",
+  "io": {
+    "inputJsonPath": "tasks/01KMJ3XFYDWA6CZA29ZW8XPKYK/input.json",
+    "outputJsonPath": "tasks/01KMJ3XFYDWA6CZA29ZW8XPKYK/result.json"
+  },
+  "inputs": {
+    "description": "Implement Task 5 from the plan: Create scripts/chat/narrator.py (Stage 3 - scholarly response generation). Create tests/scripts/chat/test_narrator.py with mocked LLM. The narrator receives ExecutionResult + query, calls OpenAI with the scholar persona prompt (6 evidence rules from the spec), returns ScholarResponse. Must include: _build_narrator_prompt() that renders records/agents/directives/aggregations, _fallback_response() for LLM failure, grounding passthrough. Follow TDD steps exactly.",
+    "planPath": "docs/superpowers/plans/2026-03-25-scholar-pipeline.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-scholar-pipeline-design.md",
+    "taskName": "Narrator",
+    "taskNumber": 5,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_narrator.py -v 2>&1 | tail -40"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJCBB49K4DKQ0V11139KKT1",
+  "taskId": "narrator-fix",
+  "invocationKey": "scholar-pipeline-fixes:S000003:narrator-fix",
+  "status": "ok",
+  "result": {
+    "success": true,
+    "testsPassing": true
+  },
+  "startedAt": "2026-03-25T11:34:38.816Z",
+  "finishedAt": "2026-03-25T11:34:38.816Z",
+  "value": {
+    "success": true,
+    "testsPassing": true
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KME9V6BMA047XT2Q165A546J",
+  "taskId": "build-narrative-agent",
+  "invocationKey": "narrative-agent-prototype:S000001:build-narrative-agent",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Build narrative agent backend module",
+  "labels": [
+    "agent",
+    "backend",
+    "narrative"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KME9V6BMA047XT2Q165A546J/input.json",
+    "outputJsonPath": "tasks/01KME9V6BMA047XT2Q165A546J/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

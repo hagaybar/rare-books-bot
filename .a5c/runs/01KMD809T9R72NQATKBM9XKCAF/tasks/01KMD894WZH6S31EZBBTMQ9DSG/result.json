@@ -1,0 +1,221 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD894WZH6S31EZBBTMQ9DSG",
+  "taskId": "query-pipeline-test",
+  "invocationKey": "empirical-verification:S000002:query-pipeline-test",
+  "status": "ok",
+  "result": {
+    "edgeCases": [
+      {
+        "behavior": "FALSE BROADENING: silently remapped to 'Philosophy', returned 67 irrelevant results",
+        "query": "books about quantum physics"
+      },
+      {
+        "behavior": "Correctly returned all 2796 with EMPTY_FILTERS warning",
+        "query": "books"
+      },
+      {
+        "behavior": "Interpreted as place filter, 164 results, no ambiguity warning",
+        "query": "Venice"
+      }
+    ],
+    "issues": [
+      "HIGH: Publisher variant matching misses historical name forms (Elsevier/Elzevir: 1/16 found)",
+      "HIGH: Subject retry false broadening — zero results silently remapped to wrong subject",
+      "MEDIUM: Subject evidence value is always null",
+      "MEDIUM: QueryPlan filter confidence always null — LOW_CONFIDENCE warning can never fire",
+      "LOW: Agent evidence source shows marc:unknown instead of 100/700",
+      "LOW: Empty-filter queries return all records with empty evidence"
+    ],
+    "queryResults": [
+      {
+        "evidenceShape": "1 Evidence per candidate: field=place_norm, confidence=0.95",
+        "issues": [],
+        "planFilters": [
+          "imprint_place EQUALS 'amsterdam'"
+        ],
+        "query": "books published in Amsterdam",
+        "resultCount": 196
+      },
+      {
+        "evidenceShape": "1 Evidence per candidate: date overlap",
+        "issues": [],
+        "planFilters": [
+          "year RANGE 1501-1600"
+        ],
+        "query": "books from the 16th century",
+        "resultCount": 217
+      },
+      {
+        "evidenceShape": "2 Evidence objects",
+        "issues": [],
+        "planFilters": [
+          "language='heb'",
+          "place='venice'"
+        ],
+        "query": "Hebrew books printed in Venice",
+        "resultCount": 100
+      },
+      {
+        "evidenceShape": "Evidence value field is always null",
+        "issues": [
+          "Subject evidence value is always null"
+        ],
+        "planFilters": [
+          "subject CONTAINS 'Medicine'"
+        ],
+        "query": "books about medicine",
+        "resultCount": 15
+      },
+      {
+        "evidenceShape": "1 Evidence",
+        "issues": [
+          "Only 1 of 16 Elzevir records matched — publisher variant gap"
+        ],
+        "planFilters": [
+          "publisher CONTAINS 'elsevier'"
+        ],
+        "query": "books published by Elsevier",
+        "resultCount": 1
+      },
+      {
+        "evidenceShape": "3 Evidence objects",
+        "issues": [],
+        "planFilters": [
+          "language+place+date"
+        ],
+        "query": "Hebrew books printed in Amsterdam in the 17th century",
+        "resultCount": 46
+      },
+      {
+        "evidenceShape": "Agent source shows marc:unknown",
+        "issues": [
+          "Agent evidence source incorrect"
+        ],
+        "planFilters": [
+          "agent CONTAINS 'maimonides'"
+        ],
+        "query": "books by Maimonides",
+        "resultCount": 7
+      }
+    ],
+    "structureFindings": {
+      "artifactFiles": [
+        "plan.json",
+        "sql.txt",
+        "candidates.json"
+      ],
+      "candidateSetShape": "CandidateSet{query_text, plan_hash, sql, candidates[], total_count}",
+      "evidenceFormat": "Evidence{field, value(often null), operator, matched_against, source(marc tag), confidence, extraction_error}",
+      "queryPlanFormat": "QueryPlan{version, query_text, filters[Filter{field, op, value/start/end, confidence(always null)}], limit, debug}"
+    }
+  },
+  "startedAt": "2026-03-23T11:53:35.524Z",
+  "finishedAt": "2026-03-23T11:53:35.524Z",
+  "value": {
+    "edgeCases": [
+      {
+        "behavior": "FALSE BROADENING: silently remapped to 'Philosophy', returned 67 irrelevant results",
+        "query": "books about quantum physics"
+      },
+      {
+        "behavior": "Correctly returned all 2796 with EMPTY_FILTERS warning",
+        "query": "books"
+      },
+      {
+        "behavior": "Interpreted as place filter, 164 results, no ambiguity warning",
+        "query": "Venice"
+      }
+    ],
+    "issues": [
+      "HIGH: Publisher variant matching misses historical name forms (Elsevier/Elzevir: 1/16 found)",
+      "HIGH: Subject retry false broadening — zero results silently remapped to wrong subject",
+      "MEDIUM: Subject evidence value is always null",
+      "MEDIUM: QueryPlan filter confidence always null — LOW_CONFIDENCE warning can never fire",
+      "LOW: Agent evidence source shows marc:unknown instead of 100/700",
+      "LOW: Empty-filter queries return all records with empty evidence"
+    ],
+    "queryResults": [
+      {
+        "evidenceShape": "1 Evidence per candidate: field=place_norm, confidence=0.95",
+        "issues": [],
+        "planFilters": [
+          "imprint_place EQUALS 'amsterdam'"
+        ],
+        "query": "books published in Amsterdam",
+        "resultCount": 196
+      },
+      {
+        "evidenceShape": "1 Evidence per candidate: date overlap",
+        "issues": [],
+        "planFilters": [
+          "year RANGE 1501-1600"
+        ],
+        "query": "books from the 16th century",
+        "resultCount": 217
+      },
+      {
+        "evidenceShape": "2 Evidence objects",
+        "issues": [],
+        "planFilters": [
+          "language='heb'",
+          "place='venice'"
+        ],
+        "query": "Hebrew books printed in Venice",
+        "resultCount": 100
+      },
+      {
+        "evidenceShape": "Evidence value field is always null",
+        "issues": [
+          "Subject evidence value is always null"
+        ],
+        "planFilters": [
+          "subject CONTAINS 'Medicine'"
+        ],
+        "query": "books about medicine",
+        "resultCount": 15
+      },
+      {
+        "evidenceShape": "1 Evidence",
+        "issues": [
+          "Only 1 of 16 Elzevir records matched — publisher variant gap"
+        ],
+        "planFilters": [
+          "publisher CONTAINS 'elsevier'"
+        ],
+        "query": "books published by Elsevier",
+        "resultCount": 1
+      },
+      {
+        "evidenceShape": "3 Evidence objects",
+        "issues": [],
+        "planFilters": [
+          "language+place+date"
+        ],
+        "query": "Hebrew books printed in Amsterdam in the 17th century",
+        "resultCount": 46
+      },
+      {
+        "evidenceShape": "Agent source shows marc:unknown",
+        "issues": [
+          "Agent evidence source incorrect"
+        ],
+        "planFilters": [
+          "agent CONTAINS 'maimonides'"
+        ],
+        "query": "books by Maimonides",
+        "resultCount": 7
+      }
+    ],
+    "structureFindings": {
+      "artifactFiles": [
+        "plan.json",
+        "sql.txt",
+        "candidates.json"
+      ],
+      "candidateSetShape": "CandidateSet{query_text, plan_hash, sql, candidates[], total_count}",
+      "evidenceFormat": "Evidence{field, value(often null), operator, matched_against, source(marc tag), confidence, extraction_error}",
+      "queryPlanFormat": "QueryPlan{version, query_text, filters[Filter{field, op, value/start/end, confidence(always null)}], limit, debug}"
+    }
+  }
+}

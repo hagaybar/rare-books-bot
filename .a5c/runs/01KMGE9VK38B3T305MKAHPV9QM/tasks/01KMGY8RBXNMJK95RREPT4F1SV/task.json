@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGY8RBXNMJK95RREPT4F1SV",
+  "taskId": "e5-verify",
+  "invocationKey": "implement-historian-enhancements:S000032:e5-verify",
+  "stepId": "S000032",
+  "kind": "shell",
+  "title": "E5: Run all E5 tests to verify completion",
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_curator.py -v --timeout=60 2>&1 | tail -30",
+    "description": "Run E5 tests and verify curation works",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

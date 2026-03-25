@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGKFSEXZX7G4CHFY2XWQ8KE",
+  "taskId": "e2-api-wiring",
+  "invocationKey": "implement-historian-enhancements:S000012:e2-api-wiring",
+  "stepId": "S000012",
+  "kind": "agent",
+  "title": "E2: Wire analytical routing into API and WebSocket",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

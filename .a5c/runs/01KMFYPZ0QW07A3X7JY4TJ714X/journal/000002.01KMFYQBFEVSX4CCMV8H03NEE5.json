@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T12:57:12.430Z",
+  "data": {
+    "effectId": "01KMFYQBEX04MKB7HBVS13186R",
+    "invocationKey": "historian-evaluation:S000001:design-questions",
+    "invocationHash": "4d4f1052eed7faff686aa23c1d31078ca9f48eded0739d6bf547614145356e01",
+    "stepId": "S000001",
+    "taskId": "design-questions",
+    "kind": "agent",
+    "label": "research",
+    "taskDefRef": "tasks/01KMFYQBEX04MKB7HBVS13186R/task.json",
+    "labels": [
+      "research",
+      "questions",
+      "historian"
+    ]
+  },
+  "checksum": "f3a2818c163793e4d198151770096fd30e6140609a35c2e1e6a3813dfb633993"
+}

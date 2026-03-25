@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMATDBY562W0YG235FFH38RF",
+  "taskId": "upload-to-notebooklm",
+  "invocationKey": "notebooklm-context-builder:S000005:upload-to-notebooklm",
+  "status": "ok",
+  "result": {
+    "error": "Chrome extension disconnected during execution. Documents are ready locally and need to be uploaded manually or after reconnection.",
+    "sources": [],
+    "uploaded": 0
+  },
+  "startedAt": "2026-03-22T13:07:10.203Z",
+  "finishedAt": "2026-03-22T13:07:10.203Z",
+  "value": {
+    "error": "Chrome extension disconnected during execution. Documents are ready locally and need to be uploaded manually or after reconnection.",
+    "sources": [],
+    "uploaded": 0
+  }
+}

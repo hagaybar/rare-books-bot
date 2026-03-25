@@ -1,0 +1,14 @@
+{
+  "runId": "01KMDBXZNE5VSTQNMQXG90Y7VF",
+  "request": "definitive-implementation-plan",
+  "processId": "definitive-implementation-plan",
+  "entrypoint": {
+    "importPath": "../../processes/definitive-implementation-plan.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/definitive-implementation-plan.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-23T12:50:17.919Z",
+  "prompt": "Synthesize 13 reports into single definitive IMPLEMENTATION_PLAN.md",
+  "completionProof": "e4a18f5f828e402bb0bdf6c2fe6c9827"
+}

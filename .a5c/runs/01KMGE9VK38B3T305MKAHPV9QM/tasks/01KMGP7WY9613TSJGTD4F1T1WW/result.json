@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGP7WY9613TSJGTD4F1T1WW",
+  "taskId": "e5-curator-impl",
+  "invocationKey": "implement-historian-enhancements:S000029:e5-curator-impl",
+  "status": "ok",
+  "result": {
+    "fileCreated": "scripts/chat/curator.py",
+    "summary": "Curator module (~270 lines) with ScoredCandidate, CurationRequest, CurationResult, fetch_record_metadata, score_candidates, select_diverse. Also added format_exhibit_item/response to formatter.py and recommendation fields to exploration_agent.py. All 27 tests pass.",
+    "testsFailed": 0,
+    "testsPassed": 27
+  },
+  "startedAt": "2026-03-24T22:05:16.615Z",
+  "finishedAt": "2026-03-24T22:05:16.615Z",
+  "value": {
+    "fileCreated": "scripts/chat/curator.py",
+    "summary": "Curator module (~270 lines) with ScoredCandidate, CurationRequest, CurationResult, fetch_record_metadata, score_candidates, select_diverse. Also added format_exhibit_item/response to formatter.py and recommendation fields to exploration_agent.py. All 27 tests pass.",
+    "testsFailed": 0,
+    "testsPassed": 27
+  }
+}

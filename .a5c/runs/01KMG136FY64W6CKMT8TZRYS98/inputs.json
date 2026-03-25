@@ -1,0 +1,6 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "reportPath": "reports/historian-evaluation.md",
+  "targetScore": 15.7,
+  "dbPath": "data/index/bibliographic.db"
+}

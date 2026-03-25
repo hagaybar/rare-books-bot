@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDCYMX7Q5BV5MG0HFE6P09X",
+  "taskId": "verify-consistency",
+  "invocationKey": "definitive-implementation-plan:S000003:verify-consistency",
+  "status": "ok",
+  "result": {
+    "failedChecks": [
+      "Screen 2/3 data shape simplifications incorrect",
+      "CLAUDE.md stale numbers not addressed in plan",
+      "CLAUDE.md stale place method documentation not addressed"
+    ],
+    "issueCount": 4,
+    "issues": [
+      {
+        "check": "Data shapes",
+        "finding": "FieldCoverageResponse simplified incorrectly — confidence_distribution is List[ConfidenceBandResponse] not Record<string,number>",
+        "section": "Screen 2 (Coverage Dashboard)",
+        "severity": "warning"
+      },
+      {
+        "check": "Data shapes",
+        "finding": "ClusterResponse.values is List[ClusterValueResponse] not string[]; alias_map_updated is string not boolean",
+        "section": "Screen 3 (Issues Workbench)",
+        "severity": "warning"
+      },
+      {
+        "check": "Numbers",
+        "finding": "CLAUDE.md has stale numbers (228/266/203) vs empirical (227/265/202)",
+        "section": "Screen 8 (Publisher Authorities)",
+        "severity": "warning"
+      },
+      {
+        "check": "Documentation",
+        "finding": "No task to correct CLAUDE.md stale place normalization method references",
+        "section": "Phase 5 Cleanup",
+        "severity": "warning"
+      }
+    ],
+    "missingEmpiricalFindings": [
+      "Frankfurt deduplication target (48+30 records) not mentioned",
+      "GET /metadata/unmapped endpoint not referenced in any screen spec",
+      "LOW_CONFIDENCE warning is dead code — not documented",
+      "38 imprint-less manuscripts (Faitlovitch) — no CandidateCard handling noted",
+      "Manufacturer data 98.9% null — minor, not a query filter"
+    ],
+    "overallStatus": "pass",
+    "passedChecks": [
+      "All API endpoints exist or are in Backend Work Inventory",
+      "All alignment ratings match report 11",
+      "No dropped feature appears in screen specs",
+      "No kept feature depends on dropped API",
+      "Database numbers match report 08",
+      "Binary confidence model acknowledged",
+      "121 low-confidence records correctly addressed",
+      "Hebrew publisher gap (553) addressed",
+      "Agent normalization gap (4,366) addressed",
+      "WebSocket limitation correctly deferred",
+      "Phase 2 is sequential after Phase 1",
+      "Timeline adds to 8 weeks",
+      "Exit criteria are testable",
+      "Blocking dependencies correctly identified",
+      "All 16 contradictions resolved",
+      "Feature sources accurate",
+      "Effort estimates reasonable"
+    ]
+  },
+  "startedAt": "2026-03-23T13:14:02.491Z",
+  "finishedAt": "2026-03-23T13:14:02.491Z",
+  "value": {
+    "failedChecks": [
+      "Screen 2/3 data shape simplifications incorrect",
+      "CLAUDE.md stale numbers not addressed in plan",
+      "CLAUDE.md stale place method documentation not addressed"
+    ],
+    "issueCount": 4,
+    "issues": [
+      {
+        "check": "Data shapes",
+        "finding": "FieldCoverageResponse simplified incorrectly — confidence_distribution is List[ConfidenceBandResponse] not Record<string,number>",
+        "section": "Screen 2 (Coverage Dashboard)",
+        "severity": "warning"
+      },
+      {
+        "check": "Data shapes",
+        "finding": "ClusterResponse.values is List[ClusterValueResponse] not string[]; alias_map_updated is string not boolean",
+        "section": "Screen 3 (Issues Workbench)",
+        "severity": "warning"
+      },
+      {
+        "check": "Numbers",
+        "finding": "CLAUDE.md has stale numbers (228/266/203) vs empirical (227/265/202)",
+        "section": "Screen 8 (Publisher Authorities)",
+        "severity": "warning"
+      },
+      {
+        "check": "Documentation",
+        "finding": "No task to correct CLAUDE.md stale place normalization method references",
+        "section": "Phase 5 Cleanup",
+        "severity": "warning"
+      }
+    ],
+    "missingEmpiricalFindings": [
+      "Frankfurt deduplication target (48+30 records) not mentioned",
+      "GET /metadata/unmapped endpoint not referenced in any screen spec",
+      "LOW_CONFIDENCE warning is dead code — not documented",
+      "38 imprint-less manuscripts (Faitlovitch) — no CandidateCard handling noted",
+      "Manufacturer data 98.9% null — minor, not a query filter"
+    ],
+    "overallStatus": "pass",
+    "passedChecks": [
+      "All API endpoints exist or are in Backend Work Inventory",
+      "All alignment ratings match report 11",
+      "No dropped feature appears in screen specs",
+      "No kept feature depends on dropped API",
+      "Database numbers match report 08",
+      "Binary confidence model acknowledged",
+      "121 low-confidence records correctly addressed",
+      "Hebrew publisher gap (553) addressed",
+      "Agent normalization gap (4,366) addressed",
+      "WebSocket limitation correctly deferred",
+      "Phase 2 is sequential after Phase 1",
+      "Timeline adds to 8 weeks",
+      "Exit criteria are testable",
+      "Blocking dependencies correctly identified",
+      "All 16 contradictions resolved",
+      "Feature sources accurate",
+      "Effort estimates reasonable"
+    ]
+  }
+}

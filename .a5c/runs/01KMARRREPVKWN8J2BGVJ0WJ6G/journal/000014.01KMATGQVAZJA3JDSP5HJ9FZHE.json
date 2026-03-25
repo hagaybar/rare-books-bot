@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T13:07:29.258Z",
+  "data": {
+    "effectId": "01KMATGQTYXHPHTCB2B9938MCR",
+    "invocationKey": "notebooklm-context-builder:S000007:create-update-pipe",
+    "invocationHash": "15b084742a875cb0df61df36af1f5558410615b083d388edddc15df4d3d9ea79",
+    "stepId": "S000007",
+    "taskId": "create-update-pipe",
+    "kind": "agent",
+    "label": "Create update utility for refreshing NotebookLM context",
+    "taskDefRef": "tasks/01KMATGQTYXHPHTCB2B9938MCR/task.json"
+  },
+  "checksum": "4c0900355bc3c88ad7e47b20700a1756afc3589def3b7c4df26e41dbf5fad1cf"
+}

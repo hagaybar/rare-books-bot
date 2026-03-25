@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDYJK8CVD2X255V92N20HFA",
+  "taskId": "cleanup",
+  "invocationKey": "implement-unified-ui:S000016:cleanup",
+  "stepId": "S000016",
+  "kind": "agent",
+  "title": "Phase 5: Retirement & Cleanup",
+  "labels": [
+    "cleanup",
+    "phase5",
+    "retirement"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDYJK8CVD2X255V92N20HFA/input.json",
+    "outputJsonPath": "tasks/01KMDYJK8CVD2X255V92N20HFA/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

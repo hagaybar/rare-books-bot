@@ -1,0 +1,12 @@
+{
+  "type": "EFFECT_RESOLVED",
+  "recordedAt": "2026-03-22T13:21:37.341Z",
+  "data": {
+    "effectId": "01KMAV9Y63KA49FA0KRT4EXPCB",
+    "status": "ok",
+    "resultRef": "tasks/01KMAV9Y63KA49FA0KRT4EXPCB/result.json",
+    "startedAt": "2026-03-22T13:21:37.326Z",
+    "finishedAt": "2026-03-22T13:21:37.326Z"
+  },
+  "checksum": "68ebc8eddc33d4638f140ae54ea494da02177c997eb83b9e2fab428fb92d985f"
+}

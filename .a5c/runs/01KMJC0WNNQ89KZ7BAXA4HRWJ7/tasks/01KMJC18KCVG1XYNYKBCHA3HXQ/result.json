@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJC18KCVG1XYNYKBCHA3HXQ",
+  "taskId": "backend-fixes",
+  "invocationKey": "scholar-pipeline-fixes:S000001:backend-fixes",
+  "status": "ok",
+  "result": {
+    "issuesFixed": [
+      "issue1_json_repair",
+      "issue2_index_remap",
+      "issue5_agent_links"
+    ],
+    "success": true,
+    "testsPassing": true
+  },
+  "startedAt": "2026-03-25T11:33:16.027Z",
+  "finishedAt": "2026-03-25T11:33:16.027Z",
+  "value": {
+    "issuesFixed": [
+      "issue1_json_repair",
+      "issue2_index_remap",
+      "issue5_agent_links"
+    ],
+    "success": true,
+    "testsPassing": true
+  }
+}

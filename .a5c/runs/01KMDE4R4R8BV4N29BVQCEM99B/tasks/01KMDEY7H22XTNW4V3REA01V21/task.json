@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDEY7H22XTNW4V3REA01V21",
+  "taskId": "backend-micro-tasks",
+  "invocationKey": "implement-unified-ui:S000003:backend-micro-tasks",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Phase 1: Backend Micro-Tasks B1-B4",
+  "labels": [
+    "api",
+    "backend",
+    "phase1"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDEY7H22XTNW4V3REA01V21/input.json",
+    "outputJsonPath": "tasks/01KMDEY7H22XTNW4V3REA01V21/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

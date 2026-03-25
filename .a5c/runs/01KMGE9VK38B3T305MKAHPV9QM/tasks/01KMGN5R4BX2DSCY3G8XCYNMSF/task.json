@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGN5R4BX2DSCY3G8XCYNMSF",
+  "taskId": "e4-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000022:e4-write-tests",
+  "stepId": "S000022",
+  "kind": "agent",
+  "title": "E4: Write thematic context and scoring tests (TDD)",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

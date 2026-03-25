@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T13:38:50.445Z",
+  "data": {
+    "effectId": "01KMG13JY6PQQTDV2PBVJVRGY3",
+    "invocationKey": "historian-enhancement-plan:S000002:analyze-query-pipeline",
+    "invocationHash": "3dfdfdd83540cce365833a9de8854078eef0440fe08304dc925be11f2765dcb0",
+    "stepId": "S000002",
+    "taskId": "analyze-query-pipeline",
+    "kind": "agent",
+    "label": "research",
+    "taskDefRef": "tasks/01KMG13JY6PQQTDV2PBVJVRGY3/task.json",
+    "labels": [
+      "research",
+      "query-pipeline"
+    ]
+  },
+  "checksum": "79c3a847a3955e6a4ed3d71624db72eb00007cb5ca3876317636949d0567760a"
+}

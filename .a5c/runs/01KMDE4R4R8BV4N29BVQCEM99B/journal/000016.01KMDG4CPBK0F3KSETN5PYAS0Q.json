@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T14:03:42.155Z",
+  "data": {
+    "effectId": "01KMDG4CNZBFGMKY06EHTJPMVV",
+    "invocationKey": "implement-unified-ui:S000008:query-debugger",
+    "invocationHash": "ff1e90114a6f25b641cc5ba9a59be8c91028eb70e914cf2523cca4d774998128",
+    "stepId": "S000008",
+    "taskId": "query-debugger",
+    "kind": "agent",
+    "label": "frontend",
+    "taskDefRef": "tasks/01KMDG4CNZBFGMKY06EHTJPMVV/task.json",
+    "labels": [
+      "frontend",
+      "diagnostics",
+      "phase2"
+    ]
+  },
+  "checksum": "975ec0dab5862e5957753b3233b68b76e2648cc68411ec25029309358909010a"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMEATGFFEAFMMZD7X78PNG9X",
+  "taskId": "integrate-chat-flow",
+  "invocationKey": "narrative-agent-prototype:S000002:integrate-chat-flow",
+  "status": "ok",
+  "result": {
+    "backendChanged": [
+      "app/api/main.py"
+    ],
+    "buildStatus": "success",
+    "frontendChanged": [
+      "MessageBubble.tsx"
+    ],
+    "testsPass": true
+  },
+  "startedAt": "2026-03-23T22:03:03.657Z",
+  "finishedAt": "2026-03-23T22:03:03.657Z",
+  "value": {
+    "backendChanged": [
+      "app/api/main.py"
+    ],
+    "buildStatus": "success",
+    "frontendChanged": [
+      "MessageBubble.tsx"
+    ],
+    "testsPass": true
+  }
+}

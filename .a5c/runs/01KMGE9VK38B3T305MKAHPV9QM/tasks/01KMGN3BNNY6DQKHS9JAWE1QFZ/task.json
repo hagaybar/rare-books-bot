@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGN3BNNY6DQKHS9JAWE1QFZ",
+  "taskId": "verify-phase",
+  "invocationKey": "implement-historian-enhancements:S000021:verify-phase",
+  "stepId": "S000021",
+  "kind": "agent",
+  "title": "Verify phase: phase2-e3",
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/ -v --timeout=120 -x 2>&1 | tail -40",
+    "description": "Verify E3 implementation passes all tests including E1 integration",
+    "phase": "phase2-e3",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

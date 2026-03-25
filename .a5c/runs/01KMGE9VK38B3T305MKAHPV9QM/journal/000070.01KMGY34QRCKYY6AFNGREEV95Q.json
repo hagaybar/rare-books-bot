@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T22:05:24.600Z",
+  "data": {
+    "effectId": "01KMGY34QGDB6T6S1QX4RY29DD",
+    "invocationKey": "implement-historian-enhancements:S000030:e5-formatting",
+    "invocationHash": "d3b9e1e147368926a8d3386c4d4e4f578ce6ccd7d733a4509b63769c3652eb8b",
+    "stepId": "S000030",
+    "taskId": "e5-formatting",
+    "kind": "agent",
+    "label": "E5: Add exhibit formatting and exploration agent schema updates",
+    "taskDefRef": "tasks/01KMGY34QGDB6T6S1QX4RY29DD/task.json"
+  },
+  "checksum": "da80a1c711cd8489b24941929765534a761620f2e04331739e75ade472b03d86"
+}

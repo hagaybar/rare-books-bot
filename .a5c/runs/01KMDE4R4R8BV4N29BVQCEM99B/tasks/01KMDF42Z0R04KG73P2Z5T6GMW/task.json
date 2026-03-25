@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDF42Z0R04KG73P2Z5T6GMW",
+  "taskId": "chat-screen",
+  "invocationKey": "implement-unified-ui:S000004:chat-screen",
+  "stepId": "S000004",
+  "kind": "agent",
+  "title": "Phase 1: Chat Screen Implementation",
+  "labels": [
+    "chat",
+    "frontend",
+    "phase1"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDF42Z0R04KG73P2Z5T6GMW/input.json",
+    "outputJsonPath": "tasks/01KMDF42Z0R04KG73P2Z5T6GMW/result.json"
+  },
+  "inputs": {
+    "backendMicro": {
+      "b1Status": "done",
+      "b2Status": "done",
+      "b3Status": "done",
+      "b4Status": "skipped - already exists",
+      "testsPass": true
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

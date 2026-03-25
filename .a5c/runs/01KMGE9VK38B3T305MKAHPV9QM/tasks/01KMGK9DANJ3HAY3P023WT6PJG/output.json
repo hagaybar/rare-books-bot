@@ -1,0 +1,1 @@
+{"filesCreated": ["scripts/chat/curation_engine.py"], "filesModified": ["scripts/chat/models.py", "scripts/chat/aggregation.py", "scripts/chat/narrative_agent.py"], "testsPassed": 35, "summary": "Curation engine (~250 lines), aggregation extensions, analytical narrative, CURATION enum. All 35 tests pass."}

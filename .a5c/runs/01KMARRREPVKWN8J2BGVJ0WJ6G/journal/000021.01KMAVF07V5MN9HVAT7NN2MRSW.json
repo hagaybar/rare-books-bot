@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T13:24:00.891Z",
+  "data": {
+    "effectId": "01KMAVF07FM4B8GPSQ8SRY7MEX",
+    "invocationKey": "notebooklm-context-builder:S000010:register-notebook",
+    "invocationHash": "db15a7a4443c9e822adf87349b6c89fccb8dc1520721b12cb7dc82c7a60aaa10",
+    "stepId": "S000010",
+    "taskId": "register-notebook",
+    "kind": "agent",
+    "label": "Register notebook in notebooklm-connector library",
+    "taskDefRef": "tasks/01KMAVF07FM4B8GPSQ8SRY7MEX/task.json"
+  },
+  "checksum": "c8ca99c6a0d329065f3655f3300efa5c488b334c345f852b1dc71dee3fb55d7c"
+}

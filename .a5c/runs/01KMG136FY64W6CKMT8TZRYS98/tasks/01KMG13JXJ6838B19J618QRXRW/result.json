@@ -1,0 +1,1381 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMG13JXJ6838B19J618QRXRW",
+  "taskId": "analyze-report",
+  "invocationKey": "historian-enhancement-plan:S000001:analyze-report",
+  "status": "ok",
+  "result": {
+    "enhancements": [
+      {
+        "dependencies": [],
+        "effortDays": 3.5,
+        "id": "E1",
+        "implementationTasks": [
+          {
+            "description": "Schema: (alias_id, authority_id, variant_form, script, source, confidence). Populate from existing authority_enrichment table (Wikidata labels, Hebrew labels). Add manual entries for known gaps: Johann Buxtorf, Moses Mendelssohn, Joseph Karo.",
+            "effortDays": 1,
+            "title": "Create agent_aliases table"
+          },
+          {
+            "description": "Modify normalize_filter_value() in scripts/query/db_adapter.py. Split agent name into tokens, sort alphabetically, rejoin for comparison. Apply same normalization to DB values.",
+            "effortDays": 1,
+            "title": "Implement order-insensitive agent matching"
+          },
+          {
+            "description": "In scripts/query/db_adapter.py, AGENT_NORM handler. Add subquery: OR a.authority_uri IN (SELECT authority_id FROM agent_aliases WHERE LOWER(variant_form) LIKE ...). This allows cross-script and cross-form matching.",
+            "effortDays": 1,
+            "title": "Modify build_where_clause() for alias lookup"
+          },
+          {
+            "description": "Script: scripts/metadata/build_agent_aliases.py. Sources: authority_enrichment.label, authority_enrichment.person_info (hebrew_label field). Generate surname-first and given-name-first variants automatically.",
+            "effortDays": 0.5,
+            "title": "Populate alias table from enrichment data"
+          }
+        ],
+        "name": "Agent Name Resolution Layer",
+        "priority": "CRITICAL",
+        "questionsImproved": [
+          "Q3",
+          "Q6",
+          "Q7",
+          "Q8",
+          "Q12",
+          "Q19"
+        ],
+        "rootCausesAddressed": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scoreImpact": 70
+      },
+      {
+        "dependencies": [],
+        "effortDays": 3,
+        "id": "E2",
+        "implementationTasks": [
+          {
+            "description": "Modify scripts/chat/intent_agent.py. Add new intent type: ANALYTICAL alongside existing QUERY_DEFINITION. Pattern detection keywords: distribution, chronological shape, printing centers, how many by decade, geographic breakdown, most common, overview of.",
+            "effortDays": 1,
+            "title": "Add analytical query detection to intent agent"
+          },
+          {
+            "description": "Modify handle_query_definition_phase() in app/api/main.py. After intent classification, if analytical: execute full-collection aggregation via execute_aggregation() from scripts/chat/aggregation.py. Skip candidate set return for pure analytical queries.",
+            "effortDays": 1,
+            "title": "Route analytical queries to aggregation in Phase 1"
+          },
+          {
+            "description": "Modify scripts/chat/aggregation.py to accept record_ids=None as 'all records'. Currently requires explicit record ID list; add path for full-table aggregation with faster SQL (no IN clause).",
+            "effortDays": 0.5,
+            "title": "Add collection-level aggregation endpoints"
+          },
+          {
+            "description": "In scripts/chat/narrative_agent.py: _MAX_RESULT_SET = 100. For analytical queries, generate a statistical summary instead of per-agent bios. New function: generate_analytical_summary().",
+            "effortDays": 0.5,
+            "title": "Raise or contextualize narrative agent threshold"
+          }
+        ],
+        "name": "Auto-Aggregation for Analytical Questions",
+        "priority": "CRITICAL",
+        "questionsImproved": [
+          "Q14",
+          "Q15",
+          "Q20"
+        ],
+        "rootCausesAddressed": [
+          "NO_AGGREGATION",
+          "LARGE_SET_SILENT"
+        ],
+        "scoreImpact": 33
+      },
+      {
+        "dependencies": [
+          "E1"
+        ],
+        "effortDays": 4.5,
+        "id": "E3",
+        "implementationTasks": [
+          {
+            "description": "New module: scripts/chat/cross_reference.py. Query authority_enrichment.person_info for teacher/student/notable_works relationships. Build in-memory graph of agent relationships within a result set. Function: find_connections(record_ids, db_path) -> List[Connection].",
+            "effortDays": 1.5,
+            "title": "Build relationship extraction from enrichment data"
+          },
+          {
+            "description": "Modify scripts/chat/exploration_agent.py to handle COMPARISON intent. Function: execute_comparison() in scripts/chat/aggregation.py. Input: two sets of filters. Output: side-by-side facet comparison (dates, languages, publishers, agents).",
+            "effortDays": 1.5,
+            "title": "Add comparison query support"
+          },
+          {
+            "description": "Modify generate_agent_narrative() in scripts/chat/narrative_agent.py. After generating individual bios, call find_connections(). Append a Connections section using PersonInfo.teachers and PersonInfo.students fields.",
+            "effortDays": 1,
+            "title": "Integrate cross-references into narrative agent"
+          },
+          {
+            "description": "In scripts/chat/formatter.py, generate_followups(). For place-filtered results, suggest 'Compare with [other major center]'. For agent results, suggest 'Show related authors'.",
+            "effortDays": 0.5,
+            "title": "Add 'compare with' follow-up suggestion"
+          }
+        ],
+        "name": "Entity Cross-Reference and Set Comparison",
+        "priority": "HIGH",
+        "questionsImproved": [
+          "Q1",
+          "Q2",
+          "Q4",
+          "Q5",
+          "Q9",
+          "Q10",
+          "Q13",
+          "Q17"
+        ],
+        "rootCausesAddressed": [
+          "MISSING_CROSS_REF",
+          "NO_COMPARISON"
+        ],
+        "scoreImpact": 24
+      },
+      {
+        "dependencies": [
+          "E3"
+        ],
+        "effortDays": 4,
+        "id": "E4",
+        "implementationTasks": [
+          {
+            "description": "New module: scripts/chat/thematic_context.py. Pre-authored context paragraphs for major themes: Venetian Hebrew printing and censorship, Amsterdam as Dutch Jerusalem, Christian Hebraism, Haskalah, Incunabula, Talmud printing controversies. Each template keyed by (subject, place, date_range) tuples.",
+            "effortDays": 2,
+            "title": "Create thematic context templates"
+          },
+          {
+            "description": "Modify handle_query_definition_phase() in app/api/main.py. After query execution, call get_thematic_context() with query plan filters. Append thematic paragraph after agent narrative, labeled as [Historical Context].",
+            "effortDays": 0.5,
+            "title": "Integrate thematic context into response formatting"
+          },
+          {
+            "description": "New function in scripts/chat/narrative_agent.py. Score records by: agent enrichment richness, date (earlier = more significant), place rarity, edition number (first editions). Surface top-3 notable items in response.",
+            "effortDays": 1,
+            "title": "Add significance scoring for records"
+          },
+          {
+            "description": "In scripts/chat/formatter.py, add pedagogical wrappers. Teaching notes and further reading suggestions triggered when query matches a known teaching topic.",
+            "effortDays": 0.5,
+            "title": "Enhance pedagogical framing"
+          }
+        ],
+        "name": "Contextual Narrative Depth Layer",
+        "priority": "HIGH",
+        "questionsImproved": [
+          "Q1",
+          "Q2",
+          "Q4",
+          "Q5",
+          "Q11",
+          "Q16",
+          "Q18"
+        ],
+        "rootCausesAddressed": [
+          "THIN_NARRATIVE"
+        ],
+        "scoreImpact": 21
+      },
+      {
+        "dependencies": [
+          "E4",
+          "E2"
+        ],
+        "effortDays": 3.5,
+        "id": "E5",
+        "implementationTasks": [
+          {
+            "description": "New module: scripts/chat/curator.py. Multi-factor scoring: date rarity (pre-1500 = high), enrichment data richness, provenance indicators, place rarity, first edition markers, illustration indicators. Function: score_candidates(candidates, db_path) -> List[ScoredCandidate].",
+            "effortDays": 1.5,
+            "title": "Build significance scoring model"
+          },
+          {
+            "description": "Modify scripts/chat/exploration_agent.py. Handle RECOMMENDATION intent type (already stubbed but not implemented). Parse user request: select 10 for exhibit, most important items, representative sample.",
+            "effortDays": 0.5,
+            "title": "Add curation intent to exploration agent"
+          },
+          {
+            "description": "In scripts/chat/curator.py. Select top-N items maximizing both significance and diversity. Diversity dimensions: date spread, place spread, language spread, agent spread. Greedy selection algorithm.",
+            "effortDays": 1,
+            "title": "Implement diverse selection algorithm"
+          },
+          {
+            "description": "In scripts/chat/formatter.py. Format as exhibit narrative with title, numbered items with date/place/title/significance note, and one-sentence curatorial note for each item.",
+            "effortDays": 0.5,
+            "title": "Format curated selection as exhibit narrative"
+          }
+        ],
+        "name": "Intelligent Selection and Exhibit Curation",
+        "priority": "MEDIUM",
+        "questionsImproved": [
+          "Q4",
+          "Q11",
+          "Q14",
+          "Q15",
+          "Q20"
+        ],
+        "rootCausesAddressed": [
+          "NO_CURATION"
+        ],
+        "scoreImpact": 15
+      }
+    ],
+    "evaluationSummary": {
+      "gradeDistribution": {
+        "FAIL": 7,
+        "FAIR": 10,
+        "GOOD": 0,
+        "POOR": 3
+      },
+      "overallScore": 7.55,
+      "passRate": "75%",
+      "totalQuestions": 20
+    },
+    "projectedScores": {
+      "afterAll": 15.7,
+      "afterE1": 11.05,
+      "afterE1E2": 12.7,
+      "baseline": 7.55
+    },
+    "questionDetails": [
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "publisher CONTAINS \"bragadin\", place EQUALS \"venice\"",
+        "id": "Q1",
+        "query": "books printed by Bragadin press in Venice",
+        "resultCount": 16,
+        "rootCauses": [
+          "NO_COMPARISON",
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 12
+        }
+      },
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "place EQUALS \"amsterdam\", language EQUALS \"heb\", year RANGE 1620-1650",
+        "id": "Q2",
+        "query": "Hebrew books printed in Amsterdam between 1620 and 1650",
+        "resultCount": 13,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 2,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 15
+        }
+      },
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "publisher CONTAINS \"aldine\"",
+        "id": "Q3",
+        "query": "books published by the Aldine Press",
+        "resultCount": 0,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 0,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 0
+        }
+      },
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "year RANGE 1400-1499",
+        "id": "Q4",
+        "query": "incunabula in the collection (books printed before 1500)",
+        "resultCount": 13,
+        "rootCauses": [
+          "NO_COMPARISON",
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 14
+        }
+      },
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "place EQUALS \"constantinople\"",
+        "id": "Q5",
+        "query": "books printed in Constantinople",
+        "resultCount": 11,
+        "rootCauses": [
+          "NO_COMPARISON"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 12
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "agent_norm EQUALS \"johann buxtorf\"",
+        "id": "Q6",
+        "query": "works by Johann Buxtorf",
+        "resultCount": 0,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 0,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 0
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "agent_norm EQUALS \"moses mendelssohn\"",
+        "id": "Q7",
+        "query": "works by Moses Mendelssohn",
+        "resultCount": 0,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 0,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 0
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "agent_norm CONTAINS \"maimonides\"",
+        "id": "Q8",
+        "query": "works by Maimonides",
+        "resultCount": 7,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 2,
+          "crossRef": 1,
+          "narrative": 2,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 9
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "subject CONTAINS \"josephus\"",
+        "id": "Q9",
+        "query": "works by Josephus Flavius",
+        "resultCount": 30,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 14
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "subject CONTAINS \"jewish philosophy\"",
+        "id": "Q10",
+        "query": "books on Jewish philosophy",
+        "resultCount": 21,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 14
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "year RANGE 1795-1815",
+        "id": "Q11",
+        "query": "books from the Napoleonic era 1795-1815",
+        "resultCount": 40,
+        "rootCauses": [
+          "NO_AGGREGATION",
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 3,
+          "crossRef": 0,
+          "narrative": 2,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 9
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "subject CONTAINS \"ethiopia\"",
+        "id": "Q12",
+        "query": "materials about Ethiopia or Ethiopian Jews",
+        "resultCount": 17,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 2,
+          "crossRef": 1,
+          "narrative": 2,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 9
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "subject CONTAINS \"bibliography\"",
+        "id": "Q13",
+        "query": "books about book collecting or bibliography",
+        "resultCount": 26,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 12
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "(none -- entire collection)",
+        "id": "Q14",
+        "query": "chronological distribution of the collection",
+        "resultCount": 2796,
+        "rootCauses": [
+          "NO_AGGREGATION",
+          "LARGE_SET_SILENT"
+        ],
+        "scores": {
+          "accuracy": 1,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 1
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "language EQUALS \"heb\"",
+        "id": "Q15",
+        "query": "major Hebrew printing centers represented",
+        "resultCount": 806,
+        "rootCauses": [
+          "NO_AGGREGATION",
+          "LARGE_SET_SILENT"
+        ],
+        "scores": {
+          "accuracy": 1,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 1
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "subject CONTAINS \"bible commentaries\"",
+        "id": "Q16",
+        "query": "biblical commentaries",
+        "resultCount": 11,
+        "rootCauses": [
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 3,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 11
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "subject CONTAINS \"hebrew language grammar\"",
+        "id": "Q17",
+        "query": "Hebrew grammar books",
+        "resultCount": 47,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 2,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 15
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "subject CONTAINS \"talmud\"",
+        "id": "Q18",
+        "query": "Talmud editions",
+        "resultCount": 42,
+        "rootCauses": [
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 12
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "agent_norm EQUALS \"joseph karo\"",
+        "id": "Q19",
+        "query": "works by Joseph Karo",
+        "resultCount": 0,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 0,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 0
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "subject CONTAINS \"hebrew printing\" OR \"printing history\"",
+        "id": "Q20",
+        "query": "curated selection for Hebrew printing exhibit",
+        "resultCount": 120,
+        "rootCauses": [
+          "NO_CURATION",
+          "LARGE_SET_SILENT"
+        ],
+        "scores": {
+          "accuracy": 1,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 1
+        }
+      }
+    ],
+    "rootCauses": [
+      {
+        "code": "NAME_FORM_MISMATCH",
+        "count": 6,
+        "description": "Compound problem with three sub-issues: word-order mismatch (MARC stores surname-first, query compiler generates given-name-first), cross-script mismatch (some agents exist only in Hebrew script with no alias bridge), and publisher synonym mismatch (modern English names vs Latin MARC forms with EQUALS instead of CONTAINS).",
+        "impact": "4 total failures + 2 partial",
+        "questionsAffected": [
+          "Q3",
+          "Q6",
+          "Q7",
+          "Q8",
+          "Q12",
+          "Q19"
+        ]
+      },
+      {
+        "code": "MISSING_CROSS_REF",
+        "count": 5,
+        "description": "The narrative agent produces biographical paragraphs from Wikidata enrichment but does not connect agents across records, identify intellectual networks, or explain the significance of a result set in its historical context.",
+        "impact": "Results found but connections unexplored",
+        "questionsAffected": [
+          "Q2",
+          "Q9",
+          "Q10",
+          "Q13",
+          "Q17"
+        ]
+      },
+      {
+        "code": "NO_AGGREGATION",
+        "count": 3,
+        "description": "The aggregation engine in scripts/chat/aggregation.py is fully implemented for Phase 2 but analytical questions arriving during Phase 1 are classified as retrieval queries, returning all records with no aggregation. The capability exists but is not routed correctly.",
+        "impact": "Analytical questions unanswerable",
+        "questionsAffected": [
+          "Q11",
+          "Q14",
+          "Q15"
+        ]
+      },
+      {
+        "code": "THIN_NARRATIVE",
+        "count": 5,
+        "description": "The narrative agent produces template-based biographical paragraphs but lacks thematic context about printing history, intellectual movements, and bibliographic significance needed for scholarly use.",
+        "impact": "Narrative exists but lacks scholarly depth",
+        "questionsAffected": [
+          "Q1",
+          "Q4",
+          "Q11",
+          "Q16",
+          "Q18"
+        ]
+      },
+      {
+        "code": "NO_COMPARISON",
+        "count": 3,
+        "description": "The system cannot compare result sets side-by-side (e.g., Venice vs Amsterdam printing, Bragadin vs rival Venetian presses) to provide contextual analysis.",
+        "impact": "Cannot juxtapose two sets",
+        "questionsAffected": [
+          "Q1",
+          "Q4",
+          "Q5"
+        ]
+      },
+      {
+        "code": "LARGE_SET_SILENT",
+        "count": 3,
+        "description": "The _MAX_RESULT_SET = 100 threshold in narrative_agent.py causes the narrative agent to return None for result sets above 100 records. For Q14 (2796), Q15 (806), and Q20 (120), no narrative is generated at all.",
+        "impact": "Narrative agent threshold (>100) blocks output",
+        "questionsAffected": [
+          "Q14",
+          "Q15",
+          "Q20"
+        ]
+      },
+      {
+        "code": "NO_CURATION",
+        "count": 1,
+        "description": "The system has no selection/recommendation capability. It returns large result sets but cannot identify the most historically significant, visually striking, or narratively compelling items for an exhibit.",
+        "impact": "Cannot select/recommend from results",
+        "questionsAffected": [
+          "Q20"
+        ]
+      }
+    ]
+  },
+  "startedAt": "2026-03-24T13:41:33.602Z",
+  "finishedAt": "2026-03-24T13:41:33.602Z",
+  "value": {
+    "enhancements": [
+      {
+        "dependencies": [],
+        "effortDays": 3.5,
+        "id": "E1",
+        "implementationTasks": [
+          {
+            "description": "Schema: (alias_id, authority_id, variant_form, script, source, confidence). Populate from existing authority_enrichment table (Wikidata labels, Hebrew labels). Add manual entries for known gaps: Johann Buxtorf, Moses Mendelssohn, Joseph Karo.",
+            "effortDays": 1,
+            "title": "Create agent_aliases table"
+          },
+          {
+            "description": "Modify normalize_filter_value() in scripts/query/db_adapter.py. Split agent name into tokens, sort alphabetically, rejoin for comparison. Apply same normalization to DB values.",
+            "effortDays": 1,
+            "title": "Implement order-insensitive agent matching"
+          },
+          {
+            "description": "In scripts/query/db_adapter.py, AGENT_NORM handler. Add subquery: OR a.authority_uri IN (SELECT authority_id FROM agent_aliases WHERE LOWER(variant_form) LIKE ...). This allows cross-script and cross-form matching.",
+            "effortDays": 1,
+            "title": "Modify build_where_clause() for alias lookup"
+          },
+          {
+            "description": "Script: scripts/metadata/build_agent_aliases.py. Sources: authority_enrichment.label, authority_enrichment.person_info (hebrew_label field). Generate surname-first and given-name-first variants automatically.",
+            "effortDays": 0.5,
+            "title": "Populate alias table from enrichment data"
+          }
+        ],
+        "name": "Agent Name Resolution Layer",
+        "priority": "CRITICAL",
+        "questionsImproved": [
+          "Q3",
+          "Q6",
+          "Q7",
+          "Q8",
+          "Q12",
+          "Q19"
+        ],
+        "rootCausesAddressed": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scoreImpact": 70
+      },
+      {
+        "dependencies": [],
+        "effortDays": 3,
+        "id": "E2",
+        "implementationTasks": [
+          {
+            "description": "Modify scripts/chat/intent_agent.py. Add new intent type: ANALYTICAL alongside existing QUERY_DEFINITION. Pattern detection keywords: distribution, chronological shape, printing centers, how many by decade, geographic breakdown, most common, overview of.",
+            "effortDays": 1,
+            "title": "Add analytical query detection to intent agent"
+          },
+          {
+            "description": "Modify handle_query_definition_phase() in app/api/main.py. After intent classification, if analytical: execute full-collection aggregation via execute_aggregation() from scripts/chat/aggregation.py. Skip candidate set return for pure analytical queries.",
+            "effortDays": 1,
+            "title": "Route analytical queries to aggregation in Phase 1"
+          },
+          {
+            "description": "Modify scripts/chat/aggregation.py to accept record_ids=None as 'all records'. Currently requires explicit record ID list; add path for full-table aggregation with faster SQL (no IN clause).",
+            "effortDays": 0.5,
+            "title": "Add collection-level aggregation endpoints"
+          },
+          {
+            "description": "In scripts/chat/narrative_agent.py: _MAX_RESULT_SET = 100. For analytical queries, generate a statistical summary instead of per-agent bios. New function: generate_analytical_summary().",
+            "effortDays": 0.5,
+            "title": "Raise or contextualize narrative agent threshold"
+          }
+        ],
+        "name": "Auto-Aggregation for Analytical Questions",
+        "priority": "CRITICAL",
+        "questionsImproved": [
+          "Q14",
+          "Q15",
+          "Q20"
+        ],
+        "rootCausesAddressed": [
+          "NO_AGGREGATION",
+          "LARGE_SET_SILENT"
+        ],
+        "scoreImpact": 33
+      },
+      {
+        "dependencies": [
+          "E1"
+        ],
+        "effortDays": 4.5,
+        "id": "E3",
+        "implementationTasks": [
+          {
+            "description": "New module: scripts/chat/cross_reference.py. Query authority_enrichment.person_info for teacher/student/notable_works relationships. Build in-memory graph of agent relationships within a result set. Function: find_connections(record_ids, db_path) -> List[Connection].",
+            "effortDays": 1.5,
+            "title": "Build relationship extraction from enrichment data"
+          },
+          {
+            "description": "Modify scripts/chat/exploration_agent.py to handle COMPARISON intent. Function: execute_comparison() in scripts/chat/aggregation.py. Input: two sets of filters. Output: side-by-side facet comparison (dates, languages, publishers, agents).",
+            "effortDays": 1.5,
+            "title": "Add comparison query support"
+          },
+          {
+            "description": "Modify generate_agent_narrative() in scripts/chat/narrative_agent.py. After generating individual bios, call find_connections(). Append a Connections section using PersonInfo.teachers and PersonInfo.students fields.",
+            "effortDays": 1,
+            "title": "Integrate cross-references into narrative agent"
+          },
+          {
+            "description": "In scripts/chat/formatter.py, generate_followups(). For place-filtered results, suggest 'Compare with [other major center]'. For agent results, suggest 'Show related authors'.",
+            "effortDays": 0.5,
+            "title": "Add 'compare with' follow-up suggestion"
+          }
+        ],
+        "name": "Entity Cross-Reference and Set Comparison",
+        "priority": "HIGH",
+        "questionsImproved": [
+          "Q1",
+          "Q2",
+          "Q4",
+          "Q5",
+          "Q9",
+          "Q10",
+          "Q13",
+          "Q17"
+        ],
+        "rootCausesAddressed": [
+          "MISSING_CROSS_REF",
+          "NO_COMPARISON"
+        ],
+        "scoreImpact": 24
+      },
+      {
+        "dependencies": [
+          "E3"
+        ],
+        "effortDays": 4,
+        "id": "E4",
+        "implementationTasks": [
+          {
+            "description": "New module: scripts/chat/thematic_context.py. Pre-authored context paragraphs for major themes: Venetian Hebrew printing and censorship, Amsterdam as Dutch Jerusalem, Christian Hebraism, Haskalah, Incunabula, Talmud printing controversies. Each template keyed by (subject, place, date_range) tuples.",
+            "effortDays": 2,
+            "title": "Create thematic context templates"
+          },
+          {
+            "description": "Modify handle_query_definition_phase() in app/api/main.py. After query execution, call get_thematic_context() with query plan filters. Append thematic paragraph after agent narrative, labeled as [Historical Context].",
+            "effortDays": 0.5,
+            "title": "Integrate thematic context into response formatting"
+          },
+          {
+            "description": "New function in scripts/chat/narrative_agent.py. Score records by: agent enrichment richness, date (earlier = more significant), place rarity, edition number (first editions). Surface top-3 notable items in response.",
+            "effortDays": 1,
+            "title": "Add significance scoring for records"
+          },
+          {
+            "description": "In scripts/chat/formatter.py, add pedagogical wrappers. Teaching notes and further reading suggestions triggered when query matches a known teaching topic.",
+            "effortDays": 0.5,
+            "title": "Enhance pedagogical framing"
+          }
+        ],
+        "name": "Contextual Narrative Depth Layer",
+        "priority": "HIGH",
+        "questionsImproved": [
+          "Q1",
+          "Q2",
+          "Q4",
+          "Q5",
+          "Q11",
+          "Q16",
+          "Q18"
+        ],
+        "rootCausesAddressed": [
+          "THIN_NARRATIVE"
+        ],
+        "scoreImpact": 21
+      },
+      {
+        "dependencies": [
+          "E4",
+          "E2"
+        ],
+        "effortDays": 3.5,
+        "id": "E5",
+        "implementationTasks": [
+          {
+            "description": "New module: scripts/chat/curator.py. Multi-factor scoring: date rarity (pre-1500 = high), enrichment data richness, provenance indicators, place rarity, first edition markers, illustration indicators. Function: score_candidates(candidates, db_path) -> List[ScoredCandidate].",
+            "effortDays": 1.5,
+            "title": "Build significance scoring model"
+          },
+          {
+            "description": "Modify scripts/chat/exploration_agent.py. Handle RECOMMENDATION intent type (already stubbed but not implemented). Parse user request: select 10 for exhibit, most important items, representative sample.",
+            "effortDays": 0.5,
+            "title": "Add curation intent to exploration agent"
+          },
+          {
+            "description": "In scripts/chat/curator.py. Select top-N items maximizing both significance and diversity. Diversity dimensions: date spread, place spread, language spread, agent spread. Greedy selection algorithm.",
+            "effortDays": 1,
+            "title": "Implement diverse selection algorithm"
+          },
+          {
+            "description": "In scripts/chat/formatter.py. Format as exhibit narrative with title, numbered items with date/place/title/significance note, and one-sentence curatorial note for each item.",
+            "effortDays": 0.5,
+            "title": "Format curated selection as exhibit narrative"
+          }
+        ],
+        "name": "Intelligent Selection and Exhibit Curation",
+        "priority": "MEDIUM",
+        "questionsImproved": [
+          "Q4",
+          "Q11",
+          "Q14",
+          "Q15",
+          "Q20"
+        ],
+        "rootCausesAddressed": [
+          "NO_CURATION"
+        ],
+        "scoreImpact": 15
+      }
+    ],
+    "evaluationSummary": {
+      "gradeDistribution": {
+        "FAIL": 7,
+        "FAIR": 10,
+        "GOOD": 0,
+        "POOR": 3
+      },
+      "overallScore": 7.55,
+      "passRate": "75%",
+      "totalQuestions": 20
+    },
+    "projectedScores": {
+      "afterAll": 15.7,
+      "afterE1": 11.05,
+      "afterE1E2": 12.7,
+      "baseline": 7.55
+    },
+    "questionDetails": [
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "publisher CONTAINS \"bragadin\", place EQUALS \"venice\"",
+        "id": "Q1",
+        "query": "books printed by Bragadin press in Venice",
+        "resultCount": 16,
+        "rootCauses": [
+          "NO_COMPARISON",
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 12
+        }
+      },
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "place EQUALS \"amsterdam\", language EQUALS \"heb\", year RANGE 1620-1650",
+        "id": "Q2",
+        "query": "Hebrew books printed in Amsterdam between 1620 and 1650",
+        "resultCount": 13,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 2,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 15
+        }
+      },
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "publisher CONTAINS \"aldine\"",
+        "id": "Q3",
+        "query": "books published by the Aldine Press",
+        "resultCount": 0,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 0,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 0
+        }
+      },
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "year RANGE 1400-1499",
+        "id": "Q4",
+        "query": "incunabula in the collection (books printed before 1500)",
+        "resultCount": 13,
+        "rootCauses": [
+          "NO_COMPARISON",
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 14
+        }
+      },
+      {
+        "category": "A: Printing History",
+        "filtersApplied": "place EQUALS \"constantinople\"",
+        "id": "Q5",
+        "query": "books printed in Constantinople",
+        "resultCount": 11,
+        "rootCauses": [
+          "NO_COMPARISON"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 12
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "agent_norm EQUALS \"johann buxtorf\"",
+        "id": "Q6",
+        "query": "works by Johann Buxtorf",
+        "resultCount": 0,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 0,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 0
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "agent_norm EQUALS \"moses mendelssohn\"",
+        "id": "Q7",
+        "query": "works by Moses Mendelssohn",
+        "resultCount": 0,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 0,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 0
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "agent_norm CONTAINS \"maimonides\"",
+        "id": "Q8",
+        "query": "works by Maimonides",
+        "resultCount": 7,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 2,
+          "crossRef": 1,
+          "narrative": 2,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 9
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "subject CONTAINS \"josephus\"",
+        "id": "Q9",
+        "query": "works by Josephus Flavius",
+        "resultCount": 30,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 14
+        }
+      },
+      {
+        "category": "B: Intellectual Networks",
+        "filtersApplied": "subject CONTAINS \"jewish philosophy\"",
+        "id": "Q10",
+        "query": "books on Jewish philosophy",
+        "resultCount": 21,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 14
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "year RANGE 1795-1815",
+        "id": "Q11",
+        "query": "books from the Napoleonic era 1795-1815",
+        "resultCount": 40,
+        "rootCauses": [
+          "NO_AGGREGATION",
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 3,
+          "crossRef": 0,
+          "narrative": 2,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 9
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "subject CONTAINS \"ethiopia\"",
+        "id": "Q12",
+        "query": "materials about Ethiopia or Ethiopian Jews",
+        "resultCount": 17,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 2,
+          "crossRef": 1,
+          "narrative": 2,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 9
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "subject CONTAINS \"bibliography\"",
+        "id": "Q13",
+        "query": "books about book collecting or bibliography",
+        "resultCount": 26,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 12
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "(none -- entire collection)",
+        "id": "Q14",
+        "query": "chronological distribution of the collection",
+        "resultCount": 2796,
+        "rootCauses": [
+          "NO_AGGREGATION",
+          "LARGE_SET_SILENT"
+        ],
+        "scores": {
+          "accuracy": 1,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 1
+        }
+      },
+      {
+        "category": "C: Collection Character",
+        "filtersApplied": "language EQUALS \"heb\"",
+        "id": "Q15",
+        "query": "major Hebrew printing centers represented",
+        "resultCount": 806,
+        "rootCauses": [
+          "NO_AGGREGATION",
+          "LARGE_SET_SILENT"
+        ],
+        "scores": {
+          "accuracy": 1,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 1
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "subject CONTAINS \"bible commentaries\"",
+        "id": "Q16",
+        "query": "biblical commentaries",
+        "resultCount": 11,
+        "rootCauses": [
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 3,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 11
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "subject CONTAINS \"hebrew language grammar\"",
+        "id": "Q17",
+        "query": "Hebrew grammar books",
+        "resultCount": 47,
+        "rootCauses": [
+          "MISSING_CROSS_REF"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 2,
+          "narrative": 3,
+          "pedagogical": 3,
+          "richness": 3,
+          "total": 15
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "subject CONTAINS \"talmud\"",
+        "id": "Q18",
+        "query": "Talmud editions",
+        "resultCount": 42,
+        "rootCauses": [
+          "THIN_NARRATIVE"
+        ],
+        "scores": {
+          "accuracy": 4,
+          "crossRef": 1,
+          "narrative": 3,
+          "pedagogical": 2,
+          "richness": 2,
+          "total": 12
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "agent_norm EQUALS \"joseph karo\"",
+        "id": "Q19",
+        "query": "works by Joseph Karo",
+        "resultCount": 0,
+        "rootCauses": [
+          "NAME_FORM_MISMATCH"
+        ],
+        "scores": {
+          "accuracy": 0,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 0
+        }
+      },
+      {
+        "category": "D: Teaching Support",
+        "filtersApplied": "subject CONTAINS \"hebrew printing\" OR \"printing history\"",
+        "id": "Q20",
+        "query": "curated selection for Hebrew printing exhibit",
+        "resultCount": 120,
+        "rootCauses": [
+          "NO_CURATION",
+          "LARGE_SET_SILENT"
+        ],
+        "scores": {
+          "accuracy": 1,
+          "crossRef": 0,
+          "narrative": 0,
+          "pedagogical": 0,
+          "richness": 0,
+          "total": 1
+        }
+      }
+    ],
+    "rootCauses": [
+      {
+        "code": "NAME_FORM_MISMATCH",
+        "count": 6,
+        "description": "Compound problem with three sub-issues: word-order mismatch (MARC stores surname-first, query compiler generates given-name-first), cross-script mismatch (some agents exist only in Hebrew script with no alias bridge), and publisher synonym mismatch (modern English names vs Latin MARC forms with EQUALS instead of CONTAINS).",
+        "impact": "4 total failures + 2 partial",
+        "questionsAffected": [
+          "Q3",
+          "Q6",
+          "Q7",
+          "Q8",
+          "Q12",
+          "Q19"
+        ]
+      },
+      {
+        "code": "MISSING_CROSS_REF",
+        "count": 5,
+        "description": "The narrative agent produces biographical paragraphs from Wikidata enrichment but does not connect agents across records, identify intellectual networks, or explain the significance of a result set in its historical context.",
+        "impact": "Results found but connections unexplored",
+        "questionsAffected": [
+          "Q2",
+          "Q9",
+          "Q10",
+          "Q13",
+          "Q17"
+        ]
+      },
+      {
+        "code": "NO_AGGREGATION",
+        "count": 3,
+        "description": "The aggregation engine in scripts/chat/aggregation.py is fully implemented for Phase 2 but analytical questions arriving during Phase 1 are classified as retrieval queries, returning all records with no aggregation. The capability exists but is not routed correctly.",
+        "impact": "Analytical questions unanswerable",
+        "questionsAffected": [
+          "Q11",
+          "Q14",
+          "Q15"
+        ]
+      },
+      {
+        "code": "THIN_NARRATIVE",
+        "count": 5,
+        "description": "The narrative agent produces template-based biographical paragraphs but lacks thematic context about printing history, intellectual movements, and bibliographic significance needed for scholarly use.",
+        "impact": "Narrative exists but lacks scholarly depth",
+        "questionsAffected": [
+          "Q1",
+          "Q4",
+          "Q11",
+          "Q16",
+          "Q18"
+        ]
+      },
+      {
+        "code": "NO_COMPARISON",
+        "count": 3,
+        "description": "The system cannot compare result sets side-by-side (e.g., Venice vs Amsterdam printing, Bragadin vs rival Venetian presses) to provide contextual analysis.",
+        "impact": "Cannot juxtapose two sets",
+        "questionsAffected": [
+          "Q1",
+          "Q4",
+          "Q5"
+        ]
+      },
+      {
+        "code": "LARGE_SET_SILENT",
+        "count": 3,
+        "description": "The _MAX_RESULT_SET = 100 threshold in narrative_agent.py causes the narrative agent to return None for result sets above 100 records. For Q14 (2796), Q15 (806), and Q20 (120), no narrative is generated at all.",
+        "impact": "Narrative agent threshold (>100) blocks output",
+        "questionsAffected": [
+          "Q14",
+          "Q15",
+          "Q20"
+        ]
+      },
+      {
+        "code": "NO_CURATION",
+        "count": 1,
+        "description": "The system has no selection/recommendation capability. It returns large result sets but cannot identify the most historically significant, visually striking, or narratively compelling items for an exhibit.",
+        "impact": "Cannot select/recommend from results",
+        "questionsAffected": [
+          "Q20"
+        ]
+      }
+    ]
+  }
+}

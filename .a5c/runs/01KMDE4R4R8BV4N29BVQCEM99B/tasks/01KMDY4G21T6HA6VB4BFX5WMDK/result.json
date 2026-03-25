@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDY4G21T6HA6VB4BFX5WMDK",
+  "taskId": "polish-phase",
+  "invocationKey": "implement-unified-ui:S000014:polish-phase",
+  "status": "ok",
+  "result": {
+    "buildStatus": "success",
+    "changesApplied": [
+      "FieldBadge",
+      "CandidateCard flag link",
+      "ClusterCard agent link",
+      "Coverage binary+insights",
+      "Workbench reframed",
+      "B20 subject fix",
+      "B21 agent fix",
+      "Responsive sidebar"
+    ]
+  },
+  "startedAt": "2026-03-23T18:15:44.012Z",
+  "finishedAt": "2026-03-23T18:15:44.012Z",
+  "value": {
+    "buildStatus": "success",
+    "changesApplied": [
+      "FieldBadge",
+      "CandidateCard flag link",
+      "ClusterCard agent link",
+      "Coverage binary+insights",
+      "Workbench reframed",
+      "B20 subject fix",
+      "B21 agent fix",
+      "Responsive sidebar"
+    ]
+  }
+}

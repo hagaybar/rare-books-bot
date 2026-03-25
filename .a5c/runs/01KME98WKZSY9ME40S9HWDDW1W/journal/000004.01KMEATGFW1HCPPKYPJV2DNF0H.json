@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T21:50:09.916Z",
+  "data": {
+    "effectId": "01KMEATGFFEAFMMZD7X78PNG9X",
+    "invocationKey": "narrative-agent-prototype:S000002:integrate-chat-flow",
+    "invocationHash": "d6e5a84858d81de140868eb4698fe23591920f8e3a4b4fbdcad2b97214beafdc",
+    "stepId": "S000002",
+    "taskId": "integrate-chat-flow",
+    "kind": "agent",
+    "label": "integration",
+    "taskDefRef": "tasks/01KMEATGFFEAFMMZD7X78PNG9X/task.json",
+    "labels": [
+      "integration",
+      "chat",
+      "narrative"
+    ]
+  },
+  "checksum": "7773ad0a2de85b1bd7db431cb500c166586ee7d6133b2a07cfbe5e13412457c3"
+}

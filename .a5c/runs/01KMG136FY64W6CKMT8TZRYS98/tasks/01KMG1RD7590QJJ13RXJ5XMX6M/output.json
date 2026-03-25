@@ -1,0 +1,476 @@
+{
+  "goal": "Add analytical query routing so that questions requesting aggregation, distribution analysis, or curation are detected at Phase 1 (query definition) and routed directly to the existing aggregation engine rather than treated as standard retrieval queries. This eliminates the three 1/25-scoring failures (Q14 chronological shape, Q15 printing centers, Q20 curated exhibit) by detecting analytical intent before the intent agent is invoked, running the appropriate aggregation/summary pipeline over the full collection or filtered subset, and formatting results as structured breakdowns (histograms, ranked lists) instead of dumping thousands of raw records. The narrative agent's _MAX_RESULT_SET=100 ceiling is bypassed entirely because analytical queries never produce a CandidateSet for narrative -- they produce aggregation tables.",
+
+  "reportFailuresAddressed": [
+    {
+      "questionId": "Q14",
+      "currentBehavior": "Returns all 2,796 records with no temporal analysis. The intent agent classifies 'chronological distribution of the collection' as a retrieval query, executes it with no filters, and the narrative agent silently skips the result set because it exceeds _MAX_RESULT_SET=100. Score: 1/25.",
+      "rootCause": "is_overview_query() at aggregation.py:688 does not match analytical keywords like 'chronological', 'distribution', 'shape'. The intent agent (intent_agent.py) has no ANALYTICAL intent type -- it only produces retrieval-oriented QueryPlans with filters. handle_query_definition_phase() at main.py:424 checks is_overview_query() first (line 450) but that function returns False for analytical questions. The query then falls through to interpret_query() which generates a plan with no filters, still proceeds to execution (because proceed_to_execution is True even with empty filters if confidence is high enough), and returns all records.",
+      "expectedFix": "A new detect_analytical_query() function intercepts the query before interpret_query() is called. It detects 'chronological distribution' as an analytical query with implied aggregation_field='date_decade'. The system runs execute_aggregation() with field='date_decade' over ALL record MMS IDs (full collection query), then format_aggregation_response() produces a decade-by-decade breakdown. The response includes visualization_hint='bar_chart' and structured data. No CandidateSet is returned, so _MAX_RESULT_SET is irrelevant."
+    },
+    {
+      "questionId": "Q15",
+      "currentBehavior": "Returns 806 Hebrew records with no geographic aggregation. The intent agent correctly extracts language=heb filter but treats it as retrieval. The narrative agent skips the 806-record set. Score: 1/25.",
+      "rootCause": "Same routing gap as Q14. 'Major Hebrew printing centers represented' is an analytical question that needs: (1) filter to Hebrew books, (2) aggregate by place, (3) return ranked place-by-count. The intent agent produces a valid language filter but has no mechanism to also specify that the user wants aggregation over the results. handle_query_definition_phase() executes the plan and returns 806 raw candidates.",
+      "expectedFix": "detect_analytical_query() identifies 'printing centers' as analytical with aggregation_field='place'. It also detects the implicit filter (language=heb from 'Hebrew'). The system first executes the retrieval query to get the 806 Hebrew records, then immediately runs execute_aggregation(field='place') on that subset, and returns the place-by-count breakdown. The response message says 'Here are the major printing centers for Hebrew books in the collection' with a ranked list."
+    },
+    {
+      "questionId": "Q20",
+      "currentBehavior": "Returns 120 records for 'curated selection for Hebrew printing exhibit' with no selection or curation capability. The narrative agent skips the set (>100 records). Score: 1/25.",
+      "rootCause": "The system has no recommendation/curation intent type in Phase 1. The query is treated as standard retrieval matching 'Hebrew printing' subject terms. Even in Phase 2, the RECOMMENDATION intent handler returns a static 'not yet available' message (main.py:1025-1038). There is no scoring/ranking mechanism to select the 10-15 most significant items.",
+      "expectedFix": "detect_analytical_query() identifies 'curated selection' / 'exhibit' as a CURATION intent. The system first retrieves matching records (subject CONTAINS 'hebrew printing'), then applies a multi-criteria scoring heuristic: earliest date (historical significance), has_enrichment (biographical context available), diversity of places/publishers (exhibit variety), and presence of subjects (topical richness). The top N items are returned with explanatory notes. This is a deterministic heuristic, not an LLM selection -- keeping with the project's evidence-first philosophy."
+    }
+  ],
+
+  "affectedComponents": [
+    {
+      "file": "scripts/chat/analytical_router.py",
+      "functions": ["detect_analytical_query", "classify_analytical_intent", "AnalyticalIntent", "AnalyticalQueryResult"],
+      "changeType": "new_file"
+    },
+    {
+      "file": "scripts/chat/curation_engine.py",
+      "functions": ["score_for_curation", "select_curated_items", "format_curation_response", "CurationScorer"],
+      "changeType": "new_file"
+    },
+    {
+      "file": "app/api/main.py",
+      "functions": ["handle_query_definition_phase", "handle_analytical_query", "websocket_chat"],
+      "changeType": "modify"
+    },
+    {
+      "file": "scripts/chat/aggregation.py",
+      "functions": ["execute_aggregation_full_collection", "get_all_record_ids"],
+      "changeType": "modify"
+    },
+    {
+      "file": "scripts/chat/exploration_agent.py",
+      "functions": ["ExplorationRequestLLM", "EXPLORATION_AGENT_SYSTEM_PROMPT"],
+      "changeType": "modify"
+    },
+    {
+      "file": "scripts/chat/models.py",
+      "functions": ["ConversationPhase"],
+      "changeType": "modify"
+    },
+    {
+      "file": "scripts/chat/narrative_agent.py",
+      "functions": ["generate_agent_narrative"],
+      "changeType": "modify"
+    },
+    {
+      "file": "tests/scripts/chat/test_analytical_router.py",
+      "functions": ["TestDetectAnalyticalQuery", "TestClassifyAnalyticalIntent"],
+      "changeType": "new_file"
+    },
+    {
+      "file": "tests/scripts/chat/test_curation_engine.py",
+      "functions": ["TestScoreForCuration", "TestSelectCuratedItems"],
+      "changeType": "new_file"
+    },
+    {
+      "file": "tests/app/test_api_analytical.py",
+      "functions": ["TestAnalyticalRouting"],
+      "changeType": "new_file"
+    }
+  ],
+
+  "implementationSteps": [
+    {
+      "step": 1,
+      "title": "Define AnalyticalIntent enum and AnalyticalQueryResult model",
+      "description": "Create scripts/chat/analytical_router.py with the core data model. AnalyticalIntent is an enum with values: TEMPORAL_DISTRIBUTION, GEOGRAPHIC_DISTRIBUTION, PUBLISHER_DISTRIBUTION, LANGUAGE_DISTRIBUTION, SUBJECT_DISTRIBUTION, AGENT_DISTRIBUTION, GENERAL_DISTRIBUTION, CURATION, NOT_ANALYTICAL. AnalyticalQueryResult is a Pydantic model containing: is_analytical (bool), intent (AnalyticalIntent), aggregation_field (Optional[str] mapped from intent, e.g. TEMPORAL_DISTRIBUTION -> 'date_decade'), implied_filters (List[Filter] extracted from the query text like 'Hebrew' -> language=heb), aggregation_limit (int, default 20 for distributions, 15 for curation), confidence (float). This step has zero dependencies and establishes the contract for all downstream consumers.",
+      "file": "scripts/chat/analytical_router.py",
+      "function": "AnalyticalIntent, AnalyticalQueryResult",
+      "testStrategy": "Unit test: instantiate AnalyticalQueryResult with various intents, verify aggregation_field mapping, verify serialization. Test that NOT_ANALYTICAL always has is_analytical=False."
+    },
+    {
+      "step": 2,
+      "title": "Implement detect_analytical_query() with keyword/pattern matching",
+      "description": "Add the primary detection function to scripts/chat/analytical_router.py. This function uses a two-layer approach: (1) Signal detection: scan for analytical signal words organized by category -- temporal signals ('chronological', 'distribution over time', 'by decade', 'by century', 'temporal', 'when were.*published', 'date distribution'), geographic signals ('printing centers', 'where were.*printed', 'geographic distribution', 'by city', 'by place', 'by country', 'place distribution'), publisher signals ('top publishers', 'publisher distribution', 'who published', 'most prolific'), curation signals ('curated', 'exhibit', 'exhibition', 'display', 'selection for', 'best examples', 'highlights', 'showcase'). (2) Anti-signals: if the query also matches retrieval patterns like 'show me books about X', 'find', 'list all', 'search for' without distribution keywords, return NOT_ANALYTICAL. The function returns AnalyticalQueryResult. Implied filters are extracted from the query text using a lightweight pattern matcher (not LLM): language names map to language codes, known place names map to imprint_place filters, date ranges map to year RANGE filters. This reuses the same keyword lists that is_overview_query() uses for search_criteria detection (lines 706-727 of aggregation.py) but interprets them as filter extraction rather than exclusion.",
+      "file": "scripts/chat/analytical_router.py",
+      "function": "detect_analytical_query",
+      "testStrategy": "Comprehensive unit tests covering: (a) Q14-style: 'chronological distribution of the collection' -> TEMPORAL_DISTRIBUTION, field='date_decade', no filters; (b) Q15-style: 'major Hebrew printing centers represented' -> GEOGRAPHIC_DISTRIBUTION, field='place', filters=[language=heb]; (c) Q20-style: 'curated selection for Hebrew printing exhibit' -> CURATION, filters=[subject CONTAINS 'hebrew printing']; (d) False negatives: 'books printed in Paris' -> NOT_ANALYTICAL; (e) Edge case: 'show me the date distribution of Latin books' -> TEMPORAL_DISTRIBUTION with language=lat filter; (f) 'compare Venice vs Amsterdam' -> NOT_ANALYTICAL (this is comparison, not aggregation)."
+    },
+    {
+      "step": 3,
+      "title": "Add execute_aggregation_full_collection() to aggregation.py",
+      "description": "The existing execute_aggregation() requires a list of record_ids. For full-collection analytical queries (like Q14 'chronological shape of the collection'), we need to either pass ALL record IDs or use an optimized query that doesn't use the IN clause. Add execute_aggregation_full_collection(db_path, field, limit) that runs the aggregation SQL without the WHERE record_id IN (...) clause, using a separate set of FULL_COLLECTION_AGGREGATION_QUERIES templates. Also add get_all_record_ids(db_path) -> List[str] as a utility for cases where we need the full list (e.g., when implied filters exist and we need to first filter then aggregate). The full-collection variant avoids the performance issue of passing 2,796+ parameters in an IN clause.",
+      "file": "scripts/chat/aggregation.py",
+      "function": "execute_aggregation_full_collection, get_all_record_ids",
+      "testStrategy": "Unit test with in-memory SQLite: create test table, insert 100 rows, verify execute_aggregation_full_collection returns correct counts grouped by field. Test that get_all_record_ids returns all MMS IDs. Test that full-collection results match execute_aggregation(all_ids, field) results."
+    },
+    {
+      "step": 4,
+      "title": "Implement handle_analytical_query() in main.py",
+      "description": "Add a new async function handle_analytical_query(analytical_result, chat_request, session, store, bib_db) to app/api/main.py. This function: (1) If analytical_result has implied_filters, uses the intent agent to compile them into a QueryPlan, executes via QueryService to get the filtered CandidateSet, then runs execute_aggregation() on those record_ids. (2) If no implied_filters (full collection), calls execute_aggregation_full_collection(). (3) For CURATION intent, delegates to the curation engine (Step 7). (4) Formats the aggregation response using format_aggregation_response(). (5) Creates a ChatResponse with phase=CORPUS_EXPLORATION (so follow-up questions can use the subgroup), visualization_hint, and structured data. (6) Stores an ActiveSubgroup so the user can continue exploring. The key difference from Phase 2 aggregation is that this runs inline during Phase 1, before any retrieval results are shown. The response message leads with the analytical answer, not with 'Found N records'.",
+      "file": "app/api/main.py",
+      "function": "handle_analytical_query",
+      "testStrategy": "Integration test with mocked QueryService: verify that an analytical query routes to handle_analytical_query, produces an aggregation response with visualization_hint, transitions session to CORPUS_EXPLORATION phase. Test the implied-filter path (Q15: Hebrew + place aggregation) and the full-collection path (Q14: date_decade aggregation)."
+    },
+    {
+      "step": 5,
+      "title": "Wire detect_analytical_query() into handle_query_definition_phase()",
+      "description": "Modify handle_query_definition_phase() in main.py to call detect_analytical_query() after the is_overview_query() check but BEFORE interpret_query(). The new routing order at the top of handle_query_definition_phase() becomes: (1) is_overview_query() -> return collection overview (existing, line 450), (2) detect_analytical_query() -> return handle_analytical_query() (NEW), (3) interpret_query() -> standard retrieval flow (existing, line 487). This placement ensures analytical queries are caught early without an LLM call, saving latency and API costs. The detect_analytical_query() function is purely deterministic (keyword matching), just like is_overview_query(). Import detect_analytical_query and handle_analytical_query at the top of main.py.",
+      "file": "app/api/main.py",
+      "function": "handle_query_definition_phase",
+      "testStrategy": "Unit test: mock detect_analytical_query to return is_analytical=True, verify handle_query_definition_phase calls handle_analytical_query. Mock detect_analytical_query to return is_analytical=False, verify it falls through to interpret_query. End-to-end test: send 'chronological distribution of the collection' via /chat endpoint, verify response contains date_decade aggregation data."
+    },
+    {
+      "step": 6,
+      "title": "Wire analytical detection into WebSocket handler",
+      "description": "The websocket_chat() handler at main.py:1130 has its own routing logic that currently calls compile_query() directly (line 1193) rather than going through handle_query_definition_phase(). Add analytical query detection to the WebSocket handler: after 'Compiling query...' progress message, call detect_analytical_query(). If analytical, send progress 'Analyzing collection...' then run the aggregation, stream the result as a complete response (no batching needed for aggregation). This ensures both HTTP and WebSocket clients get analytical routing.",
+      "file": "app/api/main.py",
+      "function": "websocket_chat",
+      "testStrategy": "WebSocket test: connect, send 'major printing centers for Hebrew books', verify progress messages include 'Analyzing collection...', verify complete response contains aggregation data with field='place'."
+    },
+    {
+      "step": 7,
+      "title": "Implement curation engine for Q20-style queries",
+      "description": "Create scripts/chat/curation_engine.py with a deterministic scoring heuristic for selecting items for exhibits/showcases. CurationScorer takes a list of record MMS IDs and scores each using: (a) temporal_score: earlier dates score higher (incunabula and early printed books are rarer/more exhibit-worthy), normalized to 0-1; (b) enrichment_score: records with agent enrichment data (Wikidata bios, images) score higher because they have more exhibit narrative potential; (c) diversity_bonus: records from underrepresented places/publishers in the set get a bonus to ensure variety; (d) subject_richness: records with more subject headings score higher. All scores are weighted: temporal=0.3, enrichment=0.3, diversity=0.2, subject_richness=0.2. select_curated_items(db_path, record_ids, n=15) returns the top-N scored items with per-item rationale strings (e.g., 'Early Venice printing (1492), has enrichment data for Daniel Bomberg'). format_curation_response() produces a markdown response with numbered items and rationale.",
+      "file": "scripts/chat/curation_engine.py",
+      "function": "CurationScorer, score_for_curation, select_curated_items, format_curation_response",
+      "testStrategy": "Unit test with in-memory DB: create 50 test records with varying dates, enrichment presence, places. Verify that select_curated_items(n=10) returns 10 items, that earlier dates rank higher, that diversity is maintained (not all from same place), that rationale strings are non-empty. Test edge case: fewer records than n requested."
+    },
+    {
+      "step": 8,
+      "title": "Add analytical summary path to narrative_agent.py",
+      "description": "Modify narrative_agent.py to handle analytical contexts. Currently generate_agent_narrative() returns None when len(candidates) > _MAX_RESULT_SET (line 220). Add an optional parameter analytical_mode=False. When analytical_mode=True, instead of generating per-agent bios, generate a brief statistical summary of agents in the result set: 'This set includes works by N distinct agents, including M printers, P authors...' using a lightweight SQL count query. This is NOT about raising _MAX_RESULT_SET -- it's about providing a different kind of narrative for analytical responses. The analytical narrative is appended to the aggregation response by handle_analytical_query() when the filtered subset has enrichment data. For Q14 (full collection, 2796 records), this might say 'Spanning 2,796 works by over 800 distinct agents.' For Q15 (806 Hebrew records), it might note the top 3 agents.",
+      "file": "scripts/chat/narrative_agent.py",
+      "function": "generate_agent_narrative, generate_analytical_narrative",
+      "testStrategy": "Unit test: call generate_analytical_narrative with a mock CandidateSet of 500 records, verify it returns a summary string (not None). Verify the original generate_agent_narrative still returns None for sets >100 when analytical_mode=False (backward compatibility)."
+    },
+    {
+      "step": 9,
+      "title": "Extend ExplorationIntent and exploration agent for follow-up analytical queries",
+      "description": "In Phase 2, after an analytical response, the user might ask follow-up analytical questions like 'now show me the publisher breakdown' or 'what about by century instead'. The exploration agent already handles AGGREGATION intent well in Phase 2, so this step is lightweight: (1) Add 'CURATION' to ExplorationIntent enum in models.py and to the intent types in EXPLORATION_AGENT_SYSTEM_PROMPT. (2) Add CURATION handler in handle_corpus_exploration_phase() that calls select_curated_items() on the active subgroup's record_ids. (3) Update the EXPLORATION_AGENT_SYSTEM_PROMPT to include examples of curation requests. This ensures that even if the initial query was retrieval but the follow-up is analytical, it routes correctly.",
+      "file": "scripts/chat/models.py",
+      "function": "ExplorationIntent",
+      "testStrategy": "Unit test: verify ExplorationIntent.CURATION exists and is serializable. Integration test: start with a retrieval query, then send 'curate the best items for an exhibit' as a follow-up, verify it routes to CURATION handler."
+    },
+    {
+      "step": 10,
+      "title": "End-to-end testing with Q14, Q15, Q20 query text",
+      "description": "Create tests/app/test_api_analytical.py with integration tests that simulate the exact failing queries from the historian evaluation. For each of Q14, Q15, Q20: (1) Send the exact query text used in the evaluation via the /chat endpoint (mocked LLM for intent agent, real SQLite for aggregation). (2) Verify the response contains aggregation data (not raw candidates). (3) Verify visualization_hint is set. (4) Verify the message contains structured breakdown text (decade counts for Q14, place counts for Q15, curated items for Q20). (5) Verify session transitions to CORPUS_EXPLORATION. (6) Verify follow-up queries work (e.g., 'show by century instead' after Q14). These tests serve as the acceptance criteria for the enhancement.",
+      "file": "tests/app/test_api_analytical.py",
+      "function": "TestQ14ChronologicalShape, TestQ15PrintingCenters, TestQ20CuratedExhibit",
+      "testStrategy": "End-to-end tests using TestClient with mocked intent agent and real in-memory SQLite database populated with representative test data. Tests verify both the routing logic and the response format."
+    }
+  ],
+
+  "schemaChanges": [
+    {
+      "description": "Add CURATION value to ExplorationIntent enum in scripts/chat/models.py (line 39-51). No database schema changes required. No API response schema changes -- ChatResponse already has metadata dict for visualization_hint and data fields."
+    }
+  ],
+
+  "retrievalChanges": {
+    "queryCompilation": "No changes to the LLM-based query compiler (scripts/query/llm_compiler.py) or intent agent (scripts/chat/intent_agent.py). Analytical queries are intercepted BEFORE the intent agent is called, so the IntentInterpretationLLM schema does not need an ANALYTICAL intent type. This keeps the LLM prompt focused on retrieval queries where it excels, and avoids the risk of the LLM misclassifying borderline queries. The deterministic keyword matcher handles analytical detection with higher reliability than prompt engineering.",
+    "filterNormalization": "The implied_filters extraction in detect_analytical_query() reuses existing normalization logic: language names are mapped to ISO 639-2 codes (same mapping as INTENT_AGENT_SYSTEM_PROMPT lines 187-188), place names are lowercased (consistent with place_norm in imprints table), and date ranges use the same century conversion (15th = 1401-1500). When implied_filters need to be executed as a retrieval query, they are converted to a QueryPlan and run through the standard QueryService.execute_plan() pipeline, ensuring all existing normalization and SQL generation is reused.",
+    "sqlGeneration": "execute_aggregation_full_collection() introduces new SQL templates that omit the WHERE record_id IN (...) clause. These are variants of the existing AGGREGATION_QUERIES dict (aggregation.py lines 33-141) with the IN clause removed. The GROUP BY, ORDER BY, and LIMIT clauses remain identical. For filtered analytical queries (Q15: Hebrew printing centers), the existing execute_aggregation() is used unchanged -- the filter step produces a record_ids list that feeds into the existing parameterized queries."
+  },
+
+  "risksAndEdgeCases": [
+    {
+      "risk": "False positive analytical detection: a retrieval query like 'books about the chronological history of printing' might match 'chronological' and 'printing' signals and be misclassified as analytical",
+      "mitigation": "Use multi-word signal phrases rather than single words. 'chronological' alone is not a signal -- 'chronological distribution' or 'chronological shape' is. Add retrieval anti-signals: if the query contains 'about', 'on the topic of', 'books about' before the analytical keyword, classify as retrieval. Include a confidence threshold: if the analytical signal is weak (single keyword match), fall through to intent agent. Add a comprehensive test suite with 20+ borderline cases.",
+      "severity": "medium"
+    },
+    {
+      "risk": "False negative: novel analytical phrasing not covered by keyword lists (e.g., 'temporal profile of the collection', 'geographic footprint')",
+      "mitigation": "Start with conservative keyword lists covering the known failing queries (Q14, Q15, Q20) and common academic analytical terms. Monitor missed detections via logging (log when intent agent produces a plan with empty/broad filters AND large result sets -- these are likely missed analytical queries). Expand keyword lists iteratively based on real usage patterns. Consider adding an LLM-based fallback classifier in a future iteration.",
+      "severity": "low"
+    },
+    {
+      "risk": "Full-collection aggregation performance: execute_aggregation_full_collection() on 2,796 records should be fast, but could be slow on larger collections",
+      "mitigation": "The aggregation queries use GROUP BY on indexed columns (place_norm, publisher_norm, date_start). SQLite handles 3K-record aggregations in <100ms. Add execution time logging. For future scaling, consider materialized views or pre-computed aggregation tables. The current collection size (2,796) is well within safe limits.",
+      "severity": "low"
+    },
+    {
+      "risk": "Curation scoring heuristic may not align with scholarly judgment about what is 'exhibit-worthy'",
+      "mitigation": "The heuristic is explicitly documented as deterministic and transparent. Each selected item includes a rationale string explaining why it was chosen. The scoring weights (temporal=0.3, enrichment=0.3, diversity=0.2, subject=0.2) are configurable. The response includes a caveat: 'This is an algorithmic selection based on date, enrichment data, and diversity. A specialist may want to adjust the selection.' Future enhancement: allow user-specified criteria ('prioritize visual items', 'focus on 16th century').",
+      "severity": "medium"
+    },
+    {
+      "risk": "Implied filter extraction from analytical queries may miss or misparse filters (e.g., 'Hebrew' detected as language but 'Sephardic' is not a recognized filter term)",
+      "mitigation": "Use the same conservative extraction as is_overview_query's search_criteria list (aggregation.py lines 706-727). If a filter term is ambiguous, don't extract it -- let the aggregation run over the full collection or broader set. Log unrecognized terms for future mapping expansion. The implied filter extraction is best-effort; missing a filter produces a broader (but still useful) aggregation rather than an error.",
+      "severity": "low"
+    },
+    {
+      "risk": "WebSocket and HTTP routing divergence: analytical detection must be added to both handlers, risking inconsistency",
+      "mitigation": "Extract the analytical detection + handling into a shared function (handle_analytical_query) called by both code paths. The WebSocket handler adds progress messages around the shared function call. Test both paths with the same query inputs to verify identical analytical responses.",
+      "severity": "low"
+    },
+    {
+      "risk": "Session phase transition after analytical response: user is in CORPUS_EXPLORATION but the active_subgroup may reference the full collection (for Q14-style queries), leading to Phase 2 aggregations running over 2,796 records",
+      "mitigation": "For full-collection analytical queries, set active_subgroup.record_ids to all record IDs (via get_all_record_ids()). The Phase 2 aggregation engine already handles large record_id lists via parameterized queries. Alternatively, set a flag on the ActiveSubgroup indicating it represents the full collection, and optimize Phase 2 queries accordingly. The 2,796-record limit is well within SQLite parameterized query limits.",
+      "severity": "low"
+    }
+  ],
+
+  "tddPlan": {
+    "testFile": "tests/scripts/chat/test_analytical_router.py",
+    "unitTests": [
+      {
+        "name": "test_detect_q14_chronological_distribution",
+        "description": "detect_analytical_query('chronological distribution of the collection') returns is_analytical=True, intent=TEMPORAL_DISTRIBUTION, aggregation_field='date_decade', implied_filters=[]"
+      },
+      {
+        "name": "test_detect_q14_variant_shape",
+        "description": "detect_analytical_query('what is the chronological shape of this collection') returns TEMPORAL_DISTRIBUTION"
+      },
+      {
+        "name": "test_detect_q14_variant_by_decade",
+        "description": "detect_analytical_query('show books by decade') returns TEMPORAL_DISTRIBUTION with field='date_decade'"
+      },
+      {
+        "name": "test_detect_q14_variant_by_century",
+        "description": "detect_analytical_query('distribution by century') returns TEMPORAL_DISTRIBUTION with field='date_century'"
+      },
+      {
+        "name": "test_detect_q15_printing_centers",
+        "description": "detect_analytical_query('major Hebrew printing centers represented') returns GEOGRAPHIC_DISTRIBUTION, field='place', implied_filters=[Filter(field=language, op=EQUALS, value='heb')]"
+      },
+      {
+        "name": "test_detect_q15_variant_where_printed",
+        "description": "detect_analytical_query('where were the Latin books printed') returns GEOGRAPHIC_DISTRIBUTION with language=lat filter"
+      },
+      {
+        "name": "test_detect_q15_variant_by_place",
+        "description": "detect_analytical_query('show publication places for the collection') returns GEOGRAPHIC_DISTRIBUTION"
+      },
+      {
+        "name": "test_detect_q20_curated_exhibit",
+        "description": "detect_analytical_query('curated selection for Hebrew printing exhibit') returns CURATION, implied_filters include subject or language filter"
+      },
+      {
+        "name": "test_detect_q20_variant_highlights",
+        "description": "detect_analytical_query('highlights of the collection for a display') returns CURATION"
+      },
+      {
+        "name": "test_detect_q20_variant_best_examples",
+        "description": "detect_analytical_query('best examples of early printing') returns CURATION"
+      },
+      {
+        "name": "test_not_analytical_specific_search",
+        "description": "detect_analytical_query('books printed in Paris in the 16th century') returns is_analytical=False, intent=NOT_ANALYTICAL"
+      },
+      {
+        "name": "test_not_analytical_author_search",
+        "description": "detect_analytical_query('books by Joseph Karo') returns NOT_ANALYTICAL"
+      },
+      {
+        "name": "test_not_analytical_topic_search",
+        "description": "detect_analytical_query('books about astronomy') returns NOT_ANALYTICAL"
+      },
+      {
+        "name": "test_not_analytical_comparison",
+        "description": "detect_analytical_query('compare Venice and Amsterdam') returns NOT_ANALYTICAL (comparison is a different intent)"
+      },
+      {
+        "name": "test_not_analytical_how_many",
+        "description": "detect_analytical_query('how many Hebrew books do you have') returns NOT_ANALYTICAL (this is a metadata question, not aggregation)"
+      },
+      {
+        "name": "test_implied_filter_hebrew",
+        "description": "For query with 'Hebrew', implied_filters contains Filter(field='language', op='EQUALS', value='heb')"
+      },
+      {
+        "name": "test_implied_filter_latin",
+        "description": "For query with 'Latin', implied_filters contains Filter(field='language', op='EQUALS', value='lat')"
+      },
+      {
+        "name": "test_implied_filter_16th_century",
+        "description": "For query with '16th century', implied_filters contains Filter(field='year', op='RANGE', start=1501, end=1600)"
+      },
+      {
+        "name": "test_no_implied_filters_generic",
+        "description": "detect_analytical_query('show the date distribution') returns implied_filters=[]"
+      },
+      {
+        "name": "test_publisher_distribution",
+        "description": "detect_analytical_query('who were the top publishers') returns PUBLISHER_DISTRIBUTION, field='publisher'"
+      },
+      {
+        "name": "test_language_distribution",
+        "description": "detect_analytical_query('language breakdown of the collection') returns LANGUAGE_DISTRIBUTION, field='language'"
+      },
+      {
+        "name": "test_subject_distribution",
+        "description": "detect_analytical_query('most common subjects') returns SUBJECT_DISTRIBUTION, field='subject'"
+      },
+      {
+        "name": "test_empty_query",
+        "description": "detect_analytical_query('') returns NOT_ANALYTICAL"
+      },
+      {
+        "name": "test_case_insensitive",
+        "description": "detect_analytical_query('CHRONOLOGICAL DISTRIBUTION') returns TEMPORAL_DISTRIBUTION"
+      },
+      {
+        "name": "test_borderline_about_chronological_history",
+        "description": "detect_analytical_query('books about the chronological development of printing') returns NOT_ANALYTICAL (has 'books about' anti-signal)"
+      }
+    ],
+    "integrationTests": [
+      {
+        "name": "test_q14_end_to_end_chat_endpoint",
+        "description": "POST /chat with message='chronological distribution of the collection'. Verify response has aggregation data with date_decade field, visualization_hint='bar_chart', session transitions to CORPUS_EXPLORATION. Uses real SQLite with test data, mocked LLM."
+      },
+      {
+        "name": "test_q15_end_to_end_with_filter",
+        "description": "POST /chat with message='major Hebrew printing centers represented'. Verify response has aggregation data with place field, response mentions Hebrew, session has active_subgroup."
+      },
+      {
+        "name": "test_q20_end_to_end_curation",
+        "description": "POST /chat with message='curated selection for Hebrew printing exhibit'. Verify response contains curated items with rationale, items are ordered by score, response mentions exhibit context."
+      },
+      {
+        "name": "test_analytical_followup_in_phase2",
+        "description": "Start with retrieval query, get results, then send 'show me the publisher breakdown'. Verify Phase 2 AGGREGATION intent handles it correctly via exploration agent."
+      },
+      {
+        "name": "test_analytical_then_refinement",
+        "description": "Start with analytical query (date distribution), then refine ('now show only 16th century'). Verify session maintains active_subgroup and refinement works."
+      },
+      {
+        "name": "test_websocket_analytical_routing",
+        "description": "Connect via WebSocket, send analytical query. Verify progress messages include 'Analyzing collection...', verify complete response contains aggregation data."
+      },
+      {
+        "name": "test_full_collection_aggregation_performance",
+        "description": "Run execute_aggregation_full_collection on test DB with 500+ records, verify execution time < 500ms, verify results are correct."
+      },
+      {
+        "name": "test_curation_diversity",
+        "description": "Create test data with records from 5 different places. Verify select_curated_items(n=10) includes records from at least 3 different places (diversity scoring works)."
+      }
+    ]
+  },
+
+  "qualityGates": [
+    {
+      "gate": "Unit tests pass",
+      "criterion": "All 25 unit tests in test_analytical_router.py pass with 100% success rate",
+      "toolOrCommand": "pytest tests/scripts/chat/test_analytical_router.py -v"
+    },
+    {
+      "gate": "Curation engine tests pass",
+      "criterion": "All unit tests in test_curation_engine.py pass",
+      "toolOrCommand": "pytest tests/scripts/chat/test_curation_engine.py -v"
+    },
+    {
+      "gate": "Integration tests pass",
+      "criterion": "All 8 integration tests in test_api_analytical.py pass",
+      "toolOrCommand": "pytest tests/app/test_api_analytical.py -v"
+    },
+    {
+      "gate": "Existing tests unbroken",
+      "criterion": "All existing tests continue to pass (no regressions from routing changes)",
+      "toolOrCommand": "pytest tests/ -v --timeout=60"
+    },
+    {
+      "gate": "Linting clean",
+      "criterion": "No new linting errors introduced",
+      "toolOrCommand": "ruff check scripts/chat/analytical_router.py scripts/chat/curation_engine.py app/api/main.py"
+    },
+    {
+      "gate": "Q14 acceptance",
+      "criterion": "Query 'chronological distribution of the collection' returns decade-by-decade breakdown with counts, NOT raw record list",
+      "toolOrCommand": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\": \"chronological distribution of the collection\"}' | python -c \"import sys,json; r=json.load(sys.stdin); assert r['response']['metadata']['data']['field']=='date_decade', 'Q14 FAIL'\""
+    },
+    {
+      "gate": "Q15 acceptance",
+      "criterion": "Query 'major Hebrew printing centers represented' returns place-by-count breakdown filtered to Hebrew books",
+      "toolOrCommand": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\": \"major Hebrew printing centers represented\"}' | python -c \"import sys,json; r=json.load(sys.stdin); assert r['response']['metadata']['data']['field']=='place', 'Q15 FAIL'\""
+    },
+    {
+      "gate": "Q20 acceptance",
+      "criterion": "Query 'curated selection for Hebrew printing exhibit' returns 10-15 selected items with rationale, not 120 raw records",
+      "toolOrCommand": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\": \"curated selection for Hebrew printing exhibit\"}' | python -c \"import sys,json; r=json.load(sys.stdin); resp=r['response']; assert 'curated' in resp['message'].lower() or 'selection' in resp['message'].lower(), 'Q20 FAIL'\""
+    },
+    {
+      "gate": "No LLM call for analytical routing",
+      "criterion": "Analytical query detection is deterministic (no OpenAI API call). Verify by running tests without OPENAI_API_KEY set.",
+      "toolOrCommand": "unset OPENAI_API_KEY && pytest tests/scripts/chat/test_analytical_router.py -v"
+    }
+  ],
+
+  "deliverables": [
+    {
+      "file": "scripts/chat/analytical_router.py",
+      "description": "New module: AnalyticalIntent enum, AnalyticalQueryResult model, detect_analytical_query() function with keyword-based analytical intent detection and implied filter extraction. ~150-200 lines."
+    },
+    {
+      "file": "scripts/chat/curation_engine.py",
+      "description": "New module: CurationScorer class, score_for_curation(), select_curated_items(), format_curation_response(). Deterministic multi-criteria scoring for exhibit curation. ~200-250 lines."
+    },
+    {
+      "file": "app/api/main.py",
+      "description": "Modified: add handle_analytical_query() function (~80 lines), wire detect_analytical_query() into handle_query_definition_phase() (3-line insertion after is_overview_query check), add analytical detection to websocket_chat() handler (~15 lines)."
+    },
+    {
+      "file": "scripts/chat/aggregation.py",
+      "description": "Modified: add FULL_COLLECTION_AGGREGATION_QUERIES dict (~60 lines), execute_aggregation_full_collection() function (~30 lines), get_all_record_ids() utility (~15 lines)."
+    },
+    {
+      "file": "scripts/chat/models.py",
+      "description": "Modified: add CURATION = 'curation' to ExplorationIntent enum (1 line)."
+    },
+    {
+      "file": "scripts/chat/exploration_agent.py",
+      "description": "Modified: add CURATION to ExplorationRequestLLM intent description and EXPLORATION_AGENT_SYSTEM_PROMPT examples (~10 lines)."
+    },
+    {
+      "file": "scripts/chat/narrative_agent.py",
+      "description": "Modified: add generate_analytical_narrative() function (~40 lines) and analytical_mode parameter to generate_agent_narrative()."
+    },
+    {
+      "file": "tests/scripts/chat/test_analytical_router.py",
+      "description": "New test file: 25 unit tests covering analytical detection for all intent types, implied filter extraction, false positive/negative prevention, edge cases."
+    },
+    {
+      "file": "tests/scripts/chat/test_curation_engine.py",
+      "description": "New test file: 8-10 unit tests covering curation scoring, diversity, edge cases."
+    },
+    {
+      "file": "tests/app/test_api_analytical.py",
+      "description": "New test file: 8 integration tests covering end-to-end Q14/Q15/Q20 flows, WebSocket routing, follow-up interactions."
+    }
+  ],
+
+  "acceptanceCriteria": [
+    {
+      "criterion": "Q14 ('chronological distribution of the collection') returns a decade-by-decade or century-by-century breakdown with counts and percentages, NOT a list of 2,796 records",
+      "verification": "Send exact Q14 query text to /chat endpoint. Response metadata.data.field is 'date_decade' or 'date_century'. Response metadata.data.results is an array of {value, count} objects. Response message contains formatted breakdown text. No candidate_set with 2,796 items."
+    },
+    {
+      "criterion": "Q15 ('major Hebrew printing centers represented') returns a place-by-count ranking filtered to Hebrew-language records",
+      "verification": "Send exact Q15 query text. Response metadata.data.field is 'place'. Response metadata.data.results is ranked by count descending. The aggregation was run over ~806 Hebrew records (not all 2,796). Response message mentions top places like Amsterdam, Venice, etc."
+    },
+    {
+      "criterion": "Q20 ('curated selection for Hebrew printing exhibit') returns 10-15 selected items with per-item rationale explaining selection criteria",
+      "verification": "Send exact Q20 query text. Response contains curated items (not 120 raw records). Each item has a rationale string. Items show diversity of dates, places, and subjects. Response acknowledges this is algorithmic curation."
+    },
+    {
+      "criterion": "Analytical detection is deterministic and does not require an LLM API call",
+      "verification": "Run test suite with OPENAI_API_KEY unset. All analytical_router tests pass. Verify no OpenAI client is instantiated in detect_analytical_query()."
+    },
+    {
+      "criterion": "Standard retrieval queries are NOT affected by analytical routing",
+      "verification": "Run existing test suite (pytest tests/). All tests pass. Specifically: 'books printed in Paris' still routes to retrieval. 'books by Oxford between 1500 and 1599' still routes to retrieval. is_overview_query tests still pass."
+    },
+    {
+      "criterion": "Follow-up queries work after an analytical response",
+      "verification": "Send analytical query, get response, then send 'show me the publisher breakdown'. Verify session is in CORPUS_EXPLORATION phase and the follow-up produces a publisher aggregation over the correct subgroup."
+    },
+    {
+      "criterion": "Both HTTP /chat and WebSocket /ws/chat endpoints support analytical routing",
+      "verification": "Send same analytical query to both endpoints. Both return aggregation data. WebSocket includes 'Analyzing collection...' progress message."
+    },
+    {
+      "criterion": "The narrative agent's _MAX_RESULT_SET=100 no longer silently drops context for analytical queries",
+      "verification": "Q14 and Q15 responses include a brief analytical narrative summary (e.g., 'Spanning 2,796 works by over 800 distinct agents') rather than silence. The _MAX_RESULT_SET limit still applies for standard retrieval queries."
+    }
+  ]
+}

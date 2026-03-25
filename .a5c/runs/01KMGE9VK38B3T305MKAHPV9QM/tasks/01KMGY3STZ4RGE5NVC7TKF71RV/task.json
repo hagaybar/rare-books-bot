@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGY3STZ4RGE5NVC7TKF71RV",
+  "taskId": "e5-api-wiring",
+  "invocationKey": "implement-historian-enhancements:S000031:e5-api-wiring",
+  "stepId": "S000031",
+  "kind": "agent",
+  "title": "E5: Wire RECOMMENDATION handler in API",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

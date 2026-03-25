@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T13:57:03.211Z",
+  "data": {
+    "effectId": "01KMG24Y2V822J16HQHVP8JFFB",
+    "invocationKey": "historian-enhancement-plan:S000007:plan-e3-cross-reference",
+    "invocationHash": "c98465210ade2b0e8d7e32f48df91778b49ee6d273c874e0f092f5ebb559f30e",
+    "stepId": "S000007",
+    "taskId": "plan-e3-cross-reference",
+    "kind": "agent",
+    "label": "planning",
+    "taskDefRef": "tasks/01KMG24Y2V822J16HQHVP8JFFB/task.json",
+    "labels": [
+      "planning",
+      "e3",
+      "cross-reference"
+    ]
+  },
+  "checksum": "5b99b087b8a467d1e592b4f12c133ea938babdb7ea10fd8e39fbd19e31a20dd3"
+}

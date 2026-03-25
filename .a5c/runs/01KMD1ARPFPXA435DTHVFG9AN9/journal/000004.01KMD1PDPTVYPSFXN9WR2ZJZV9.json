@@ -1,0 +1,21 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T09:51:24.378Z",
+  "data": {
+    "effectId": "01KMD1PDPEKKJYSQSKMK09QJHX",
+    "invocationKey": "ui-evaluation-and-redesign:S000002:ui-deep-analysis",
+    "invocationHash": "1f97a97040bef0e14c5ae7f993795c7f6a01ae31757726193798bce4e978ed9b",
+    "stepId": "S000002",
+    "taskId": "ui-deep-analysis",
+    "kind": "agent",
+    "label": "audit",
+    "taskDefRef": "tasks/01KMD1PDPEKKJYSQSKMK09QJHX/task.json",
+    "labels": [
+      "audit",
+      "analysis",
+      "ui",
+      "ux"
+    ]
+  },
+  "checksum": "ae6fe78990e6ebb342d107d408d2fdd5e23b8f1eff02e48ce63e25daafc88085"
+}

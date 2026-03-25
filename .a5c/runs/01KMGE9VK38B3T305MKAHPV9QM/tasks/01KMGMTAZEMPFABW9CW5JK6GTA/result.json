@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGMTAZEMPFABW9CW5JK6GTA",
+  "taskId": "e3-api-wiring",
+  "invocationKey": "implement-historian-enhancements:S000019:e3-api-wiring",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "app/api/main.py",
+      "scripts/chat/exploration_agent.py"
+    ],
+    "summary": "CROSS_REFERENCE handler, enhanced COMPARISON, connection data in Phase 1 metadata. All 1296 tests pass.",
+    "testsPassed": 1296
+  },
+  "startedAt": "2026-03-24T19:27:45.003Z",
+  "finishedAt": "2026-03-24T19:27:45.003Z",
+  "value": {
+    "filesModified": [
+      "app/api/main.py",
+      "scripts/chat/exploration_agent.py"
+    ],
+    "summary": "CROSS_REFERENCE handler, enhanced COMPARISON, connection data in Phase 1 metadata. All 1296 tests pass.",
+    "testsPassed": 1296
+  }
+}

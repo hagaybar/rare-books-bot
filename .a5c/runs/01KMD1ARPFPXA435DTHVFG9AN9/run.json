@@ -1,0 +1,14 @@
+{
+  "runId": "01KMD1ARPFPXA435DTHVFG9AN9",
+  "request": "ui-evaluation-and-redesign",
+  "processId": "ui-evaluation-and-redesign",
+  "entrypoint": {
+    "importPath": "../../processes/ui-evaluation-and-redesign.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/ui-evaluation-and-redesign.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-23T09:45:02.426Z",
+  "prompt": "Deep product, UX, architecture, and implementation evaluation of all existing UIs to support design and build of a single new integrated UI for Rare Books Bot - beta version.",
+  "completionProof": "4c696ed3ff874fcc272c5ea043a4861b"
+}

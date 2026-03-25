@@ -1,0 +1,14 @@
+{
+  "runId": "01KMARRREPVKWN8J2BGVJ0WJ6G",
+  "request": "notebooklm-context-builder",
+  "processId": "notebooklm-context-builder",
+  "entrypoint": {
+    "importPath": "../../processes/notebooklm-context-builder.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/notebooklm-context-builder.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-22T12:36:54.879Z",
+  "prompt": "Build curated NotebookLM context for the rare-books-bot repository. Generate 7 thematic markdown documents, upload them to the notebook, verify coverage, create an update utility, and register the notebook.",
+  "completionProof": "f4388d71e8c353e38a5b1a0334094d49"
+}

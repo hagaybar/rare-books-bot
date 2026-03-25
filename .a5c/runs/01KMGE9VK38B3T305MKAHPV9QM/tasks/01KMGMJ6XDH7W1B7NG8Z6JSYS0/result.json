@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGMJ6XDH7W1B7NG8Z6JSYS0",
+  "taskId": "e3-integration",
+  "invocationKey": "implement-historian-enhancements:S000018:e3-integration",
+  "status": "ok",
+  "result": {
+    "filesCreated": [
+      "tests/scripts/chat/test_formatter_e3.py",
+      "tests/scripts/chat/test_cross_reference_integration.py"
+    ],
+    "filesModified": [
+      "scripts/chat/narrative_agent.py",
+      "scripts/chat/aggregation.py",
+      "scripts/chat/formatter.py"
+    ],
+    "summary": "Cross-ref integrated into narrative (connections section), aggregation (enhanced comparison), formatter (follow-up suggestions). 12 new tests. All 39 E3 tests pass.",
+    "testsPassed": 39
+  },
+  "startedAt": "2026-03-24T19:23:14.200Z",
+  "finishedAt": "2026-03-24T19:23:14.200Z",
+  "value": {
+    "filesCreated": [
+      "tests/scripts/chat/test_formatter_e3.py",
+      "tests/scripts/chat/test_cross_reference_integration.py"
+    ],
+    "filesModified": [
+      "scripts/chat/narrative_agent.py",
+      "scripts/chat/aggregation.py",
+      "scripts/chat/formatter.py"
+    ],
+    "summary": "Cross-ref integrated into narrative (connections section), aggregation (enhanced comparison), formatter (follow-up suggestions). 12 new tests. All 39 E3 tests pass.",
+    "testsPassed": 39
+  }
+}

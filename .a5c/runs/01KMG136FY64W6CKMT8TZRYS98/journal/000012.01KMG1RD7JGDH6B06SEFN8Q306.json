@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T13:50:12.723Z",
+  "data": {
+    "effectId": "01KMG1RD7590QJJ13RXJ5XMX6M",
+    "invocationKey": "historian-enhancement-plan:S000006:plan-e2-analytical-routing",
+    "invocationHash": "739948720b3f285eebbf6f10183e1266915c12fb8b742020153de7e289762720",
+    "stepId": "S000006",
+    "taskId": "plan-e2-analytical-routing",
+    "kind": "agent",
+    "label": "planning",
+    "taskDefRef": "tasks/01KMG1RD7590QJJ13RXJ5XMX6M/task.json",
+    "labels": [
+      "planning",
+      "e2",
+      "analytical-routing"
+    ]
+  },
+  "checksum": "d0740f2cd594fd1fb4b96c9e1ef1ac1033f55983ec928d3e7831174171d149ce"
+}

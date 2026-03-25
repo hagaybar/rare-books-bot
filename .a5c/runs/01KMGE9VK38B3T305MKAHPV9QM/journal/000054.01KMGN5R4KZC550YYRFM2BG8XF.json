@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:29:32.819Z",
+  "data": {
+    "effectId": "01KMGN5R4BX2DSCY3G8XCYNMSF",
+    "invocationKey": "implement-historian-enhancements:S000022:e4-write-tests",
+    "invocationHash": "870e75e4e09a6535ce6021613270ca9dc2910f0dc00e4ae133ddf141f25e00a9",
+    "stepId": "S000022",
+    "taskId": "e4-write-tests",
+    "kind": "agent",
+    "label": "E4: Write thematic context and scoring tests (TDD)",
+    "taskDefRef": "tasks/01KMGN5R4BX2DSCY3G8XCYNMSF/task.json"
+  },
+  "checksum": "bc292187bf1840ea18361882f3645b736cdfe0747864e49e3267763d1013e6db"
+}

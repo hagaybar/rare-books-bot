@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGYBPCEBBAQVTN8BQ72P0E6",
+  "taskId": "final-regression",
+  "invocationKey": "implement-historian-enhancements:S000034:final-regression",
+  "status": "ok",
+  "result": {
+    "allTestsPassed": true,
+    "lintClean": true,
+    "newModules": [
+      "agent_authority",
+      "seed_agent_authorities",
+      "analytical_router",
+      "curation_engine",
+      "cross_reference",
+      "thematic_context",
+      "curator"
+    ],
+    "summary": "All 1341 tests pass, lint clean after 56 fixes. All 7 new modules importable. 13 new test files added.",
+    "totalTests": 1341
+  },
+  "startedAt": "2026-03-24T22:15:03.243Z",
+  "finishedAt": "2026-03-24T22:15:03.243Z",
+  "value": {
+    "allTestsPassed": true,
+    "lintClean": true,
+    "newModules": [
+      "agent_authority",
+      "seed_agent_authorities",
+      "analytical_router",
+      "curation_engine",
+      "cross_reference",
+      "thematic_context",
+      "curator"
+    ],
+    "summary": "All 1341 tests pass, lint clean after 56 fixes. All 7 new modules importable. 13 new test files added.",
+    "totalTests": 1341
+  }
+}

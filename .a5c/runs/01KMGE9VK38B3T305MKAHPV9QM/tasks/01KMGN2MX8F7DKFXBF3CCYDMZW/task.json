@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGN2MX8F7DKFXBF3CCYDMZW",
+  "taskId": "e3-verify",
+  "invocationKey": "implement-historian-enhancements:S000020:e3-verify",
+  "stepId": "S000020",
+  "kind": "shell",
+  "title": "E3: Run all E3 tests to verify completion",
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_cross_reference.py tests/scripts/chat/test_comparison_enhanced.py tests/scripts/chat/test_cross_reference_integration.py -v --timeout=60 2>&1 | tail -30",
+    "description": "Run E3 tests including cross-reference integration",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

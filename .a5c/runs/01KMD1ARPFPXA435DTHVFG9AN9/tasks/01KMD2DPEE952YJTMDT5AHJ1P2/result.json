@@ -1,0 +1,255 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD2DPEE952YJTMDT5AHJ1P2",
+  "taskId": "alignment-assessment",
+  "invocationKey": "ui-evaluation-and-redesign:S000004:alignment-assessment",
+  "status": "ok",
+  "result": {
+    "alignments": [
+      {
+        "distractsFromGoal": [
+          "Highest-quality implementation invested here instead of user-facing bot",
+          "Separate React/TypeScript stack adds maintenance cost"
+        ],
+        "duplicatesEffort": [],
+        "fragmentsExperience": [
+          "No connection between workbench and chatbot",
+          "No 'flag data issue' workflow from bot"
+        ],
+        "missesObservability": [
+          "Cannot trace impact of normalization fix on bot accuracy",
+          "No metrics on which metadata gaps cause most bot failures"
+        ],
+        "name": "Metadata Co-pilot Workbench (frontend/)",
+        "rating": "valuable",
+        "supportsGoal": [
+          "Data quality directly impacts bot accuracy",
+          "Agent Chat provides scalable HITL feedback",
+          "Dashboard gives operational visibility"
+        ],
+        "verdict": "Valuable internal operations tool. Risk: over-investment here starves the actual product."
+      },
+      {
+        "distractsFromGoal": [
+          "Exposes internal pipeline complexity inappropriate for end users"
+        ],
+        "duplicatesEffort": [
+          "Gold Set page duplicates app/qa.py regression runner"
+        ],
+        "fragmentsExperience": [
+          "Tests raw query execution, not bot's two-phase flow"
+        ],
+        "missesObservability": [
+          "Cannot test full bot conversation path"
+        ],
+        "name": "QA Tool (app/ui_qa/)",
+        "rating": "valuable",
+        "supportsGoal": [
+          "Only tool for measuring bot accuracy with TP/FP/FN",
+          "Gold set export enables regression CI gate",
+          "Find Missing is uniquely irreplaceable for FN discovery"
+        ],
+        "verdict": "Valuable measurement infrastructure. Should evolve to test full two-phase conversational flow."
+      },
+      {
+        "distractsFromGoal": [],
+        "duplicatesEffort": [],
+        "fragmentsExperience": [
+          "Streamlit re-renders on every interaction",
+          "Doesn't use WebSocket streaming"
+        ],
+        "missesObservability": [
+          "No query plan inspection",
+          "Minimal evidence display",
+          "No conversation phase indication"
+        ],
+        "name": "Chat UI (app/ui_chat/)",
+        "rating": "nice-to-have",
+        "supportsGoal": [
+          "IS the product -- only place users interact with bot",
+          "Demonstrates two-phase flow"
+        ],
+        "verdict": "The concept is essential but the Streamlit implementation is a prototype. Primary alignment failure: strongest React went to wrong UI."
+      },
+      {
+        "distractsFromGoal": [],
+        "duplicatesEffort": [],
+        "fragmentsExperience": [],
+        "missesObservability": [],
+        "name": "CLI (app/cli.py)",
+        "rating": "essential",
+        "supportsGoal": [
+          "Pipeline execution backbone",
+          "Artifact generation provides evidence trail",
+          "Scriptable and CI-friendly"
+        ],
+        "verdict": "Essential developer tool. Well-implemented and necessary."
+      },
+      {
+        "distractsFromGoal": [],
+        "duplicatesEffort": [
+          "Duplicates QA Tool Gold Set page"
+        ],
+        "fragmentsExperience": [
+          "Separate app instead of CLI subcommand"
+        ],
+        "missesObservability": [
+          "Tests different code path than users experience"
+        ],
+        "name": "QA Regression Runner (app/qa.py)",
+        "rating": "redundant",
+        "supportsGoal": [
+          "Regression testing essential for CI gates"
+        ],
+        "verdict": "Redundant as standalone file. Should be consolidated as CLI subcommand."
+      },
+      {
+        "distractsFromGoal": [],
+        "duplicatesEffort": [
+          "Two conversation implementations in one file"
+        ],
+        "fragmentsExperience": [
+          "WebSocket uses old path, not two-phase flow",
+          "metadata.py is 46% of code serving internal tool"
+        ],
+        "missesObservability": [
+          "No API versioning",
+          "main.py at 1300 lines needs decomposition"
+        ],
+        "name": "FastAPI Backend (app/api/)",
+        "rating": "essential",
+        "supportsGoal": [
+          "Central nervous system",
+          "Two-phase conversation implemented here",
+          "WebSocket streaming foundation"
+        ],
+        "verdict": "Essential infrastructure. Growing complex. WebSocket must use same two-phase flow as HTTP."
+      }
+    ]
+  },
+  "startedAt": "2026-03-23T10:08:42.298Z",
+  "finishedAt": "2026-03-23T10:08:42.298Z",
+  "value": {
+    "alignments": [
+      {
+        "distractsFromGoal": [
+          "Highest-quality implementation invested here instead of user-facing bot",
+          "Separate React/TypeScript stack adds maintenance cost"
+        ],
+        "duplicatesEffort": [],
+        "fragmentsExperience": [
+          "No connection between workbench and chatbot",
+          "No 'flag data issue' workflow from bot"
+        ],
+        "missesObservability": [
+          "Cannot trace impact of normalization fix on bot accuracy",
+          "No metrics on which metadata gaps cause most bot failures"
+        ],
+        "name": "Metadata Co-pilot Workbench (frontend/)",
+        "rating": "valuable",
+        "supportsGoal": [
+          "Data quality directly impacts bot accuracy",
+          "Agent Chat provides scalable HITL feedback",
+          "Dashboard gives operational visibility"
+        ],
+        "verdict": "Valuable internal operations tool. Risk: over-investment here starves the actual product."
+      },
+      {
+        "distractsFromGoal": [
+          "Exposes internal pipeline complexity inappropriate for end users"
+        ],
+        "duplicatesEffort": [
+          "Gold Set page duplicates app/qa.py regression runner"
+        ],
+        "fragmentsExperience": [
+          "Tests raw query execution, not bot's two-phase flow"
+        ],
+        "missesObservability": [
+          "Cannot test full bot conversation path"
+        ],
+        "name": "QA Tool (app/ui_qa/)",
+        "rating": "valuable",
+        "supportsGoal": [
+          "Only tool for measuring bot accuracy with TP/FP/FN",
+          "Gold set export enables regression CI gate",
+          "Find Missing is uniquely irreplaceable for FN discovery"
+        ],
+        "verdict": "Valuable measurement infrastructure. Should evolve to test full two-phase conversational flow."
+      },
+      {
+        "distractsFromGoal": [],
+        "duplicatesEffort": [],
+        "fragmentsExperience": [
+          "Streamlit re-renders on every interaction",
+          "Doesn't use WebSocket streaming"
+        ],
+        "missesObservability": [
+          "No query plan inspection",
+          "Minimal evidence display",
+          "No conversation phase indication"
+        ],
+        "name": "Chat UI (app/ui_chat/)",
+        "rating": "nice-to-have",
+        "supportsGoal": [
+          "IS the product -- only place users interact with bot",
+          "Demonstrates two-phase flow"
+        ],
+        "verdict": "The concept is essential but the Streamlit implementation is a prototype. Primary alignment failure: strongest React went to wrong UI."
+      },
+      {
+        "distractsFromGoal": [],
+        "duplicatesEffort": [],
+        "fragmentsExperience": [],
+        "missesObservability": [],
+        "name": "CLI (app/cli.py)",
+        "rating": "essential",
+        "supportsGoal": [
+          "Pipeline execution backbone",
+          "Artifact generation provides evidence trail",
+          "Scriptable and CI-friendly"
+        ],
+        "verdict": "Essential developer tool. Well-implemented and necessary."
+      },
+      {
+        "distractsFromGoal": [],
+        "duplicatesEffort": [
+          "Duplicates QA Tool Gold Set page"
+        ],
+        "fragmentsExperience": [
+          "Separate app instead of CLI subcommand"
+        ],
+        "missesObservability": [
+          "Tests different code path than users experience"
+        ],
+        "name": "QA Regression Runner (app/qa.py)",
+        "rating": "redundant",
+        "supportsGoal": [
+          "Regression testing essential for CI gates"
+        ],
+        "verdict": "Redundant as standalone file. Should be consolidated as CLI subcommand."
+      },
+      {
+        "distractsFromGoal": [],
+        "duplicatesEffort": [
+          "Two conversation implementations in one file"
+        ],
+        "fragmentsExperience": [
+          "WebSocket uses old path, not two-phase flow",
+          "metadata.py is 46% of code serving internal tool"
+        ],
+        "missesObservability": [
+          "No API versioning",
+          "main.py at 1300 lines needs decomposition"
+        ],
+        "name": "FastAPI Backend (app/api/)",
+        "rating": "essential",
+        "supportsGoal": [
+          "Central nervous system",
+          "Two-phase conversation implemented here",
+          "WebSocket streaming foundation"
+        ],
+        "verdict": "Essential infrastructure. Growing complex. WebSocket must use same two-phase flow as HTTP."
+      }
+    ]
+  }
+}

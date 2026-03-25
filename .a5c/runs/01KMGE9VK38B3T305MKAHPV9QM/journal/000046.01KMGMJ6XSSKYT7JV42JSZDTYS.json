@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:18:52.601Z",
+  "data": {
+    "effectId": "01KMGMJ6XDH7W1B7NG8Z6JSYS0",
+    "invocationKey": "implement-historian-enhancements:S000018:e3-integration",
+    "invocationHash": "b24fa54ac78aaa40cf9e06fab52b858f1c1ba4ffebe9a3ab2df2ce9076073e03",
+    "stepId": "S000018",
+    "taskId": "e3-integration",
+    "kind": "agent",
+    "label": "E3: Integrate cross-reference into narrative, comparison, formatter",
+    "taskDefRef": "tasks/01KMGMJ6XDH7W1B7NG8Z6JSYS0/task.json"
+  },
+  "checksum": "f60d9dd918cad9284199bcbbf051456afef03c8af879bca9ef318467f061314b"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T18:51:59.792Z",
+  "data": {
+    "effectId": "01KMGK0ZX9KM4PVSX5721K9Z9N",
+    "invocationKey": "implement-historian-enhancements:S000008:e2-write-tests",
+    "invocationHash": "0ed33e70e209f40d31c92fc35436f702e1f21c66df64cac2011f00ffd0f4ed8d",
+    "stepId": "S000008",
+    "taskId": "e2-write-tests",
+    "kind": "agent",
+    "label": "E2: Write analytical router detection tests (TDD)",
+    "taskDefRef": "tasks/01KMGK0ZX9KM4PVSX5721K9Z9N/task.json"
+  },
+  "checksum": "38f08e001f9f7d786ae3b9d99f3662eac0ab7775eec4fb0b6f9569b1331f5baf"
+}

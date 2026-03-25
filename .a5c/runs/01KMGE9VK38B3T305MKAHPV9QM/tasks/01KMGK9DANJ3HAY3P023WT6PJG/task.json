@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGK9DANJ3HAY3P023WT6PJG",
+  "taskId": "e2-curation-impl",
+  "invocationKey": "implement-historian-enhancements:S000011:e2-curation-impl",
+  "stepId": "S000011",
+  "kind": "agent",
+  "title": "E2: Implement curation engine, aggregation extensions, and narrative analytical path",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

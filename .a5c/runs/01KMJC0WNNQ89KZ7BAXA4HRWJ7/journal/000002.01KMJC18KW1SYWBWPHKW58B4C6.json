@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T11:28:17.532Z",
+  "data": {
+    "effectId": "01KMJC18KCVG1XYNYKBCHA3HXQ",
+    "invocationKey": "scholar-pipeline-fixes:S000001:backend-fixes",
+    "invocationHash": "3d6ca32da274196d9d7c1149c267dc3dfcc549f3da7bbaa311eb3a8691e93411",
+    "stepId": "S000001",
+    "taskId": "backend-fixes",
+    "kind": "agent",
+    "label": "Fix backend issues: JSON parsing, index remapping, agent links",
+    "taskDefRef": "tasks/01KMJC18KCVG1XYNYKBCHA3HXQ/task.json"
+  },
+  "checksum": "29b35dabb99b59eaf362bee50f48aba3cac17093870a9eb3516e46e52558b0d7"
+}

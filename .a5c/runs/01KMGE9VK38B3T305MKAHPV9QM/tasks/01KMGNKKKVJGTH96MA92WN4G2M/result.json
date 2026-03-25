@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGNKKKVJGTH96MA92WN4G2M",
+  "taskId": "e4-api-wiring",
+  "invocationKey": "implement-historian-enhancements:S000025:e4-api-wiring",
+  "status": "ok",
+  "result": {
+    "filesCreated": [
+      "tests/integration/test_thematic_integration.py"
+    ],
+    "filesModified": [
+      "scripts/chat/formatter.py",
+      "scripts/chat/models.py",
+      "app/api/main.py"
+    ],
+    "summary": "Pedagogical formatting, thematic_context field, API wiring. All 18 E4 tests pass.",
+    "testsPassed": 18
+  },
+  "startedAt": "2026-03-24T19:42:22.832Z",
+  "finishedAt": "2026-03-24T19:42:22.832Z",
+  "value": {
+    "filesCreated": [
+      "tests/integration/test_thematic_integration.py"
+    ],
+    "filesModified": [
+      "scripts/chat/formatter.py",
+      "scripts/chat/models.py",
+      "app/api/main.py"
+    ],
+    "summary": "Pedagogical formatting, thematic_context field, API wiring. All 18 E4 tests pass.",
+    "testsPassed": 18
+  }
+}

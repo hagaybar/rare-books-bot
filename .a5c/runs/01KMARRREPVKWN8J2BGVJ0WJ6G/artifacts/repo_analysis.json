@@ -1,0 +1,1386 @@
+{
+  "project_overview": {
+    "name": "Rare Books Bot",
+    "mission": "Conversational bibliographic discovery system for rare books where MARC XML is the source of truth",
+    "primary_goal": "Enable users to discover rare books through a conversational chatbot interface backed by deterministic, evidence-based queries over MARC XML records",
+    "core_philosophy": "Evidence before interpretation. Every query response includes QueryPlan, CandidateSet, Evidence, and normalized mappings with confidence scores",
+    "status": "All 7 milestones implemented. Backend pipeline (M1-M4) complete. Chatbot API (M6) complete. Metadata Workbench (M7) complete.",
+    "language": "Python 3.12",
+    "package_manager": "Poetry",
+    "frameworks": {
+      "backend": "FastAPI (REST + WebSocket)",
+      "frontend": "React 19 + TypeScript + Vite + Tailwind CSS",
+      "cli": "Typer",
+      "qa_tool": "Streamlit",
+      "database": "SQLite (7 tables, FTS5)",
+      "llm": "OpenAI GPT-4o via Responses API (structured output)",
+      "schema_validation": "Pydantic v2"
+    },
+    "data_stats": {
+      "total_records": 2796,
+      "total_imprints": 2773,
+      "publisher_authorities": 228,
+      "publisher_variants": 266,
+      "place_alias_mappings": 196,
+      "test_count": 1076,
+      "test_pass_rate": "98.8%"
+    },
+    "total_python_lines": {
+      "scripts": 20076,
+      "app": 7726,
+      "tests": 18611,
+      "total": 46413
+    }
+  },
+
+  "modules": {
+    "scripts/marc/parse.py": {
+      "purpose": "M1: MARC XML parser for canonical record extraction using pymarc",
+      "lines": 907,
+      "key_functions": [
+        "parse_marc_xml_file(marc_xml_path: Path, output_path: Path, report_path: Path) -> ExtractionReport",
+        "extract_record_id(record: pymarc.Record) -> Optional[SourcedValue]",
+        "extract_title(record: pymarc.Record) -> Optional[SourcedValue]",
+        "_make_source_ref(tag: str, occurrence: int, subfield: str) -> str"
+      ],
+      "imports": ["pymarc", "scripts.marc.models"],
+      "depends_on": ["scripts/marc/models.py"]
+    },
+    "scripts/marc/models.py": {
+      "purpose": "M1 Pydantic data models for canonical MARC records",
+      "lines": 303,
+      "key_classes": [
+        "SourcedValue(BaseModel) - value with MARC source provenance",
+        "ImprintData(BaseModel) - publication data from 260/264",
+        "AgentData(BaseModel) - author/contributor with agent_type, role_source, authority_uri",
+        "SubjectData(BaseModel) - subject heading with parts, scheme, authority_uri",
+        "NoteData(BaseModel) - note with MARC tag",
+        "SourceMetadata(BaseModel) - record-level metadata",
+        "CanonicalRecord(BaseModel) - full canonical record with title, imprints, languages, subjects, agents, notes, acquisition",
+        "ExtractionReport(BaseModel) - extraction statistics"
+      ],
+      "imports": ["pydantic"],
+      "depends_on": []
+    },
+    "scripts/marc/m2_models.py": {
+      "purpose": "M2 normalization Pydantic models for enriched fields",
+      "lines": 92,
+      "key_classes": [
+        "DateNormalization(BaseModel) - start/end year, confidence, method",
+        "PlaceNormalization(BaseModel) - normalized key, display, confidence",
+        "PublisherNormalization(BaseModel) - normalized key, display, confidence",
+        "ImprintNormalization(BaseModel) - composed date/place/publisher norm",
+        "AgentNormalization(BaseModel) - agent_raw, agent_norm, confidence, method",
+        "RoleNormalization(BaseModel) - role_raw, role_norm, confidence, method",
+        "M2Enrichment(BaseModel) - imprints_norm + agents_norm"
+      ],
+      "imports": ["pydantic"],
+      "depends_on": []
+    },
+    "scripts/marc/normalize.py": {
+      "purpose": "M2 normalization functions: deterministic, rule-based normalization for dates, places, publishers, agents",
+      "lines": 605,
+      "key_functions": [
+        "normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization",
+        "normalize_place(raw: Optional[str], evidence_path: str, alias_map: Optional[Dict]) -> PlaceNormalization",
+        "normalize_publisher(raw: Optional[str], evidence_path: str, alias_map: Optional[Dict]) -> PublisherNormalization",
+        "enrich_m2(m1_record: dict, place_alias_map, publisher_alias_map, agent_alias_map) -> dict",
+        "parse_hebrew_year(text: str) -> Optional[int]"
+      ],
+      "date_normalization_rules": [
+        "Rule 1: Exact year (^\\d{4}$) -> confidence=0.99",
+        "Rule 2: Bracketed year (^\\[(\\d{4})\\]$) -> confidence=0.95",
+        "Rule 3: Circa (^c\\.?\\s*(\\d{4})$) -> +/-5 years, confidence=0.90",
+        "Rule 4: Range (^(\\d{4})\\s*[-/]\\s*(\\d{4})$) -> confidence=0.90",
+        "Rule 4b: Bracketed range -> confidence=0.90",
+        "Rule 5: Bracketed Gregorian equivalent -> confidence=0.90",
+        "Rule 5b: Embedded range (adjacent YYYY-YYYY) -> confidence=0.90",
+        "Rule 5c: Embedded range (non-adjacent) -> confidence=0.90",
+        "Rule 6: Embedded year -> confidence=0.85",
+        "Rule 6b: Hebrew calendar numeric -> confidence=0.75",
+        "Rule 6c: Hebrew Gematria -> confidence=0.80",
+        "Rule 7: Unparsed -> confidence=0.0"
+      ],
+      "imports": ["scripts.marc.m2_models", "scripts.normalization.normalize_agent"],
+      "depends_on": ["scripts/marc/m2_models.py", "scripts/normalization/normalize_agent.py"]
+    },
+    "scripts/marc/m2_normalize.py": {
+      "purpose": "M2 normalization CLI: reads M1 JSONL and outputs M1+M2 enriched JSONL",
+      "lines": 160,
+      "key_functions": [
+        "load_alias_map(path: Optional[Path]) -> Optional[Dict[str, str]]",
+        "process_m1_to_m2(input_path, output_path, place_alias_path, publisher_alias_path, agent_alias_path) -> dict"
+      ],
+      "imports": ["scripts.marc.normalize"],
+      "depends_on": ["scripts/marc/normalize.py"]
+    },
+    "scripts/marc/m3_contract.py": {
+      "purpose": "M3 database schema contract - single source of truth for table/column names",
+      "lines": 283,
+      "key_classes": [
+        "M3Tables - table name constants (records, titles, imprints, subjects, agents, languages, notes, physical_descriptions, authority_enrichment, titles_fts, subjects_fts)",
+        "M3Columns.Records - id, mms_id, source_file, created_at, jsonl_line_number",
+        "M3Columns.Titles - id, record_id, title_type, value, source",
+        "M3Columns.Imprints - 22 columns: raw + normalized date/place/publisher + country",
+        "M3Columns.Subjects - 9 columns including authority_uri, scheme, heading_lang",
+        "M3Columns.Agents - 14 columns: raw + normalized agent/role + provenance",
+        "M3Columns.Languages - code, source",
+        "M3Columns.Notes - tag, value, source",
+        "M3Columns.PhysicalDescriptions - value, source",
+        "M3Columns.AuthorityEnrichment - 16 columns for external identifiers",
+        "M3Aliases - common table aliases for SQL"
+      ],
+      "key_functions": [
+        "validate_schema(db_path_or_conn) -> List[str]"
+      ],
+      "imports": ["sqlite3"],
+      "depends_on": []
+    },
+    "scripts/marc/m3_index.py": {
+      "purpose": "M3: Build SQLite bibliographic index from M1+M2 JSONL records with optional Wikidata enrichment",
+      "lines": 670,
+      "key_functions": [
+        "load_country_code_map() -> dict",
+        "collect_authority_uris(conn) -> Set[str]",
+        "enrich_authority_uris(conn, uris, enrichment_service, rate_limit_delay) -> Dict[str, int]"
+      ],
+      "imports": ["sqlite3", "scripts.enrichment.enrichment_service", "scripts.enrichment.models"],
+      "depends_on": ["scripts/enrichment/enrichment_service.py"]
+    },
+    "scripts/marc/m3_query.py": {
+      "purpose": "Low-level M3 query functions for testing and debugging (direct SQL without QueryPlan)",
+      "lines": 579,
+      "key_classes": [
+        "Evidence - evidence for record inclusion",
+        "CandidateSet - set of candidate records with evidence"
+      ],
+      "key_functions": [
+        "connect_db(db_path: Path) -> sqlite3.Connection",
+        "query_by_place(conn, place_norm) -> CandidateSet",
+        "query_by_publisher(conn, publisher_norm) -> CandidateSet",
+        "query_by_date_range(conn, start, end) -> CandidateSet"
+      ],
+      "imports": ["sqlite3"],
+      "depends_on": []
+    },
+    "scripts/marc/rebuild_pipeline.py": {
+      "purpose": "End-to-end pipeline script: M1 parse -> M2 normalize -> M3 index",
+      "lines": 300,
+      "key_functions": [
+        "run_m1_parse(marc_xml, output, report) -> bool",
+        "run_m2_normalize(m1_input, m2_output, place_alias, publisher_alias, agent_alias) -> bool",
+        "run_m3_index(m2_input, db_output, schema) -> bool"
+      ],
+      "imports": ["scripts.marc.parse", "scripts.marc.m2_normalize", "scripts.marc.m3_index"],
+      "depends_on": ["scripts/marc/parse.py", "scripts/marc/m2_normalize.py", "scripts/marc/m3_index.py"]
+    },
+    "scripts/marc/build_place_freq.py": {
+      "purpose": "Build place frequency table from MARC XML for alias mapping preparation",
+      "lines": 302,
+      "key_functions": [
+        "normalize_place_basic(raw: Optional[str]) -> Optional[str]"
+      ],
+      "imports": ["pymarc"],
+      "depends_on": []
+    },
+    "scripts/schemas/query_plan.py": {
+      "purpose": "QueryPlan Pydantic model for M4 - defines NL query -> structured plan schema",
+      "lines": 103,
+      "key_classes": [
+        "FilterField(str, Enum) - publisher, imprint_place, country, year, language, title, subject, agent, agent_norm, agent_role, agent_type",
+        "FilterOp(str, Enum) - EQUALS, CONTAINS, RANGE, IN",
+        "Filter(BaseModel) - field, op, value/start/end, negate, confidence, notes",
+        "QueryPlan(BaseModel) - version, query_text, filters, soft_filters, limit, debug"
+      ],
+      "imports": ["pydantic"],
+      "depends_on": []
+    },
+    "scripts/schemas/candidate_set.py": {
+      "purpose": "CandidateSet Pydantic model for M4 - query execution results with evidence",
+      "lines": 80,
+      "key_classes": [
+        "Evidence(BaseModel) - field, value, operator, matched_against, source, confidence, extraction_error",
+        "Candidate(BaseModel) - record_id, match_rationale, evidence[], title, author, date_start/end, place, publisher, subjects, description",
+        "CandidateSet(BaseModel) - query_text, plan_hash, sql, sql_parameters, candidates[], total_count"
+      ],
+      "imports": ["pydantic"],
+      "depends_on": []
+    },
+    "scripts/query/compile.py": {
+      "purpose": "Query compiler entry point - delegates to LLM compiler",
+      "lines": 43,
+      "key_functions": [
+        "compile_query (re-export of compile_query_llm)",
+        "write_plan_to_file(plan: QueryPlan, output_path: Path) -> None",
+        "compute_plan_hash(plan: QueryPlan) -> str"
+      ],
+      "imports": ["scripts.query.llm_compiler", "scripts.schemas"],
+      "depends_on": ["scripts/query/llm_compiler.py"]
+    },
+    "scripts/query/llm_compiler.py": {
+      "purpose": "LLM-based query compiler using OpenAI Responses API with Pydantic schema enforcement and JSONL caching",
+      "lines": 466,
+      "key_classes": [
+        "QueryPlanLLM(BaseModel) - LLM-compatible model without debug field"
+      ],
+      "key_functions": [
+        "compile_query_llm(query_text: str, limit: Optional[int], api_key: Optional[str], model: str) -> QueryPlan",
+        "compile_query_with_subject_hints(query_text, db_path, limit, api_key, model) -> QueryPlan"
+      ],
+      "imports": ["openai", "pydantic", "scripts.schemas", "scripts.query.exceptions", "scripts.utils.llm_logger"],
+      "depends_on": ["scripts/schemas/query_plan.py", "scripts/query/exceptions.py", "scripts/utils/llm_logger.py"]
+    },
+    "scripts/query/execute.py": {
+      "purpose": "Query executor: QueryPlan -> SQL -> CandidateSet with evidence extraction",
+      "lines": 679,
+      "key_functions": [
+        "fetch_display_info(conn, mms_ids) -> Dict[str, Dict[str, Any]]",
+        "execute_plan(plan: QueryPlan, db_path: Path) -> CandidateSet",
+        "execute_plan_from_file(plan_path: Path, db_path: Path) -> CandidateSet"
+      ],
+      "imports": ["scripts.schemas", "scripts.query.db_adapter", "scripts.query.compile", "scripts.query.subject_hints", "scripts.query.llm_compiler"],
+      "depends_on": ["scripts/query/db_adapter.py", "scripts/query/compile.py", "scripts/query/subject_hints.py"]
+    },
+    "scripts/query/db_adapter.py": {
+      "purpose": "Database adapter: maps M4 filters to M3 schema, generates SQL, handles JOINs and evidence extraction",
+      "lines": 498,
+      "key_functions": [
+        "get_connection(db_path: Path) -> sqlite3.Connection",
+        "normalize_filter_value(field: FilterField, raw_value: str, op: FilterOp) -> str",
+        "build_where_clause(plan: QueryPlan) -> Tuple[str, Dict, List[str]]",
+        "build_full_query(plan: QueryPlan) -> Tuple[str, Dict]",
+        "fetch_candidates(conn, plan) -> List[Dict]"
+      ],
+      "imports": ["scripts.schemas", "scripts.marc.m3_contract"],
+      "depends_on": ["scripts/schemas/query_plan.py", "scripts/marc/m3_contract.py"]
+    },
+    "scripts/query/service.py": {
+      "purpose": "Unified QueryService - single entry point for all query execution across all interfaces",
+      "lines": 438,
+      "key_classes": [
+        "QueryService - execute(user_message, session_id, options) -> QueryResult, execute_plan(plan, options) -> QueryResult"
+      ],
+      "key_functions": [
+        "_extract_warnings(plan: QueryPlan) -> List[QueryWarning]",
+        "_compute_facets(candidate_ids, options) -> FacetCounts"
+      ],
+      "imports": ["scripts.schemas", "scripts.query.models", "scripts.query.compile", "scripts.query.execute", "scripts.query.db_adapter"],
+      "depends_on": ["scripts/query/compile.py", "scripts/query/execute.py", "scripts/query/db_adapter.py", "scripts/query/models.py"]
+    },
+    "scripts/query/models.py": {
+      "purpose": "Extended query result schemas for QueryService",
+      "lines": 64,
+      "key_classes": [
+        "QueryWarning(BaseModel) - code, message, field, confidence",
+        "FacetCounts(BaseModel) - by_place, by_year, by_language, by_publisher, by_century",
+        "QueryOptions(BaseModel) - compute_facets, facet_limit, include_warnings, limit",
+        "QueryResult(BaseModel) - query_plan, sql, params, candidate_set, facets, warnings, execution_time_ms"
+      ],
+      "imports": ["scripts.schemas"],
+      "depends_on": ["scripts/schemas/query_plan.py", "scripts/schemas/candidate_set.py"]
+    },
+    "scripts/query/exceptions.py": {
+      "purpose": "Custom exceptions for query module (QueryCompilationError)",
+      "lines": 70,
+      "key_classes": [
+        "QueryCompilationError - with class methods from_missing_api_key(), from_api_error(), from_invalid_response()"
+      ],
+      "imports": [],
+      "depends_on": []
+    },
+    "scripts/query/subject_hints.py": {
+      "purpose": "Extract top subject headings from database for LLM query retry hints",
+      "lines": 51,
+      "key_functions": [
+        "get_top_subjects(db_path: Path, limit: int) -> List[str]"
+      ],
+      "imports": ["sqlite3"],
+      "depends_on": []
+    },
+    "scripts/chat/models.py": {
+      "purpose": "Core chat data structures: sessions, messages, two-phase conversation support",
+      "lines": 201,
+      "key_classes": [
+        "ConversationPhase(str, Enum) - QUERY_DEFINITION, CORPUS_EXPLORATION",
+        "ExplorationIntent(str, Enum) - METADATA_QUESTION, AGGREGATION, ENRICHMENT_REQUEST, RECOMMENDATION, COMPARISON, REFINEMENT, NEW_QUERY",
+        "ActiveSubgroup(BaseModel) - candidate_set, defining_query, filter_summary, record_ids",
+        "UserGoal(BaseModel) - goal_type, description",
+        "Message(BaseModel) - role, content, query_plan, candidate_set, timestamp",
+        "ChatSession(BaseModel) - session_id, user_id, messages, context, metadata",
+        "ChatResponse(BaseModel) - message, candidate_set, suggested_followups, clarification_needed, session_id, phase, confidence, metadata"
+      ],
+      "imports": ["pydantic", "scripts.schemas"],
+      "depends_on": ["scripts/schemas/query_plan.py", "scripts/schemas/candidate_set.py"]
+    },
+    "scripts/chat/session_store.py": {
+      "purpose": "SQLite-backed persistent storage for multi-turn conversations with phase tracking",
+      "lines": 597,
+      "key_classes": [
+        "SessionStore - create_session, add_message, get_session, expire_old_sessions, update_phase, set_active_subgroup"
+      ],
+      "imports": ["scripts.chat.models", "scripts.schemas", "scripts.utils.logger"],
+      "depends_on": ["scripts/chat/models.py"]
+    },
+    "scripts/chat/formatter.py": {
+      "purpose": "Transform CandidateSet results into natural language chat responses",
+      "lines": 237,
+      "key_functions": [
+        "format_evidence(evidence_list: List[Evidence]) -> str",
+        "format_single_candidate(candidate: Candidate, index: int) -> str",
+        "format_for_chat(candidate_set: CandidateSet, max_candidates: int, show_evidence: bool) -> str",
+        "format_summary(candidate_set: CandidateSet) -> str",
+        "generate_followups(candidate_set: CandidateSet, query_text: str) -> List[str]"
+      ],
+      "imports": ["scripts.schemas"],
+      "depends_on": ["scripts/schemas/candidate_set.py"]
+    },
+    "scripts/chat/clarification.py": {
+      "purpose": "Ambiguity detection and clarification prompt generation",
+      "lines": 350,
+      "key_functions": [
+        "has_empty_filters(plan: QueryPlan) -> bool",
+        "has_low_confidence_filters(plan: QueryPlan) -> Tuple[bool, List[Filter]]",
+        "has_overly_broad_date_range(plan: QueryPlan) -> Tuple[bool, Optional[Filter]]",
+        "detect_ambiguous_query(plan, result_count) -> (bool, reason)",
+        "generate_clarification_message(plan, reason) -> str",
+        "should_ask_for_clarification(plan, result_count) -> bool",
+        "is_execution_blocking(plan) -> bool",
+        "get_refinement_suggestions_for_query(plan) -> List[str]"
+      ],
+      "imports": ["scripts.schemas"],
+      "depends_on": ["scripts/schemas/query_plan.py"]
+    },
+    "scripts/chat/intent_agent.py": {
+      "purpose": "Phase 1 intent interpretation: interprets user queries with confidence scoring using OpenAI Responses API",
+      "lines": 655,
+      "key_functions": [
+        "interpret_query(user_message, conversation_history, api_key, model) -> InterpretedQuery",
+        "generate_clarification_prompt(interpreted_query) -> str",
+        "format_interpretation_for_user(interpreted_query) -> str"
+      ],
+      "key_classes": [
+        "FilterLLM(BaseModel) - LLM-compatible filter",
+        "InterpretedQueryLLM(BaseModel) - LLM output for intent interpretation"
+      ],
+      "imports": ["openai", "pydantic", "scripts.schemas.query_plan", "scripts.chat.models", "scripts.query.exceptions", "scripts.utils.llm_logger"],
+      "depends_on": ["scripts/schemas/query_plan.py", "scripts/chat/models.py", "scripts/utils/llm_logger.py"]
+    },
+    "scripts/chat/exploration_agent.py": {
+      "purpose": "Phase 2 exploration agent: interprets corpus exploration requests using OpenAI Responses API",
+      "lines": 544,
+      "key_functions": [
+        "interpret_exploration_request(user_message, active_subgroup, conversation_history, api_key, model) -> ExplorationRequestLLM",
+        "format_aggregation_response(aggregation_result) -> str",
+        "format_metadata_response(metadata_result) -> str",
+        "format_refinement_response(refinement_result) -> str"
+      ],
+      "key_classes": [
+        "RefinementFilter(BaseModel)",
+        "ExplorationRequestLLM(BaseModel) - intent, explanation, confidence",
+        "AggregationResult(BaseModel) - field, values, total_records"
+      ],
+      "imports": ["openai", "pydantic", "scripts.chat.models", "scripts.schemas.query_plan", "scripts.utils.llm_logger"],
+      "depends_on": ["scripts/chat/models.py", "scripts/schemas/query_plan.py"]
+    },
+    "scripts/chat/aggregation.py": {
+      "purpose": "Deterministic SQL aggregation engine for corpus exploration (no LLM)",
+      "lines": 815,
+      "key_functions": [
+        "execute_aggregation(db_path, record_ids, field, limit) -> AggregationResult",
+        "execute_count_query(db_path, record_ids) -> Dict",
+        "apply_refinement(db_path, record_ids, refinement_filter) -> List[str]",
+        "execute_comparison(db_path, record_ids, field, compare_values) -> Dict",
+        "is_overview_query(user_message) -> bool",
+        "get_collection_overview(db_path) -> Dict",
+        "format_collection_overview(overview) -> str"
+      ],
+      "imports": ["scripts.chat.exploration_agent", "scripts.utils.logger"],
+      "depends_on": ["scripts/chat/exploration_agent.py"]
+    },
+    "scripts/normalization/normalize_agent.py": {
+      "purpose": "Agent and role normalization: deterministic base normalization for names",
+      "lines": 406,
+      "key_functions": [
+        "normalize_agent_base(agent_raw: str) -> str",
+        "normalize_agent_with_alias_map(agent_raw: str, alias_map: Optional[Dict]) -> Tuple[str, float, str]",
+        "normalize_role_base(role_raw: Optional[str], role_source: Optional[str]) -> Tuple[str, float, str]"
+      ],
+      "imports": ["unicodedata"],
+      "depends_on": []
+    },
+    "scripts/normalization/generate_place_alias_map.py": {
+      "purpose": "LLM-assisted place alias map generation (one-time)",
+      "lines": 530,
+      "imports": ["openai"],
+      "depends_on": []
+    },
+    "scripts/normalization/extract_unmapped_places.py": {
+      "purpose": "Extract unmapped places from database for alias mapping",
+      "lines": 173,
+      "imports": ["sqlite3"],
+      "depends_on": []
+    },
+    "scripts/metadata/audit.py": {
+      "purpose": "Normalization coverage audit: queries SQLite and produces structured confidence/method reports",
+      "lines": 532,
+      "key_classes": [
+        "ConfidenceBand - band_label, lower, upper, count",
+        "MethodBreakdown - method, count",
+        "LowConfidenceItem - raw_value, norm_value, confidence, method, frequency",
+        "FieldCoverage - total_records, non_null_count, null_count, confidence_distribution, method_distribution, flagged_items",
+        "CoverageReport - date/place/publisher/agent_name/agent_role coverage + totals"
+      ],
+      "key_functions": [
+        "generate_coverage_report(db_path: Path) -> CoverageReport",
+        "generate_coverage_report_from_conn(conn) -> CoverageReport"
+      ],
+      "imports": ["sqlite3"],
+      "depends_on": []
+    },
+    "scripts/metadata/clustering.py": {
+      "purpose": "Gap clustering for low-confidence metadata values using deterministic heuristics",
+      "lines": 740,
+      "key_classes": [
+        "ClusterValue - raw_value, frequency, confidence, method",
+        "Cluster - cluster_id, field, cluster_type, values, proposed_canonical, evidence, priority_score"
+      ],
+      "key_functions": [
+        "detect_script(text: str) -> str",
+        "cluster_field_gaps(flagged_items, field, alias_map, existing_mappings) -> List[Cluster]",
+        "cluster_all_gaps(report, alias_maps) -> List[Cluster]",
+        "classify_date_pattern(raw_value: str) -> str"
+      ],
+      "imports": ["scripts.metadata.audit"],
+      "depends_on": ["scripts/metadata/audit.py"]
+    },
+    "scripts/metadata/agent_harness.py": {
+      "purpose": "Shared agent harness with GroundingLayer (deterministic DB queries) and ReasoningLayer (LLM-assisted proposals)",
+      "lines": 639,
+      "key_classes": [
+        "GapRecord - mms_id, field, raw_value, current_norm, confidence, method",
+        "ProposedMapping - raw_value, canonical_value, confidence, reasoning, evidence_sources",
+        "AgentHarness - query_gaps(), propose_mappings(), get_clusters()"
+      ],
+      "imports": ["sqlite3", "openai"],
+      "depends_on": []
+    },
+    "scripts/metadata/agents/place_agent.py": {
+      "purpose": "Specialist agent for place normalization: Latin toponyms, Hebrew names, country codes",
+      "lines": 359,
+      "key_classes": [
+        "PlaceAnalysis - total_places, high/medium/low confidence counts, clusters, top_gaps",
+        "PlaceAgent - analyze(), get_gaps(), get_clusters(), propose_mappings()"
+      ],
+      "imports": ["scripts.metadata.agent_harness", "scripts.metadata.audit", "scripts.metadata.clustering"],
+      "depends_on": ["scripts/metadata/agent_harness.py", "scripts/metadata/audit.py", "scripts/metadata/clustering.py"]
+    },
+    "scripts/metadata/agents/date_agent.py": {
+      "purpose": "Specialist agent for date normalization: Hebrew calendars, Latin conventions, Roman numerals",
+      "lines": 413,
+      "key_classes": [
+        "UnparsedDate - mms_id, raw_value, pattern_type",
+        "ProposedDate - raw_value, date_start, date_end, method, confidence, reasoning",
+        "DateAgent - analyze(), get_unparsed_dates(), get_clusters(), propose_mappings()"
+      ],
+      "imports": ["scripts.metadata.agent_harness", "scripts.metadata.audit", "scripts.metadata.clustering"],
+      "depends_on": ["scripts/metadata/agent_harness.py"]
+    },
+    "scripts/metadata/agents/publisher_agent.py": {
+      "purpose": "Specialist agent for publisher normalization: Latin formulae, printer dynasties, missing markers",
+      "lines": 321,
+      "key_classes": [
+        "PublisherAgent - analyze(), get_gaps(), detect_missing_publisher(), get_clusters(), propose_mappings()"
+      ],
+      "imports": ["scripts.metadata.agent_harness", "scripts.metadata.audit", "scripts.metadata.clustering"],
+      "depends_on": ["scripts/metadata/agent_harness.py"]
+    },
+    "scripts/metadata/agents/name_agent.py": {
+      "purpose": "Specialist agent for name authority normalization: VIAF/NLI authority cross-reference, fuzzy matching",
+      "lines": 600,
+      "key_classes": [
+        "AgentRecord - mms_id, agent_raw, agent_norm, confidence, authority_uri",
+        "ProposedAuthority - agent_raw, suggested_uri, canonical_name",
+        "NameAgent - analyze(), get_low_confidence_agents(), match_against_authorities(), get_clusters(), propose_mappings()"
+      ],
+      "imports": ["scripts.metadata.agent_harness", "scripts.metadata.audit", "scripts.metadata.clustering"],
+      "depends_on": ["scripts/metadata/agent_harness.py"]
+    },
+    "scripts/metadata/feedback_loop.py": {
+      "purpose": "HITL feedback loop: approve correction -> update alias map -> re-normalize DB -> log change",
+      "lines": 518,
+      "key_classes": [
+        "CorrectionResult - field, raw_value, canonical_value, records_updated, success"
+      ],
+      "key_functions": [
+        "apply_correction(field, raw_value, canonical_value, db_path, alias_map_dir, review_log_path) -> CorrectionResult"
+      ],
+      "imports": ["sqlite3", "json"],
+      "depends_on": []
+    },
+    "scripts/metadata/publisher_authority.py": {
+      "purpose": "Publisher authority record store: CRUD for canonical publisher identities and name variants",
+      "lines": 635,
+      "key_classes": [
+        "PublisherAuthority - canonical_name, type, dates_active, location, viaf/wikidata/cerl IDs",
+        "PublisherVariant - variant_name, authority_id, script, confidence",
+        "PublisherAuthorityStore - create_authority(), add_variant(), search_by_variant(), list_authorities()"
+      ],
+      "imports": ["sqlite3", "scripts.metadata.clustering"],
+      "depends_on": ["scripts/metadata/clustering.py"]
+    },
+    "scripts/metadata/populate_publisher_authority.py": {
+      "purpose": "Populate publisher authority database from research JSON file",
+      "lines": 519,
+      "imports": ["scripts.metadata.publisher_authority"],
+      "depends_on": ["scripts/metadata/publisher_authority.py"]
+    },
+    "scripts/metadata/review_log.py": {
+      "purpose": "Queryable review log for tracking approved/rejected correction decisions",
+      "lines": 218,
+      "key_classes": [
+        "ReviewEntry - timestamp, field, raw_value, canonical_value, evidence, source, action",
+        "ReviewLog - append(), query(), is_rejected()"
+      ],
+      "imports": [],
+      "depends_on": []
+    },
+    "scripts/metadata/interaction_logger.py": {
+      "purpose": "JSONL logger for workbench user interactions (analytics/debugging)",
+      "lines": 100,
+      "key_classes": [
+        "InteractionLogger - log(action, field, params, result_summary, duration_ms, error)"
+      ],
+      "imports": [],
+      "depends_on": []
+    },
+    "scripts/enrichment/enrichment_service.py": {
+      "purpose": "Main enrichment interface: cache-first lookups, multi-source fallback (NLI -> Wikidata -> VIAF)",
+      "lines": 626,
+      "key_classes": [
+        "EnrichmentService - enrich_entity(), enrich_batch(), close()"
+      ],
+      "imports": ["scripts.enrichment.models", "scripts.enrichment.nli_client", "scripts.enrichment.wikidata_client"],
+      "depends_on": ["scripts/enrichment/models.py", "scripts/enrichment/nli_client.py", "scripts/enrichment/wikidata_client.py"]
+    },
+    "scripts/enrichment/models.py": {
+      "purpose": "Pydantic models for enrichment: requests, results, entity types, sources",
+      "lines": 185,
+      "key_classes": [
+        "EntityType(str, Enum) - AGENT, PLACE, PUBLISHER, SUBJECT, WORK",
+        "EnrichmentSource(str, Enum) - NLI, WIKIDATA, VIAF, LOC, ISNI, CACHE",
+        "ExternalIdentifier(BaseModel) - source, identifier, url",
+        "EnrichmentRequest(BaseModel) - entity_type, entity_value, nli_authority_id/uri",
+        "EnrichmentResult(BaseModel) - entity_type, entity_value, identifiers, person_info, place_info",
+        "PersonInfo(BaseModel) - birth/death dates, nationality, occupations",
+        "PlaceInfo(BaseModel) - coordinates, country, historical names",
+        "NLIAuthorityIdentifiers - wikidata_id, viaf_id, isni_id, loc_id"
+      ],
+      "imports": ["pydantic"],
+      "depends_on": []
+    },
+    "scripts/enrichment/wikidata_client.py": {
+      "purpose": "Wikidata SPARQL client for agent/place enrichment",
+      "lines": 597,
+      "key_functions": [
+        "enrich_agent_by_id(qid: str) -> EnrichmentResult",
+        "search_agent_by_name(name: str) -> List[EnrichmentResult]",
+        "enrich_place_by_id(qid: str) -> EnrichmentResult"
+      ],
+      "imports": ["httpx", "scripts.enrichment.models"],
+      "depends_on": ["scripts/enrichment/models.py"]
+    },
+    "scripts/enrichment/nli_client.py": {
+      "purpose": "NLI authority client: extract external identifiers from NLI records via Wikidata P8189 property",
+      "lines": 572,
+      "key_functions": [
+        "extract_nli_id_from_uri(uri: str) -> Optional[str]",
+        "lookup_nli_identifiers(nli_id: str) -> Optional[NLIAuthorityIdentifiers]"
+      ],
+      "imports": ["scripts.enrichment.models"],
+      "depends_on": ["scripts/enrichment/models.py"]
+    },
+    "scripts/enrichment/run_batch_enrichment.py": {
+      "purpose": "Batch enrichment script for agents with NLI authority URIs",
+      "lines": 224,
+      "key_functions": [
+        "get_agents_needing_enrichment(biblio_db, cache_db, limit) -> List[Tuple[str, str]]"
+      ],
+      "imports": ["scripts.enrichment.enrichment_service", "scripts.enrichment.models", "scripts.enrichment.nli_client"],
+      "depends_on": ["scripts/enrichment/enrichment_service.py"]
+    },
+    "scripts/utils/logger.py": {
+      "purpose": "Centralized logging with dual output (console + file), JSON format support",
+      "lines": 217,
+      "key_classes": [
+        "LoggerManager - get_logger(name, task_paths, run_id, level, use_json)"
+      ],
+      "imports": ["logging", "colorlog (optional)"],
+      "depends_on": []
+    },
+    "scripts/utils/llm_logger.py": {
+      "purpose": "LLM call logging with cost tracking, prompt capture, and token usage",
+      "lines": 355,
+      "key_functions": [
+        "log_llm_call(call_type, model, system_prompt, user_prompt, response, session_id)"
+      ],
+      "imports": ["scripts.utils.logger"],
+      "depends_on": ["scripts/utils/logger.py"]
+    },
+    "scripts/utils/config_loader.py": {
+      "purpose": "YAML configuration file loader with dot-notation access",
+      "lines": 58,
+      "key_classes": [
+        "ConfigLoader - load(), get(key)"
+      ],
+      "imports": ["yaml", "scripts.utils.logger", "scripts.utils.task_paths"],
+      "depends_on": ["scripts/utils/logger.py", "scripts/utils/task_paths.py"]
+    },
+    "scripts/utils/task_paths.py": {
+      "purpose": "Per-run artifact path management",
+      "lines": 59,
+      "key_classes": [
+        "TaskPaths - logs_dir, artifacts_dir, etc."
+      ],
+      "imports": [],
+      "depends_on": []
+    },
+    "scripts/api_clients/openai/completer.py": {
+      "purpose": "OpenAI API client wrapper (from template, partially adapted)",
+      "lines": 226,
+      "imports": ["openai"],
+      "depends_on": []
+    },
+    "app/cli.py": {
+      "purpose": "Typer CLI with commands: parse_marc, query, index, chat_init, chat_history, chat_cleanup",
+      "lines": 334,
+      "key_commands": [
+        "parse_marc(input_file, output_file, report_file) - M1 parse",
+        "query(query_text, db, out, session_id) - M4 query execution",
+        "chat_init(db_path, user_id) - create session",
+        "chat_history(session_id, db_path) - view history",
+        "chat_cleanup(db_path, max_age_hours) - expire sessions"
+      ],
+      "imports": ["typer", "scripts.marc.parse", "scripts.query", "scripts.chat.session_store"],
+      "depends_on": ["scripts/marc/parse.py", "scripts/query/compile.py", "scripts/query/execute.py", "scripts/chat/session_store.py"]
+    },
+    "app/qa.py": {
+      "purpose": "CLI regression runner for QA gold set testing",
+      "lines": 187,
+      "key_commands": [
+        "regress(gold, db, verbose, log_file) - run gold set regression tests"
+      ],
+      "imports": ["typer", "scripts.query.compile", "scripts.query.execute"],
+      "depends_on": ["scripts/query/compile.py", "scripts/query/execute.py"]
+    },
+    "app/api/main.py": {
+      "purpose": "FastAPI application: /chat (HTTP + WebSocket), /health, /sessions, metadata router",
+      "lines": 1300,
+      "key_endpoints": [
+        "POST /chat - natural language query with two-phase conversation",
+        "GET /health - health check",
+        "GET /sessions/{session_id} - session details",
+        "DELETE /sessions/{session_id} - expire session",
+        "WebSocket /ws/chat - streaming responses"
+      ],
+      "imports": ["fastapi", "slowapi", "scripts.chat.*", "scripts.query", "scripts.enrichment", "scripts.metadata.interaction_logger", "app.api.metadata"],
+      "depends_on": ["scripts/chat/models.py", "scripts/chat/session_store.py", "scripts/chat/formatter.py", "scripts/chat/clarification.py", "scripts/chat/intent_agent.py", "scripts/chat/exploration_agent.py", "scripts/chat/aggregation.py", "scripts/query/service.py", "scripts/enrichment/enrichment_service.py", "app/api/metadata.py"]
+    },
+    "app/api/metadata.py": {
+      "purpose": "FastAPI router for metadata quality endpoints (12 endpoints)",
+      "lines": 1484,
+      "key_endpoints": [
+        "GET /metadata/coverage - overall coverage stats per field",
+        "GET /metadata/issues - low-confidence records (paginated)",
+        "GET /metadata/unmapped - unmapped values by frequency",
+        "GET /metadata/methods - method distribution",
+        "GET /metadata/clusters - gap clusters for review",
+        "POST /metadata/corrections - submit single correction",
+        "POST /metadata/corrections/batch - batch corrections",
+        "GET /metadata/corrections/history - correction audit trail",
+        "POST /metadata/primo-urls - batch Primo URLs",
+        "GET /metadata/records/{mms_id}/primo - single Primo URL",
+        "POST /metadata/agent/chat - agent conversation",
+        "GET /metadata/publishers - publisher authority records"
+      ],
+      "imports": ["fastapi", "scripts.metadata.audit", "scripts.metadata.agent_harness", "scripts.metadata.agents.*", "scripts.metadata.clustering", "scripts.metadata.interaction_logger"],
+      "depends_on": ["scripts/metadata/audit.py", "scripts/metadata/agent_harness.py", "scripts/metadata/agents/*.py", "scripts/metadata/clustering.py", "app/api/metadata_models.py"]
+    },
+    "app/api/models.py": {
+      "purpose": "FastAPI request/response models for /chat and /health endpoints",
+      "lines": 58,
+      "key_classes": [
+        "ChatRequest(BaseModel) - message, session_id, context",
+        "ChatResponseAPI(BaseModel) - success, response: ChatResponse, error",
+        "HealthResponse(BaseModel) - status, database_connected, session_store_ok"
+      ],
+      "imports": ["pydantic", "scripts.chat.models"],
+      "depends_on": ["scripts/chat/models.py"]
+    },
+    "app/api/metadata_models.py": {
+      "purpose": "Pydantic response models for /metadata/* endpoints",
+      "lines": 377,
+      "key_classes": [
+        "ConfidenceBandResponse, MethodBreakdownResponse, FlaggedItemResponse",
+        "FieldCoverageResponse, CoverageResponse",
+        "IssueRecord, IssuesResponse",
+        "UnmappedValue",
+        "MethodDistribution",
+        "ClusterResponse, ClusterValueResponse",
+        "CorrectionRequest, CorrectionResponse",
+        "BatchCorrectionRequest, BatchCorrectionResponse, BatchCorrectionResult",
+        "CorrectionHistoryEntry, CorrectionHistoryResponse",
+        "AgentChatRequest, AgentChatResponse, AgentClusterSummary, AgentProposal",
+        "PrimoUrlEntry, PrimoUrlRequest, PrimoUrlResponse",
+        "PublisherAuthorityResponse, PublisherVariantResponse, PublisherAuthorityListResponse"
+      ],
+      "imports": ["pydantic"],
+      "depends_on": []
+    },
+    "app/ui_qa/main.py": {
+      "purpose": "Streamlit QA tool entry point (5 pages for query testing and labeling)",
+      "lines": 58,
+      "imports": ["streamlit", "app.ui_qa.db"],
+      "depends_on": ["app/ui_qa/db.py"]
+    },
+    "app/ui_qa/db.py": {
+      "purpose": "QA database management (qa.db with tables for queries, labels, gold sets)",
+      "lines": 577,
+      "imports": ["sqlite3"],
+      "depends_on": []
+    },
+    "app/ui_chat/main.py": {
+      "purpose": "Streamlit chat UI that connects to FastAPI backend",
+      "lines": 405,
+      "imports": ["streamlit", "requests", "app.ui_chat.config"],
+      "depends_on": ["app/ui_chat/config.py"]
+    }
+  },
+
+  "data_pipeline": {
+    "stages": [
+      {
+        "stage": "M1",
+        "name": "Canonical Extraction",
+        "input": "MARC XML files",
+        "output": "data/canonical/records.jsonl (one JSON per line, 2,796 records)",
+        "implementation": "scripts/marc/parse.py",
+        "key_model": "CanonicalRecord (scripts/marc/models.py)",
+        "description": "Parses MARC XML using pymarc, extracts structured data with subfield-level provenance (tag, occurrence, subfield). Deterministic - same input produces same output."
+      },
+      {
+        "stage": "M2",
+        "name": "Normalization",
+        "input": "data/canonical/records.jsonl",
+        "output": "data/m2/records_m1m2.jsonl (M1 + M2 enrichment appended)",
+        "implementation": "scripts/marc/m2_normalize.py + scripts/marc/normalize.py",
+        "key_model": "M2Enrichment (scripts/marc/m2_models.py)",
+        "description": "Enriches M1 records with normalized dates, places, publishers, and agents. All normalization is rule-based, reversible, and confidence-scored. Uses optional alias maps for place/publisher/agent names.",
+        "alias_maps": {
+          "place": "data/normalization/place_aliases/place_alias_map.json (196 mappings)",
+          "publisher": "data/normalization/publisher_aliases/publisher_alias_map.json",
+          "agent": "data/normalization/agent_aliases/agent_alias_map.json"
+        }
+      },
+      {
+        "stage": "M3",
+        "name": "SQLite Indexing",
+        "input": "data/m2/records_m1m2.jsonl",
+        "output": "data/index/bibliographic.db (SQLite, ~7.5MB)",
+        "implementation": "scripts/marc/m3_index.py",
+        "schema_contract": "scripts/marc/m3_contract.py",
+        "description": "Builds queryable SQLite index with 9 tables (records, titles, imprints, subjects, agents, languages, notes, physical_descriptions, authority_enrichment) plus 2 FTS5 virtual tables. Raw and normalized values stored side-by-side.",
+        "tables": {
+          "records": "Core record with mms_id",
+          "titles": "Main/uniform/variant titles with title_type",
+          "imprints": "22 columns: raw date/place/publisher + M2 normalized date/place/publisher + country",
+          "subjects": "Subject headings with parts, scheme, authority_uri",
+          "agents": "14 columns: raw + M2 normalized agent/role + provenance JSON",
+          "languages": "ISO 639-2 codes with source",
+          "notes": "MARC notes by tag (500, 520, 590, etc.)",
+          "physical_descriptions": "Physical description from 300 field",
+          "authority_enrichment": "External identifiers (Wikidata, VIAF, ISNI, LOC)",
+          "titles_fts": "FTS5 virtual table on titles",
+          "subjects_fts": "FTS5 virtual table on subjects"
+        }
+      },
+      {
+        "stage": "M4",
+        "name": "Query Pipeline",
+        "input": "Natural language query string",
+        "output": "CandidateSet with Evidence",
+        "implementation": "scripts/query/ (compile.py, llm_compiler.py, execute.py, db_adapter.py, service.py)",
+        "key_model": "QueryPlan -> CandidateSet (scripts/schemas/)",
+        "description": "NL query -> LLM compile (GPT-4o) -> QueryPlan (Pydantic validated) -> SQL generation -> execution -> CandidateSet with per-record Evidence. Subject retry with hints if zero results."
+      },
+      {
+        "stage": "M5",
+        "name": "Enrichment",
+        "input": "Authority URIs from MARC $0 subfields",
+        "output": "Enrichment data cached in authority_enrichment table + cache.db",
+        "implementation": "scripts/enrichment/ (enrichment_service.py, nli_client.py, wikidata_client.py)",
+        "key_model": "EnrichmentResult (scripts/enrichment/models.py)",
+        "description": "Multi-source enrichment: NLI authority URI -> Wikidata P8189 lookup -> entity data (person/place info, external IDs). Cache-first with TTL."
+      },
+      {
+        "stage": "M6",
+        "name": "Chatbot API",
+        "input": "HTTP/WebSocket requests from UI",
+        "output": "ChatResponse with natural language message, candidate_set, followups",
+        "implementation": "app/api/main.py",
+        "key_model": "ChatResponse (scripts/chat/models.py)",
+        "description": "Two-phase conversational API. Phase 1: Query definition with intent interpretation and confidence scoring. Phase 2: Corpus exploration with aggregation, comparison, refinement. Supports sessions, clarification, streaming."
+      },
+      {
+        "stage": "M7",
+        "name": "Metadata Workbench",
+        "input": "Librarian interactions via React frontend",
+        "output": "Corrected alias maps, updated database records",
+        "implementation": "app/api/metadata.py + scripts/metadata/ + frontend/",
+        "description": "Agent-driven HITL system with 4 specialist agents (Place, Date, Publisher, Name). Coverage audit -> gap detection -> agent-assisted proposals -> human review -> feedback loop -> database update."
+      }
+    ],
+    "rebuild_command": "python -m scripts.marc.rebuild_pipeline [--full data/marc_source/records.xml] [--enrich]"
+  },
+
+  "query_system": {
+    "entry_points": {
+      "unified_service": "scripts/query/service.py (QueryService.execute())",
+      "direct_compile": "scripts/query/compile.py (compile_query())",
+      "direct_execute": "scripts/query/execute.py (execute_plan())"
+    },
+    "flow": "NL Query -> compile_query_llm() -> QueryPlan (validated by Pydantic + OpenAI strict schema) -> build_where_clause() -> SQL with JOINs -> execute -> CandidateSet with Evidence",
+    "filter_fields": ["publisher", "imprint_place", "country", "year", "language", "title", "subject", "agent", "agent_norm", "agent_role", "agent_type"],
+    "filter_operations": ["EQUALS", "CONTAINS", "RANGE", "IN"],
+    "caching": "JSONL cache at data/query_plan_cache.jsonl (query_text -> QueryPlan)",
+    "retry_mechanism": "If subject filter returns zero results, retries with top subject hints from database",
+    "facets": "Optional aggregation: by_place, by_year, by_language, by_publisher, by_century",
+    "warnings": ["LOW_CONFIDENCE (<0.7)", "EMPTY_FILTERS", "BROAD_DATE_RANGE (>200 years)", "VAGUE_QUERY", "ZERO_RESULTS"]
+  },
+
+  "chat_system": {
+    "two_phase_model": {
+      "phase_1_query_definition": {
+        "description": "User defines their search criteria. Intent agent interprets query with confidence scoring.",
+        "confidence_threshold": 0.85,
+        "implementation": "scripts/chat/intent_agent.py"
+      },
+      "phase_2_corpus_exploration": {
+        "description": "User explores a defined subgroup with aggregation, comparison, enrichment, refinement.",
+        "intents": ["metadata_question", "aggregation", "enrichment_request", "recommendation", "comparison", "refinement", "new_query"],
+        "implementation": "scripts/chat/exploration_agent.py + scripts/chat/aggregation.py"
+      }
+    },
+    "session_management": {
+      "storage": "SQLite (data/chat/sessions.db)",
+      "implementation": "scripts/chat/session_store.py (SessionStore)",
+      "features": ["CRUD operations", "context tracking", "phase tracking", "active subgroup storage", "session expiration"]
+    },
+    "clarification_flow": {
+      "triggers": ["empty filters", "low confidence (<0.7)", "broad date range (>200 years)", "vague queries", "zero results"],
+      "implementation": "scripts/chat/clarification.py",
+      "blocking_vs_non_blocking": "Empty filters block execution; other triggers are non-blocking warnings"
+    },
+    "response_formatting": {
+      "implementation": "scripts/chat/formatter.py",
+      "features": ["natural language summaries", "evidence as bullet points", "follow-up suggestions", "zero-results handling"]
+    },
+    "streaming": {
+      "protocol": "WebSocket at /ws/chat",
+      "message_types": ["session_created", "progress", "batch (groups of 10)", "complete", "error"]
+    }
+  },
+
+  "metadata_workbench": {
+    "purpose": "Agent-driven HITL system for improving bibliographic metadata quality",
+    "architecture": "React Frontend -> FastAPI Backend -> Grounding Layer + Specialist Agents + Action Layer",
+    "specialist_agents": [
+      {
+        "name": "PlaceAgent",
+        "file": "scripts/metadata/agents/place_agent.py",
+        "domain": "Latin toponyms, Hebrew names, country codes, historical place name changes"
+      },
+      {
+        "name": "DateAgent",
+        "file": "scripts/metadata/agents/date_agent.py",
+        "domain": "Hebrew calendar, Latin conventions, Roman numerals, partial centuries"
+      },
+      {
+        "name": "PublisherAgent",
+        "file": "scripts/metadata/agents/publisher_agent.py",
+        "domain": "Latin formulae (ex officina, typis, apud), printer dynasties, s.n. detection"
+      },
+      {
+        "name": "NameAgent",
+        "file": "scripts/metadata/agents/name_agent.py",
+        "domain": "VIAF/NLI authority cross-reference, name form variants, fuzzy matching"
+      }
+    ],
+    "feedback_loop": {
+      "implementation": "scripts/metadata/feedback_loop.py",
+      "flow": "Approve correction -> Write to alias map JSON -> Re-normalize affected DB records -> Log to review log -> Report coverage improvement"
+    },
+    "publisher_authority_system": {
+      "implementation": "scripts/metadata/publisher_authority.py",
+      "tables": ["publisher_authorities (228 records)", "publisher_variants (266 variants)"],
+      "types": ["printing_house (18)", "bibliophile_society (3)", "unknown_marker (2)", "modern_publisher (1)", "private_press (1)", "unresearched (203)"]
+    },
+    "coverage_audit": {
+      "implementation": "scripts/metadata/audit.py",
+      "reports": "Confidence bands, method distributions, flagged low-confidence items by frequency"
+    },
+    "gap_clustering": {
+      "implementation": "scripts/metadata/clustering.py",
+      "features": "Script detection (Hebrew, Arabic, Latin, CJK), pattern classification, priority scoring"
+    }
+  },
+
+  "data_model": {
+    "m1_canonical_record": {
+      "file": "scripts/marc/models.py",
+      "class": "CanonicalRecord",
+      "fields": {
+        "source": "SourceMetadata (source_file, control_number)",
+        "title": "Optional[SourcedValue]",
+        "uniform_title": "Optional[SourcedValue]",
+        "variant_titles": "List[SourcedValue]",
+        "imprints": "List[ImprintData] (place, publisher, date, manufacturer, source_tags)",
+        "languages": "List[SourcedValue]",
+        "language_fixed": "Optional[SourcedValue] (008/35-37)",
+        "country_code_fixed": "Optional[SourcedValue] (008/15-17)",
+        "subjects": "List[SubjectData] (value, parts, source_tag, scheme, heading_lang, authority_uri)",
+        "agents": "List[AgentData] (name, entry_role, function, dates, agent_type, agent_index, role_source, authority_uri)",
+        "notes": "List[NoteData] (tag, value, source)",
+        "acquisition": "List[SourcedValue]"
+      }
+    },
+    "m2_enrichment": {
+      "file": "scripts/marc/m2_models.py",
+      "class": "M2Enrichment",
+      "fields": {
+        "imprints_norm": "List[ImprintNormalization] (date_norm, place_norm, publisher_norm)",
+        "agents_norm": "List[Tuple[int, AgentNormalization, RoleNormalization]]"
+      }
+    },
+    "m3_database_schema": {
+      "file": "scripts/marc/m3_contract.py",
+      "tables_count": 9,
+      "fts_tables_count": 2,
+      "key_tables": {
+        "records": 5,
+        "titles": 5,
+        "imprints": 22,
+        "subjects": 9,
+        "agents": 14,
+        "languages": 4,
+        "notes": 5,
+        "physical_descriptions": 4,
+        "authority_enrichment": 16
+      }
+    },
+    "query_plan": {
+      "file": "scripts/schemas/query_plan.py",
+      "class": "QueryPlan",
+      "fields": "version, query_text, filters: List[Filter], soft_filters, limit, debug"
+    },
+    "candidate_set": {
+      "file": "scripts/schemas/candidate_set.py",
+      "class": "CandidateSet",
+      "fields": "query_text, plan_hash, sql, sql_parameters, generated_at, candidates: List[Candidate], total_count"
+    },
+    "chat_response": {
+      "file": "scripts/chat/models.py",
+      "class": "ChatResponse",
+      "fields": "message, candidate_set, suggested_followups, clarification_needed, session_id, phase, confidence, metadata"
+    },
+    "provenance_pattern": "Every value has a SourcedValue wrapper containing (value: Any, source: List[str]) where source is MARC field$subfield notation like '260$a', '650[0]$a', '008/35-37'"
+  },
+
+  "normalization": {
+    "principles": [
+      "All normalization is deterministic (no LLM calls in core pipeline)",
+      "Raw values always preserved alongside normalized",
+      "Every normalization is reversible: raw + norm + method + confidence stored",
+      "Confidence scores range 0.0-1.0 with explicit meaning",
+      "Method tags identify which rule produced the normalization"
+    ],
+    "date_normalization": {
+      "implementation": "scripts/marc/normalize.py::normalize_date()",
+      "rules_count": 11,
+      "confidence_levels": {
+        "0.99": "Exact year match",
+        "0.95": "Bracketed year",
+        "0.90": "Circa, range, bracketed Gregorian, embedded range",
+        "0.85": "Embedded year (first 4-digit number found)",
+        "0.80": "Hebrew Gematria letter-based year",
+        "0.75": "Hebrew calendar numeric year auto-converted",
+        "0.0": "Unparsed / missing"
+      },
+      "special_features": ["Hebrew Gematria parsing", "Hebrew calendar date detection", "Roman numeral dates (via embedded patterns)"],
+      "current_coverage": "68.2% high-confidence (>=0.90)"
+    },
+    "place_normalization": {
+      "implementation": "scripts/marc/normalize.py::normalize_place()",
+      "process": "casefold -> strip punctuation -> remove brackets -> NFKC normalize -> alias map lookup",
+      "confidence_levels": {
+        "0.95": "Alias map match",
+        "0.80": "Base cleaning only"
+      },
+      "alias_map": "data/normalization/place_aliases/place_alias_map.json (196 mappings)",
+      "current_coverage": "99.3% high-confidence (>=0.90)"
+    },
+    "publisher_normalization": {
+      "implementation": "scripts/marc/normalize.py::normalize_publisher()",
+      "process": "Same pipeline as place normalization",
+      "alias_map": "data/normalization/publisher_aliases/publisher_alias_map.json",
+      "current_coverage": "98.8% high-confidence (>=0.90)"
+    },
+    "agent_normalization": {
+      "implementation": "scripts/normalization/normalize_agent.py",
+      "process": "casefold -> strip brackets -> NFKC normalize -> strip trailing punctuation -> collapse whitespace -> optional alias map",
+      "confidence_levels": {
+        "0.95": "Alias map match",
+        "0.80": "Base cleaning only"
+      }
+    },
+    "role_normalization": {
+      "implementation": "scripts/normalization/normalize_agent.py::normalize_role_base()",
+      "process": "Map MARC relator codes/terms to controlled vocabulary",
+      "confidence_levels": {
+        "0.95": "Relator code match",
+        "0.90": "Relator term match",
+        "0.70": "Inferred from tag"
+      }
+    }
+  },
+
+  "tests": {
+    "total_tests": 1076,
+    "passing": 1063,
+    "failing": 13,
+    "pass_rate": "98.8%",
+    "total_lines": 18611,
+    "test_files": {
+      "scripts/marc": [
+        {"file": "tests/scripts/marc/test_m1_upgrade.py", "covers": "M1 canonical model upgrades"},
+        {"file": "tests/scripts/marc/test_place_freq.py", "covers": "Place frequency builder"},
+        {"file": "tests/scripts/marc/test_agent_extraction.py", "covers": "Agent extraction from MARC"},
+        {"file": "tests/scripts/marc/test_m3_index.py", "covers": "M3 SQLite index building"},
+        {"file": "tests/scripts/marc/test_m3_contract.py", "covers": "M3 schema contract validation"},
+        {"file": "tests/scripts/marc/test_m2_normalize.py", "covers": "M2 normalization rules"}
+      ],
+      "scripts/query": [
+        {"file": "tests/scripts/query/test_query_plan.py", "covers": "QueryPlan validation"},
+        {"file": "tests/scripts/query/test_compile.py", "covers": "Query compilation"},
+        {"file": "tests/scripts/query/test_db_adapter.py", "covers": "SQL generation from filters"},
+        {"file": "tests/scripts/query/test_execute.py", "covers": "Query execution"},
+        {"file": "tests/scripts/query/test_candidate_set.py", "covers": "CandidateSet model"},
+        {"file": "tests/scripts/query/test_service.py", "covers": "QueryService unified entry point"},
+        {"file": "tests/scripts/query/test_llm_compiler.py", "covers": "LLM compiler (mocked)"},
+        {"file": "tests/scripts/query/test_golden.py", "covers": "Golden query tests"}
+      ],
+      "scripts/chat": [
+        {"file": "tests/scripts/chat/test_formatter.py", "covers": "Response formatting"},
+        {"file": "tests/scripts/chat/test_session_store.py", "covers": "Session CRUD operations"},
+        {"file": "tests/scripts/chat/test_clarification.py", "covers": "Ambiguity detection"},
+        {"file": "tests/scripts/chat/test_aggregation.py", "covers": "Aggregation engine"},
+        {"file": "tests/scripts/chat/test_models.py", "covers": "Chat models"}
+      ],
+      "scripts/metadata": [
+        {"file": "tests/scripts/metadata/test_audit.py", "covers": "Coverage audit"},
+        {"file": "tests/scripts/metadata/test_clustering.py", "covers": "Gap clustering"},
+        {"file": "tests/scripts/metadata/test_feedback_loop.py", "covers": "HITL feedback loop"},
+        {"file": "tests/scripts/metadata/test_review_log.py", "covers": "Review log tracking"},
+        {"file": "tests/scripts/metadata/test_agent_harness.py", "covers": "Agent harness"},
+        {"file": "tests/scripts/metadata/test_publisher_authority.py", "covers": "Publisher authority CRUD"},
+        {"file": "tests/scripts/metadata/test_publisher_authority_real_db.py", "covers": "Publisher authority with real DB"},
+        {"file": "tests/scripts/metadata/agents/test_place_agent.py", "covers": "PlaceAgent specialist"},
+        {"file": "tests/scripts/metadata/agents/test_date_agent.py", "covers": "DateAgent specialist"},
+        {"file": "tests/scripts/metadata/agents/test_publisher_agent.py", "covers": "PublisherAgent specialist"},
+        {"file": "tests/scripts/metadata/agents/test_name_agent.py", "covers": "NameAgent specialist"}
+      ],
+      "scripts/utils": [
+        {"file": "tests/scripts/utils/test_logger.py", "covers": "Logger manager"},
+        {"file": "tests/scripts/utils/test_llm_logger.py", "covers": "LLM call logging"},
+        {"file": "tests/scripts/utils/test_context.py", "covers": "Logger context"}
+      ],
+      "scripts/normalization": [
+        {"file": "tests/scripts/normalization/test_normalize_agent.py", "covers": "Agent name normalization"}
+      ],
+      "app": [
+        {"file": "tests/app/test_api.py", "covers": "FastAPI /chat and WebSocket endpoints"},
+        {"file": "tests/app/test_metadata_api.py", "covers": "Metadata API endpoints"},
+        {"file": "tests/app/test_metadata_corrections.py", "covers": "Correction endpoints"},
+        {"file": "tests/app/test_agent_chat.py", "covers": "Agent chat endpoint"}
+      ],
+      "integration": [
+        {"file": "tests/integration/test_publisher_authority.py", "covers": "Publisher authority with real DB"},
+        {"file": "tests/integration/test_metadata_workbench.py", "covers": "Full workbench integration"}
+      ]
+    },
+    "failing_tests_root_causes": [
+      {
+        "group": "TestGetIssues (metadata API)",
+        "count": 11,
+        "root_cause": "Test fixture missing record_id column; schema mismatch with implementation",
+        "severity": "P1"
+      },
+      {
+        "group": "test_mixed_latin_majority (clustering)",
+        "count": 1,
+        "root_cause": "detect_script() tie-breaking prefers Hebrew even when Latin dominates",
+        "severity": "P2"
+      },
+      {
+        "group": "test_subject_contains (db_adapter)",
+        "count": 1,
+        "root_cause": "FTS5 subjects table incorrectly added to outer JOIN set",
+        "severity": "P2"
+      }
+    ]
+  },
+
+  "git_history": {
+    "total_commits_shown": 50,
+    "grouped_by_theme": {
+      "M0_setup": {
+        "commits": ["66d364d Initial commit", "e067975 Initialize Claude Code project"],
+        "period": "Dec 2025"
+      },
+      "M1_parsing": {
+        "commits": ["7eae615 Implement M1", "8501bfe Upgrade M1 canonical model", "5d46bd4 Improve canonical structure"],
+        "period": "Jan 2026"
+      },
+      "M2_normalization": {
+        "commits": ["0abf135 Implement M2", "11ad171 Place frequency builder", "c36505c Add comprehensive place normalization", "60e3993 Improve Hebrew calendar date normalization", "5f32602 Add 196 place alias mappings"],
+        "period": "Jan 2026"
+      },
+      "M3_indexing": {
+        "commits": ["0030a37 Expand MARC country code mapping from 41 to 340"],
+        "period": "Jan 2026"
+      },
+      "M4_query_pipeline": {
+        "commits": ["e01f19d Change publisher queries to use CONTAINS", "d4daece Fix FTS5 quoting issue", "95c5fe4 Add unified QueryService", "80814be Fix subject_value missing in query evidence"],
+        "period": "Jan 2026"
+      },
+      "M5_enrichment": {
+        "commits": ["5edfe6f Add authority URI capture and Wikidata enrichment pipeline"],
+        "period": "Jan 2026"
+      },
+      "M6_chatbot": {
+        "commits": ["896de15 Implement streaming responses (CB-005)", "65c00f2 Add basic rate limiting", "9249515 Add comprehensive chatbot testing guide", "556d1bf Implement Execute First clarification flow", "24a2c81 Implement two-phase conversational assistant", "ac32219 Add collection overview for introductory queries"],
+        "period": "Jan 2026"
+      },
+      "M7_metadata_workbench": {
+        "commits": ["c8fac98 Add Metadata Co-pilot Workbench", "f9522d0 Add interaction logging and fix metadata workbench UX", "367940d Add get_clusters() and propose_mappings() to DateAgent and NameAgent", "7dfd85b Add publisher authority record system", "e08fd4b Apply publisher normalization"],
+        "period": "Feb-Mar 2026"
+      },
+      "quality_fixes": {
+        "commits": ["dd2e258 Audit-driven quality improvements", "4cd1cf7 Fix agent name threshold", "81ae104 Fix date and place normalization issues", "383dc83 Add comprehensive audit documentation"],
+        "period": "Jan-Mar 2026"
+      },
+      "ui_improvements": {
+        "commits": ["91f319b Improve chat UI: add Primo links", "9540257 Display title and author in Primo links", "71a9485 Fix follow-up suggestion buttons", "2ac6a2b Improve evidence display with user-friendly labels"],
+        "period": "Jan 2026"
+      }
+    }
+  },
+
+  "frontend": {
+    "framework": "React 19 + TypeScript + Vite + Tailwind CSS",
+    "package_manager": "npm",
+    "purpose": "Metadata Co-pilot Workbench for librarian HITL quality improvement",
+    "pages": [
+      {
+        "name": "Dashboard",
+        "file": "frontend/src/pages/Dashboard.tsx",
+        "description": "Coverage overview with pie charts per field (date, place, publisher, agent_name), confidence band visualization"
+      },
+      {
+        "name": "Workbench",
+        "file": "frontend/src/pages/Workbench.tsx",
+        "description": "Issue inspection and correction submission with editable cells, batch toolbar, cluster cards"
+      },
+      {
+        "name": "AgentChat",
+        "file": "frontend/src/pages/AgentChat.tsx",
+        "description": "Conversational interface for specialist metadata agents"
+      },
+      {
+        "name": "Review",
+        "file": "frontend/src/pages/Review.tsx",
+        "description": "Correction history and audit trail"
+      }
+    ],
+    "components": [
+      "frontend/src/components/Layout.tsx - page layout with sidebar",
+      "frontend/src/components/Sidebar.tsx - navigation sidebar",
+      "frontend/src/components/workbench/EditableCell.tsx - inline editing for corrections",
+      "frontend/src/components/workbench/BatchToolbar.tsx - batch correction tools",
+      "frontend/src/components/workbench/ClusterCard.tsx - gap cluster visualization"
+    ],
+    "api_client": "frontend/src/api/metadata.ts - fetchCoverage, fetchIssues, fetchClusters, submitCorrection, sendAgentChat, fetchCorrectionHistory",
+    "types": "frontend/src/types/metadata.ts - TypeScript interfaces mirroring Python Pydantic models",
+    "state_management": "@tanstack/react-query for server state",
+    "routing": "react-router-dom with BrowserRouter",
+    "charts": "recharts (PieChart, Tooltip, Legend)",
+    "test_suite": "None detected"
+  },
+
+  "api_endpoints": {
+    "chat": [
+      {
+        "method": "POST",
+        "path": "/chat",
+        "description": "Send natural language query, get structured response with evidence",
+        "request": "ChatRequest (message, session_id?, context?)",
+        "response": "ChatResponseAPI (success, response: ChatResponse, error?)",
+        "rate_limit": "10/minute per IP"
+      },
+      {
+        "method": "GET",
+        "path": "/health",
+        "description": "Health check (database, session store)",
+        "response": "HealthResponse (status, database_connected, session_store_ok)"
+      },
+      {
+        "method": "GET",
+        "path": "/sessions/{session_id}",
+        "description": "Get session details and message history"
+      },
+      {
+        "method": "DELETE",
+        "path": "/sessions/{session_id}",
+        "description": "Expire a session"
+      },
+      {
+        "method": "WebSocket",
+        "path": "/ws/chat",
+        "description": "Streaming responses with progress, batches, and complete messages"
+      }
+    ],
+    "metadata": [
+      {
+        "method": "GET",
+        "path": "/metadata/coverage",
+        "description": "Overall normalization coverage stats per field (date, place, publisher, agent_name, agent_role)"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/issues",
+        "description": "Low-confidence records (paginated). Params: field, max_confidence, limit, offset"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/unmapped",
+        "description": "Raw values without canonical mappings, sorted by frequency"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/methods",
+        "description": "Distribution of normalization methods per field"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/clusters",
+        "description": "Gap clusters for batch review. Optional field filter"
+      },
+      {
+        "method": "POST",
+        "path": "/metadata/corrections",
+        "description": "Submit single correction (field, raw_value, canonical_value)"
+      },
+      {
+        "method": "POST",
+        "path": "/metadata/corrections/batch",
+        "description": "Submit batch corrections"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/corrections/history",
+        "description": "Correction audit trail"
+      },
+      {
+        "method": "POST",
+        "path": "/metadata/primo-urls",
+        "description": "Generate batch Primo catalog URLs for MMS IDs"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/records/{mms_id}/primo",
+        "description": "Single Primo catalog URL for a record"
+      },
+      {
+        "method": "POST",
+        "path": "/metadata/agent/chat",
+        "description": "Agent conversation: interact with specialist metadata agents"
+      },
+      {
+        "method": "GET",
+        "path": "/metadata/publishers",
+        "description": "Publisher authority records with variant counts and imprint counts. Optional type filter"
+      }
+    ]
+  },
+
+  "current_status": {
+    "audit_date": "2026-03-22",
+    "milestones": {
+      "M1_parse": "Complete",
+      "M2_normalize": "Complete",
+      "M3_index": "Complete",
+      "M4_query": "Complete",
+      "M5_enrichment": "Complete",
+      "M6_chatbot": "Complete",
+      "M7_metadata_workbench": "Complete"
+    },
+    "normalization_coverage": {
+      "place": {"high_confidence_pct": 99.3, "threshold": ">=0.90"},
+      "publisher": {"high_confidence_pct": 98.8, "threshold": ">=0.90"},
+      "date": {"high_confidence_pct": 68.2, "threshold": ">=0.90", "note": "Weakest area. 881 imprints below threshold"}
+    },
+    "findings": {
+      "P0_critical": "None identified. Core pipeline is sound.",
+      "P1_architectural": [
+        "FINDING-01: 11 metadata API tests failing (schema mismatch in test fixtures)",
+        "FINDING-02: Evidence extraction failures silently swallowed (violates Answer Contract)",
+        "FINDING-03: Date normalization at 68.2% high-confidence (881 imprints below threshold)"
+      ],
+      "P2_maintainability": [
+        "FINDING-04: 590 ruff lint errors (176 auto-fixable)",
+        "FINDING-05: detect_script() logic bug - Hebrew preferred over dominant Latin",
+        "FINDING-06: FTS5 subject query adds unnecessary JOIN",
+        "FINDING-07: app/api/metadata.py (1,484 lines) and app/api/main.py (1,288 lines) are oversized",
+        "FINDING-08: Pydantic v1-style Config classes need migration to ConfigDict",
+        "FINDING-09: FastAPI on_event deprecation - migrate to lifespan handlers"
+      ]
+    },
+    "contract_enforcement": {
+      "QueryPlan_schema": "Schema-enforced (Pydantic + OpenAI Responses API) - Low risk",
+      "Filter_validation": "Schema-enforced (model_validator) - Low risk",
+      "CandidateSet_schema": "Type hints only - High risk",
+      "Evidence_completeness": "None - High risk (extraction failures silently swallowed)",
+      "M3_schema_constants": "Convention only (m3_contract.py) - Medium risk",
+      "Answer_Contract": "Documentation only - High risk (not code-enforced)",
+      "Chat_response_model": "Schema-enforced (Pydantic) - Low risk"
+    },
+    "large_files_risk": [
+      {"file": "app/api/metadata.py", "lines": 1484, "risk": "High - monolithic endpoint file"},
+      {"file": "app/api/main.py", "lines": 1300, "risk": "High - monolithic API file"},
+      {"file": "scripts/marc/parse.py", "lines": 907, "risk": "Medium - complex but stable"},
+      {"file": "scripts/chat/aggregation.py", "lines": 815, "risk": "Medium"},
+      {"file": "scripts/metadata/clustering.py", "lines": 740, "risk": "Medium"},
+      {"file": "scripts/query/execute.py", "lines": 679, "risk": "Medium"},
+      {"file": "scripts/marc/m3_index.py", "lines": 670, "risk": "Medium"}
+    ],
+    "documentation": [
+      "CLAUDE.md - comprehensive project instructions (primary reference)",
+      "plan.mf - milestone roadmap with full history",
+      "docs/PROJECT_DESCRIPTION.md - project description and architecture",
+      "docs/specs/m2_normalization_spec.md - M2 normalization specification",
+      "docs/metadata_workbench.md - workbench documentation",
+      "docs/metadata_workbench_architecture.md - workbench architecture",
+      "docs/testing/MANUAL_TESTING_GUIDE.md - manual testing guide",
+      "audits/2026-03-22-status-review/AUDIT_REPORT.md - latest audit"
+    ]
+  }
+}

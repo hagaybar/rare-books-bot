@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T11:39:51.473Z",
+  "data": {
+    "effectId": "01KMJCPE952WNGHSRK5MSWW2NG",
+    "invocationKey": "scholar-pipeline-fixes:S000007:e2e-verify",
+    "invocationHash": "2c00939e3504c43d467cbe42ed54feac0630aac7afb38368d13a5e43e0e21bc8",
+    "stepId": "S000007",
+    "taskId": "e2e-verify",
+    "kind": "agent",
+    "label": "E2E verification: test both queries with Playwright",
+    "taskDefRef": "tasks/01KMJCPE952WNGHSRK5MSWW2NG/task.json"
+  },
+  "checksum": "3b18b62c2b1547297a1e0b492a397c7ac7ded4d19e5a9aecc7e5eac29c702666"
+}

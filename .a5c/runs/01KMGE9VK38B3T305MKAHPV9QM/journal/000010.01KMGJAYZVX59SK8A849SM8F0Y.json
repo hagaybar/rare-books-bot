@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T18:39:57.947Z",
+  "data": {
+    "effectId": "01KMGJAYZJQTKFWWZE84AEBMAR",
+    "invocationKey": "implement-historian-enhancements:S000003:e1-crud",
+    "invocationHash": "9c740ccb2dd5865b064dff4b0823f8fa538f8acb559d2b9c425bff3a94ff1789",
+    "stepId": "S000003",
+    "taskId": "e1-crud",
+    "kind": "agent",
+    "label": "E1: Implement AgentAuthorityStore CRUD module",
+    "taskDefRef": "tasks/01KMGJAYZJQTKFWWZE84AEBMAR/task.json"
+  },
+  "checksum": "bf61e1022a2bbde4155c1170bc0e7889dcd07f0770e83347f780382a8395d263"
+}

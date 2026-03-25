@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGK9DANJ3HAY3P023WT6PJG",
+  "taskId": "e2-curation-impl",
+  "invocationKey": "implement-historian-enhancements:S000011:e2-curation-impl",
+  "status": "ok",
+  "result": {
+    "filesCreated": [
+      "scripts/chat/curation_engine.py"
+    ],
+    "filesModified": [
+      "scripts/chat/models.py",
+      "scripts/chat/aggregation.py",
+      "scripts/chat/narrative_agent.py"
+    ],
+    "summary": "Curation engine (~250 lines), aggregation extensions, analytical narrative, CURATION enum. All 35 tests pass.",
+    "testsPassed": 35
+  },
+  "startedAt": "2026-03-24T18:59:58.838Z",
+  "finishedAt": "2026-03-24T18:59:58.838Z",
+  "value": {
+    "filesCreated": [
+      "scripts/chat/curation_engine.py"
+    ],
+    "filesModified": [
+      "scripts/chat/models.py",
+      "scripts/chat/aggregation.py",
+      "scripts/chat/narrative_agent.py"
+    ],
+    "summary": "Curation engine (~250 lines), aggregation extensions, analytical narrative, CURATION enum. All 35 tests pass.",
+    "testsPassed": 35
+  }
+}

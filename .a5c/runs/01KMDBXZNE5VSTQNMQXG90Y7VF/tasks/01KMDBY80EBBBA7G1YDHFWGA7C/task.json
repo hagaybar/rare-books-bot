@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDBY80EBBBA7G1YDHFWGA7C",
+  "taskId": "extract-reconcile",
+  "invocationKey": "definitive-implementation-plan:S000001:extract-reconcile",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Phase 1: Extract facts from 13 reports and reconcile contradictions",
+  "labels": [
+    "extraction",
+    "reconciliation",
+    "synthesis"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDBY80EBBBA7G1YDHFWGA7C/input.json",
+    "outputJsonPath": "tasks/01KMDBY80EBBBA7G1YDHFWGA7C/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "reports": {
+      "empirical": [
+        "08-empirical-db-probe.md",
+        "09-empirical-pipeline-test.md",
+        "10-empirical-api-verify.md",
+        "11-empirical-cross-reference.md",
+        "12-empirical-refinements.md"
+      ],
+      "original": [
+        "00-executive-report.md",
+        "01-ui-inventory.md",
+        "02-per-ui-evaluation.md",
+        "03-project-goal.md",
+        "04-alignment-assessment.md",
+        "05-redundancy-analysis.md",
+        "06-new-ui-definition.md",
+        "07-migration-plan.md"
+      ]
+    },
+    "reportsDir": "/home/hagaybar/projects/rare-books-bot/reports"
+  }
+}

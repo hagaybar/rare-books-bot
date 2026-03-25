@@ -1,0 +1,1 @@
+{"fileCreated": "scripts/metadata/agent_authority.py", "testsPassed": 64, "testsFailed": 0, "summary": "AgentAuthorityStore module (~310 lines) with CRUD, alias search, cross-script resolution, word-reorder matching, FK cascade. All 64 TDD tests pass."}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMARSBQC5C3B82EVPS96QQKP",
+  "taskId": "deep-repo-analysis",
+  "invocationKey": "notebooklm-context-builder:S000001:deep-repo-analysis",
+  "status": "ok",
+  "result": {
+    "analysisPath": "/home/hagaybar/projects/rare-books-bot/.a5c/runs/01KMARRREPVKWN8J2BGVJ0WJ6G/artifacts/repo_analysis.json",
+    "endpointsFound": 17,
+    "modelsFound": 35,
+    "modulesFound": 52
+  },
+  "startedAt": "2026-03-22T12:46:26.001Z",
+  "finishedAt": "2026-03-22T12:46:26.001Z",
+  "value": {
+    "analysisPath": "/home/hagaybar/projects/rare-books-bot/.a5c/runs/01KMARRREPVKWN8J2BGVJ0WJ6G/artifacts/repo_analysis.json",
+    "endpointsFound": 17,
+    "modelsFound": 35,
+    "modulesFound": 52
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGK5998N477V4XX1T4N06A5",
+  "taskId": "e2-curation-tests",
+  "invocationKey": "implement-historian-enhancements:S000010:e2-curation-tests",
+  "status": "ok",
+  "result": {
+    "summary": "10 TDD tests for curation engine. All fail with ModuleNotFoundError as expected.",
+    "testFile": "tests/scripts/chat/test_curation_engine.py",
+    "testsWritten": 10
+  },
+  "startedAt": "2026-03-24T18:56:30.661Z",
+  "finishedAt": "2026-03-24T18:56:30.661Z",
+  "value": {
+    "summary": "10 TDD tests for curation engine. All fail with ModuleNotFoundError as expected.",
+    "testFile": "tests/scripts/chat/test_curation_engine.py",
+    "testsWritten": 10
+  }
+}

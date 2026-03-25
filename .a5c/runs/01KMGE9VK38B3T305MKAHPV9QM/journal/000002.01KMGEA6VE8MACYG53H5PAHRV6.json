@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T17:29:38.926Z",
+  "data": {
+    "effectId": "01KMGEA6V0WAFRV71HVVATP3XQ",
+    "invocationKey": "implement-historian-enhancements:S000001:e1-write-tests",
+    "invocationHash": "73ea3cb24b181842d943255fcd45152b1c7cf7636391810e2bf94597f475e98c",
+    "stepId": "S000001",
+    "taskId": "e1-write-tests",
+    "kind": "agent",
+    "label": "E1: Write AgentAuthorityStore unit tests (TDD)",
+    "taskDefRef": "tasks/01KMGEA6V0WAFRV71HVVATP3XQ/task.json"
+  },
+  "checksum": "dd72f1af7c3356f14e0aa27d9f839bf200ce1e1d19b7cb4595e049f94234a923"
+}

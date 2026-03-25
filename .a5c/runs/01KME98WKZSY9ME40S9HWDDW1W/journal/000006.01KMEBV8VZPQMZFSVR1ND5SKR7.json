@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T22:08:03.455Z",
+  "data": {
+    "effectId": "01KMEBV8VJ9P210RZV8S82VTX6",
+    "invocationKey": "narrative-agent-prototype:S000003:verify-narrative",
+    "invocationHash": "21a2789748da3657f036b775f718d058b9005f234316c446f8d9a07fda0ecd33",
+    "stepId": "S000003",
+    "taskId": "verify-narrative",
+    "kind": "agent",
+    "label": "verification",
+    "taskDefRef": "tasks/01KMEBV8VJ9P210RZV8S82VTX6/task.json",
+    "labels": [
+      "verification",
+      "testing",
+      "narrative"
+    ]
+  },
+  "checksum": "02295fc2fa30f47e24a8109556ca50cf75f743df4ef99f574d9635ae362edd0c"
+}

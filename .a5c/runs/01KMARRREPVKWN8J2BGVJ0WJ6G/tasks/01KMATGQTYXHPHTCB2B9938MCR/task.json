@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMATGQTYXHPHTCB2B9938MCR",
+  "taskId": "create-update-pipe",
+  "invocationKey": "notebooklm-context-builder:S000007:create-update-pipe",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Create update utility for refreshing NotebookLM context",
+  "io": {
+    "inputJsonPath": "tasks/01KMATGQTYXHPHTCB2B9938MCR/input.json",
+    "outputJsonPath": "tasks/01KMATGQTYXHPHTCB2B9938MCR/output.json"
+  },
+  "inputs": {
+    "documentFiles": [
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/01_project_overview.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/02_code_map.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/03_data_pipeline.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/04_query_and_chat.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/05_metadata_workbench.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/06_data_model.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/07_project_status.md"
+    ],
+    "notebookName": "Rare Books Bot",
+    "notebookUrl": "https://notebooklm.google.com/notebook/7472ca6f-417a-47a1-9f8c-dd87a9e25b17",
+    "outputDir": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources",
+    "repoRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

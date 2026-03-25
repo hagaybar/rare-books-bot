@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:00:04.709Z",
+  "data": {
+    "effectId": "01KMGKFSEXZX7G4CHFY2XWQ8KE",
+    "invocationKey": "implement-historian-enhancements:S000012:e2-api-wiring",
+    "invocationHash": "8690fbce9c2fdbc964774084582401fc27047cf3a25755708ad8801c85b8c311",
+    "stepId": "S000012",
+    "taskId": "e2-api-wiring",
+    "kind": "agent",
+    "label": "E2: Wire analytical routing into API and WebSocket",
+    "taskDefRef": "tasks/01KMGKFSEXZX7G4CHFY2XWQ8KE/task.json"
+  },
+  "checksum": "b62da2ac2a0069173ab069eaacb7b9d04773f0b76e537b9d8bc23f952a6e0b7d"
+}

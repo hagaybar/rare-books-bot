@@ -1,0 +1,1 @@
+{"filesCreated": ["scripts/metadata/seed_agent_authorities.py"], "filesModified": ["app/cli.py"], "testsPassed": 12, "summary": "Seeding system (~250 lines) with seed_from_enrichment, generate_word_reorder_aliases, generate_cross_script_aliases, seed_all. CLI command added. All 12 tests pass."}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDEY7H22XTNW4V3REA01V21",
+  "taskId": "backend-micro-tasks",
+  "invocationKey": "implement-unified-ui:S000003:backend-micro-tasks",
+  "status": "ok",
+  "result": {
+    "b1Status": "done",
+    "b2Status": "done",
+    "b3Status": "done",
+    "b4Status": "skipped - already exists",
+    "testsPass": true
+  },
+  "startedAt": "2026-03-23T13:45:50.878Z",
+  "finishedAt": "2026-03-23T13:45:50.878Z",
+  "value": {
+    "b1Status": "done",
+    "b2Status": "done",
+    "b3Status": "done",
+    "b4Status": "skipped - already exists",
+    "testsPass": true
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJCD319M6Z51DNC2CPF9XJQ",
+  "taskId": "verify",
+  "invocationKey": "scholar-pipeline-fixes:S000004:verify",
+  "stepId": "S000004",
+  "kind": "shell",
+  "title": "Verify: narrator-fix",
+  "io": {
+    "outputJsonPath": "tasks/01KMJCD319M6Z51DNC2CPF9XJQ/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_narrator.py -v 2>&1 | tail -20",
+    "phase": "narrator-fix",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

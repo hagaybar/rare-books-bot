@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ496GYHV4Y6DW81VRFKCS8",
+  "taskId": "implement-task",
+  "invocationKey": "scholar-pipeline:S000007:implement-task",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Implement Task 4: Executor Step Handlers",
+  "io": {
+    "inputJsonPath": "tasks/01KMJ496GYHV4Y6DW81VRFKCS8/input.json",
+    "outputJsonPath": "tasks/01KMJ496GYHV4Y6DW81VRFKCS8/result.json"
+  },
+  "inputs": {
+    "description": "Implement Task 4 from the plan: Add all 7 step handlers to scripts/chat/executor.py. Migrate AggregationResult model to scripts/chat/aggregation.py. Implement: _handle_resolve_agent (uses agent_authority.py alias lookup), _handle_resolve_publisher (uses publisher_authority.py), _handle_retrieve (converts to QueryPlan, calls db_adapter), _handle_aggregate (calls aggregation.execute_aggregation), _handle_find_connections (calls cross_reference.find_connections), _handle_enrich (queries authority_enrichment table), _handle_sample (strategy-based selection). Also implement _collect_grounding() for link collection (Primo via scripts/utils/primo.py, Wikipedia/Wikidata/NLI/VIAF from authority_enrichment). Add handler tests with the test DB fixture. Add tests for find_connections and sample handlers. Follow TDD steps exactly.",
+    "planPath": "docs/superpowers/plans/2026-03-25-scholar-pipeline.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-scholar-pipeline-design.md",
+    "taskName": "Executor Step Handlers",
+    "taskNumber": 4,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_executor.py -v 2>&1 | tail -60"
+  }
+}

@@ -1,0 +1,2725 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDBY80EBBBA7G1YDHFWGA7C",
+  "taskId": "extract-reconcile",
+  "invocationKey": "definitive-implementation-plan:S000001:extract-reconcile",
+  "status": "ok",
+  "result": {
+    "apiReality": {
+      "actualEndpointShapes": {
+        "GET_health": "Returns status (healthy|degraded|unhealthy), database_connected, session_store_ok",
+        "GET_metadata_clusters": "Bare array of ClusterResponse with cluster_id, field, values, proposed_canonical, priority_score, total_records_affected",
+        "GET_metadata_corrections_history": "Paginated with field filter only. Returns entries with timestamp, field, raw_value, canonical_value, evidence, source, action",
+        "GET_metadata_coverage": "Returns FieldCoverageResponse per field with confidence_distribution (10 bands), method_distribution, flagged_items",
+        "GET_metadata_issues": "Paginated, params: field (required), max_confidence, limit, offset. Returns items with mms_id, raw_value, norm_value, confidence, method",
+        "GET_metadata_methods": "Bare array of MethodDistribution (method, count, percentage)",
+        "GET_metadata_publishers": "Returns authorities with variant_count, imprint_count, variants[], enrichment IDs, type filter. Read-only",
+        "GET_metadata_unmapped": "Bare array of UnmappedValue (raw_value, frequency, confidence, method)",
+        "POST_chat": "Works with full two-phase flow. Returns ChatResponseAPI wrapper with ChatResponse containing phase, confidence, candidate_set, suggested_followups, clarification_needed, metadata (polymorphic dict)",
+        "POST_metadata_agent_chat": "Accepts field, message, session_id. Returns response, proposals[], clusters[], field, action (analysis|proposals|answer)",
+        "POST_metadata_corrections": "Accepts field (place|publisher|agent -- NOT date), raw_value, canonical_value, evidence, source. Returns success, alias_map_updated, records_affected",
+        "POST_metadata_corrections_batch": "Accepts corrections array. Returns total_applied, total_skipped, total_records_affected, results",
+        "POST_metadata_primo_urls": "Batch URL generation with optional base_url override",
+        "WS_ws_chat": "OLD SINGLE-PHASE path. No intent agent, no facets, no phase/confidence. Uses compile_query() directly. Message types: session_created, progress, batch, complete, error"
+      },
+      "gaps": [
+        "Zero /diagnostics/* endpoints exist (blocks Query Debugger and DB Explorer)",
+        "execution_time_ms computed but NOT in ChatResponse",
+        "FacetCounts computed then DISCARDED -- not serialized to ChatResponse",
+        "QueryWarning[] not forwarded to frontend",
+        "Filter.confidence always null (LLM does not set it)",
+        "No CRUD endpoints for publisher authorities (read-only only)",
+        "No revert endpoint for corrections",
+        "No search/source/date-range params on corrections history",
+        "CorrectionRequest.field does not accept 'date'",
+        "QueryPlan NOT in ChatResponse (stored in session messages)",
+        "Primo URLs not on Candidate objects"
+      ],
+      "source": "report-10",
+      "surprises": [
+        "WebSocket /ws/chat uses completely different (old) code path from HTTP /chat",
+        "Metadata API coverage endpoint returns 5 fields including agent_name and agent_role (more than 4 assumed)",
+        "ChatResponse.metadata is polymorphic untyped dict (different shapes per phase and intent type)",
+        "Phase 2 supports 7 intent types: AGGREGATION, METADATA_QUESTION, REFINEMENT, COMPARISON, ENRICHMENT_REQUEST, RECOMMENDATION (stub), NEW_QUERY",
+        "AGGREGATION responses include visualization_hint (bar_chart, pie_chart, table)"
+      ]
+    },
+    "architecture": {
+      "confirmedDecisions": {
+        "framework": "React (continue with existing)",
+        "name": "Rare Books Bot",
+        "tagline": "Evidence-based bibliographic discovery",
+        "tiers": 4,
+        "totalScreens": 9
+      },
+      "designPrinciples": [
+        "Bot-Centered Architecture: chat is the primary surface, everything else supports it",
+        "Progressive Disclosure: scholars see clean chat; operators see confidence; developers see query plans",
+        "Evidence-First Display: confidence scores and MARC citations are first-class UI elements",
+        "Observable by Default: query interpretation, phase transitions, timing visible in real-time",
+        "Single Source of Truth: one Primo URL scheme, one query path, one correction workflow",
+        "Composable Over Monolithic: reusable components (CandidateCard, ConfidenceBadge, PrimoLink)"
+      ],
+      "fileStructure": "frontend/src/pages/ with Chat.tsx, operator/, diagnostics/, admin/ subdirectories",
+      "navigationStructure": {
+        "sidebarBehavior": "Collapses to icons on narrow viewports. Chat page hides sidebar by default (hamburger accessible). Other pages show sidebar.",
+        "tier1_primary": [
+          {
+            "name": "Chat",
+            "path": "/"
+          }
+        ],
+        "tier2_operator": [
+          {
+            "name": "Coverage Dashboard",
+            "path": "/operator/coverage"
+          },
+          {
+            "name": "Issues Workbench",
+            "path": "/operator/workbench"
+          },
+          {
+            "name": "Agent Chat",
+            "path": "/operator/agent"
+          },
+          {
+            "name": "Correction Review",
+            "path": "/operator/review"
+          }
+        ],
+        "tier3_diagnostics": [
+          {
+            "name": "Query Debugger",
+            "path": "/diagnostics/query"
+          },
+          {
+            "name": "Database Explorer",
+            "path": "/diagnostics/db"
+          }
+        ],
+        "tier4_admin": [
+          {
+            "name": "Publisher Authorities",
+            "path": "/admin/publishers"
+          },
+          {
+            "name": "System Health",
+            "path": "/admin/health"
+          }
+        ]
+      },
+      "techStack": {
+        "additional": [
+          "react-markdown",
+          "cmdk (command palette)",
+          "@tanstack/react-virtual",
+          "sonner (toasts)"
+        ],
+        "charts": "Recharts v3 (existing, add Nivo/Observable Plot when needed)",
+        "chatStreaming": "HTTP-only at launch (WebSocket deferred)",
+        "clientState": "Zustand (new)",
+        "core": {
+          "react": "19",
+          "typescript": "5.9",
+          "vite": "8"
+        },
+        "css": "Tailwind CSS v4 (existing)",
+        "noFullUILibrary": true,
+        "primitives": "Radix UI (new)",
+        "routing": "React Router v7 (existing)",
+        "serverState": "TanStack Query v5 (existing)",
+        "tables": "TanStack Table v8 (existing)",
+        "testing": "Vitest + React Testing Library + Playwright + MSW (new)"
+      }
+    },
+    "backendWork": [
+      {
+        "blocks": "Chat timing display",
+        "effort": "1-2 hours",
+        "id": "B1",
+        "phase": "Phase 1 (days 1-3)",
+        "task": "Add execution_time_ms to ChatResponse.metadata"
+      },
+      {
+        "blocks": "Phase 2 aggregation charts",
+        "effort": "2-4 hours",
+        "id": "B2",
+        "phase": "Phase 1 (days 1-3)",
+        "task": "Forward FacetCounts in ChatResponse.metadata"
+      },
+      {
+        "blocks": "Chat warnings, Debugger",
+        "effort": "1-2 hours",
+        "id": "B3",
+        "phase": "Phase 1 (days 1-3)",
+        "task": "Forward QueryWarning[] in ChatResponse.metadata"
+      },
+      {
+        "blocks": "Chat Primo links",
+        "effort": "2-4 hours",
+        "id": "B4",
+        "phase": "Phase 1 (days 1-3)",
+        "task": "Add primo_url to Candidate model OR document batch approach"
+      },
+      {
+        "blocks": "Query Debugger",
+        "effort": "1 day",
+        "id": "B5",
+        "phase": "Phase 2 backend",
+        "task": "POST /diagnostics/query-run endpoint"
+      },
+      {
+        "blocks": "Query Debugger history",
+        "effort": "0.5 day",
+        "id": "B6",
+        "phase": "Phase 2 backend",
+        "task": "GET /diagnostics/query-runs endpoint"
+      },
+      {
+        "blocks": "Query Debugger labeling",
+        "effort": "0.5 day",
+        "id": "B7",
+        "phase": "Phase 2 backend",
+        "task": "POST /diagnostics/labels endpoint"
+      },
+      {
+        "blocks": "Query Debugger labeling",
+        "effort": "0.5 day",
+        "id": "B8",
+        "phase": "Phase 2 backend",
+        "task": "GET /diagnostics/labels/{run_id} endpoint"
+      },
+      {
+        "blocks": "Gold set management",
+        "effort": "0.5 day",
+        "id": "B9",
+        "phase": "Phase 2 backend",
+        "task": "POST /diagnostics/gold-set/export endpoint"
+      },
+      {
+        "blocks": "Regression runner display",
+        "effort": "1 day",
+        "id": "B10",
+        "phase": "Phase 2 backend",
+        "task": "POST /diagnostics/gold-set/regression endpoint"
+      },
+      {
+        "blocks": "DB Explorer",
+        "effort": "0.5 day",
+        "id": "B11",
+        "phase": "Phase 2 backend",
+        "task": "GET /diagnostics/tables endpoint"
+      },
+      {
+        "blocks": "DB Explorer",
+        "effort": "1 day",
+        "id": "B12",
+        "phase": "Phase 2 backend",
+        "task": "GET /diagnostics/tables/{name}/rows endpoint (with SQL injection protection)"
+      },
+      {
+        "blocks": "Publisher editing",
+        "effort": "1-2 days",
+        "id": "B13",
+        "phase": "Phase 3",
+        "task": "Publisher authority CRUD endpoints (POST/PUT/DELETE)"
+      },
+      {
+        "blocks": "Match impact display",
+        "effort": "0.5 day",
+        "id": "B14",
+        "phase": "Phase 3",
+        "task": "Publisher match preview endpoint"
+      },
+      {
+        "blocks": "System Health",
+        "effort": "1 hour",
+        "id": "B15",
+        "phase": "Phase 3",
+        "task": "DB file size/last-modified endpoint"
+      },
+      {
+        "blocks": "Chat streaming with phase support",
+        "effort": "2-3 days",
+        "id": "B16",
+        "phase": "Phase 4",
+        "task": "Upgrade WebSocket handler to two-phase flow"
+      },
+      {
+        "blocks": "Date corrections in Workbench",
+        "effort": "0.5 day",
+        "id": "B17",
+        "phase": "Phase 4",
+        "task": "Add 'date' to CorrectionRequest.field supported values"
+      },
+      {
+        "blocks": "Correction Review filters",
+        "effort": "0.5 day",
+        "id": "B18",
+        "phase": "Phase 4",
+        "task": "Add search, source, date range to corrections history API"
+      },
+      {
+        "blocks": "Correction Review revert",
+        "effort": "1 day",
+        "id": "B19",
+        "phase": "Phase 4",
+        "task": "Corrections revert endpoint"
+      },
+      {
+        "blocks": "Evidence panel completeness",
+        "effort": "0.5 day",
+        "id": "B20",
+        "phase": "Phase 4",
+        "task": "Fix subject evidence value null (populate from DB)"
+      },
+      {
+        "blocks": "Evidence panel MARC provenance",
+        "effort": "0.5 day",
+        "id": "B21",
+        "phase": "Phase 4",
+        "task": "Fix agent evidence source 'marc:unknown'"
+      },
+      {
+        "blocks": "False broadening prevention",
+        "effort": "1 day",
+        "id": "B22",
+        "phase": "Phase 4",
+        "task": "Add subject retry confidence threshold or warning"
+      }
+    ],
+    "contradictionCount": 16,
+    "contradictions": [
+      {
+        "empirical": "Report 10-11: WebSocket uses old single-phase compile_query() path. No intent agent, no Phase 2, no facets, no phase/confidence fields. Completely separate code path from HTTP /chat",
+        "original": "Reports 06-07 assume WebSocket supports two-phase flow with phase transitions, confidence, and facets -- used for Chat streaming from Phase 1",
+        "resolution": "Launch Chat with HTTP-only (POST /chat). Defer WebSocket streaming to Phase 4 after handler upgrade (B16: 2-3 days). Phase 1 exit criteria changed to remove WebSocket requirement.",
+        "topic": "WebSocket streaming capability"
+      },
+      {
+        "empirical": "Report 09-11: Filter.confidence is always null in all tested queries. LLM is not asked to produce per-filter confidence. LOW_CONFIDENCE warning can never fire.",
+        "original": "Reports 06-07 specify per-filter confidence visualization in Chat query insight panel and Query Debugger filter contribution view",
+        "resolution": "Drop per-filter confidence from all screens. Show only overall ChatResponse.confidence. Cannot be fixed without changing LLM prompt or computing heuristically.",
+        "topic": "Per-filter confidence scores"
+      },
+      {
+        "empirical": "Report 08: Place and publisher confidence is BINARY -- records are either <0.5 or >=0.95, with the 0.5-0.95 range completely empty. Four-band visualization is misleading.",
+        "original": "Reports 06 assumes four meaningful confidence bands (high/medium/low/very_low) with records distributed across all bands for coverage visualization",
+        "resolution": "Replace four-band with binary (resolved/unresolved) for place and publisher. Keep graduated bands only for dates (has 0.8-0.95 segment with 1,306 records).",
+        "topic": "Confidence distribution shape"
+      },
+      {
+        "empirical": "Report 08: Only 121 total low-confidence records (69 dates + 19 places + 33 publishers). Workbench will be nearly empty.",
+        "original": "Reports 06-07 assume a substantial volume of issues requiring triage in the Issues Workbench",
+        "resolution": "Reframe from 'issues' to 'improvement opportunities'. Real gaps: 553 Hebrew-script publishers, 4,366 un-aliased agents, 202 unresearched publisher authorities, 44.1% 'other' agent roles. Add method-based filtering instead of confidence slider.",
+        "topic": "Issues Workbench volume"
+      },
+      {
+        "empirical": "Reports 10-11: ZERO diagnostic endpoints exist. No /diagnostics/query-runs, /diagnostics/labels, /diagnostics/gold-set, /diagnostics/tables. QA database has no HTTP layer at all.",
+        "original": "Reports 06-07 treat diagnostic endpoints as minor additions or assume some exist. Backend prerequisite estimated at 2-3 days.",
+        "resolution": "Backend prerequisite expanded to 4-5 days minimum. Phase 2 must be sequential after Phase 1, not parallel. Total timeline extended from 7 to 8 weeks.",
+        "topic": "Diagnostic API endpoints"
+      },
+      {
+        "empirical": "Report 11: FacetCounts are computed by QueryService but NOT serialized into ChatResponse. Data exists internally but is discarded before reaching the frontend.",
+        "original": "Report 06 assumes Phase 2 aggregation charts can be built from API data",
+        "resolution": "Backend micro-task B2: forward FacetCounts in ChatResponse.metadata. Until done, aggregation charts are unbuildable (text responses still work).",
+        "topic": "FacetCounts availability in ChatResponse"
+      },
+      {
+        "empirical": "Report 10-11: execution_time_ms is computed by QueryService but NOT exposed in ChatResponse. Logged internally only.",
+        "original": "Report 06 specifies execution timing display (compile time, SQL time, total time) in Chat collapsible panel",
+        "resolution": "Backend micro-task B1: add execution_time_ms to ChatResponse.metadata. Small API change.",
+        "topic": "Execution timing exposure"
+      },
+      {
+        "empirical": "Report 10: Primo URLs are NOT on Candidate objects. Require separate API call (GET /metadata/records/{mms_id}/primo or POST /metadata/primo-urls batch).",
+        "original": "Report 06 assumes candidate titles link directly to Primo with inline URLs",
+        "resolution": "Use POST /metadata/primo-urls batch call after results load. Cache client-side. Alternatively, add primo_url to Candidate model (B4).",
+        "topic": "Primo URLs on Candidate objects"
+      },
+      {
+        "empirical": "Report 08: Database has 10 tables (adds notes, publisher_authorities, publisher_variants, authority_enrichment)",
+        "original": "Report 06 lists 6 tables for DB Explorer (records, imprints, titles, subjects, languages, agents)",
+        "resolution": "DB Explorer scope expanded to 10 tables.",
+        "topic": "Number of database tables"
+      },
+      {
+        "empirical": "Report 12: Phase 2 backend work is substantial (all diagnostic endpoints from scratch) and should not compete with Phase 1 backend micro-tasks for developer attention",
+        "original": "Report 07 states Phases 1 and 2 can overlap because they touch different screens and endpoints",
+        "resolution": "Phases 1 and 2 are sequential, not parallel. Timeline extended by 1 week.",
+        "topic": "Phases 1 and 2 parallelism"
+      },
+      {
+        "empirical": "Report 10: CorrectionRequest.field accepts only place|publisher|agent -- NOT date",
+        "original": "Reports imply corrections work for all four fields (date, place, publisher, agent)",
+        "resolution": "Date corrections need either a different mechanism or API extension (B17: 0.5 day in Phase 4).",
+        "topic": "CorrectionRequest.field coverage"
+      },
+      {
+        "empirical": "Report 10: GET /metadata/corrections/history only supports field filter. No search, source, or date range params.",
+        "original": "Report 06 specifies filter bar with field, source, search, date range for correction history",
+        "resolution": "Client-side filtering approximates until API params added (B18: 0.5 day in Phase 4).",
+        "topic": "Corrections history API filtering"
+      },
+      {
+        "empirical": "Report 10-11: QueryPlan is NOT in ChatResponse. It is stored in session messages, accessible via GET /sessions/{session_id}.",
+        "original": "Reports assume QueryPlan is accessible from ChatResponse for debugger and chat insight",
+        "resolution": "Workaround: fetch session and extract plan from most recent assistant message. Or add plan to diagnostics query-run endpoint response.",
+        "topic": "QueryPlan location in API response"
+      },
+      {
+        "empirical": "Report 08: Only 2 methods exist in production data -- place_alias_map (99.3%) and missing (0.7%). No base_clean method records exist for places.",
+        "original": "CLAUDE.md mentions base_clean (0.80) and alias_map (0.95) as place normalization methods",
+        "resolution": "Confidence slider for places is meaningless (only <0.5 or >=0.95 exist). Replace with method-based filtering.",
+        "topic": "Place normalization methods"
+      },
+      {
+        "empirical": "Report 08: ALL 4,366 agents use base_clean method only. 0% are alias-mapped. 44.1% of agent roles are 'other'. This is the largest normalization gap by far.",
+        "original": "Reports 01-07 focus on date/place/publisher normalization gaps",
+        "resolution": "Lead Coverage Dashboard with agent normalization gaps, not date/place/publisher (which are 97%+ resolved). Add agent normalization tab to Issues Workbench.",
+        "topic": "Agent normalization state"
+      },
+      {
+        "empirical": "Report 08: 227 authorities exist but 202 (89%) are 'unresearched' stubs. authority_enrichment table has 0 rows. Only 18 are classified as printing_house.",
+        "original": "Reports mention 228 publisher authorities as a working system",
+        "resolution": "Publisher Authorities screen should emphasize research workflow (classifying stubs, adding enrichment) rather than simple CRUD listing.",
+        "topic": "Publisher authority completeness"
+      }
+    ],
+    "dataReality": {
+      "anomalies": [
+        "553 publisher_norm values contain only non-Latin characters (Hebrew/Yiddish) -- 20.2% of publishers, technically 0.95 confidence but not normalized for cross-lingual search",
+        "44.1% of agent roles are 'other' (1,924 of 4,366) -- massive normalization gap",
+        "100% of agents use base_clean only, 0% alias-mapped",
+        "'frankfurt' (48) and 'frankfurt am main' (30) exist as separate normalized places -- deduplication target",
+        "[sine loco] (41) records with unknown place of publication",
+        "215 imprints (7.9%) have unknown publishers",
+        "38 records have no imprints (Faitlovitch collection manuscripts)",
+        "authority_enrichment table is completely empty (0 rows)",
+        "89% of publisher authorities (202/227) are unresearched stubs",
+        "Date range spans 1244-2025 (~780 years), peak at 18th century (874 records, 32.3%)"
+      ],
+      "confidenceDistributions": {
+        "criticalFinding": "Confidence is BINARY, not graduated",
+        "date": {
+          "high_0.95_to_1.0": {
+            "count": 1398,
+            "pct": "50.4%"
+          },
+          "low_0_to_0.5": {
+            "count": 69,
+            "pct": "2.5%"
+          },
+          "medium_0.8_to_0.95": {
+            "count": 1306,
+            "pct": "47.1%"
+          },
+          "note": "No records in 0.5-0.8 range"
+        },
+        "place": {
+          "high_0.95_to_1.0": {
+            "count": 2754,
+            "pct": "99.3%"
+          },
+          "low_0_to_0.5": {
+            "count": 19,
+            "pct": "0.7%"
+          },
+          "note": "BINARY: no records in 0.5-0.95 range at all"
+        },
+        "publisher": {
+          "high_0.95_to_1.0": {
+            "count": 2740,
+            "pct": "98.8%"
+          },
+          "low_0_to_0.5": {
+            "count": 33,
+            "pct": "1.2%"
+          },
+          "note": "BINARY: no records in 0.5-0.95 range at all"
+        }
+      },
+      "coverageRates": {
+        "date_start": {
+          "coverage": "97.5%",
+          "nonNull": 2704
+        },
+        "notes": {
+          "manufacturerRawAlmostEntirelyNull": "98.9% null",
+          "recordsWithMultipleImprints": 15,
+          "recordsWithNoImprints": 38
+        },
+        "place_norm": {
+          "coverage": "99.3%",
+          "nonNull": 2754
+        },
+        "publisher_norm": {
+          "coverage": "98.8%",
+          "nonNull": 2740
+        }
+      },
+      "methodDistributions": {
+        "agent": {
+          "confidence": "ALL in 0.8-0.95 range",
+          "method": "ALL 4,366 agents use base_clean only (no alias map)"
+        },
+        "date": {
+          "hebrewGematriaTotal": "20% (555 records)",
+          "topMethods": [
+            "year_exact (46.1%)",
+            "year_embedded (13.1%)",
+            "hebrew_gematria_bracketed (12.1%)",
+            "hebrew_gematria (7.9%)"
+          ]
+        },
+        "place": {
+          "methods": [
+            "place_alias_map (99.3%)",
+            "missing (0.7%)"
+          ],
+          "note": "No base_clean method in production, only alias_map or missing"
+        }
+      },
+      "recordCounts": {
+        "agents": 4366,
+        "authority_enrichment": 0,
+        "imprints": 2773,
+        "languages": 3197,
+        "notes": 8037,
+        "publisher_authorities": 227,
+        "publisher_variants": 265,
+        "records": 2796,
+        "subjects": 5415,
+        "titles": 4791
+      },
+      "source": "report-08",
+      "topValues": {
+        "languages": [
+          "Hebrew (806, 25.2%)",
+          "Latin (505, 15.8%)",
+          "French (500, 15.6%)",
+          "German (496, 15.5%)",
+          "English (366)"
+        ],
+        "places": [
+          "paris (356)",
+          "london (230)",
+          "amsterdam (196)",
+          "venice (164)",
+          "berlin (123)",
+          "leipzig (111)",
+          "jerusalem (109)"
+        ],
+        "publishers": [
+          "[publisher unknown] (115)",
+          "[sine nomine] (100)",
+          "insel verlag (16)",
+          "verdiere, paris (16)",
+          "bragadin press, venice (12)"
+        ],
+        "subjects": [
+          "Manuscripts, Ethiopic (39)",
+          "Hiddushim (Jewish law) (30)",
+          "Hebrew language - Grammar (27)",
+          "Book collecting (24)"
+        ]
+      }
+    },
+    "featuresDrop": [
+      {
+        "item": "Streamlit Chat UI (app/ui_chat/) entire app",
+        "reason": "Replaced by React Chat screen with streaming and phase visualization",
+        "source": "report-06"
+      },
+      {
+        "item": "Streamlit QA Tool (app/ui_qa/) entire app",
+        "reason": "Replaced by React Query Debugger + DB Explorer",
+        "source": "report-06"
+      },
+      {
+        "item": "QA Sessions page (guided session management)",
+        "reason": "Overly complex; standard query run history suffices",
+        "source": "report-06"
+      },
+      {
+        "item": "QA Wizard (_wizard.py, 808 lines)",
+        "reason": "Experimental, low usage; standard labeling flow covers same ground",
+        "source": "report-06"
+      },
+      {
+        "item": "app/qa.py standalone regression runner",
+        "reason": "Merged into CLI as regression subcommand",
+        "source": "report-06"
+      },
+      {
+        "item": "Dual Primo URL schemes (TAU hardcoded + NLI hardcoded)",
+        "reason": "Consolidated to single configurable scheme",
+        "source": "report-06"
+      },
+      {
+        "item": "WebSocket old single-phase path",
+        "reason": "Either upgrade to two-phase or replace; currently uses deprecated code path",
+        "source": "report-12"
+      },
+      {
+        "item": "Per-filter confidence display",
+        "reason": "Filter.confidence is always null; unbuildable",
+        "source": "report-12"
+      },
+      {
+        "item": "Four-band confidence visualization for place/publisher",
+        "reason": "Confidence is binary; medium and low bands are empty",
+        "source": "report-12"
+      },
+      {
+        "item": "Trend over time on Coverage Dashboard",
+        "reason": "No snapshot mechanism exists; requires infrastructure first",
+        "source": "report-12"
+      },
+      {
+        "item": "Before/after correction comparison",
+        "reason": "No tracking infrastructure exists",
+        "source": "report-12"
+      },
+      {
+        "item": "Rich System Health features (log viewer, metrics dashboard, interaction viewer)",
+        "reason": "No infrastructure exists; defer to later phase",
+        "source": "report-12"
+      },
+      {
+        "item": "Separate QA database concept",
+        "reason": "Expose through unified diagnostic API",
+        "source": "report-06"
+      },
+      {
+        "item": "Hardcoded localhost:8000 API URL",
+        "reason": "Environment variable via Vite config",
+        "source": "report-06"
+      },
+      {
+        "item": "Emoji in CLI and QA Tool output",
+        "reason": "Per project code style",
+        "source": "report-06"
+      },
+      {
+        "item": "RAG template remnants (chunk_rules.yaml, outlook_helper.yaml, completer.py)",
+        "reason": "Irrelevant to MARC bibliographic records",
+        "source": "report-03"
+      },
+      {
+        "item": "Recharts library (potentially)",
+        "reason": "Currently used only for pie charts; evaluate replacement when complex charts needed",
+        "source": "report-06"
+      }
+    ],
+    "featuresKeep": [
+      {
+        "destination": "Issues Workbench, Query Debugger, DB Explorer, Publishers",
+        "feature": "TanStack Table implementation (sortable, paginated, row-selectable)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Coverage Dashboard",
+        "feature": "Coverage Dashboard (stat cards, coverage bars, gap cards, method charts)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Agent Chat",
+        "feature": "Agent Chat (proposal tables, approve/reject/edit, coverage sidebar)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Correction Audit Trail",
+        "feature": "Correction Review (audit trail, filtering, pagination, export)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Issues Workbench",
+        "feature": "Inline editable cells + batch toolbar",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Issues Workbench",
+        "feature": "Cluster cards with priority scoring",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "All screens",
+        "feature": "TanStack Query patterns (cache invalidation, optimistic updates)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "All screens",
+        "feature": "Tailwind CSS design system (confidence color bands)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Chat, Query Debugger",
+        "feature": "Candidate card layout (title/author/date/place/publisher/subjects)",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Shared component",
+        "feature": "Smart date display (single year vs range)",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Shared component",
+        "feature": "Place display (canonical + raw with deduplication)",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Follow-up suggestion buttons",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Example query shortcuts",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Shared PrimoLink component",
+        "feature": "Primo URL generation (configurable institution)",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI + API"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "TP/FP/FN/UNK labeling workflow",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "Issue tagging (predefined categories)",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "False negative search (database search for missing results)",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "Gold set export + regression runner display",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "Query plan inspection (JSON tree)",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Database Explorer",
+        "feature": "Read-only DB table browser with column search",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Two-phase conversation model (Phase 1 + Phase 2)",
+        "source": "report-06",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "Chat (overall confidence only)",
+        "feature": "Intent interpretation with confidence scoring (0.85 threshold)",
+        "source": "reports 06, 12",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Clarification flow (ambiguity detection)",
+        "source": "report-06",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Collection overview queries",
+        "source": "report-06",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "Chat (text only until facets forwarded)",
+        "feature": "Aggregation responses (top-N publishers/places/dates)",
+        "source": "report-12",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "CLI (kept and extended)",
+        "feature": "CLI pipeline commands (parse_marc, query)",
+        "source": "report-00",
+        "sourceUI": "CLI"
+      },
+      {
+        "destination": "CLI",
+        "feature": "CLI regression subcommand (merged from app/qa.py)",
+        "source": "report-00",
+        "sourceUI": "QA Regression Runner"
+      }
+    ],
+    "pipelineReality": {
+      "evidenceShapeIssues": [
+        "Subject evidence value is always null (Issue #1, Medium severity) -- only matched_against populated",
+        "Agent evidence source shows 'marc:unknown' instead of actual MARC tag (Issue #3, Low severity)",
+        "Empty-filter queries produce evidence-less candidates with evidence:[] (Issue #5, Low severity)"
+      ],
+      "knownBugs": {
+        "falseBroadening": {
+          "description": "Subject retry mechanism remaps inapplicable subjects to loosely related ones. 'quantum physics' returns 67 philosophy books. compile_query_with_subject_hints() uses top-100 DB subjects as hints, LLM picks closest match.",
+          "location": "scripts/query/execute.py should_retry_with_subject_hints() + scripts/query/llm_compiler.py",
+          "recommendation": "Add confidence threshold to retry mapping, or return zero results with suggestion instead of silently broadening",
+          "severity": "High"
+        },
+        "filterConfidenceAlwaysNull": {
+          "description": "All filter objects in QueryPlan have confidence: null. LLM is not asked to produce per-filter confidence. LOW_CONFIDENCE warning can never fire.",
+          "location": "scripts/query/llm_compiler.py",
+          "severity": "Medium"
+        },
+        "noAmbiguityWarningForSingleWords": {
+          "description": "Single-word queries like 'Venice' are interpreted without ambiguity warning. Could be place, subject, or title.",
+          "location": "scripts/query/service.py",
+          "severity": "Low"
+        },
+        "publisherVariantGap": {
+          "description": "Query 'books published by Elsevier' matched 1 of 16 Elzevir-family records. CONTAINS filter LIKE '%elsevier%' only matches modern spelling, misses historical forms (apud danielem elzevirivm, ex officina elseviriana, typis l. elzevirii, etc.). Publisher authority system maps these to 'house of elzevir' but query doesn't search for 'elzevir'.",
+          "impact": "Users searching modern publisher names may miss most historical records",
+          "severity": "High"
+        }
+      },
+      "performanceSummary": {
+        "cached_query_ms": "~150",
+        "fresh_query_range_ms": "1500-7500 (dominated by LLM call)",
+        "retried_query_ms": "~7500 (double LLM call)",
+        "sql_execution_ms": "<600"
+      },
+      "queryBehaviorObservations": [
+        "LLM compilation dominates execution time (2-4 seconds per fresh query)",
+        "Cache hits eliminate LLM time entirely (152ms for cached query vs 3000+ms fresh)",
+        "SQL execution consistently fast (<600ms even for full-table scans)",
+        "Place, date, and language filters are reliable and produce correct results",
+        "Multi-filter AND composition works correctly",
+        "Warning system correctly identifies empty-filter queries",
+        "Facet computation provides useful breakdowns (by_place, by_year, by_language, by_publisher, by_century)"
+      ],
+      "source": "report-09"
+    },
+    "risks": [
+      {
+        "id": 1,
+        "impact": "Delays Phase 1 by 3-5 days",
+        "likelihood": "ELEVATED (confirmed WebSocket lacks two-phase entirely)",
+        "mitigation": "Launch HTTP-only; defer WebSocket to Phase 4",
+        "risk": "WebSocket implementation complexity",
+        "source": "reports 07, 12",
+        "status": "ELEVATED after empirical"
+      },
+      {
+        "id": 2,
+        "impact": "Delays Phase 2 by 1+ week",
+        "likelihood": "High",
+        "mitigation": "Strict feature parity checklist; ADD features are Phase 4+",
+        "risk": "Query Debugger scope creep",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 3,
+        "impact": "Blocks Phase 2 frontend",
+        "likelihood": "CRITICAL (zero endpoints exist, was 2-3 days, now 4-5 days)",
+        "mitigation": "Start frontend with MSW mocks; backend and frontend in parallel",
+        "risk": "Diagnostic API endpoints take longer than estimated",
+        "source": "reports 07, 12",
+        "status": "ELEVATED to CRITICAL"
+      },
+      {
+        "id": 4,
+        "impact": "Data loss or inaccessible history",
+        "likelihood": "Low",
+        "mitigation": "New diagnostic API reads from existing qa.db directly",
+        "risk": "QA data migration -- existing labels need accessibility",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 5,
+        "impact": "Lost capability",
+        "likelihood": "Medium",
+        "mitigation": "Enforce deletion criteria: every feature has working replacement before code removal",
+        "risk": "Streamlit retirement breaks active workflows",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 6,
+        "impact": "Slower initial page load",
+        "likelihood": "Low",
+        "mitigation": "Vite code splitting by route is automatic; monitor build output",
+        "risk": "Performance regression as React app grows",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 7,
+        "impact": "User confusion",
+        "likelihood": "Low",
+        "mitigation": "Phase 0 preserves /operator/coverage as landing; Chat becomes / only in Phase 4",
+        "risk": "Landing page change confuses Workbench users",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 8,
+        "impact": "Degraded streaming experience",
+        "likelihood": "CONFIRMED as fact (not a risk)",
+        "mitigation": "Launch HTTP-only",
+        "risk": "WebSocket uses old single-phase path",
+        "source": "report-12",
+        "status": "CONFIRMED"
+      },
+      {
+        "id": 9,
+        "impact": "Degraded Chat Phase 2 UX",
+        "likelihood": "High (confirmed)",
+        "mitigation": "Backend micro-task B2 in Phase 1",
+        "risk": "Phase 2 aggregation charts unbuildable without facets forwarding",
+        "source": "report-12"
+      },
+      {
+        "id": 10,
+        "impact": "Perceived low value",
+        "likelihood": "High (confirmed)",
+        "mitigation": "Reframe as improvement opportunities with method-based filtering",
+        "risk": "Issues Workbench appears empty (only 121 items)",
+        "source": "report-12"
+      },
+      {
+        "id": 11,
+        "impact": "Chat users miss historical records for publisher queries",
+        "likelihood": "High (confirmed)",
+        "mitigation": "Document as known limitation; consider publisher-authority-aware search",
+        "risk": "Publisher variant matching gap (1/16 Elzevir match)",
+        "source": "report-12"
+      },
+      {
+        "id": 12,
+        "impact": "Misleading results without warning",
+        "likelihood": "Medium (confirmed)",
+        "mitigation": "Forward QueryWarning to frontend; display retry warning prominently",
+        "risk": "Subject retry false broadening produces incorrect results",
+        "source": "report-12"
+      }
+    ],
+    "screenSpecs": [
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "POST /chat",
+            "GET /sessions/{session_id}",
+            "DELETE /sessions/{session_id}",
+            "GET /health",
+            "POST /metadata/primo-urls",
+            "GET /metadata/records/{mms_id}/primo"
+          ],
+          "existingButNotUsable": [
+            "WS /ws/chat (old single-phase, lacks two-phase support)"
+          ]
+        },
+        "backendPrerequisites": [
+          "B1-B4 micro-tasks (days 1-3 of Phase 1)"
+        ],
+        "dataShapesAvailable": {
+          "candidate": {
+            "author": "string|null",
+            "date_end": "int|null",
+            "date_start": "int|null",
+            "description": "string|null",
+            "evidence": [
+              "Evidence"
+            ],
+            "match_rationale": "string",
+            "place_norm": "string|null",
+            "place_raw": "string|null",
+            "publisher": "string|null",
+            "record_id": "string",
+            "subjects": [
+              "string (first 3)"
+            ],
+            "title": "string|null"
+          },
+          "chatResponse": {
+            "candidate_set": "CandidateSet|null",
+            "clarification_needed": "string|null",
+            "confidence": "float|null",
+            "message": "string",
+            "metadata": "dict (polymorphic)",
+            "phase": "query_definition|corpus_exploration|null",
+            "session_id": "string",
+            "suggested_followups": [
+              "string"
+            ]
+          },
+          "evidence": {
+            "confidence": "float|null",
+            "extraction_error": "string|null",
+            "field": "string",
+            "matched_against": "any",
+            "operator": "string",
+            "source": "string (marc:unknown for agents)",
+            "value": "any (often null for subjects)"
+          }
+        },
+        "designAdjustments": [
+          "Launch HTTP-only, defer WebSocket streaming until handler upgraded to two-phase",
+          "Drop per-filter confidence display (always null), show only overall confidence",
+          "Batch-resolve Primo URLs via POST /metadata/primo-urls, cache client-side",
+          "Handle polymorphic ChatResponse.metadata with type guards",
+          "Display SUBJECT_RETRY warning when QueryWarning forwarded",
+          "Access QueryPlan via GET /sessions/{session_id} workaround"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "execution_time_ms needs adding to ChatResponse.metadata (B1: 1-2 hours)",
+          "FacetCounts need forwarding to ChatResponse.metadata for aggregation charts (B2: 2-4 hours)",
+          "QueryWarning[] need forwarding to ChatResponse.metadata (B3: 1-2 hours)",
+          "Primo URLs need batch resolution or adding to Candidate model (B4: 2-4 hours)"
+        ],
+        "featuresThatWork": [
+          "Two-phase flow via HTTP POST /chat (Phase 1: intent interpretation, Phase 2: exploration)",
+          "Overall interpretation confidence (ChatResponse.confidence)",
+          "Clarification prompts for ambiguous queries",
+          "Follow-up suggestion chips",
+          "Session management (create, resume, expire)",
+          "Phase 2 exploration: aggregation text, refinement, comparison, enrichment, new query",
+          "Collection overview queries",
+          "Candidate objects have all fields for result cards"
+        ],
+        "name": "Chat",
+        "path": "/",
+        "source": "New (replaces Streamlit Chat UI)",
+        "tier": 1
+      },
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /metadata/coverage"
+          ]
+        },
+        "designAdjustments": [
+          "Replace four-band visualization with binary (resolved/unresolved) for place and publisher -- medium and low bands are EMPTY",
+          "Keep graduated bands only for dates (0.8-0.95 has 1,306 records)",
+          "Lead with agent normalization gaps (100% base_clean, 0% alias-mapped, 4,366 agents)",
+          "Add Hebrew-script publisher indicator (553 un-transliterated, technically 0.95 but functionally incomplete)",
+          "Drop 'trend over time' from initial scope (no snapshot mechanism exists)",
+          "Drop 'before/after correction comparison' (no tracking infrastructure)",
+          "Reframe gap cards: show full picture including Hebrew publishers (553), unresearched authorities (202), uncategorized agent roles (44.1%)"
+        ],
+        "featuresThatNeedNewEndpoints": [],
+        "featuresThatWork": [
+          "Per-field coverage bars (date, place, publisher, agent_name, agent_role)",
+          "Confidence distribution (10 bands)",
+          "Method distribution per field",
+          "Flagged items per field",
+          "Gap cards with drill-through to Workbench (via field param on issues endpoint)"
+        ],
+        "name": "Coverage Dashboard",
+        "path": "/operator/coverage",
+        "source": "Existing React Dashboard (enhanced)",
+        "tier": 2
+      },
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /metadata/issues",
+            "POST /metadata/corrections",
+            "POST /metadata/corrections/batch",
+            "GET /metadata/clusters"
+          ]
+        },
+        "designAdjustments": [
+          "Reframe from 'issues' to 'improvement opportunities' -- only 121 low-confidence records total",
+          "Replace confidence slider with method-based filtering (base_clean vs alias_map vs publisher_authority)",
+          "Acknowledge confidence slider gap: 0.5-0.95 range returns 0 results for place and publisher",
+          "Add 'Hebrew publishers' tab for 553 un-transliterated Hebrew-script publishers",
+          "Add 'Agent normalization' tab for 4,366 base_clean-only agents",
+          "Date corrections not currently supported via corrections API"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "Date corrections need CorrectionRequest.field extended to accept 'date' (B17)",
+          "Hebrew-script publisher tab needs dedicated query or filter"
+        ],
+        "featuresThatWork": [
+          "TanStack Table with sortable/paginated records",
+          "Inline editable cells for corrections",
+          "Batch corrections via batch toolbar",
+          "Cluster view with expandable cards",
+          "Confidence and method filtering via API"
+        ],
+        "name": "Issues Workbench",
+        "path": "/operator/workbench",
+        "source": "Existing React Workbench (enhanced)",
+        "tier": 2
+      },
+      {
+        "alignmentRating": "CONFIRMED",
+        "apiEndpoints": {
+          "existing": [
+            "POST /metadata/agent/chat",
+            "POST /metadata/corrections",
+            "GET /metadata/coverage"
+          ]
+        },
+        "designAdjustments": [
+          "Note: 89% of publisher authorities are unresearched stubs, PublisherAgent has limited authority context",
+          "Note: authority_enrichment table is empty (0 rows), no VIAF/CERL data for agent proposals",
+          "No structural changes needed"
+        ],
+        "featuresThatNeedNewEndpoints": [],
+        "featuresThatWork": [
+          "Field-specific agent selection (Place, Date, Publisher, Agent)",
+          "Conversational interface with proposals (raw_value, canonical_value, confidence, reasoning, evidence_sources)",
+          "Cluster summaries with priority scores",
+          "Coverage sidebar via /metadata/coverage",
+          "Corrections via /metadata/corrections with records_affected"
+        ],
+        "name": "Agent Chat",
+        "path": "/operator/agent",
+        "source": "Existing React AgentChat (enhanced)",
+        "tier": 2
+      },
+      {
+        "alignmentRating": "CONFIRMED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /metadata/corrections/history"
+          ]
+        },
+        "designAdjustments": [
+          "Defer revert capability until endpoint built",
+          "Client-side filtering can approximate date range and search until API params added",
+          "Client-side export (no server-side export endpoint)"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "Revert endpoint (B19: 1 day)",
+          "Search, source, date range filter params on corrections history (B18: 0.5 day)"
+        ],
+        "featuresThatWork": [
+          "Paginated correction history with timestamp, field, raw_value, canonical_value, evidence, source, action",
+          "Filtering by field",
+          "CSV/JSON export (client-side)"
+        ],
+        "name": "Correction Audit Trail",
+        "path": "/operator/review",
+        "source": "Existing React Review (enhanced)",
+        "tier": 2
+      },
+      {
+        "alignmentRating": "MISALIGNED",
+        "apiEndpoints": {
+          "existing": [],
+          "needed": [
+            "POST /diagnostics/query-run (B5: 1 day)",
+            "GET /diagnostics/query-runs (B6: 0.5 day)",
+            "POST /diagnostics/labels (B7: 0.5 day)",
+            "GET /diagnostics/labels/{run_id} (B8: 0.5 day)",
+            "POST /diagnostics/gold-set/export (B9: 0.5 day)",
+            "POST /diagnostics/gold-set/regression (B10: 1 day)"
+          ]
+        },
+        "designAdjustments": [
+          "Drop per-filter confidence visualization (always null)",
+          "Drop execution timing breakdown until backend exposes it",
+          "Access query plan via session fetch or add to diagnostics query-run response",
+          "Reprioritize to AFTER operator screens (most new backend work)",
+          "Display SUBJECT_RETRY warnings prominently for false broadening detection"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "ALL features require new backend endpoints -- zero diagnostics API exists",
+          "QA database (data/qa/qa.db) has tables but no HTTP layer",
+          "QueryPlan access requires session ID lookup workaround"
+        ],
+        "featuresThatWork": [],
+        "name": "Query Debugger",
+        "path": "/diagnostics/query",
+        "source": "New (replaces Streamlit QA Tool)",
+        "tier": 3
+      },
+      {
+        "alignmentRating": "MISALIGNED",
+        "apiEndpoints": {
+          "existing": [],
+          "needed": [
+            "GET /diagnostics/tables (B11: 0.5 day)",
+            "GET /diagnostics/tables/{name}/rows (B12: 1 day, with SQL injection protection)"
+          ]
+        },
+        "designAdjustments": [
+          "Include all 10 tables (records, imprints, titles, subjects, agents, languages, notes, publisher_authorities, publisher_variants, authority_enrichment), not 6",
+          "Consider deferring to post-beta (data accessible via CLI/direct SQLite)"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "ALL features require new backend endpoints"
+        ],
+        "featuresThatWork": [],
+        "name": "Database Explorer",
+        "path": "/diagnostics/db",
+        "source": "New (replaces QA Tool DB Explorer)",
+        "tier": 3
+      },
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /metadata/publishers (read-only, with type filter)"
+          ],
+          "needed": [
+            "POST/PUT/DELETE for authority CRUD (B13: 1-2 days)",
+            "Match preview endpoint (B14: 0.5 day)"
+          ]
+        },
+        "designAdjustments": [
+          "Reframe for research workflow: 89% (202/227) are unresearched stubs",
+          "Show enrichment fields (VIAF, Wikidata, CERL) as 'not yet researched' when null (all currently null)",
+          "Elevate priority: read-only view can co-develop with Phase 1 since API already exists",
+          "Split: read-only in Phase 1 parallel, CRUD in Phase 3"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "Authority CRUD (create, edit, delete authorities and variants)",
+          "Match preview ('Adding this variant would match N additional imprints')"
+        ],
+        "featuresThatWork": [
+          "Authority list with variant_count, imprint_count, variants[], type filtering",
+          "Read-only view is immediately buildable"
+        ],
+        "name": "Publisher Authorities",
+        "path": "/admin/publishers",
+        "source": "New",
+        "tier": 4
+      },
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /health"
+          ],
+          "needed": [
+            "DB file size/last-modified endpoint (B15: 1 hour)"
+          ]
+        },
+        "designAdjustments": [
+          "Scope down to basic status + nav bar green/red dot indicator",
+          "Defer log viewer, metrics dashboard, interaction viewer, request rate charts",
+          "Lowest priority screen"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "DB file size and modification time (trivial endpoint)",
+          "Log viewer, metrics, interaction viewer all require infrastructure NOT in scope"
+        ],
+        "featuresThatWork": [
+          "Basic health check: status (healthy|degraded|unhealthy), database_connected, session_store_ok"
+        ],
+        "name": "System Health",
+        "path": "/admin/health",
+        "source": "New",
+        "tier": 4
+      }
+    ],
+    "timeline": {
+      "criticalPath": "Phase 0 -> Phase 1 -> Phase 2 (backend) -> Phase 2 (frontend) -> Phase 4 -> Phase 5",
+      "earlyWins": [
+        "End of Week 1: Restructured React app with 9-screen skeleton",
+        "End of Week 3: Working Chat screen (Streamlit Chat can be retired)",
+        "End of Week 5: Working Query Debugger (QA Tool can be retired)",
+        "End of Week 8: All old UIs removed, single unified app"
+      ],
+      "originalWeeks": 7,
+      "phases": {
+        "phase0": {
+          "concurrent": "Phase 1 backend micro-tasks (B1-B4)",
+          "deliverables": [
+            "Restructure frontend/src/pages/ to tiered layout",
+            "Update App.tsx routing",
+            "Replace Sidebar with tiered navigation",
+            "Add Zustand store",
+            "Add shared design tokens",
+            "Extend Vite proxy",
+            "Temporary redirects from old routes"
+          ],
+          "duration": "Week 1",
+          "exitCriteria": "All 4 existing Workbench pages render at new URLs. Placeholder pages exist for 5 new screens.",
+          "name": "Foundation & Scaffolding",
+          "status": "NO CHANGE from original"
+        },
+        "phase1": {
+          "backendPrereqs": "B1-B4 micro-tasks in days 1-3",
+          "concurrent": "Phase 3a -- Publisher Authorities read-only (1-2 days)",
+          "deliverables": [
+            "Chat.tsx with two-phase flow via HTTP",
+            "CandidateCard.tsx reusable component",
+            "Follow-up chips, example queries, phase indicator",
+            "Session management",
+            "Batch Primo URL resolution"
+          ],
+          "droppedFromOriginal": [
+            "useWebSocket.ts hook (deferred to Phase 4)",
+            "Per-filter confidence display (always null)",
+            "WebSocket streaming progress indicators"
+          ],
+          "duration": "Weeks 2-3",
+          "enables": "Streamlit Chat UI marked deprecated",
+          "exitCriteria": "Can send NL query via HTTP, see formatted results with evidence, two-phase flow works, overall confidence displayed, clarification prompts render, sessions persist, Primo links work",
+          "name": "Chat Screen (HTTP-only)",
+          "status": "MODIFIED: HTTP-only, no WebSocket"
+        },
+        "phase2": {
+          "deliverables": [
+            "All diagnostic API endpoints (B5-B12)",
+            "QueryDebugger.tsx with three-panel layout",
+            "DatabaseExplorer.tsx for 10 tables",
+            "CLI consolidation: merge app/qa.py into app/cli.py as regression subcommand"
+          ],
+          "droppedFromOriginal": [
+            "Per-filter confidence visualization (always null)",
+            "Overlap with Phase 1 (now sequential)"
+          ],
+          "duration": "Weeks 4-5 (backend: Week 4, frontend: Weeks 4-5)",
+          "enables": "Streamlit QA Tool marked deprecated",
+          "exitCriteria": "Can run query, see plan+SQL+results; can label TP/FP/FN/UNK; can search for FN; can export gold set and run regression; DB Explorer shows all 10 tables; CLI regression subcommand works",
+          "name": "Query Debugger + DB Explorer",
+          "status": "MODIFIED: sequential after Phase 1, backend expanded to 4-5 days"
+        },
+        "phase3": {
+          "deliverables": [
+            "Publishers.tsx with authority list, type filtering, expandable variants (CRUD requires B13-B14)",
+            "Health.tsx with basic status + nav bar indicator (B15)"
+          ],
+          "duration": "Week 5",
+          "name": "Admin Screens",
+          "reframings": [
+            "Publisher screen emphasizes research workflow (classifying 202 stubs)",
+            "System Health scoped down to basic status only"
+          ],
+          "status": "MODIFIED: split into 3a (read-only publishers parallel with Phase 1) and 3b (CRUD + Health)"
+        },
+        "phase4": {
+          "deliverables": [
+            "Cross-screen links (Chat->Workbench 'flag issue', Workbench->AgentChat, Debugger->Workbench for FN)",
+            "Shared component finalization (ConfidenceBadge, CandidateCard, PrimoLink, FieldBadge)",
+            "Testing (Vitest, RTL, Playwright, MSW)",
+            "Production build validation",
+            "WebSocket two-phase upgrade (B16, if prioritized)",
+            "Corrections API extensions (B17-B19)",
+            "Evidence quality fixes (B20-B21)",
+            "Subject retry warning (B22)"
+          ],
+          "duration": "Weeks 6-7",
+          "name": "Polish, Integration & Testing",
+          "status": "MODIFIED: additional tasks from empirical findings"
+        },
+        "phase5": {
+          "archives": [
+            "Wizard code, QA DB schema reference, regression runner reference -> archive/retired_streamlit/"
+          ],
+          "deletions": [
+            "app/ui_chat/ (449 lines)",
+            "app/ui_qa/ (3,531 lines)",
+            "app/qa.py (187 lines)",
+            "streamlit from pyproject.toml"
+          ],
+          "duration": "Week 8",
+          "exitCriteria": "Single React app serves 9 screens. No Streamlit dependencies. CLAUDE.md updated. Git tagged ui-migration-complete.",
+          "name": "Retirement & Cleanup",
+          "preservations": [
+            "data/qa/qa.db (historical)",
+            "data/qa/gold.json (active, used by CLI)"
+          ],
+          "status": "NO CHANGE from original"
+        }
+      },
+      "reasonForExtraWeek": "Diagnostic endpoint backend work larger than estimated; Phases 1 and 2 must be sequential not parallel",
+      "source": "report-12 (corrected from report-07)",
+      "totalWeeks": 8
+    }
+  },
+  "startedAt": "2026-03-23T12:58:24.422Z",
+  "finishedAt": "2026-03-23T12:58:24.422Z",
+  "value": {
+    "apiReality": {
+      "actualEndpointShapes": {
+        "GET_health": "Returns status (healthy|degraded|unhealthy), database_connected, session_store_ok",
+        "GET_metadata_clusters": "Bare array of ClusterResponse with cluster_id, field, values, proposed_canonical, priority_score, total_records_affected",
+        "GET_metadata_corrections_history": "Paginated with field filter only. Returns entries with timestamp, field, raw_value, canonical_value, evidence, source, action",
+        "GET_metadata_coverage": "Returns FieldCoverageResponse per field with confidence_distribution (10 bands), method_distribution, flagged_items",
+        "GET_metadata_issues": "Paginated, params: field (required), max_confidence, limit, offset. Returns items with mms_id, raw_value, norm_value, confidence, method",
+        "GET_metadata_methods": "Bare array of MethodDistribution (method, count, percentage)",
+        "GET_metadata_publishers": "Returns authorities with variant_count, imprint_count, variants[], enrichment IDs, type filter. Read-only",
+        "GET_metadata_unmapped": "Bare array of UnmappedValue (raw_value, frequency, confidence, method)",
+        "POST_chat": "Works with full two-phase flow. Returns ChatResponseAPI wrapper with ChatResponse containing phase, confidence, candidate_set, suggested_followups, clarification_needed, metadata (polymorphic dict)",
+        "POST_metadata_agent_chat": "Accepts field, message, session_id. Returns response, proposals[], clusters[], field, action (analysis|proposals|answer)",
+        "POST_metadata_corrections": "Accepts field (place|publisher|agent -- NOT date), raw_value, canonical_value, evidence, source. Returns success, alias_map_updated, records_affected",
+        "POST_metadata_corrections_batch": "Accepts corrections array. Returns total_applied, total_skipped, total_records_affected, results",
+        "POST_metadata_primo_urls": "Batch URL generation with optional base_url override",
+        "WS_ws_chat": "OLD SINGLE-PHASE path. No intent agent, no facets, no phase/confidence. Uses compile_query() directly. Message types: session_created, progress, batch, complete, error"
+      },
+      "gaps": [
+        "Zero /diagnostics/* endpoints exist (blocks Query Debugger and DB Explorer)",
+        "execution_time_ms computed but NOT in ChatResponse",
+        "FacetCounts computed then DISCARDED -- not serialized to ChatResponse",
+        "QueryWarning[] not forwarded to frontend",
+        "Filter.confidence always null (LLM does not set it)",
+        "No CRUD endpoints for publisher authorities (read-only only)",
+        "No revert endpoint for corrections",
+        "No search/source/date-range params on corrections history",
+        "CorrectionRequest.field does not accept 'date'",
+        "QueryPlan NOT in ChatResponse (stored in session messages)",
+        "Primo URLs not on Candidate objects"
+      ],
+      "source": "report-10",
+      "surprises": [
+        "WebSocket /ws/chat uses completely different (old) code path from HTTP /chat",
+        "Metadata API coverage endpoint returns 5 fields including agent_name and agent_role (more than 4 assumed)",
+        "ChatResponse.metadata is polymorphic untyped dict (different shapes per phase and intent type)",
+        "Phase 2 supports 7 intent types: AGGREGATION, METADATA_QUESTION, REFINEMENT, COMPARISON, ENRICHMENT_REQUEST, RECOMMENDATION (stub), NEW_QUERY",
+        "AGGREGATION responses include visualization_hint (bar_chart, pie_chart, table)"
+      ]
+    },
+    "architecture": {
+      "confirmedDecisions": {
+        "framework": "React (continue with existing)",
+        "name": "Rare Books Bot",
+        "tagline": "Evidence-based bibliographic discovery",
+        "tiers": 4,
+        "totalScreens": 9
+      },
+      "designPrinciples": [
+        "Bot-Centered Architecture: chat is the primary surface, everything else supports it",
+        "Progressive Disclosure: scholars see clean chat; operators see confidence; developers see query plans",
+        "Evidence-First Display: confidence scores and MARC citations are first-class UI elements",
+        "Observable by Default: query interpretation, phase transitions, timing visible in real-time",
+        "Single Source of Truth: one Primo URL scheme, one query path, one correction workflow",
+        "Composable Over Monolithic: reusable components (CandidateCard, ConfidenceBadge, PrimoLink)"
+      ],
+      "fileStructure": "frontend/src/pages/ with Chat.tsx, operator/, diagnostics/, admin/ subdirectories",
+      "navigationStructure": {
+        "sidebarBehavior": "Collapses to icons on narrow viewports. Chat page hides sidebar by default (hamburger accessible). Other pages show sidebar.",
+        "tier1_primary": [
+          {
+            "name": "Chat",
+            "path": "/"
+          }
+        ],
+        "tier2_operator": [
+          {
+            "name": "Coverage Dashboard",
+            "path": "/operator/coverage"
+          },
+          {
+            "name": "Issues Workbench",
+            "path": "/operator/workbench"
+          },
+          {
+            "name": "Agent Chat",
+            "path": "/operator/agent"
+          },
+          {
+            "name": "Correction Review",
+            "path": "/operator/review"
+          }
+        ],
+        "tier3_diagnostics": [
+          {
+            "name": "Query Debugger",
+            "path": "/diagnostics/query"
+          },
+          {
+            "name": "Database Explorer",
+            "path": "/diagnostics/db"
+          }
+        ],
+        "tier4_admin": [
+          {
+            "name": "Publisher Authorities",
+            "path": "/admin/publishers"
+          },
+          {
+            "name": "System Health",
+            "path": "/admin/health"
+          }
+        ]
+      },
+      "techStack": {
+        "additional": [
+          "react-markdown",
+          "cmdk (command palette)",
+          "@tanstack/react-virtual",
+          "sonner (toasts)"
+        ],
+        "charts": "Recharts v3 (existing, add Nivo/Observable Plot when needed)",
+        "chatStreaming": "HTTP-only at launch (WebSocket deferred)",
+        "clientState": "Zustand (new)",
+        "core": {
+          "react": "19",
+          "typescript": "5.9",
+          "vite": "8"
+        },
+        "css": "Tailwind CSS v4 (existing)",
+        "noFullUILibrary": true,
+        "primitives": "Radix UI (new)",
+        "routing": "React Router v7 (existing)",
+        "serverState": "TanStack Query v5 (existing)",
+        "tables": "TanStack Table v8 (existing)",
+        "testing": "Vitest + React Testing Library + Playwright + MSW (new)"
+      }
+    },
+    "backendWork": [
+      {
+        "blocks": "Chat timing display",
+        "effort": "1-2 hours",
+        "id": "B1",
+        "phase": "Phase 1 (days 1-3)",
+        "task": "Add execution_time_ms to ChatResponse.metadata"
+      },
+      {
+        "blocks": "Phase 2 aggregation charts",
+        "effort": "2-4 hours",
+        "id": "B2",
+        "phase": "Phase 1 (days 1-3)",
+        "task": "Forward FacetCounts in ChatResponse.metadata"
+      },
+      {
+        "blocks": "Chat warnings, Debugger",
+        "effort": "1-2 hours",
+        "id": "B3",
+        "phase": "Phase 1 (days 1-3)",
+        "task": "Forward QueryWarning[] in ChatResponse.metadata"
+      },
+      {
+        "blocks": "Chat Primo links",
+        "effort": "2-4 hours",
+        "id": "B4",
+        "phase": "Phase 1 (days 1-3)",
+        "task": "Add primo_url to Candidate model OR document batch approach"
+      },
+      {
+        "blocks": "Query Debugger",
+        "effort": "1 day",
+        "id": "B5",
+        "phase": "Phase 2 backend",
+        "task": "POST /diagnostics/query-run endpoint"
+      },
+      {
+        "blocks": "Query Debugger history",
+        "effort": "0.5 day",
+        "id": "B6",
+        "phase": "Phase 2 backend",
+        "task": "GET /diagnostics/query-runs endpoint"
+      },
+      {
+        "blocks": "Query Debugger labeling",
+        "effort": "0.5 day",
+        "id": "B7",
+        "phase": "Phase 2 backend",
+        "task": "POST /diagnostics/labels endpoint"
+      },
+      {
+        "blocks": "Query Debugger labeling",
+        "effort": "0.5 day",
+        "id": "B8",
+        "phase": "Phase 2 backend",
+        "task": "GET /diagnostics/labels/{run_id} endpoint"
+      },
+      {
+        "blocks": "Gold set management",
+        "effort": "0.5 day",
+        "id": "B9",
+        "phase": "Phase 2 backend",
+        "task": "POST /diagnostics/gold-set/export endpoint"
+      },
+      {
+        "blocks": "Regression runner display",
+        "effort": "1 day",
+        "id": "B10",
+        "phase": "Phase 2 backend",
+        "task": "POST /diagnostics/gold-set/regression endpoint"
+      },
+      {
+        "blocks": "DB Explorer",
+        "effort": "0.5 day",
+        "id": "B11",
+        "phase": "Phase 2 backend",
+        "task": "GET /diagnostics/tables endpoint"
+      },
+      {
+        "blocks": "DB Explorer",
+        "effort": "1 day",
+        "id": "B12",
+        "phase": "Phase 2 backend",
+        "task": "GET /diagnostics/tables/{name}/rows endpoint (with SQL injection protection)"
+      },
+      {
+        "blocks": "Publisher editing",
+        "effort": "1-2 days",
+        "id": "B13",
+        "phase": "Phase 3",
+        "task": "Publisher authority CRUD endpoints (POST/PUT/DELETE)"
+      },
+      {
+        "blocks": "Match impact display",
+        "effort": "0.5 day",
+        "id": "B14",
+        "phase": "Phase 3",
+        "task": "Publisher match preview endpoint"
+      },
+      {
+        "blocks": "System Health",
+        "effort": "1 hour",
+        "id": "B15",
+        "phase": "Phase 3",
+        "task": "DB file size/last-modified endpoint"
+      },
+      {
+        "blocks": "Chat streaming with phase support",
+        "effort": "2-3 days",
+        "id": "B16",
+        "phase": "Phase 4",
+        "task": "Upgrade WebSocket handler to two-phase flow"
+      },
+      {
+        "blocks": "Date corrections in Workbench",
+        "effort": "0.5 day",
+        "id": "B17",
+        "phase": "Phase 4",
+        "task": "Add 'date' to CorrectionRequest.field supported values"
+      },
+      {
+        "blocks": "Correction Review filters",
+        "effort": "0.5 day",
+        "id": "B18",
+        "phase": "Phase 4",
+        "task": "Add search, source, date range to corrections history API"
+      },
+      {
+        "blocks": "Correction Review revert",
+        "effort": "1 day",
+        "id": "B19",
+        "phase": "Phase 4",
+        "task": "Corrections revert endpoint"
+      },
+      {
+        "blocks": "Evidence panel completeness",
+        "effort": "0.5 day",
+        "id": "B20",
+        "phase": "Phase 4",
+        "task": "Fix subject evidence value null (populate from DB)"
+      },
+      {
+        "blocks": "Evidence panel MARC provenance",
+        "effort": "0.5 day",
+        "id": "B21",
+        "phase": "Phase 4",
+        "task": "Fix agent evidence source 'marc:unknown'"
+      },
+      {
+        "blocks": "False broadening prevention",
+        "effort": "1 day",
+        "id": "B22",
+        "phase": "Phase 4",
+        "task": "Add subject retry confidence threshold or warning"
+      }
+    ],
+    "contradictionCount": 16,
+    "contradictions": [
+      {
+        "empirical": "Report 10-11: WebSocket uses old single-phase compile_query() path. No intent agent, no Phase 2, no facets, no phase/confidence fields. Completely separate code path from HTTP /chat",
+        "original": "Reports 06-07 assume WebSocket supports two-phase flow with phase transitions, confidence, and facets -- used for Chat streaming from Phase 1",
+        "resolution": "Launch Chat with HTTP-only (POST /chat). Defer WebSocket streaming to Phase 4 after handler upgrade (B16: 2-3 days). Phase 1 exit criteria changed to remove WebSocket requirement.",
+        "topic": "WebSocket streaming capability"
+      },
+      {
+        "empirical": "Report 09-11: Filter.confidence is always null in all tested queries. LLM is not asked to produce per-filter confidence. LOW_CONFIDENCE warning can never fire.",
+        "original": "Reports 06-07 specify per-filter confidence visualization in Chat query insight panel and Query Debugger filter contribution view",
+        "resolution": "Drop per-filter confidence from all screens. Show only overall ChatResponse.confidence. Cannot be fixed without changing LLM prompt or computing heuristically.",
+        "topic": "Per-filter confidence scores"
+      },
+      {
+        "empirical": "Report 08: Place and publisher confidence is BINARY -- records are either <0.5 or >=0.95, with the 0.5-0.95 range completely empty. Four-band visualization is misleading.",
+        "original": "Reports 06 assumes four meaningful confidence bands (high/medium/low/very_low) with records distributed across all bands for coverage visualization",
+        "resolution": "Replace four-band with binary (resolved/unresolved) for place and publisher. Keep graduated bands only for dates (has 0.8-0.95 segment with 1,306 records).",
+        "topic": "Confidence distribution shape"
+      },
+      {
+        "empirical": "Report 08: Only 121 total low-confidence records (69 dates + 19 places + 33 publishers). Workbench will be nearly empty.",
+        "original": "Reports 06-07 assume a substantial volume of issues requiring triage in the Issues Workbench",
+        "resolution": "Reframe from 'issues' to 'improvement opportunities'. Real gaps: 553 Hebrew-script publishers, 4,366 un-aliased agents, 202 unresearched publisher authorities, 44.1% 'other' agent roles. Add method-based filtering instead of confidence slider.",
+        "topic": "Issues Workbench volume"
+      },
+      {
+        "empirical": "Reports 10-11: ZERO diagnostic endpoints exist. No /diagnostics/query-runs, /diagnostics/labels, /diagnostics/gold-set, /diagnostics/tables. QA database has no HTTP layer at all.",
+        "original": "Reports 06-07 treat diagnostic endpoints as minor additions or assume some exist. Backend prerequisite estimated at 2-3 days.",
+        "resolution": "Backend prerequisite expanded to 4-5 days minimum. Phase 2 must be sequential after Phase 1, not parallel. Total timeline extended from 7 to 8 weeks.",
+        "topic": "Diagnostic API endpoints"
+      },
+      {
+        "empirical": "Report 11: FacetCounts are computed by QueryService but NOT serialized into ChatResponse. Data exists internally but is discarded before reaching the frontend.",
+        "original": "Report 06 assumes Phase 2 aggregation charts can be built from API data",
+        "resolution": "Backend micro-task B2: forward FacetCounts in ChatResponse.metadata. Until done, aggregation charts are unbuildable (text responses still work).",
+        "topic": "FacetCounts availability in ChatResponse"
+      },
+      {
+        "empirical": "Report 10-11: execution_time_ms is computed by QueryService but NOT exposed in ChatResponse. Logged internally only.",
+        "original": "Report 06 specifies execution timing display (compile time, SQL time, total time) in Chat collapsible panel",
+        "resolution": "Backend micro-task B1: add execution_time_ms to ChatResponse.metadata. Small API change.",
+        "topic": "Execution timing exposure"
+      },
+      {
+        "empirical": "Report 10: Primo URLs are NOT on Candidate objects. Require separate API call (GET /metadata/records/{mms_id}/primo or POST /metadata/primo-urls batch).",
+        "original": "Report 06 assumes candidate titles link directly to Primo with inline URLs",
+        "resolution": "Use POST /metadata/primo-urls batch call after results load. Cache client-side. Alternatively, add primo_url to Candidate model (B4).",
+        "topic": "Primo URLs on Candidate objects"
+      },
+      {
+        "empirical": "Report 08: Database has 10 tables (adds notes, publisher_authorities, publisher_variants, authority_enrichment)",
+        "original": "Report 06 lists 6 tables for DB Explorer (records, imprints, titles, subjects, languages, agents)",
+        "resolution": "DB Explorer scope expanded to 10 tables.",
+        "topic": "Number of database tables"
+      },
+      {
+        "empirical": "Report 12: Phase 2 backend work is substantial (all diagnostic endpoints from scratch) and should not compete with Phase 1 backend micro-tasks for developer attention",
+        "original": "Report 07 states Phases 1 and 2 can overlap because they touch different screens and endpoints",
+        "resolution": "Phases 1 and 2 are sequential, not parallel. Timeline extended by 1 week.",
+        "topic": "Phases 1 and 2 parallelism"
+      },
+      {
+        "empirical": "Report 10: CorrectionRequest.field accepts only place|publisher|agent -- NOT date",
+        "original": "Reports imply corrections work for all four fields (date, place, publisher, agent)",
+        "resolution": "Date corrections need either a different mechanism or API extension (B17: 0.5 day in Phase 4).",
+        "topic": "CorrectionRequest.field coverage"
+      },
+      {
+        "empirical": "Report 10: GET /metadata/corrections/history only supports field filter. No search, source, or date range params.",
+        "original": "Report 06 specifies filter bar with field, source, search, date range for correction history",
+        "resolution": "Client-side filtering approximates until API params added (B18: 0.5 day in Phase 4).",
+        "topic": "Corrections history API filtering"
+      },
+      {
+        "empirical": "Report 10-11: QueryPlan is NOT in ChatResponse. It is stored in session messages, accessible via GET /sessions/{session_id}.",
+        "original": "Reports assume QueryPlan is accessible from ChatResponse for debugger and chat insight",
+        "resolution": "Workaround: fetch session and extract plan from most recent assistant message. Or add plan to diagnostics query-run endpoint response.",
+        "topic": "QueryPlan location in API response"
+      },
+      {
+        "empirical": "Report 08: Only 2 methods exist in production data -- place_alias_map (99.3%) and missing (0.7%). No base_clean method records exist for places.",
+        "original": "CLAUDE.md mentions base_clean (0.80) and alias_map (0.95) as place normalization methods",
+        "resolution": "Confidence slider for places is meaningless (only <0.5 or >=0.95 exist). Replace with method-based filtering.",
+        "topic": "Place normalization methods"
+      },
+      {
+        "empirical": "Report 08: ALL 4,366 agents use base_clean method only. 0% are alias-mapped. 44.1% of agent roles are 'other'. This is the largest normalization gap by far.",
+        "original": "Reports 01-07 focus on date/place/publisher normalization gaps",
+        "resolution": "Lead Coverage Dashboard with agent normalization gaps, not date/place/publisher (which are 97%+ resolved). Add agent normalization tab to Issues Workbench.",
+        "topic": "Agent normalization state"
+      },
+      {
+        "empirical": "Report 08: 227 authorities exist but 202 (89%) are 'unresearched' stubs. authority_enrichment table has 0 rows. Only 18 are classified as printing_house.",
+        "original": "Reports mention 228 publisher authorities as a working system",
+        "resolution": "Publisher Authorities screen should emphasize research workflow (classifying stubs, adding enrichment) rather than simple CRUD listing.",
+        "topic": "Publisher authority completeness"
+      }
+    ],
+    "dataReality": {
+      "anomalies": [
+        "553 publisher_norm values contain only non-Latin characters (Hebrew/Yiddish) -- 20.2% of publishers, technically 0.95 confidence but not normalized for cross-lingual search",
+        "44.1% of agent roles are 'other' (1,924 of 4,366) -- massive normalization gap",
+        "100% of agents use base_clean only, 0% alias-mapped",
+        "'frankfurt' (48) and 'frankfurt am main' (30) exist as separate normalized places -- deduplication target",
+        "[sine loco] (41) records with unknown place of publication",
+        "215 imprints (7.9%) have unknown publishers",
+        "38 records have no imprints (Faitlovitch collection manuscripts)",
+        "authority_enrichment table is completely empty (0 rows)",
+        "89% of publisher authorities (202/227) are unresearched stubs",
+        "Date range spans 1244-2025 (~780 years), peak at 18th century (874 records, 32.3%)"
+      ],
+      "confidenceDistributions": {
+        "criticalFinding": "Confidence is BINARY, not graduated",
+        "date": {
+          "high_0.95_to_1.0": {
+            "count": 1398,
+            "pct": "50.4%"
+          },
+          "low_0_to_0.5": {
+            "count": 69,
+            "pct": "2.5%"
+          },
+          "medium_0.8_to_0.95": {
+            "count": 1306,
+            "pct": "47.1%"
+          },
+          "note": "No records in 0.5-0.8 range"
+        },
+        "place": {
+          "high_0.95_to_1.0": {
+            "count": 2754,
+            "pct": "99.3%"
+          },
+          "low_0_to_0.5": {
+            "count": 19,
+            "pct": "0.7%"
+          },
+          "note": "BINARY: no records in 0.5-0.95 range at all"
+        },
+        "publisher": {
+          "high_0.95_to_1.0": {
+            "count": 2740,
+            "pct": "98.8%"
+          },
+          "low_0_to_0.5": {
+            "count": 33,
+            "pct": "1.2%"
+          },
+          "note": "BINARY: no records in 0.5-0.95 range at all"
+        }
+      },
+      "coverageRates": {
+        "date_start": {
+          "coverage": "97.5%",
+          "nonNull": 2704
+        },
+        "notes": {
+          "manufacturerRawAlmostEntirelyNull": "98.9% null",
+          "recordsWithMultipleImprints": 15,
+          "recordsWithNoImprints": 38
+        },
+        "place_norm": {
+          "coverage": "99.3%",
+          "nonNull": 2754
+        },
+        "publisher_norm": {
+          "coverage": "98.8%",
+          "nonNull": 2740
+        }
+      },
+      "methodDistributions": {
+        "agent": {
+          "confidence": "ALL in 0.8-0.95 range",
+          "method": "ALL 4,366 agents use base_clean only (no alias map)"
+        },
+        "date": {
+          "hebrewGematriaTotal": "20% (555 records)",
+          "topMethods": [
+            "year_exact (46.1%)",
+            "year_embedded (13.1%)",
+            "hebrew_gematria_bracketed (12.1%)",
+            "hebrew_gematria (7.9%)"
+          ]
+        },
+        "place": {
+          "methods": [
+            "place_alias_map (99.3%)",
+            "missing (0.7%)"
+          ],
+          "note": "No base_clean method in production, only alias_map or missing"
+        }
+      },
+      "recordCounts": {
+        "agents": 4366,
+        "authority_enrichment": 0,
+        "imprints": 2773,
+        "languages": 3197,
+        "notes": 8037,
+        "publisher_authorities": 227,
+        "publisher_variants": 265,
+        "records": 2796,
+        "subjects": 5415,
+        "titles": 4791
+      },
+      "source": "report-08",
+      "topValues": {
+        "languages": [
+          "Hebrew (806, 25.2%)",
+          "Latin (505, 15.8%)",
+          "French (500, 15.6%)",
+          "German (496, 15.5%)",
+          "English (366)"
+        ],
+        "places": [
+          "paris (356)",
+          "london (230)",
+          "amsterdam (196)",
+          "venice (164)",
+          "berlin (123)",
+          "leipzig (111)",
+          "jerusalem (109)"
+        ],
+        "publishers": [
+          "[publisher unknown] (115)",
+          "[sine nomine] (100)",
+          "insel verlag (16)",
+          "verdiere, paris (16)",
+          "bragadin press, venice (12)"
+        ],
+        "subjects": [
+          "Manuscripts, Ethiopic (39)",
+          "Hiddushim (Jewish law) (30)",
+          "Hebrew language - Grammar (27)",
+          "Book collecting (24)"
+        ]
+      }
+    },
+    "featuresDrop": [
+      {
+        "item": "Streamlit Chat UI (app/ui_chat/) entire app",
+        "reason": "Replaced by React Chat screen with streaming and phase visualization",
+        "source": "report-06"
+      },
+      {
+        "item": "Streamlit QA Tool (app/ui_qa/) entire app",
+        "reason": "Replaced by React Query Debugger + DB Explorer",
+        "source": "report-06"
+      },
+      {
+        "item": "QA Sessions page (guided session management)",
+        "reason": "Overly complex; standard query run history suffices",
+        "source": "report-06"
+      },
+      {
+        "item": "QA Wizard (_wizard.py, 808 lines)",
+        "reason": "Experimental, low usage; standard labeling flow covers same ground",
+        "source": "report-06"
+      },
+      {
+        "item": "app/qa.py standalone regression runner",
+        "reason": "Merged into CLI as regression subcommand",
+        "source": "report-06"
+      },
+      {
+        "item": "Dual Primo URL schemes (TAU hardcoded + NLI hardcoded)",
+        "reason": "Consolidated to single configurable scheme",
+        "source": "report-06"
+      },
+      {
+        "item": "WebSocket old single-phase path",
+        "reason": "Either upgrade to two-phase or replace; currently uses deprecated code path",
+        "source": "report-12"
+      },
+      {
+        "item": "Per-filter confidence display",
+        "reason": "Filter.confidence is always null; unbuildable",
+        "source": "report-12"
+      },
+      {
+        "item": "Four-band confidence visualization for place/publisher",
+        "reason": "Confidence is binary; medium and low bands are empty",
+        "source": "report-12"
+      },
+      {
+        "item": "Trend over time on Coverage Dashboard",
+        "reason": "No snapshot mechanism exists; requires infrastructure first",
+        "source": "report-12"
+      },
+      {
+        "item": "Before/after correction comparison",
+        "reason": "No tracking infrastructure exists",
+        "source": "report-12"
+      },
+      {
+        "item": "Rich System Health features (log viewer, metrics dashboard, interaction viewer)",
+        "reason": "No infrastructure exists; defer to later phase",
+        "source": "report-12"
+      },
+      {
+        "item": "Separate QA database concept",
+        "reason": "Expose through unified diagnostic API",
+        "source": "report-06"
+      },
+      {
+        "item": "Hardcoded localhost:8000 API URL",
+        "reason": "Environment variable via Vite config",
+        "source": "report-06"
+      },
+      {
+        "item": "Emoji in CLI and QA Tool output",
+        "reason": "Per project code style",
+        "source": "report-06"
+      },
+      {
+        "item": "RAG template remnants (chunk_rules.yaml, outlook_helper.yaml, completer.py)",
+        "reason": "Irrelevant to MARC bibliographic records",
+        "source": "report-03"
+      },
+      {
+        "item": "Recharts library (potentially)",
+        "reason": "Currently used only for pie charts; evaluate replacement when complex charts needed",
+        "source": "report-06"
+      }
+    ],
+    "featuresKeep": [
+      {
+        "destination": "Issues Workbench, Query Debugger, DB Explorer, Publishers",
+        "feature": "TanStack Table implementation (sortable, paginated, row-selectable)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Coverage Dashboard",
+        "feature": "Coverage Dashboard (stat cards, coverage bars, gap cards, method charts)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Agent Chat",
+        "feature": "Agent Chat (proposal tables, approve/reject/edit, coverage sidebar)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Correction Audit Trail",
+        "feature": "Correction Review (audit trail, filtering, pagination, export)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Issues Workbench",
+        "feature": "Inline editable cells + batch toolbar",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Issues Workbench",
+        "feature": "Cluster cards with priority scoring",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "All screens",
+        "feature": "TanStack Query patterns (cache invalidation, optimistic updates)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "All screens",
+        "feature": "Tailwind CSS design system (confidence color bands)",
+        "source": "report-06",
+        "sourceUI": "React Workbench"
+      },
+      {
+        "destination": "Chat, Query Debugger",
+        "feature": "Candidate card layout (title/author/date/place/publisher/subjects)",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Shared component",
+        "feature": "Smart date display (single year vs range)",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Shared component",
+        "feature": "Place display (canonical + raw with deduplication)",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Follow-up suggestion buttons",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Example query shortcuts",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI"
+      },
+      {
+        "destination": "Shared PrimoLink component",
+        "feature": "Primo URL generation (configurable institution)",
+        "source": "report-06",
+        "sourceUI": "Streamlit Chat UI + API"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "TP/FP/FN/UNK labeling workflow",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "Issue tagging (predefined categories)",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "False negative search (database search for missing results)",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "Gold set export + regression runner display",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Query Debugger",
+        "feature": "Query plan inspection (JSON tree)",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Database Explorer",
+        "feature": "Read-only DB table browser with column search",
+        "source": "report-06",
+        "sourceUI": "Streamlit QA Tool"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Two-phase conversation model (Phase 1 + Phase 2)",
+        "source": "report-06",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "Chat (overall confidence only)",
+        "feature": "Intent interpretation with confidence scoring (0.85 threshold)",
+        "source": "reports 06, 12",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Clarification flow (ambiguity detection)",
+        "source": "report-06",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "Chat",
+        "feature": "Collection overview queries",
+        "source": "report-06",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "Chat (text only until facets forwarded)",
+        "feature": "Aggregation responses (top-N publishers/places/dates)",
+        "source": "report-12",
+        "sourceUI": "FastAPI Backend"
+      },
+      {
+        "destination": "CLI (kept and extended)",
+        "feature": "CLI pipeline commands (parse_marc, query)",
+        "source": "report-00",
+        "sourceUI": "CLI"
+      },
+      {
+        "destination": "CLI",
+        "feature": "CLI regression subcommand (merged from app/qa.py)",
+        "source": "report-00",
+        "sourceUI": "QA Regression Runner"
+      }
+    ],
+    "pipelineReality": {
+      "evidenceShapeIssues": [
+        "Subject evidence value is always null (Issue #1, Medium severity) -- only matched_against populated",
+        "Agent evidence source shows 'marc:unknown' instead of actual MARC tag (Issue #3, Low severity)",
+        "Empty-filter queries produce evidence-less candidates with evidence:[] (Issue #5, Low severity)"
+      ],
+      "knownBugs": {
+        "falseBroadening": {
+          "description": "Subject retry mechanism remaps inapplicable subjects to loosely related ones. 'quantum physics' returns 67 philosophy books. compile_query_with_subject_hints() uses top-100 DB subjects as hints, LLM picks closest match.",
+          "location": "scripts/query/execute.py should_retry_with_subject_hints() + scripts/query/llm_compiler.py",
+          "recommendation": "Add confidence threshold to retry mapping, or return zero results with suggestion instead of silently broadening",
+          "severity": "High"
+        },
+        "filterConfidenceAlwaysNull": {
+          "description": "All filter objects in QueryPlan have confidence: null. LLM is not asked to produce per-filter confidence. LOW_CONFIDENCE warning can never fire.",
+          "location": "scripts/query/llm_compiler.py",
+          "severity": "Medium"
+        },
+        "noAmbiguityWarningForSingleWords": {
+          "description": "Single-word queries like 'Venice' are interpreted without ambiguity warning. Could be place, subject, or title.",
+          "location": "scripts/query/service.py",
+          "severity": "Low"
+        },
+        "publisherVariantGap": {
+          "description": "Query 'books published by Elsevier' matched 1 of 16 Elzevir-family records. CONTAINS filter LIKE '%elsevier%' only matches modern spelling, misses historical forms (apud danielem elzevirivm, ex officina elseviriana, typis l. elzevirii, etc.). Publisher authority system maps these to 'house of elzevir' but query doesn't search for 'elzevir'.",
+          "impact": "Users searching modern publisher names may miss most historical records",
+          "severity": "High"
+        }
+      },
+      "performanceSummary": {
+        "cached_query_ms": "~150",
+        "fresh_query_range_ms": "1500-7500 (dominated by LLM call)",
+        "retried_query_ms": "~7500 (double LLM call)",
+        "sql_execution_ms": "<600"
+      },
+      "queryBehaviorObservations": [
+        "LLM compilation dominates execution time (2-4 seconds per fresh query)",
+        "Cache hits eliminate LLM time entirely (152ms for cached query vs 3000+ms fresh)",
+        "SQL execution consistently fast (<600ms even for full-table scans)",
+        "Place, date, and language filters are reliable and produce correct results",
+        "Multi-filter AND composition works correctly",
+        "Warning system correctly identifies empty-filter queries",
+        "Facet computation provides useful breakdowns (by_place, by_year, by_language, by_publisher, by_century)"
+      ],
+      "source": "report-09"
+    },
+    "risks": [
+      {
+        "id": 1,
+        "impact": "Delays Phase 1 by 3-5 days",
+        "likelihood": "ELEVATED (confirmed WebSocket lacks two-phase entirely)",
+        "mitigation": "Launch HTTP-only; defer WebSocket to Phase 4",
+        "risk": "WebSocket implementation complexity",
+        "source": "reports 07, 12",
+        "status": "ELEVATED after empirical"
+      },
+      {
+        "id": 2,
+        "impact": "Delays Phase 2 by 1+ week",
+        "likelihood": "High",
+        "mitigation": "Strict feature parity checklist; ADD features are Phase 4+",
+        "risk": "Query Debugger scope creep",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 3,
+        "impact": "Blocks Phase 2 frontend",
+        "likelihood": "CRITICAL (zero endpoints exist, was 2-3 days, now 4-5 days)",
+        "mitigation": "Start frontend with MSW mocks; backend and frontend in parallel",
+        "risk": "Diagnostic API endpoints take longer than estimated",
+        "source": "reports 07, 12",
+        "status": "ELEVATED to CRITICAL"
+      },
+      {
+        "id": 4,
+        "impact": "Data loss or inaccessible history",
+        "likelihood": "Low",
+        "mitigation": "New diagnostic API reads from existing qa.db directly",
+        "risk": "QA data migration -- existing labels need accessibility",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 5,
+        "impact": "Lost capability",
+        "likelihood": "Medium",
+        "mitigation": "Enforce deletion criteria: every feature has working replacement before code removal",
+        "risk": "Streamlit retirement breaks active workflows",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 6,
+        "impact": "Slower initial page load",
+        "likelihood": "Low",
+        "mitigation": "Vite code splitting by route is automatic; monitor build output",
+        "risk": "Performance regression as React app grows",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 7,
+        "impact": "User confusion",
+        "likelihood": "Low",
+        "mitigation": "Phase 0 preserves /operator/coverage as landing; Chat becomes / only in Phase 4",
+        "risk": "Landing page change confuses Workbench users",
+        "source": "report-07",
+        "status": "UNCHANGED"
+      },
+      {
+        "id": 8,
+        "impact": "Degraded streaming experience",
+        "likelihood": "CONFIRMED as fact (not a risk)",
+        "mitigation": "Launch HTTP-only",
+        "risk": "WebSocket uses old single-phase path",
+        "source": "report-12",
+        "status": "CONFIRMED"
+      },
+      {
+        "id": 9,
+        "impact": "Degraded Chat Phase 2 UX",
+        "likelihood": "High (confirmed)",
+        "mitigation": "Backend micro-task B2 in Phase 1",
+        "risk": "Phase 2 aggregation charts unbuildable without facets forwarding",
+        "source": "report-12"
+      },
+      {
+        "id": 10,
+        "impact": "Perceived low value",
+        "likelihood": "High (confirmed)",
+        "mitigation": "Reframe as improvement opportunities with method-based filtering",
+        "risk": "Issues Workbench appears empty (only 121 items)",
+        "source": "report-12"
+      },
+      {
+        "id": 11,
+        "impact": "Chat users miss historical records for publisher queries",
+        "likelihood": "High (confirmed)",
+        "mitigation": "Document as known limitation; consider publisher-authority-aware search",
+        "risk": "Publisher variant matching gap (1/16 Elzevir match)",
+        "source": "report-12"
+      },
+      {
+        "id": 12,
+        "impact": "Misleading results without warning",
+        "likelihood": "Medium (confirmed)",
+        "mitigation": "Forward QueryWarning to frontend; display retry warning prominently",
+        "risk": "Subject retry false broadening produces incorrect results",
+        "source": "report-12"
+      }
+    ],
+    "screenSpecs": [
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "POST /chat",
+            "GET /sessions/{session_id}",
+            "DELETE /sessions/{session_id}",
+            "GET /health",
+            "POST /metadata/primo-urls",
+            "GET /metadata/records/{mms_id}/primo"
+          ],
+          "existingButNotUsable": [
+            "WS /ws/chat (old single-phase, lacks two-phase support)"
+          ]
+        },
+        "backendPrerequisites": [
+          "B1-B4 micro-tasks (days 1-3 of Phase 1)"
+        ],
+        "dataShapesAvailable": {
+          "candidate": {
+            "author": "string|null",
+            "date_end": "int|null",
+            "date_start": "int|null",
+            "description": "string|null",
+            "evidence": [
+              "Evidence"
+            ],
+            "match_rationale": "string",
+            "place_norm": "string|null",
+            "place_raw": "string|null",
+            "publisher": "string|null",
+            "record_id": "string",
+            "subjects": [
+              "string (first 3)"
+            ],
+            "title": "string|null"
+          },
+          "chatResponse": {
+            "candidate_set": "CandidateSet|null",
+            "clarification_needed": "string|null",
+            "confidence": "float|null",
+            "message": "string",
+            "metadata": "dict (polymorphic)",
+            "phase": "query_definition|corpus_exploration|null",
+            "session_id": "string",
+            "suggested_followups": [
+              "string"
+            ]
+          },
+          "evidence": {
+            "confidence": "float|null",
+            "extraction_error": "string|null",
+            "field": "string",
+            "matched_against": "any",
+            "operator": "string",
+            "source": "string (marc:unknown for agents)",
+            "value": "any (often null for subjects)"
+          }
+        },
+        "designAdjustments": [
+          "Launch HTTP-only, defer WebSocket streaming until handler upgraded to two-phase",
+          "Drop per-filter confidence display (always null), show only overall confidence",
+          "Batch-resolve Primo URLs via POST /metadata/primo-urls, cache client-side",
+          "Handle polymorphic ChatResponse.metadata with type guards",
+          "Display SUBJECT_RETRY warning when QueryWarning forwarded",
+          "Access QueryPlan via GET /sessions/{session_id} workaround"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "execution_time_ms needs adding to ChatResponse.metadata (B1: 1-2 hours)",
+          "FacetCounts need forwarding to ChatResponse.metadata for aggregation charts (B2: 2-4 hours)",
+          "QueryWarning[] need forwarding to ChatResponse.metadata (B3: 1-2 hours)",
+          "Primo URLs need batch resolution or adding to Candidate model (B4: 2-4 hours)"
+        ],
+        "featuresThatWork": [
+          "Two-phase flow via HTTP POST /chat (Phase 1: intent interpretation, Phase 2: exploration)",
+          "Overall interpretation confidence (ChatResponse.confidence)",
+          "Clarification prompts for ambiguous queries",
+          "Follow-up suggestion chips",
+          "Session management (create, resume, expire)",
+          "Phase 2 exploration: aggregation text, refinement, comparison, enrichment, new query",
+          "Collection overview queries",
+          "Candidate objects have all fields for result cards"
+        ],
+        "name": "Chat",
+        "path": "/",
+        "source": "New (replaces Streamlit Chat UI)",
+        "tier": 1
+      },
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /metadata/coverage"
+          ]
+        },
+        "designAdjustments": [
+          "Replace four-band visualization with binary (resolved/unresolved) for place and publisher -- medium and low bands are EMPTY",
+          "Keep graduated bands only for dates (0.8-0.95 has 1,306 records)",
+          "Lead with agent normalization gaps (100% base_clean, 0% alias-mapped, 4,366 agents)",
+          "Add Hebrew-script publisher indicator (553 un-transliterated, technically 0.95 but functionally incomplete)",
+          "Drop 'trend over time' from initial scope (no snapshot mechanism exists)",
+          "Drop 'before/after correction comparison' (no tracking infrastructure)",
+          "Reframe gap cards: show full picture including Hebrew publishers (553), unresearched authorities (202), uncategorized agent roles (44.1%)"
+        ],
+        "featuresThatNeedNewEndpoints": [],
+        "featuresThatWork": [
+          "Per-field coverage bars (date, place, publisher, agent_name, agent_role)",
+          "Confidence distribution (10 bands)",
+          "Method distribution per field",
+          "Flagged items per field",
+          "Gap cards with drill-through to Workbench (via field param on issues endpoint)"
+        ],
+        "name": "Coverage Dashboard",
+        "path": "/operator/coverage",
+        "source": "Existing React Dashboard (enhanced)",
+        "tier": 2
+      },
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /metadata/issues",
+            "POST /metadata/corrections",
+            "POST /metadata/corrections/batch",
+            "GET /metadata/clusters"
+          ]
+        },
+        "designAdjustments": [
+          "Reframe from 'issues' to 'improvement opportunities' -- only 121 low-confidence records total",
+          "Replace confidence slider with method-based filtering (base_clean vs alias_map vs publisher_authority)",
+          "Acknowledge confidence slider gap: 0.5-0.95 range returns 0 results for place and publisher",
+          "Add 'Hebrew publishers' tab for 553 un-transliterated Hebrew-script publishers",
+          "Add 'Agent normalization' tab for 4,366 base_clean-only agents",
+          "Date corrections not currently supported via corrections API"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "Date corrections need CorrectionRequest.field extended to accept 'date' (B17)",
+          "Hebrew-script publisher tab needs dedicated query or filter"
+        ],
+        "featuresThatWork": [
+          "TanStack Table with sortable/paginated records",
+          "Inline editable cells for corrections",
+          "Batch corrections via batch toolbar",
+          "Cluster view with expandable cards",
+          "Confidence and method filtering via API"
+        ],
+        "name": "Issues Workbench",
+        "path": "/operator/workbench",
+        "source": "Existing React Workbench (enhanced)",
+        "tier": 2
+      },
+      {
+        "alignmentRating": "CONFIRMED",
+        "apiEndpoints": {
+          "existing": [
+            "POST /metadata/agent/chat",
+            "POST /metadata/corrections",
+            "GET /metadata/coverage"
+          ]
+        },
+        "designAdjustments": [
+          "Note: 89% of publisher authorities are unresearched stubs, PublisherAgent has limited authority context",
+          "Note: authority_enrichment table is empty (0 rows), no VIAF/CERL data for agent proposals",
+          "No structural changes needed"
+        ],
+        "featuresThatNeedNewEndpoints": [],
+        "featuresThatWork": [
+          "Field-specific agent selection (Place, Date, Publisher, Agent)",
+          "Conversational interface with proposals (raw_value, canonical_value, confidence, reasoning, evidence_sources)",
+          "Cluster summaries with priority scores",
+          "Coverage sidebar via /metadata/coverage",
+          "Corrections via /metadata/corrections with records_affected"
+        ],
+        "name": "Agent Chat",
+        "path": "/operator/agent",
+        "source": "Existing React AgentChat (enhanced)",
+        "tier": 2
+      },
+      {
+        "alignmentRating": "CONFIRMED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /metadata/corrections/history"
+          ]
+        },
+        "designAdjustments": [
+          "Defer revert capability until endpoint built",
+          "Client-side filtering can approximate date range and search until API params added",
+          "Client-side export (no server-side export endpoint)"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "Revert endpoint (B19: 1 day)",
+          "Search, source, date range filter params on corrections history (B18: 0.5 day)"
+        ],
+        "featuresThatWork": [
+          "Paginated correction history with timestamp, field, raw_value, canonical_value, evidence, source, action",
+          "Filtering by field",
+          "CSV/JSON export (client-side)"
+        ],
+        "name": "Correction Audit Trail",
+        "path": "/operator/review",
+        "source": "Existing React Review (enhanced)",
+        "tier": 2
+      },
+      {
+        "alignmentRating": "MISALIGNED",
+        "apiEndpoints": {
+          "existing": [],
+          "needed": [
+            "POST /diagnostics/query-run (B5: 1 day)",
+            "GET /diagnostics/query-runs (B6: 0.5 day)",
+            "POST /diagnostics/labels (B7: 0.5 day)",
+            "GET /diagnostics/labels/{run_id} (B8: 0.5 day)",
+            "POST /diagnostics/gold-set/export (B9: 0.5 day)",
+            "POST /diagnostics/gold-set/regression (B10: 1 day)"
+          ]
+        },
+        "designAdjustments": [
+          "Drop per-filter confidence visualization (always null)",
+          "Drop execution timing breakdown until backend exposes it",
+          "Access query plan via session fetch or add to diagnostics query-run response",
+          "Reprioritize to AFTER operator screens (most new backend work)",
+          "Display SUBJECT_RETRY warnings prominently for false broadening detection"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "ALL features require new backend endpoints -- zero diagnostics API exists",
+          "QA database (data/qa/qa.db) has tables but no HTTP layer",
+          "QueryPlan access requires session ID lookup workaround"
+        ],
+        "featuresThatWork": [],
+        "name": "Query Debugger",
+        "path": "/diagnostics/query",
+        "source": "New (replaces Streamlit QA Tool)",
+        "tier": 3
+      },
+      {
+        "alignmentRating": "MISALIGNED",
+        "apiEndpoints": {
+          "existing": [],
+          "needed": [
+            "GET /diagnostics/tables (B11: 0.5 day)",
+            "GET /diagnostics/tables/{name}/rows (B12: 1 day, with SQL injection protection)"
+          ]
+        },
+        "designAdjustments": [
+          "Include all 10 tables (records, imprints, titles, subjects, agents, languages, notes, publisher_authorities, publisher_variants, authority_enrichment), not 6",
+          "Consider deferring to post-beta (data accessible via CLI/direct SQLite)"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "ALL features require new backend endpoints"
+        ],
+        "featuresThatWork": [],
+        "name": "Database Explorer",
+        "path": "/diagnostics/db",
+        "source": "New (replaces QA Tool DB Explorer)",
+        "tier": 3
+      },
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /metadata/publishers (read-only, with type filter)"
+          ],
+          "needed": [
+            "POST/PUT/DELETE for authority CRUD (B13: 1-2 days)",
+            "Match preview endpoint (B14: 0.5 day)"
+          ]
+        },
+        "designAdjustments": [
+          "Reframe for research workflow: 89% (202/227) are unresearched stubs",
+          "Show enrichment fields (VIAF, Wikidata, CERL) as 'not yet researched' when null (all currently null)",
+          "Elevate priority: read-only view can co-develop with Phase 1 since API already exists",
+          "Split: read-only in Phase 1 parallel, CRUD in Phase 3"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "Authority CRUD (create, edit, delete authorities and variants)",
+          "Match preview ('Adding this variant would match N additional imprints')"
+        ],
+        "featuresThatWork": [
+          "Authority list with variant_count, imprint_count, variants[], type filtering",
+          "Read-only view is immediately buildable"
+        ],
+        "name": "Publisher Authorities",
+        "path": "/admin/publishers",
+        "source": "New",
+        "tier": 4
+      },
+      {
+        "alignmentRating": "PARTIALLY_ALIGNED",
+        "apiEndpoints": {
+          "existing": [
+            "GET /health"
+          ],
+          "needed": [
+            "DB file size/last-modified endpoint (B15: 1 hour)"
+          ]
+        },
+        "designAdjustments": [
+          "Scope down to basic status + nav bar green/red dot indicator",
+          "Defer log viewer, metrics dashboard, interaction viewer, request rate charts",
+          "Lowest priority screen"
+        ],
+        "featuresThatNeedNewEndpoints": [
+          "DB file size and modification time (trivial endpoint)",
+          "Log viewer, metrics, interaction viewer all require infrastructure NOT in scope"
+        ],
+        "featuresThatWork": [
+          "Basic health check: status (healthy|degraded|unhealthy), database_connected, session_store_ok"
+        ],
+        "name": "System Health",
+        "path": "/admin/health",
+        "source": "New",
+        "tier": 4
+      }
+    ],
+    "timeline": {
+      "criticalPath": "Phase 0 -> Phase 1 -> Phase 2 (backend) -> Phase 2 (frontend) -> Phase 4 -> Phase 5",
+      "earlyWins": [
+        "End of Week 1: Restructured React app with 9-screen skeleton",
+        "End of Week 3: Working Chat screen (Streamlit Chat can be retired)",
+        "End of Week 5: Working Query Debugger (QA Tool can be retired)",
+        "End of Week 8: All old UIs removed, single unified app"
+      ],
+      "originalWeeks": 7,
+      "phases": {
+        "phase0": {
+          "concurrent": "Phase 1 backend micro-tasks (B1-B4)",
+          "deliverables": [
+            "Restructure frontend/src/pages/ to tiered layout",
+            "Update App.tsx routing",
+            "Replace Sidebar with tiered navigation",
+            "Add Zustand store",
+            "Add shared design tokens",
+            "Extend Vite proxy",
+            "Temporary redirects from old routes"
+          ],
+          "duration": "Week 1",
+          "exitCriteria": "All 4 existing Workbench pages render at new URLs. Placeholder pages exist for 5 new screens.",
+          "name": "Foundation & Scaffolding",
+          "status": "NO CHANGE from original"
+        },
+        "phase1": {
+          "backendPrereqs": "B1-B4 micro-tasks in days 1-3",
+          "concurrent": "Phase 3a -- Publisher Authorities read-only (1-2 days)",
+          "deliverables": [
+            "Chat.tsx with two-phase flow via HTTP",
+            "CandidateCard.tsx reusable component",
+            "Follow-up chips, example queries, phase indicator",
+            "Session management",
+            "Batch Primo URL resolution"
+          ],
+          "droppedFromOriginal": [
+            "useWebSocket.ts hook (deferred to Phase 4)",
+            "Per-filter confidence display (always null)",
+            "WebSocket streaming progress indicators"
+          ],
+          "duration": "Weeks 2-3",
+          "enables": "Streamlit Chat UI marked deprecated",
+          "exitCriteria": "Can send NL query via HTTP, see formatted results with evidence, two-phase flow works, overall confidence displayed, clarification prompts render, sessions persist, Primo links work",
+          "name": "Chat Screen (HTTP-only)",
+          "status": "MODIFIED: HTTP-only, no WebSocket"
+        },
+        "phase2": {
+          "deliverables": [
+            "All diagnostic API endpoints (B5-B12)",
+            "QueryDebugger.tsx with three-panel layout",
+            "DatabaseExplorer.tsx for 10 tables",
+            "CLI consolidation: merge app/qa.py into app/cli.py as regression subcommand"
+          ],
+          "droppedFromOriginal": [
+            "Per-filter confidence visualization (always null)",
+            "Overlap with Phase 1 (now sequential)"
+          ],
+          "duration": "Weeks 4-5 (backend: Week 4, frontend: Weeks 4-5)",
+          "enables": "Streamlit QA Tool marked deprecated",
+          "exitCriteria": "Can run query, see plan+SQL+results; can label TP/FP/FN/UNK; can search for FN; can export gold set and run regression; DB Explorer shows all 10 tables; CLI regression subcommand works",
+          "name": "Query Debugger + DB Explorer",
+          "status": "MODIFIED: sequential after Phase 1, backend expanded to 4-5 days"
+        },
+        "phase3": {
+          "deliverables": [
+            "Publishers.tsx with authority list, type filtering, expandable variants (CRUD requires B13-B14)",
+            "Health.tsx with basic status + nav bar indicator (B15)"
+          ],
+          "duration": "Week 5",
+          "name": "Admin Screens",
+          "reframings": [
+            "Publisher screen emphasizes research workflow (classifying 202 stubs)",
+            "System Health scoped down to basic status only"
+          ],
+          "status": "MODIFIED: split into 3a (read-only publishers parallel with Phase 1) and 3b (CRUD + Health)"
+        },
+        "phase4": {
+          "deliverables": [
+            "Cross-screen links (Chat->Workbench 'flag issue', Workbench->AgentChat, Debugger->Workbench for FN)",
+            "Shared component finalization (ConfidenceBadge, CandidateCard, PrimoLink, FieldBadge)",
+            "Testing (Vitest, RTL, Playwright, MSW)",
+            "Production build validation",
+            "WebSocket two-phase upgrade (B16, if prioritized)",
+            "Corrections API extensions (B17-B19)",
+            "Evidence quality fixes (B20-B21)",
+            "Subject retry warning (B22)"
+          ],
+          "duration": "Weeks 6-7",
+          "name": "Polish, Integration & Testing",
+          "status": "MODIFIED: additional tasks from empirical findings"
+        },
+        "phase5": {
+          "archives": [
+            "Wizard code, QA DB schema reference, regression runner reference -> archive/retired_streamlit/"
+          ],
+          "deletions": [
+            "app/ui_chat/ (449 lines)",
+            "app/ui_qa/ (3,531 lines)",
+            "app/qa.py (187 lines)",
+            "streamlit from pyproject.toml"
+          ],
+          "duration": "Week 8",
+          "exitCriteria": "Single React app serves 9 screens. No Streamlit dependencies. CLAUDE.md updated. Git tagged ui-migration-complete.",
+          "name": "Retirement & Cleanup",
+          "preservations": [
+            "data/qa/qa.db (historical)",
+            "data/qa/gold.json (active, used by CLI)"
+          ],
+          "status": "NO CHANGE from original"
+        }
+      },
+      "reasonForExtraWeek": "Diagnostic endpoint backend work larger than estimated; Phases 1 and 2 must be sequential not parallel",
+      "source": "report-12 (corrected from report-07)",
+      "totalWeeks": 8
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-25T08:50:30.702Z",
+  "data": {
+    "runId": "01KMJ30BMQJ39ZZ99NJRRAH4TC",
+    "processId": "scholar-pipeline",
+    "entrypoint": {
+      "importPath": "../../processes/scholar-pipeline.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Implement the scholar pipeline: 3-stage Interpret->Execute->Narrate architecture for rare books bot. Plan at docs/superpowers/plans/2026-03-25-scholar-pipeline.md"
+  },
+  "checksum": "f3409468acfeea59540c4a1bf0cbcce31360d528e7d8022cf845cd4f1e65d466"
+}

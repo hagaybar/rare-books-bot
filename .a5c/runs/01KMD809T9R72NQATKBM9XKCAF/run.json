@@ -1,0 +1,14 @@
+{
+  "runId": "01KMD809T9R72NQATKBM9XKCAF",
+  "request": "empirical-verification",
+  "processId": "empirical-verification",
+  "entrypoint": {
+    "importPath": "../../processes/empirical-verification.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/empirical-verification.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-23T11:41:39.546Z",
+  "prompt": "Empirical verification of UI redesign alignment with actual data structures, query pipeline behavior, and API responses. Refine reports if misalignments found.",
+  "completionProof": "d057707a2f96f418c17563662e068634"
+}

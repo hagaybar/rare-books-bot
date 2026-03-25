@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T11:39:25.943Z",
+  "data": {
+    "effectId": "01KMJCNNBB7KF4K79XC22FG5ZM",
+    "invocationKey": "scholar-pipeline-fixes:S000006:verify",
+    "invocationHash": "4af76a1dadb2fd8ff1ac0f63c372ab9bf5e42e73a3d384c379a6195093629da7",
+    "stepId": "S000006",
+    "taskId": "verify",
+    "kind": "shell",
+    "label": "Verify: frontend-build",
+    "taskDefRef": "tasks/01KMJCNNBB7KF4K79XC22FG5ZM/task.json"
+  },
+  "checksum": "ee7def33e77201ba37b596755f7954aad150e90adde64b6ada48d27aadb1d58e"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:44:36.887Z",
+  "data": {
+    "effectId": "01KMGP1B0EB8N2NH4PARY7K2CW",
+    "invocationKey": "implement-historian-enhancements:S000028:e5-write-tests",
+    "invocationHash": "44124e7587d356a348f2e11c16589e349ef651ce58e7b160b0bda51bdf3568e9",
+    "stepId": "S000028",
+    "taskId": "e5-write-tests",
+    "kind": "agent",
+    "label": "E5: Write curator scoring and diversity tests (TDD)",
+    "taskDefRef": "tasks/01KMGP1B0EB8N2NH4PARY7K2CW/task.json"
+  },
+  "checksum": "10d14da8532b49d5945b95964ef9ade8ed5267ebcfdad7dfe687d77ca3d86f27"
+}

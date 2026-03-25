@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T14:12:27.511Z",
+  "data": {
+    "effectId": "01KMDGMDQA5F3C8J5FY9CFFY9S",
+    "invocationKey": "implement-unified-ui:S000012:admin-screens",
+    "invocationHash": "67706074c5f389911e998fb118ce573ca083a78dfa0e4724069c0cebb28a1bf3",
+    "stepId": "S000012",
+    "taskId": "admin-screens",
+    "kind": "agent",
+    "label": "fullstack",
+    "taskDefRef": "tasks/01KMDGMDQA5F3C8J5FY9CFFY9S/task.json",
+    "labels": [
+      "fullstack",
+      "admin",
+      "phase3"
+    ]
+  },
+  "checksum": "2a60393ba98db6020603ac824f1c1ea24e883ea7d7a934a3f24cae1c10b286d8"
+}

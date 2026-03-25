@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T09:56:46.048Z",
+  "data": {
+    "effectId": "01KMJ6SNTKHNAV3RY75WT4N8K4",
+    "invocationKey": "scholar-pipeline:S000010:verify-phase",
+    "invocationHash": "8747a2c60fb4530d6947b94eeef275e1c334abe748a8e2d227e2c2e81367b634",
+    "stepId": "S000010",
+    "taskId": "verify-phase",
+    "kind": "shell",
+    "label": "Verify: phase4-integration",
+    "taskDefRef": "tasks/01KMJ6SNTKHNAV3RY75WT4N8K4/task.json"
+  },
+  "checksum": "4f5b922123eeb86b2c61812d1241c97c9117d2e6cbc38a150ad0dccb34cfdf77"
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ6SNTKHNAV3RY75WT4N8K4",
+  "taskId": "verify-phase",
+  "invocationKey": "scholar-pipeline:S000010:verify-phase",
+  "stepId": "S000010",
+  "kind": "shell",
+  "title": "Verify: phase4-integration",
+  "io": {
+    "outputJsonPath": "tasks/01KMJ6SNTKHNAV3RY75WT4N8K4/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_plan_models.py tests/scripts/chat/test_interpreter.py tests/scripts/chat/test_executor.py tests/scripts/chat/test_narrator.py tests/app/test_scholar_pipeline.py -v 2>&1 | tail -80",
+    "description": "Verify API integration and check for regressions",
+    "phase": "phase4-integration",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

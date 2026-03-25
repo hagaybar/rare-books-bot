@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGMTAZEMPFABW9CW5JK6GTA",
+  "taskId": "e3-api-wiring",
+  "invocationKey": "implement-historian-enhancements:S000019:e3-api-wiring",
+  "stepId": "S000019",
+  "kind": "agent",
+  "title": "E3: Wire cross-reference into API and exploration agent",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

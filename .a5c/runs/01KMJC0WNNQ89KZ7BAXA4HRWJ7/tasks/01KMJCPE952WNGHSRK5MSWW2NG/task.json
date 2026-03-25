@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJCPE952WNGHSRK5MSWW2NG",
+  "taskId": "e2e-verify",
+  "invocationKey": "scholar-pipeline-fixes:S000007:e2e-verify",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "E2E verification: test both queries with Playwright",
+  "io": {
+    "inputJsonPath": "tasks/01KMJCPE952WNGHSRK5MSWW2NG/input.json",
+    "outputJsonPath": "tasks/01KMJCPE952WNGHSRK5MSWW2NG/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

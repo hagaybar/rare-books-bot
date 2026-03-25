@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T14:09:50.836Z",
+  "data": {
+    "effectId": "01KMG2WBQ1WGB4MPAQGNK5HPBH",
+    "invocationKey": "historian-enhancement-plan:S000009:plan-e5-curation",
+    "invocationHash": "44c8030475ee22e348dccff643ec765da5a51b4802d8001c897827e5492ceaeb",
+    "stepId": "S000009",
+    "taskId": "plan-e5-curation",
+    "kind": "agent",
+    "label": "planning",
+    "taskDefRef": "tasks/01KMG2WBQ1WGB4MPAQGNK5HPBH/task.json",
+    "labels": [
+      "planning",
+      "e5",
+      "curation"
+    ]
+  },
+  "checksum": "208d824529512ce5b3fee6f03cf51d0c28e3e0d7dc83824c3b52181f57fc920d"
+}

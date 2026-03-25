@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDGMDQA5F3C8J5FY9CFFY9S",
+  "taskId": "admin-screens",
+  "invocationKey": "implement-unified-ui:S000012:admin-screens",
+  "stepId": "S000012",
+  "kind": "agent",
+  "title": "Phase 3b: Admin CRUD + Health Screen",
+  "labels": [
+    "admin",
+    "fullstack",
+    "phase3"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDGMDQA5F3C8J5FY9CFFY9S/input.json",
+    "outputJsonPath": "tasks/01KMDGMDQA5F3C8J5FY9CFFY9S/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

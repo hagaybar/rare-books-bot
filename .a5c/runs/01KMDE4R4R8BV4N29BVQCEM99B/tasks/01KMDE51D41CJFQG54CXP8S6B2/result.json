@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDE51D41CJFQG54CXP8S6B2",
+  "taskId": "phase0-foundation",
+  "invocationKey": "implement-unified-ui:S000001:phase0-foundation",
+  "status": "ok",
+  "result": {
+    "buildStatus": "success",
+    "depsInstalled": [
+      "zustand",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-select",
+      "@radix-ui/react-tabs",
+      "sonner",
+      "react-markdown"
+    ],
+    "filesCreated": [
+      "Chat.tsx",
+      "operator/Coverage.tsx",
+      "operator/Workbench.tsx",
+      "operator/AgentChat.tsx",
+      "operator/Review.tsx",
+      "diagnostics/QueryDebugger.tsx",
+      "diagnostics/DatabaseExplorer.tsx",
+      "admin/Publishers.tsx",
+      "admin/Health.tsx",
+      "stores/appStore.ts"
+    ],
+    "filesMoved": [
+      "Dashboard->Coverage",
+      "Workbench->operator/",
+      "AgentChat->operator/",
+      "Review->operator/"
+    ]
+  },
+  "startedAt": "2026-03-23T13:38:15.696Z",
+  "finishedAt": "2026-03-23T13:38:15.696Z",
+  "value": {
+    "buildStatus": "success",
+    "depsInstalled": [
+      "zustand",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-select",
+      "@radix-ui/react-tabs",
+      "sonner",
+      "react-markdown"
+    ],
+    "filesCreated": [
+      "Chat.tsx",
+      "operator/Coverage.tsx",
+      "operator/Workbench.tsx",
+      "operator/AgentChat.tsx",
+      "operator/Review.tsx",
+      "diagnostics/QueryDebugger.tsx",
+      "diagnostics/DatabaseExplorer.tsx",
+      "admin/Publishers.tsx",
+      "admin/Health.tsx",
+      "stores/appStore.ts"
+    ],
+    "filesMoved": [
+      "Dashboard->Coverage",
+      "Workbench->operator/",
+      "AgentChat->operator/",
+      "Review->operator/"
+    ]
+  }
+}

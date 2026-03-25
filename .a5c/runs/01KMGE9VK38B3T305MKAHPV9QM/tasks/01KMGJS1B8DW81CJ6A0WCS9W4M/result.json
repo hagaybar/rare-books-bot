@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGJS1B8DW81CJ6A0WCS9W4M",
+  "taskId": "e1-seeding",
+  "invocationKey": "implement-historian-enhancements:S000005:e1-seeding",
+  "status": "ok",
+  "result": {
+    "filesCreated": [
+      "scripts/metadata/seed_agent_authorities.py"
+    ],
+    "filesModified": [
+      "app/cli.py"
+    ],
+    "summary": "Seeding system (~250 lines) with seed_from_enrichment, generate_word_reorder_aliases, generate_cross_script_aliases, seed_all. CLI command added. All 12 tests pass.",
+    "testsPassed": 12
+  },
+  "startedAt": "2026-03-24T18:50:07.350Z",
+  "finishedAt": "2026-03-24T18:50:07.350Z",
+  "value": {
+    "filesCreated": [
+      "scripts/metadata/seed_agent_authorities.py"
+    ],
+    "filesModified": [
+      "app/cli.py"
+    ],
+    "summary": "Seeding system (~250 lines) with seed_from_enrichment, generate_word_reorder_aliases, generate_cross_script_aliases, seed_all. CLI command added. All 12 tests pass.",
+    "testsPassed": 12
+  }
+}

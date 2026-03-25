@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:48:11.858Z",
+  "data": {
+    "effectId": "01KMGP7WY9613TSJGTD4F1T1WW",
+    "invocationKey": "implement-historian-enhancements:S000029:e5-curator-impl",
+    "invocationHash": "3cd3ee04759e4b367fcfaa46219c0e6c17a6ae013f8671c07ca08c0a8ddbd5a6",
+    "stepId": "S000029",
+    "taskId": "e5-curator-impl",
+    "kind": "agent",
+    "label": "E5: Implement curator module",
+    "taskDefRef": "tasks/01KMGP7WY9613TSJGTD4F1T1WW/task.json"
+  },
+  "checksum": "dcb40b5c35a477bb5a3a81496ca6a286d40e5445702accc7f9bbd27d585f1fd3"
+}

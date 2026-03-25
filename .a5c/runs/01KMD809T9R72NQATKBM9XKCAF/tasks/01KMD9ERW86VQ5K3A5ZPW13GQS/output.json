@@ -1,0 +1,48 @@
+{
+  "confirmed": [
+    "Candidate objects have all fields for result cards",
+    "Evidence structure supports proposed display",
+    "Agent Chat API well-structured with proposals and clusters",
+    "Corrections API supports single and batch operations",
+    "Two-phase flow works via HTTP POST /chat",
+    "Place/date/language queries reliable with correct evidence",
+    "Coverage API provides per-field breakdown",
+    "Session management works",
+    "suggested_followups populated",
+    "Publisher authorities API returns rich read-only data"
+  ],
+  "contradicted": [
+    "WebSocket uses old single-phase path — no two-phase support",
+    "Zero /diagnostics/* endpoints exist — all must be built from scratch",
+    "FacetCounts computed then discarded — never reach frontend",
+    "Per-filter confidence always null — LLM never populates it",
+    "Confidence is binary (not four-band) — middle bands empty for place/publisher",
+    "Only 121 low-confidence records — Issues Workbench nearly empty with current framing",
+    "Publisher Authorities read-only — no CRUD endpoints",
+    "System Health has only basic GET /health — no metrics/logs",
+    "Backend work underestimated by 12-15 developer-days"
+  ],
+  "updatedReports": [
+    "reports/12-empirical-refinements.md (created)",
+    "reports/00-executive-report.md (addendum appended)",
+    "reports/06-new-ui-definition.md (addendum appended)",
+    "reports/07-migration-plan.md (addendum appended)"
+  ],
+  "screenChanges": [
+    {"screen": "Chat", "change": "HTTP-only launch; drop per-filter confidence; add backend micro-tasks for facets/timing/warnings"},
+    {"screen": "Coverage Dashboard", "change": "Binary confidence for place/publisher; lead with agent gaps; add Hebrew publisher indicator"},
+    {"screen": "Issues Workbench", "change": "Reframe to 'improvement opportunities'; add Hebrew publishers tab; replace confidence slider"},
+    {"screen": "Query Debugger", "change": "MISALIGNED — all diagnostic endpoints must be built (4-5 days); reprioritize after Phase 1"},
+    {"screen": "Database Explorer", "change": "MISALIGNED — all endpoints must be built; consider deferring post-beta"},
+    {"screen": "Publisher Authorities", "change": "Read-only view immediate; CRUD must be built; reframe for research workflow"},
+    {"screen": "System Health", "change": "Scope down to basic health + nav bar indicator"}
+  ],
+  "migrationChanges": [
+    {"phase": "Phase 1 (Chat)", "change": "HTTP-only; add 4 backend micro-tasks; remove WebSocket criterion"},
+    {"phase": "Phase 2 (Diagnostics)", "change": "Sequential not parallel with Phase 1; expanded to 4-5 days backend"},
+    {"phase": "Phase 3 (Admin)", "change": "Split: read-only publisher early; CRUD + health later"},
+    {"phase": "Phase 4 (Polish)", "change": "Add WebSocket two-phase upgrade; add evidence quality fixes"},
+    {"phase": "Timeline", "change": "Extended from 7 to 8 weeks"}
+  ],
+  "overallVerdict": "9-screen architecture and React consolidation remain correct. Reports underestimated backend work by 12-15 dev-days, overestimated data complexity (121 low-conf vs thousands), and assumed API capabilities that don't exist. 2 screens MISALIGNED (require new backend), 5 PARTIALLY_ALIGNED (design adjustments), 2 CONFIRMED. Timeline extends to 8 weeks."
+}

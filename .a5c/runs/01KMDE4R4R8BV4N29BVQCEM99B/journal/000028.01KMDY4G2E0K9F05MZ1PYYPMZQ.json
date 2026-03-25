@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T18:08:25.678Z",
+  "data": {
+    "effectId": "01KMDY4G21T6HA6VB4BFX5WMDK",
+    "invocationKey": "implement-unified-ui:S000014:polish-phase",
+    "invocationHash": "3d2c9dd069baceeb5d51a25b552b8fbb66f76cbe28b7d9be1637d37c5e17b861",
+    "stepId": "S000014",
+    "taskId": "polish-phase",
+    "kind": "agent",
+    "label": "frontend",
+    "taskDefRef": "tasks/01KMDY4G21T6HA6VB4BFX5WMDK/task.json",
+    "labels": [
+      "frontend",
+      "polish",
+      "phase4"
+    ]
+  },
+  "checksum": "d04fdbe44d6b9156cb2498b49063ab03c30cd3da9194db450aee01d196b5ddd5"
+}

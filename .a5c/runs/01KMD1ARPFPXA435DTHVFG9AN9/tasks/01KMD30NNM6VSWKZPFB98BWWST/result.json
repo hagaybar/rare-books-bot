@@ -1,0 +1,269 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD30NNM6VSWKZPFB98BWWST",
+  "taskId": "new-ui-definition",
+  "invocationKey": "ui-evaluation-and-redesign:S000006:new-ui-definition",
+  "status": "ok",
+  "result": {
+    "featuresToDrop": [
+      "Streamlit Chat UI (entire app)",
+      "Streamlit QA Tool (entire app)",
+      "QA wizard (experimental)",
+      "WebSocket old single-phase path",
+      "Dual Primo URL schemes",
+      "app/qa.py standalone runner",
+      "Separate QA database"
+    ],
+    "featuresToKeep": [
+      "TanStack Table (from Workbench)",
+      "Coverage Dashboard (from Workbench)",
+      "Agent Chat with proposals (from Workbench)",
+      "Correction Review with export (from Workbench)",
+      "Inline editable cells (from Workbench)",
+      "Batch toolbar (from Workbench)",
+      "Cluster cards (from Workbench)",
+      "TanStack Query patterns (from Workbench)",
+      "Tailwind design system (from Workbench)",
+      "Candidate card layout (from Chat UI)",
+      "Evidence display with confidence (from Chat UI)",
+      "Follow-up suggestions (from Chat UI)",
+      "TP/FP/FN labeling (from QA Tool)",
+      "Issue tagging (from QA Tool)",
+      "False negative search (from QA Tool)",
+      "Gold set export (from QA Tool)",
+      "Two-phase conversation model (from API)",
+      "Intent interpretation with confidence (from API)",
+      "WebSocket streaming (from API)",
+      "Clarification flow (from API)"
+    ],
+    "observability": {
+      "mustHave": [
+        "Query interpretation transparency with per-filter confidence",
+        "Execution metrics per query",
+        "Evidence chain per result with MARC field citations",
+        "Data quality indicators on Dashboard",
+        "Session state visibility",
+        "Correction impact tracking",
+        "API health status indicator"
+      ],
+      "niceToHave": [
+        "Quality score trending",
+        "Query analytics",
+        "Performance dashboard",
+        "Interaction heatmap",
+        "Diff views",
+        "Export/audit capabilities"
+      ]
+    },
+    "screens": [
+      {
+        "name": "Chat",
+        "path": "/",
+        "purpose": "The product. NL bibliographic discovery with two-phase conversation.",
+        "tier": "primary"
+      },
+      {
+        "name": "Coverage Dashboard",
+        "path": "/operator/coverage",
+        "purpose": "Monitor normalization quality across corpus.",
+        "tier": "operator"
+      },
+      {
+        "name": "Issues Workbench",
+        "path": "/operator/workbench",
+        "purpose": "Browse and resolve low-confidence normalizations.",
+        "tier": "operator"
+      },
+      {
+        "name": "Agent Chat",
+        "path": "/operator/agent",
+        "purpose": "Interact with specialist normalization agents.",
+        "tier": "operator"
+      },
+      {
+        "name": "Correction Review",
+        "path": "/operator/review",
+        "purpose": "Audit trail of all corrections.",
+        "tier": "operator"
+      },
+      {
+        "name": "Query Debugger",
+        "path": "/diagnostics/query",
+        "purpose": "Test queries, inspect plans, label results, build gold sets. Replaces QA Tool.",
+        "tier": "diagnostics"
+      },
+      {
+        "name": "Database Explorer",
+        "path": "/diagnostics/db",
+        "purpose": "Read-only inspection of bibliographic database.",
+        "tier": "diagnostics"
+      },
+      {
+        "name": "Publisher Authorities",
+        "path": "/admin/publishers",
+        "purpose": "Manage publisher authority records.",
+        "tier": "admin"
+      },
+      {
+        "name": "System Health",
+        "path": "/admin/health",
+        "purpose": "System operational status.",
+        "tier": "admin"
+      }
+    ],
+    "techRecommendation": {
+      "apiIntegration": "TanStack Query v5 for REST + custom useWebSocket hook for streaming chat",
+      "charting": "Recharts v3 (continue). Evaluate Observable Plot or Nivo when complex charts needed.",
+      "framework": "React",
+      "justification": "3,160 lines of production-quality React/TypeScript already exist. Team has demonstrated React 19 fluency. React's component model maps naturally to chat-centric UX.",
+      "routing": "React Router v7 with nested routes: / (Chat), /operator/*, /diagnostics/*, /admin/*",
+      "stateManagement": "TanStack Query v5 (server state) + Zustand (client state) + React local state. No Redux.",
+      "testing": "Vitest + React Testing Library + Playwright E2E + MSW for API mocking",
+      "uiFramework": "Tailwind CSS v4 + Radix UI for accessible headless primitives"
+    },
+    "uiDefinition": {
+      "designPrinciples": [
+        "Bot-Centered Architecture",
+        "Progressive Disclosure of Complexity",
+        "Evidence-First Display",
+        "Observable by Default",
+        "Single Source of Truth",
+        "Composable Over Monolithic"
+      ],
+      "name": "Rare Books Bot",
+      "vision": "A single React application that places the conversational discovery bot at the center, with layered access to operator observability, data diagnostics, and administration."
+    }
+  },
+  "startedAt": "2026-03-23T10:21:44.148Z",
+  "finishedAt": "2026-03-23T10:21:44.148Z",
+  "value": {
+    "featuresToDrop": [
+      "Streamlit Chat UI (entire app)",
+      "Streamlit QA Tool (entire app)",
+      "QA wizard (experimental)",
+      "WebSocket old single-phase path",
+      "Dual Primo URL schemes",
+      "app/qa.py standalone runner",
+      "Separate QA database"
+    ],
+    "featuresToKeep": [
+      "TanStack Table (from Workbench)",
+      "Coverage Dashboard (from Workbench)",
+      "Agent Chat with proposals (from Workbench)",
+      "Correction Review with export (from Workbench)",
+      "Inline editable cells (from Workbench)",
+      "Batch toolbar (from Workbench)",
+      "Cluster cards (from Workbench)",
+      "TanStack Query patterns (from Workbench)",
+      "Tailwind design system (from Workbench)",
+      "Candidate card layout (from Chat UI)",
+      "Evidence display with confidence (from Chat UI)",
+      "Follow-up suggestions (from Chat UI)",
+      "TP/FP/FN labeling (from QA Tool)",
+      "Issue tagging (from QA Tool)",
+      "False negative search (from QA Tool)",
+      "Gold set export (from QA Tool)",
+      "Two-phase conversation model (from API)",
+      "Intent interpretation with confidence (from API)",
+      "WebSocket streaming (from API)",
+      "Clarification flow (from API)"
+    ],
+    "observability": {
+      "mustHave": [
+        "Query interpretation transparency with per-filter confidence",
+        "Execution metrics per query",
+        "Evidence chain per result with MARC field citations",
+        "Data quality indicators on Dashboard",
+        "Session state visibility",
+        "Correction impact tracking",
+        "API health status indicator"
+      ],
+      "niceToHave": [
+        "Quality score trending",
+        "Query analytics",
+        "Performance dashboard",
+        "Interaction heatmap",
+        "Diff views",
+        "Export/audit capabilities"
+      ]
+    },
+    "screens": [
+      {
+        "name": "Chat",
+        "path": "/",
+        "purpose": "The product. NL bibliographic discovery with two-phase conversation.",
+        "tier": "primary"
+      },
+      {
+        "name": "Coverage Dashboard",
+        "path": "/operator/coverage",
+        "purpose": "Monitor normalization quality across corpus.",
+        "tier": "operator"
+      },
+      {
+        "name": "Issues Workbench",
+        "path": "/operator/workbench",
+        "purpose": "Browse and resolve low-confidence normalizations.",
+        "tier": "operator"
+      },
+      {
+        "name": "Agent Chat",
+        "path": "/operator/agent",
+        "purpose": "Interact with specialist normalization agents.",
+        "tier": "operator"
+      },
+      {
+        "name": "Correction Review",
+        "path": "/operator/review",
+        "purpose": "Audit trail of all corrections.",
+        "tier": "operator"
+      },
+      {
+        "name": "Query Debugger",
+        "path": "/diagnostics/query",
+        "purpose": "Test queries, inspect plans, label results, build gold sets. Replaces QA Tool.",
+        "tier": "diagnostics"
+      },
+      {
+        "name": "Database Explorer",
+        "path": "/diagnostics/db",
+        "purpose": "Read-only inspection of bibliographic database.",
+        "tier": "diagnostics"
+      },
+      {
+        "name": "Publisher Authorities",
+        "path": "/admin/publishers",
+        "purpose": "Manage publisher authority records.",
+        "tier": "admin"
+      },
+      {
+        "name": "System Health",
+        "path": "/admin/health",
+        "purpose": "System operational status.",
+        "tier": "admin"
+      }
+    ],
+    "techRecommendation": {
+      "apiIntegration": "TanStack Query v5 for REST + custom useWebSocket hook for streaming chat",
+      "charting": "Recharts v3 (continue). Evaluate Observable Plot or Nivo when complex charts needed.",
+      "framework": "React",
+      "justification": "3,160 lines of production-quality React/TypeScript already exist. Team has demonstrated React 19 fluency. React's component model maps naturally to chat-centric UX.",
+      "routing": "React Router v7 with nested routes: / (Chat), /operator/*, /diagnostics/*, /admin/*",
+      "stateManagement": "TanStack Query v5 (server state) + Zustand (client state) + React local state. No Redux.",
+      "testing": "Vitest + React Testing Library + Playwright E2E + MSW for API mocking",
+      "uiFramework": "Tailwind CSS v4 + Radix UI for accessible headless primitives"
+    },
+    "uiDefinition": {
+      "designPrinciples": [
+        "Bot-Centered Architecture",
+        "Progressive Disclosure of Complexity",
+        "Evidence-First Display",
+        "Observable by Default",
+        "Single Source of Truth",
+        "Composable Over Monolithic"
+      ],
+      "name": "Rare Books Bot",
+      "vision": "A single React application that places the conversational discovery bot at the center, with layered access to operator observability, data diagnostics, and administration."
+    }
+  }
+}

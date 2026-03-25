@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGN2MX8F7DKFXBF3CCYDMZW",
+  "taskId": "e3-verify",
+  "invocationKey": "implement-historian-enhancements:S000020:e3-verify",
+  "status": "ok",
+  "result": {
+    "output": "27 passed in 0.35s",
+    "summary": "All 27 E3 tests pass: 13 cross-reference + 8 comparison + 6 integration.",
+    "testsFailed": 0,
+    "testsPassed": 27
+  },
+  "startedAt": "2026-03-24T19:28:07.624Z",
+  "finishedAt": "2026-03-24T19:28:07.624Z",
+  "value": {
+    "output": "27 passed in 0.35s",
+    "summary": "All 27 E3 tests pass: 13 cross-reference + 8 comparison + 6 integration.",
+    "testsFailed": 0,
+    "testsPassed": 27
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T09:57:17.551Z",
+  "data": {
+    "effectId": "01KMJ6TMK2DDRQP0NDB0C9MJ5T",
+    "invocationKey": "scholar-pipeline:S000011:implement-task",
+    "invocationHash": "beda70fdba186d6a96748e0e6beed22ffe2bbe96d3d6bd8720d2ac57165c6ef7",
+    "stepId": "S000011",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Implement Task 7: Evidence Reports",
+    "taskDefRef": "tasks/01KMJ6TMK2DDRQP0NDB0C9MJ5T/task.json"
+  },
+  "checksum": "2f1304dc818067824f9850ed89c86a477d5dda6efeb2e6a5c70ca91a899643c6"
+}

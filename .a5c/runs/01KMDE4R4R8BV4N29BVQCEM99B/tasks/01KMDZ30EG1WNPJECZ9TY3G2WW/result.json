@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDZ30EG1WNPJECZ9TY3G2WW",
+  "taskId": "final-verify",
+  "invocationKey": "implement-unified-ui:S000017:final-verify",
+  "status": "ok",
+  "result": {
+    "backendTests": "1093 passed, 0 failures",
+    "exitCode": 0,
+    "frontendBuild": "success"
+  },
+  "startedAt": "2026-03-23T18:26:08.301Z",
+  "finishedAt": "2026-03-23T18:26:08.301Z",
+  "value": {
+    "backendTests": "1093 passed, 0 failures",
+    "exitCode": 0,
+    "frontendBuild": "success"
+  }
+}

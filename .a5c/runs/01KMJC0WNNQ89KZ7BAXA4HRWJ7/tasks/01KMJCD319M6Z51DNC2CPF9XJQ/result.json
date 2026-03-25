@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJCD319M6Z51DNC2CPF9XJQ",
+  "taskId": "verify",
+  "invocationKey": "scholar-pipeline-fixes:S000004:verify",
+  "status": "ok",
+  "result": {
+    "failed": 0,
+    "passed": 6
+  },
+  "startedAt": "2026-03-25T11:34:52.852Z",
+  "finishedAt": "2026-03-25T11:34:52.852Z",
+  "value": {
+    "failed": 0,
+    "passed": 6
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T14:10:51.019Z",
+  "data": {
+    "effectId": "01KMDGHFFYQHX15BKAE0YAM204",
+    "invocationKey": "implement-unified-ui:S000010:cli-consolidate",
+    "invocationHash": "63787f8cf0504f870a017e0f29164443c8dba889f4b22a15bc01e8dbb752090e",
+    "stepId": "S000010",
+    "taskId": "cli-consolidate",
+    "kind": "agent",
+    "label": "backend",
+    "taskDefRef": "tasks/01KMDGHFFYQHX15BKAE0YAM204/task.json",
+    "labels": [
+      "backend",
+      "cli",
+      "phase2"
+    ]
+  },
+  "checksum": "5550fd8b629d09f414d13a636ba5c4481c7b7a7bc0458b1ad0e4e704ef1f9c81"
+}

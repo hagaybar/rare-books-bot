@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGP7WY9613TSJGTD4F1T1WW",
+  "taskId": "e5-curator-impl",
+  "invocationKey": "implement-historian-enhancements:S000029:e5-curator-impl",
+  "stepId": "S000029",
+  "kind": "agent",
+  "title": "E5: Implement curator module",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

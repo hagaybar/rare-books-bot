@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T13:02:19.647Z",
+  "data": {
+    "effectId": "01KMAT79FK4204TG3D5MM72DFN",
+    "invocationKey": "notebooklm-context-builder:S000003:quality-review",
+    "invocationHash": "ae9f8f729dc4269b3a87464a55931075d1ff631909bdca571d583ce9b2ef3e5c",
+    "stepId": "S000003",
+    "taskId": "quality-review",
+    "kind": "agent",
+    "label": "Review document quality and completeness",
+    "taskDefRef": "tasks/01KMAT79FK4204TG3D5MM72DFN/task.json"
+  },
+  "checksum": "84a58e256711b5a642c64fafa0673ed9bd74b7381a3585fdc6ca2a9c8e85cab2"
+}

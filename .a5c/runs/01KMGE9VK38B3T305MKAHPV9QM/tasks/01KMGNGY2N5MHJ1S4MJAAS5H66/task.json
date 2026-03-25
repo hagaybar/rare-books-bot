@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGNGY2N5MHJ1S4MJAAS5H66",
+  "taskId": "e4-pedagogical-tests",
+  "invocationKey": "implement-historian-enhancements:S000024:e4-pedagogical-tests",
+  "stepId": "S000024",
+  "kind": "agent",
+  "title": "E4: Write pedagogical formatting tests",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

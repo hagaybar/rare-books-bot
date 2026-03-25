@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMFYYXX574JQ7PXNKKT9SK0H",
+  "taskId": "simulate-queries",
+  "invocationKey": "historian-evaluation:S000002:simulate-queries",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Step 3: Simulate all 20 questions through the actual pipeline",
+  "labels": [
+    "pipeline",
+    "simulation",
+    "testing"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMFYYXX574JQ7PXNKKT9SK0H/input.json",
+    "outputJsonPath": "tasks/01KMFYYXX574JQ7PXNKKT9SK0H/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "questions": {
+      "questions": "20 questions designed across 4 categories"
+    }
+  }
+}

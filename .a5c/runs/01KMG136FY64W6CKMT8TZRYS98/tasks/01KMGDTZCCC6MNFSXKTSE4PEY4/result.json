@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGDTZCCC6MNFSXKTSE4PEY4",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "historian-enhancement-plan:S000014:__sdk.breakpoint",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Auto-approved in yolo mode. Plan document verified and complete."
+  },
+  "startedAt": "2026-03-24T17:21:27.514Z",
+  "finishedAt": "2026-03-24T17:21:27.514Z",
+  "value": {
+    "approved": true,
+    "response": "Auto-approved in yolo mode. Plan document verified and complete."
+  }
+}

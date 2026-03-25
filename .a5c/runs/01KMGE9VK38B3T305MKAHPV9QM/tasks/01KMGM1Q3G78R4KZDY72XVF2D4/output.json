@@ -1,0 +1,1 @@
+{"testsWritten": 13, "testFile": "tests/scripts/chat/test_cross_reference.py", "summary": "13 TDD tests covering graph construction, teacher/student, co-publication, same_place_period, neighbors, self-loops, max_results, confidence values, dedup, AgentNode fields. All fail with ModuleNotFoundError."}

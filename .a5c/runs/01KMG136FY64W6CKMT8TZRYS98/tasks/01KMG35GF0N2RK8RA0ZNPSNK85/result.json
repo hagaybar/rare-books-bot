@@ -1,0 +1,2503 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMG35GF0N2RK8RA0ZNPSNK85",
+  "taskId": "generate-validation-plan",
+  "invocationKey": "historian-enhancement-plan:S000011:generate-validation-plan",
+  "status": "ok",
+  "result": {
+    "validationPlan": {
+      "affectedQueries": [
+        {
+          "enhancement": "E1",
+          "name": "Agent Name Resolution Layer",
+          "queries": [
+            {
+              "currentScore": 0,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative"
+              ],
+              "expectedScore": 10,
+              "id": "Q3",
+              "query": "books published by the Aldine Press"
+            },
+            {
+              "currentScore": 0,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "crossRef",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q6",
+              "query": "works by Johann Buxtorf"
+            },
+            {
+              "currentScore": 0,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "crossRef",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q7",
+              "query": "works by Moses Mendelssohn"
+            },
+            {
+              "currentScore": 9,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "crossRef"
+              ],
+              "expectedScore": 16,
+              "id": "Q8",
+              "query": "works by Maimonides"
+            },
+            {
+              "currentScore": 9,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness"
+              ],
+              "expectedScore": 13,
+              "id": "Q12",
+              "query": "materials about Ethiopia or Ethiopian Jews"
+            },
+            {
+              "currentScore": 0,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "crossRef",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q19",
+              "query": "works by Joseph Karo"
+            }
+          ]
+        },
+        {
+          "enhancement": "E2",
+          "name": "Auto-Aggregation for Analytical Questions",
+          "queries": [
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 12,
+              "id": "Q14",
+              "query": "chronological distribution of the collection"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 12,
+              "id": "Q15",
+              "query": "major Hebrew printing centers represented"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative"
+              ],
+              "expectedScore": 10,
+              "id": "Q20",
+              "query": "curated selection for Hebrew printing exhibit"
+            }
+          ]
+        },
+        {
+          "enhancement": "E3",
+          "name": "Entity Cross-Reference and Set Comparison",
+          "queries": [
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "crossRef",
+                "narrative"
+              ],
+              "expectedScore": 15,
+              "id": "Q1",
+              "query": "books printed by Bragadin press in Venice"
+            },
+            {
+              "currentScore": 15,
+              "dimensionsImproved": [
+                "crossRef",
+                "narrative"
+              ],
+              "expectedScore": 18,
+              "id": "Q2",
+              "query": "Hebrew books printed in Amsterdam 1620-1650"
+            },
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "crossRef",
+                "narrative"
+              ],
+              "expectedScore": 17,
+              "id": "Q4",
+              "query": "incunabula in the collection"
+            },
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "crossRef",
+                "narrative"
+              ],
+              "expectedScore": 15,
+              "id": "Q5",
+              "query": "books printed in Constantinople"
+            },
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "crossRef"
+              ],
+              "expectedScore": 17,
+              "id": "Q9",
+              "query": "works by Josephus Flavius"
+            },
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "crossRef"
+              ],
+              "expectedScore": 17,
+              "id": "Q10",
+              "query": "books on Jewish philosophy"
+            },
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "crossRef"
+              ],
+              "expectedScore": 15,
+              "id": "Q13",
+              "query": "books about book collecting"
+            },
+            {
+              "currentScore": 15,
+              "dimensionsImproved": [
+                "crossRef"
+              ],
+              "expectedScore": 18,
+              "id": "Q17",
+              "query": "Hebrew grammar books"
+            }
+          ]
+        },
+        {
+          "enhancement": "E4",
+          "name": "Contextual Narrative Depth Layer",
+          "queries": [
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 17,
+              "id": "Q1",
+              "query": "books printed by Bragadin press in Venice"
+            },
+            {
+              "currentScore": 15,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 19,
+              "id": "Q2",
+              "query": "Hebrew books printed in Amsterdam 1620-1650"
+            },
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 19,
+              "id": "Q4",
+              "query": "incunabula in the collection"
+            },
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 16,
+              "id": "Q5",
+              "query": "books printed in Constantinople"
+            },
+            {
+              "currentScore": 9,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q11",
+              "query": "books from the Napoleonic era 1795-1815"
+            },
+            {
+              "currentScore": 11,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 15,
+              "id": "Q16",
+              "query": "biblical commentaries"
+            },
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 16,
+              "id": "Q18",
+              "query": "Talmud editions"
+            }
+          ]
+        },
+        {
+          "enhancement": "E5",
+          "name": "Intelligent Selection and Exhibit Curation",
+          "queries": [
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "richness",
+                "pedagogical"
+              ],
+              "expectedScore": 20,
+              "id": "Q4",
+              "query": "incunabula in the collection"
+            },
+            {
+              "currentScore": 9,
+              "dimensionsImproved": [
+                "richness"
+              ],
+              "expectedScore": 15,
+              "id": "Q11",
+              "query": "books from the Napoleonic era 1795-1815"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "richness"
+              ],
+              "expectedScore": 14,
+              "id": "Q14",
+              "query": "chronological distribution of the collection"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "richness"
+              ],
+              "expectedScore": 14,
+              "id": "Q15",
+              "query": "major Hebrew printing centers represented"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q20",
+              "query": "curated selection for Hebrew printing exhibit"
+            }
+          ]
+        }
+      ],
+      "evaluationProcedure": {
+        "prerequisites": [
+          "Start API: uvicorn app.api.main:app --reload",
+          "Verify: curl http://localhost:8000/health",
+          "Set OPENAI_API_KEY for query compilation"
+        ],
+        "queries": [
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 12
+            },
+            "category": "A",
+            "checkPoints": [
+              "resultCount>=16",
+              "E3:connections present",
+              "E4:censorship/Council of Trent context"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books printed by Bragadin press in Venice\"}'",
+            "id": "Q1"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 2,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 15
+            },
+            "category": "A",
+            "checkPoints": [
+              "resultCount>=13",
+              "3 filters applied",
+              "E3:Menasseh cross-ref",
+              "E4:Dutch Jerusalem"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"Hebrew books printed in Amsterdam between 1620 and 1650\"}'",
+            "id": "Q2"
+          },
+          {
+            "baseline": {
+              "total": 0
+            },
+            "category": "A",
+            "checkPoints": [
+              "E1:resultCount>=1 (was 0)",
+              "alias resolution for Aldus Manutius"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books published by the Aldine Press\"}'",
+            "id": "Q3"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 14
+            },
+            "category": "A",
+            "checkPoints": [
+              "resultCount>=13",
+              "E3:cross-center comparison",
+              "E4:incunabula significance",
+              "E5:notable items"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"incunabula in the collection (books printed before 1500)\"}'",
+            "id": "Q4"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 12
+            },
+            "category": "A",
+            "checkPoints": [
+              "resultCount>=11",
+              "E3:Venice comparison suggestion",
+              "E4:Ottoman context"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books printed in Constantinople\"}'",
+            "id": "Q5"
+          },
+          {
+            "baseline": {
+              "total": 0
+            },
+            "category": "B",
+            "checkPoints": [
+              "E1:resultCount>=5 (was 0)",
+              "word-reorder alias working"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Johann Buxtorf\"}'",
+            "id": "Q6"
+          },
+          {
+            "baseline": {
+              "total": 0
+            },
+            "category": "B",
+            "checkPoints": [
+              "E1:resultCount>=5 (was 0)",
+              "cross-script Latin+Hebrew"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Moses Mendelssohn\"}'",
+            "id": "Q7"
+          },
+          {
+            "baseline": {
+              "accuracy": 2,
+              "crossRef": 1,
+              "narrative": 2,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 9
+            },
+            "category": "B",
+            "checkPoints": [
+              "E1:resultCount>=15 (was 7)",
+              "Latin+Hebrew forms unified"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Maimonides\"}'",
+            "id": "Q8"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 14
+            },
+            "category": "B",
+            "checkPoints": [
+              "resultCount>=30",
+              "E3:translator networks"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Josephus Flavius\"}'",
+            "id": "Q9"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 14
+            },
+            "category": "B",
+            "checkPoints": [
+              "resultCount>=21",
+              "E3:intellectual lineage"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books on Jewish philosophy\"}'",
+            "id": "Q10"
+          },
+          {
+            "baseline": {
+              "accuracy": 3,
+              "crossRef": 0,
+              "narrative": 2,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 9
+            },
+            "category": "C",
+            "checkPoints": [
+              "resultCount>=40",
+              "E4:emancipation context",
+              "E4:teaching note"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books from the Napoleonic era 1795-1815\"}'",
+            "id": "Q11"
+          },
+          {
+            "baseline": {
+              "accuracy": 2,
+              "crossRef": 1,
+              "narrative": 2,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 9
+            },
+            "category": "C",
+            "checkPoints": [
+              "E1:improved recall",
+              "resultCount>=17"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"materials about Ethiopia or Ethiopian Jews\"}'",
+            "id": "Q12"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 12
+            },
+            "category": "C",
+            "checkPoints": [
+              "resultCount>=26",
+              "E3:cross-reference connections"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books about book collecting or bibliography\"}'",
+            "id": "Q13"
+          },
+          {
+            "baseline": {
+              "accuracy": 1,
+              "crossRef": 0,
+              "narrative": 0,
+              "pedagogical": 0,
+              "richness": 0,
+              "total": 1
+            },
+            "category": "C",
+            "checkPoints": [
+              "E2:aggregation not raw records",
+              "decade breakdown with counts",
+              "E5:representative items"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"chronological distribution of the collection\"}'",
+            "id": "Q14"
+          },
+          {
+            "baseline": {
+              "accuracy": 1,
+              "crossRef": 0,
+              "narrative": 0,
+              "pedagogical": 0,
+              "richness": 0,
+              "total": 1
+            },
+            "category": "C",
+            "checkPoints": [
+              "E2:place aggregation filtered to Hebrew",
+              "ranked center list",
+              "E5:representative items"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"major Hebrew printing centers represented\"}'",
+            "id": "Q15"
+          },
+          {
+            "baseline": {
+              "accuracy": 3,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 11
+            },
+            "category": "D",
+            "checkPoints": [
+              "resultCount>=11",
+              "E4:teaching note (exegetical/Mikraot Gedolot)",
+              "E4:significance scoring"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"biblical commentaries\"}'",
+            "id": "Q16"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 2,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 15
+            },
+            "category": "D",
+            "checkPoints": [
+              "resultCount>=47",
+              "E3:Buxtorf network connections"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"Hebrew grammar books\"}'",
+            "id": "Q17"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 12
+            },
+            "category": "D",
+            "checkPoints": [
+              "resultCount>=42",
+              "E4:Talmud printing history",
+              "mentions Bomberg or censorship"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"Talmud editions\"}'",
+            "id": "Q18"
+          },
+          {
+            "baseline": {
+              "total": 0
+            },
+            "category": "D",
+            "checkPoints": [
+              "E1:resultCount>=3 (was 0)",
+              "Latin-to-Hebrew alias working"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Joseph Karo\"}'",
+            "id": "Q19"
+          },
+          {
+            "baseline": {
+              "accuracy": 1,
+              "crossRef": 0,
+              "narrative": 0,
+              "pedagogical": 0,
+              "richness": 0,
+              "total": 1
+            },
+            "category": "D",
+            "checkPoints": [
+              "E2+E5:curated items not 120 raw",
+              "10-15 items with significance notes",
+              "diversity across dimensions"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"curated selection for Hebrew printing exhibit\"}'",
+            "id": "Q20"
+          }
+        ],
+        "scoringProcedure": [
+          "1. Run each curl command with server running",
+          "2. Score 5 dimensions (0-5 each): Accuracy, Richness, CrossRef, Narrative, Pedagogical",
+          "3. Record 20x5 matrix; sum per-query totals (max 25)",
+          "4. Calculate overall average (sum/20, max 25)",
+          "5. Grade: GOOD>=18, FAIR>=8, POOR>=1, FAIL=0",
+          "6. Verify: 0 FAIL, overall>=15.0/25",
+          "7. Flag regressions >1 point vs baseline"
+        ]
+      },
+      "metrics": [
+        {
+          "baseline": 7.55,
+          "measurement": "Average of 20 Q scores (each 0-25) via historian rubric",
+          "metric": "Overall average score",
+          "target": 15.7
+        },
+        {
+          "baseline": 7,
+          "measurement": "Count of Qs scoring 0/25",
+          "metric": "FAIL count (0/25)",
+          "target": 0
+        },
+        {
+          "baseline": "50% (10/20)",
+          "measurement": "Fraction reaching FAIR grade",
+          "metric": "FAIR+ rate (>=8/25)",
+          "target": "100% (20/20)"
+        },
+        {
+          "baseline": "Q3=0,Q6=0,Q7=0,Q19=0",
+          "measurement": "Record count per query after E1",
+          "metric": "Name resolution recall",
+          "target": "Q3>=1,Q6>=5,Q7>=5,Q19>=3"
+        },
+        {
+          "baseline": "7 results",
+          "measurement": "Q8 record count after E1",
+          "metric": "Maimonides cross-script recall",
+          "target": "22+ results"
+        },
+        {
+          "baseline": "0%",
+          "measurement": "detect_analytical_query() returns is_analytical=True",
+          "metric": "Analytical routing accuracy",
+          "target": "100% for Q14,Q15,Q20"
+        },
+        {
+          "baseline": 0,
+          "measurement": "find_connections() non-empty for Q1,Q2,Q4,Q5,Q9,Q10,Q13,Q17",
+          "metric": "Cross-reference connections",
+          "target": ">=1 per E3 query"
+        },
+        {
+          "baseline": "0/7",
+          "measurement": "get_thematic_context() non-None for Q1,Q2,Q4,Q5,Q11,Q16,Q18",
+          "metric": "Thematic context hits",
+          "target": "7/7"
+        },
+        {
+          "baseline": "N/A",
+          "measurement": "CurationResult.dimension_coverage for Q20",
+          "metric": "Curation diversity",
+          "target": ">=3 places, >=3 decades in top-10"
+        },
+        {
+          "baseline": "All pass",
+          "measurement": "pytest tests/ exit code 0 after each E",
+          "metric": "Backward compatibility",
+          "target": "All pass"
+        },
+        {
+          "baseline": "<200ms",
+          "measurement": "Wall-clock /chat endpoint timing",
+          "metric": "Latency overhead",
+          "target": "<500ms with all E"
+        }
+      ],
+      "overview": {
+        "baseline": {
+          "failCount": 7,
+          "maxScore": 25,
+          "percent": 30.2,
+          "score": 7.55,
+          "totalQuestions": 20
+        },
+        "dimensions": [
+          "accuracy",
+          "richness",
+          "crossRef",
+          "narrative",
+          "pedagogical"
+        ],
+        "targetAfterAll": {
+          "failCount": 0,
+          "percent": 62.8,
+          "score": 15.7
+        },
+        "targetAfterE1E2": {
+          "percent": 50.8,
+          "score": 12.7
+        }
+      },
+      "perEnhancementGates": [
+        {
+          "enhancement": "E1",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/metadata/test_agent_authority.py -k test_create -v",
+              "criterion": "Tables created with correct columns/indexes",
+              "gate": "Schema creation",
+              "passCondition": "Exit 0"
+            },
+            {
+              "command": "pytest tests/scripts/metadata/test_agent_authority.py -v",
+              "criterion": "10+ unit tests pass",
+              "gate": "CRUD unit tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "python -m app.cli seed-agent-authorities --db data/index/bibliographic.db --dry-run",
+              "criterion": "2400+ authorities, 3000+ primary, 1000+ cross-script aliases",
+              "gate": "Seeding counts",
+              "passCondition": "Expected counts in output"
+            },
+            {
+              "command": "pytest tests/scripts/query/test_db_adapter_agent_alias.py -v",
+              "criterion": "Word-reorder, cross-script, multi-form, fallback pass",
+              "gate": "Alias query integration",
+              "passCondition": "6 tests pass"
+            },
+            {
+              "command": "pytest tests/scripts/query/test_db_adapter.py -v",
+              "criterion": "Existing db_adapter tests unchanged",
+              "gate": "Backward compatibility",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "python -c \"from scripts.marc.m3_contract import validate_schema; print(validate_schema('data/index/bibliographic.db'))\"",
+              "criterion": "New tables pass schema validation",
+              "gate": "M3 contract",
+              "passCondition": "No errors"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Johann Buxtorf\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);print(r['response']['candidate_set']['count']);assert r['response']['candidate_set']['count']>=5\"",
+              "criterion": ">=5 results (was 0)",
+              "gate": "Q6 Buxtorf",
+              "passCondition": ">=5"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Moses Mendelssohn\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);print(r['response']['candidate_set']['count']);assert r['response']['candidate_set']['count']>=5\"",
+              "criterion": ">=5 results from Latin+Hebrew",
+              "gate": "Q7 Mendelssohn",
+              "passCondition": ">=5"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Maimonides\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);print(r['response']['candidate_set']['count']);assert r['response']['candidate_set']['count']>=15\"",
+              "criterion": ">=15 results (was 7)",
+              "gate": "Q8 Maimonides",
+              "passCondition": ">=15"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Joseph Karo\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);print(r['response']['candidate_set']['count']);assert r['response']['candidate_set']['count']>=3\"",
+              "criterion": ">=3 results (was 0)",
+              "gate": "Q19 Karo",
+              "passCondition": ">=3"
+            }
+          ],
+          "name": "Agent Name Resolution Layer"
+        },
+        {
+          "enhancement": "E2",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/chat/test_analytical_router.py -v",
+              "criterion": "25 unit tests pass",
+              "gate": "Router unit tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curation_engine.py -v",
+              "criterion": "All pass",
+              "gate": "Curation engine tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/app/test_api_analytical.py -v",
+              "criterion": "8 integration tests pass",
+              "gate": "API integration",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "unset OPENAI_API_KEY && pytest tests/scripts/chat/test_analytical_router.py -v",
+              "criterion": "Detection works without OPENAI_API_KEY",
+              "gate": "No LLM dependency",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"chronological distribution of the collection\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);assert r['response'].get('metadata',{}).get('data',{}).get('field')=='date_decade'\"",
+              "criterion": "Decade breakdown, not raw records",
+              "gate": "Q14 aggregation",
+              "passCondition": "field==date_decade"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"major Hebrew printing centers represented\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);assert r['response'].get('metadata',{}).get('data',{}).get('field')=='place'\"",
+              "criterion": "Place-by-count for Hebrew books",
+              "gate": "Q15 place breakdown",
+              "passCondition": "field==place"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"curated selection for Hebrew printing exhibit\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);m=r['response']['message'].lower();assert 'curated' in m or 'selection' in m or 'exhibit' in m\"",
+              "criterion": "Curated items, not 120 raw records",
+              "gate": "Q20 curation",
+              "passCondition": "Contains curation language"
+            },
+            {
+              "command": "pytest tests/ -v --timeout=60",
+              "criterion": "Full suite passes",
+              "gate": "No regression",
+              "passCondition": "Exit 0"
+            },
+            {
+              "command": "ruff check scripts/chat/analytical_router.py scripts/chat/curation_engine.py",
+              "criterion": "No new errors",
+              "gate": "Linting",
+              "passCondition": "Exit 0"
+            }
+          ],
+          "name": "Auto-Aggregation for Analytical Questions"
+        },
+        {
+          "enhancement": "E3",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/chat/test_cross_reference.py -v",
+              "criterion": "13 tests pass",
+              "gate": "Cross-ref unit tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_comparison_enhanced.py -v",
+              "criterion": "8 tests pass",
+              "gate": "Comparison tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_narrative_agent_e3.py -v",
+              "criterion": "6 tests pass",
+              "gate": "Narrative integration",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_formatter_e3.py -v",
+              "criterion": "5 tests pass",
+              "gate": "Follow-up tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_cross_reference_integration.py -k buxtorf -v --run-integration",
+              "criterion": ">=1 teacher_of connection found",
+              "gate": "Buxtorf network",
+              "passCondition": "Connection discovered"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_cross_reference_integration.py -k venice_amsterdam -v --run-integration",
+              "criterion": "Non-empty facets for both values",
+              "gate": "Venice-Amsterdam comparison",
+              "passCondition": "Facets populated"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_narrative_agent_e3.py -k no_connections -v",
+              "criterion": "Narrative works when no connections exist",
+              "gate": "Graceful degradation",
+              "passCondition": "Clean narrative, no error"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_cross_reference_integration.py -k performance --run-integration",
+              "criterion": "find_connections() <500ms for 100 records",
+              "gate": "Performance",
+              "passCondition": "<500ms"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_comparison_enhanced.py -k backward_compatible -v",
+              "criterion": "Old execute_comparison returns Dict[str,int]",
+              "gate": "Backward-compatible comparison",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/ -v",
+              "criterion": "Full suite passes",
+              "gate": "No regression",
+              "passCondition": "Exit 0"
+            }
+          ],
+          "name": "Entity Cross-Reference and Set Comparison"
+        },
+        {
+          "enhancement": "E4",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -v",
+              "criterion": "13 unit tests pass",
+              "gate": "Thematic context tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_formatter_pedagogical.py -v",
+              "criterion": "3 tests pass",
+              "gate": "Pedagogical formatter",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k citations -v",
+              "criterion": "Every ThematicEntry has >=1 Reference",
+              "gate": "All themes have citations",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k deterministic -v",
+              "criterion": "Same input always same output",
+              "gate": "Deterministic matching",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k unrelated -v",
+              "criterion": "Unrelated filters return None",
+              "gate": "No false matches",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k significance -v",
+              "criterion": "Same candidate same score, no API calls",
+              "gate": "Significance stable",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k labeled -v",
+              "criterion": "Output has '**Historical Context**' header",
+              "gate": "Context labeled",
+              "passCondition": "Header present"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k performance -v",
+              "criterion": "Theme matching+scoring overhead <30ms",
+              "gate": "Performance <30ms",
+              "passCondition": "<30ms"
+            },
+            {
+              "command": "python3 -c \"from scripts.chat.thematic_context import significance_score;print('OK')\"",
+              "criterion": "significance_score importable by curation",
+              "gate": "E5 importable",
+              "passCondition": "Prints OK"
+            },
+            {
+              "command": "grep -c 'openai\\|llm_call\\|api_key' scripts/chat/thematic_context.py || echo 0",
+              "criterion": "THEMATIC_REGISTRY has only string literals",
+              "gate": "No LLM content",
+              "passCondition": "0 matches"
+            },
+            {
+              "command": "pytest tests/ -v",
+              "criterion": "Full suite passes",
+              "gate": "No regression",
+              "passCondition": "Exit 0"
+            }
+          ],
+          "name": "Contextual Narrative Depth Layer"
+        },
+        {
+          "enhancement": "E5",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -v",
+              "criterion": "25 tests pass",
+              "gate": "Curator unit tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k improves_coverage -v",
+              "criterion": "Top-3-by-score same place; select_diverse picks >=2 places",
+              "gate": "Diversity works",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k fallback -v",
+              "criterion": "Scoring works when thematic_context unavailable",
+              "gate": "Fallback without E4",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k format_exhibit -v",
+              "criterion": "Header, items, significance notes, coverage summary",
+              "gate": "Exhibit format",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k recommendation_handler -v",
+              "criterion": "Replaces static stub",
+              "gate": "RECOMMENDATION handler",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"curated selection for Hebrew printing exhibit\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);items=r['response']['message'].lower().count('item ');print(f'Items:{items}');assert items>=5\"",
+              "criterion": ">=5 curated exhibit items with notes",
+              "gate": "Q20 scenario",
+              "passCondition": ">=5 items"
+            },
+            {
+              "command": "ruff check scripts/chat/curator.py scripts/chat/formatter.py app/api/main.py",
+              "criterion": "No errors",
+              "gate": "Linting",
+              "passCondition": "Exit 0"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k performance -v",
+              "criterion": "200 records scored+selected <1s",
+              "gate": "Performance",
+              "passCondition": "<1s"
+            },
+            {
+              "command": "pytest tests/ -v",
+              "criterion": "Full suite passes",
+              "gate": "No regression",
+              "passCondition": "Exit 0"
+            }
+          ],
+          "name": "Intelligent Selection and Exhibit Curation"
+        }
+      ],
+      "regressionTests": [
+        {
+          "currentScore": 12,
+          "minimumAcceptable": 12,
+          "query": "Q1: books printed by Bragadin press in Venice",
+          "riskFactors": [
+            "E3 comparison changes must not break publisher+place filter",
+            "E4 thematic context must not displace existing narrative"
+          ]
+        },
+        {
+          "currentScore": 15,
+          "minimumAcceptable": 14,
+          "query": "Q2: Hebrew books printed in Amsterdam 1620-1650",
+          "riskFactors": [
+            "E3 cross-reference integration could slow response",
+            "Multi-filter query (place+language+date) sensitive to adapter changes"
+          ]
+        },
+        {
+          "currentScore": 14,
+          "minimumAcceptable": 13,
+          "query": "Q4: incunabula in the collection",
+          "riskFactors": [
+            "E2 analytical routing must not misclassify as analytical",
+            "Date RANGE filter must keep working after E1 adapter changes"
+          ]
+        },
+        {
+          "currentScore": 14,
+          "minimumAcceptable": 13,
+          "query": "Q9: works by Josephus Flavius",
+          "riskFactors": [
+            "Subject CONTAINS filter unaffected by E1 but narrative agent changes in E3/E4 could regress richness"
+          ]
+        },
+        {
+          "currentScore": 14,
+          "minimumAcceptable": 13,
+          "query": "Q10: books on Jewish philosophy",
+          "riskFactors": [
+            "Subject filter stability; E3 narrative additions must not overflow response"
+          ]
+        },
+        {
+          "currentScore": 12,
+          "minimumAcceptable": 11,
+          "query": "Q13: books about book collecting",
+          "riskFactors": [
+            "Subject filter unchanged but formatter changes in E3/E4 could affect output"
+          ]
+        },
+        {
+          "currentScore": 11,
+          "minimumAcceptable": 11,
+          "query": "Q16: biblical commentaries",
+          "riskFactors": [
+            "E4 pedagogical framing must enhance not replace existing narrative"
+          ]
+        },
+        {
+          "currentScore": 15,
+          "minimumAcceptable": 14,
+          "query": "Q17: Hebrew grammar books",
+          "riskFactors": [
+            "Highest-scoring query; E3 cross-reference must not slow it; E1 Buxtorf alias should help not hurt"
+          ]
+        },
+        {
+          "currentScore": 12,
+          "minimumAcceptable": 11,
+          "query": "Q18: Talmud editions",
+          "riskFactors": [
+            "E4 thematic context for Talmud printing must enhance not replace"
+          ]
+        }
+      ],
+      "releaseQualityGates": {
+        "gates": [
+          {
+            "command": "pytest tests/ -v --timeout=120",
+            "criterion": "Zero failures across entire suite",
+            "gate": "All unit tests pass",
+            "passCondition": "Exit 0, 0 failures"
+          },
+          {
+            "command": "Run 20 queries via evaluation procedure; min score >= 1",
+            "criterion": "No query scores 0/25",
+            "gate": "Zero FAIL queries",
+            "passCondition": "Min per-query >= 1"
+          },
+          {
+            "command": "Calculate from evaluation results",
+            "criterion": "Average meets target",
+            "gate": "Overall score >= 15.0",
+            "passCondition": "Average >= 15.0"
+          },
+          {
+            "command": "Compare pre/post for Q1,Q2,Q4,Q5,Q9,Q10,Q13,Q16,Q17,Q18",
+            "criterion": "Queries >=11 at baseline still >=11",
+            "gate": "No regressions",
+            "passCondition": "All >= baseline-1"
+          },
+          {
+            "command": "ruff check scripts/ app/ --select E,W,F",
+            "criterion": "No ruff errors",
+            "gate": "Linting clean",
+            "passCondition": "Exit 0"
+          },
+          {
+            "command": "curl -s http://localhost:8000/health | python3 -c \"import sys,json;r=json.load(sys.stdin);assert r['status']=='healthy' and r['database_connected']\"",
+            "criterion": "Server starts and responds",
+            "gate": "API health",
+            "passCondition": "Healthy"
+          },
+          {
+            "command": "pytest tests/app/test_api.py -k websocket -v",
+            "criterion": "Streaming works",
+            "gate": "WebSocket functional",
+            "passCondition": "Exit 0"
+          },
+          {
+            "command": "python -m app.cli query 'books printed in Paris' --db data/index/bibliographic.db 2>&1 | head -5",
+            "criterion": "Existing commands work",
+            "gate": "CLI backward compat",
+            "passCondition": "Returns results"
+          },
+          {
+            "command": "git diff --cached --name-only | xargs grep -l 'sk-' 2>/dev/null || echo clean",
+            "criterion": "No API keys in tracked files",
+            "gate": "No secrets",
+            "passCondition": "clean"
+          },
+          {
+            "command": "pytest tests/ --run-integration -v --timeout=120",
+            "criterion": "E2E with real DB pass",
+            "gate": "Integration tests",
+            "passCondition": "Exit 0"
+          }
+        ]
+      }
+    }
+  },
+  "startedAt": "2026-03-24T17:08:26.881Z",
+  "finishedAt": "2026-03-24T17:08:26.881Z",
+  "value": {
+    "validationPlan": {
+      "affectedQueries": [
+        {
+          "enhancement": "E1",
+          "name": "Agent Name Resolution Layer",
+          "queries": [
+            {
+              "currentScore": 0,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative"
+              ],
+              "expectedScore": 10,
+              "id": "Q3",
+              "query": "books published by the Aldine Press"
+            },
+            {
+              "currentScore": 0,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "crossRef",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q6",
+              "query": "works by Johann Buxtorf"
+            },
+            {
+              "currentScore": 0,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "crossRef",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q7",
+              "query": "works by Moses Mendelssohn"
+            },
+            {
+              "currentScore": 9,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "crossRef"
+              ],
+              "expectedScore": 16,
+              "id": "Q8",
+              "query": "works by Maimonides"
+            },
+            {
+              "currentScore": 9,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness"
+              ],
+              "expectedScore": 13,
+              "id": "Q12",
+              "query": "materials about Ethiopia or Ethiopian Jews"
+            },
+            {
+              "currentScore": 0,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "crossRef",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q19",
+              "query": "works by Joseph Karo"
+            }
+          ]
+        },
+        {
+          "enhancement": "E2",
+          "name": "Auto-Aggregation for Analytical Questions",
+          "queries": [
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 12,
+              "id": "Q14",
+              "query": "chronological distribution of the collection"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 12,
+              "id": "Q15",
+              "query": "major Hebrew printing centers represented"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative"
+              ],
+              "expectedScore": 10,
+              "id": "Q20",
+              "query": "curated selection for Hebrew printing exhibit"
+            }
+          ]
+        },
+        {
+          "enhancement": "E3",
+          "name": "Entity Cross-Reference and Set Comparison",
+          "queries": [
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "crossRef",
+                "narrative"
+              ],
+              "expectedScore": 15,
+              "id": "Q1",
+              "query": "books printed by Bragadin press in Venice"
+            },
+            {
+              "currentScore": 15,
+              "dimensionsImproved": [
+                "crossRef",
+                "narrative"
+              ],
+              "expectedScore": 18,
+              "id": "Q2",
+              "query": "Hebrew books printed in Amsterdam 1620-1650"
+            },
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "crossRef",
+                "narrative"
+              ],
+              "expectedScore": 17,
+              "id": "Q4",
+              "query": "incunabula in the collection"
+            },
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "crossRef",
+                "narrative"
+              ],
+              "expectedScore": 15,
+              "id": "Q5",
+              "query": "books printed in Constantinople"
+            },
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "crossRef"
+              ],
+              "expectedScore": 17,
+              "id": "Q9",
+              "query": "works by Josephus Flavius"
+            },
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "crossRef"
+              ],
+              "expectedScore": 17,
+              "id": "Q10",
+              "query": "books on Jewish philosophy"
+            },
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "crossRef"
+              ],
+              "expectedScore": 15,
+              "id": "Q13",
+              "query": "books about book collecting"
+            },
+            {
+              "currentScore": 15,
+              "dimensionsImproved": [
+                "crossRef"
+              ],
+              "expectedScore": 18,
+              "id": "Q17",
+              "query": "Hebrew grammar books"
+            }
+          ]
+        },
+        {
+          "enhancement": "E4",
+          "name": "Contextual Narrative Depth Layer",
+          "queries": [
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 17,
+              "id": "Q1",
+              "query": "books printed by Bragadin press in Venice"
+            },
+            {
+              "currentScore": 15,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 19,
+              "id": "Q2",
+              "query": "Hebrew books printed in Amsterdam 1620-1650"
+            },
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 19,
+              "id": "Q4",
+              "query": "incunabula in the collection"
+            },
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 16,
+              "id": "Q5",
+              "query": "books printed in Constantinople"
+            },
+            {
+              "currentScore": 9,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q11",
+              "query": "books from the Napoleonic era 1795-1815"
+            },
+            {
+              "currentScore": 11,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 15,
+              "id": "Q16",
+              "query": "biblical commentaries"
+            },
+            {
+              "currentScore": 12,
+              "dimensionsImproved": [
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 16,
+              "id": "Q18",
+              "query": "Talmud editions"
+            }
+          ]
+        },
+        {
+          "enhancement": "E5",
+          "name": "Intelligent Selection and Exhibit Curation",
+          "queries": [
+            {
+              "currentScore": 14,
+              "dimensionsImproved": [
+                "richness",
+                "pedagogical"
+              ],
+              "expectedScore": 20,
+              "id": "Q4",
+              "query": "incunabula in the collection"
+            },
+            {
+              "currentScore": 9,
+              "dimensionsImproved": [
+                "richness"
+              ],
+              "expectedScore": 15,
+              "id": "Q11",
+              "query": "books from the Napoleonic era 1795-1815"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "richness"
+              ],
+              "expectedScore": 14,
+              "id": "Q14",
+              "query": "chronological distribution of the collection"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "richness"
+              ],
+              "expectedScore": 14,
+              "id": "Q15",
+              "query": "major Hebrew printing centers represented"
+            },
+            {
+              "currentScore": 1,
+              "dimensionsImproved": [
+                "accuracy",
+                "richness",
+                "narrative",
+                "pedagogical"
+              ],
+              "expectedScore": 14,
+              "id": "Q20",
+              "query": "curated selection for Hebrew printing exhibit"
+            }
+          ]
+        }
+      ],
+      "evaluationProcedure": {
+        "prerequisites": [
+          "Start API: uvicorn app.api.main:app --reload",
+          "Verify: curl http://localhost:8000/health",
+          "Set OPENAI_API_KEY for query compilation"
+        ],
+        "queries": [
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 12
+            },
+            "category": "A",
+            "checkPoints": [
+              "resultCount>=16",
+              "E3:connections present",
+              "E4:censorship/Council of Trent context"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books printed by Bragadin press in Venice\"}'",
+            "id": "Q1"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 2,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 15
+            },
+            "category": "A",
+            "checkPoints": [
+              "resultCount>=13",
+              "3 filters applied",
+              "E3:Menasseh cross-ref",
+              "E4:Dutch Jerusalem"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"Hebrew books printed in Amsterdam between 1620 and 1650\"}'",
+            "id": "Q2"
+          },
+          {
+            "baseline": {
+              "total": 0
+            },
+            "category": "A",
+            "checkPoints": [
+              "E1:resultCount>=1 (was 0)",
+              "alias resolution for Aldus Manutius"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books published by the Aldine Press\"}'",
+            "id": "Q3"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 14
+            },
+            "category": "A",
+            "checkPoints": [
+              "resultCount>=13",
+              "E3:cross-center comparison",
+              "E4:incunabula significance",
+              "E5:notable items"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"incunabula in the collection (books printed before 1500)\"}'",
+            "id": "Q4"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 12
+            },
+            "category": "A",
+            "checkPoints": [
+              "resultCount>=11",
+              "E3:Venice comparison suggestion",
+              "E4:Ottoman context"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books printed in Constantinople\"}'",
+            "id": "Q5"
+          },
+          {
+            "baseline": {
+              "total": 0
+            },
+            "category": "B",
+            "checkPoints": [
+              "E1:resultCount>=5 (was 0)",
+              "word-reorder alias working"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Johann Buxtorf\"}'",
+            "id": "Q6"
+          },
+          {
+            "baseline": {
+              "total": 0
+            },
+            "category": "B",
+            "checkPoints": [
+              "E1:resultCount>=5 (was 0)",
+              "cross-script Latin+Hebrew"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Moses Mendelssohn\"}'",
+            "id": "Q7"
+          },
+          {
+            "baseline": {
+              "accuracy": 2,
+              "crossRef": 1,
+              "narrative": 2,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 9
+            },
+            "category": "B",
+            "checkPoints": [
+              "E1:resultCount>=15 (was 7)",
+              "Latin+Hebrew forms unified"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Maimonides\"}'",
+            "id": "Q8"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 14
+            },
+            "category": "B",
+            "checkPoints": [
+              "resultCount>=30",
+              "E3:translator networks"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Josephus Flavius\"}'",
+            "id": "Q9"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 14
+            },
+            "category": "B",
+            "checkPoints": [
+              "resultCount>=21",
+              "E3:intellectual lineage"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books on Jewish philosophy\"}'",
+            "id": "Q10"
+          },
+          {
+            "baseline": {
+              "accuracy": 3,
+              "crossRef": 0,
+              "narrative": 2,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 9
+            },
+            "category": "C",
+            "checkPoints": [
+              "resultCount>=40",
+              "E4:emancipation context",
+              "E4:teaching note"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books from the Napoleonic era 1795-1815\"}'",
+            "id": "Q11"
+          },
+          {
+            "baseline": {
+              "accuracy": 2,
+              "crossRef": 1,
+              "narrative": 2,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 9
+            },
+            "category": "C",
+            "checkPoints": [
+              "E1:improved recall",
+              "resultCount>=17"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"materials about Ethiopia or Ethiopian Jews\"}'",
+            "id": "Q12"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 12
+            },
+            "category": "C",
+            "checkPoints": [
+              "resultCount>=26",
+              "E3:cross-reference connections"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"books about book collecting or bibliography\"}'",
+            "id": "Q13"
+          },
+          {
+            "baseline": {
+              "accuracy": 1,
+              "crossRef": 0,
+              "narrative": 0,
+              "pedagogical": 0,
+              "richness": 0,
+              "total": 1
+            },
+            "category": "C",
+            "checkPoints": [
+              "E2:aggregation not raw records",
+              "decade breakdown with counts",
+              "E5:representative items"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"chronological distribution of the collection\"}'",
+            "id": "Q14"
+          },
+          {
+            "baseline": {
+              "accuracy": 1,
+              "crossRef": 0,
+              "narrative": 0,
+              "pedagogical": 0,
+              "richness": 0,
+              "total": 1
+            },
+            "category": "C",
+            "checkPoints": [
+              "E2:place aggregation filtered to Hebrew",
+              "ranked center list",
+              "E5:representative items"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"major Hebrew printing centers represented\"}'",
+            "id": "Q15"
+          },
+          {
+            "baseline": {
+              "accuracy": 3,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 11
+            },
+            "category": "D",
+            "checkPoints": [
+              "resultCount>=11",
+              "E4:teaching note (exegetical/Mikraot Gedolot)",
+              "E4:significance scoring"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"biblical commentaries\"}'",
+            "id": "Q16"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 2,
+              "narrative": 3,
+              "pedagogical": 3,
+              "richness": 3,
+              "total": 15
+            },
+            "category": "D",
+            "checkPoints": [
+              "resultCount>=47",
+              "E3:Buxtorf network connections"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"Hebrew grammar books\"}'",
+            "id": "Q17"
+          },
+          {
+            "baseline": {
+              "accuracy": 4,
+              "crossRef": 1,
+              "narrative": 3,
+              "pedagogical": 2,
+              "richness": 2,
+              "total": 12
+            },
+            "category": "D",
+            "checkPoints": [
+              "resultCount>=42",
+              "E4:Talmud printing history",
+              "mentions Bomberg or censorship"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"Talmud editions\"}'",
+            "id": "Q18"
+          },
+          {
+            "baseline": {
+              "total": 0
+            },
+            "category": "D",
+            "checkPoints": [
+              "E1:resultCount>=3 (was 0)",
+              "Latin-to-Hebrew alias working"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Joseph Karo\"}'",
+            "id": "Q19"
+          },
+          {
+            "baseline": {
+              "accuracy": 1,
+              "crossRef": 0,
+              "narrative": 0,
+              "pedagogical": 0,
+              "richness": 0,
+              "total": 1
+            },
+            "category": "D",
+            "checkPoints": [
+              "E2+E5:curated items not 120 raw",
+              "10-15 items with significance notes",
+              "diversity across dimensions"
+            ],
+            "curl": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"curated selection for Hebrew printing exhibit\"}'",
+            "id": "Q20"
+          }
+        ],
+        "scoringProcedure": [
+          "1. Run each curl command with server running",
+          "2. Score 5 dimensions (0-5 each): Accuracy, Richness, CrossRef, Narrative, Pedagogical",
+          "3. Record 20x5 matrix; sum per-query totals (max 25)",
+          "4. Calculate overall average (sum/20, max 25)",
+          "5. Grade: GOOD>=18, FAIR>=8, POOR>=1, FAIL=0",
+          "6. Verify: 0 FAIL, overall>=15.0/25",
+          "7. Flag regressions >1 point vs baseline"
+        ]
+      },
+      "metrics": [
+        {
+          "baseline": 7.55,
+          "measurement": "Average of 20 Q scores (each 0-25) via historian rubric",
+          "metric": "Overall average score",
+          "target": 15.7
+        },
+        {
+          "baseline": 7,
+          "measurement": "Count of Qs scoring 0/25",
+          "metric": "FAIL count (0/25)",
+          "target": 0
+        },
+        {
+          "baseline": "50% (10/20)",
+          "measurement": "Fraction reaching FAIR grade",
+          "metric": "FAIR+ rate (>=8/25)",
+          "target": "100% (20/20)"
+        },
+        {
+          "baseline": "Q3=0,Q6=0,Q7=0,Q19=0",
+          "measurement": "Record count per query after E1",
+          "metric": "Name resolution recall",
+          "target": "Q3>=1,Q6>=5,Q7>=5,Q19>=3"
+        },
+        {
+          "baseline": "7 results",
+          "measurement": "Q8 record count after E1",
+          "metric": "Maimonides cross-script recall",
+          "target": "22+ results"
+        },
+        {
+          "baseline": "0%",
+          "measurement": "detect_analytical_query() returns is_analytical=True",
+          "metric": "Analytical routing accuracy",
+          "target": "100% for Q14,Q15,Q20"
+        },
+        {
+          "baseline": 0,
+          "measurement": "find_connections() non-empty for Q1,Q2,Q4,Q5,Q9,Q10,Q13,Q17",
+          "metric": "Cross-reference connections",
+          "target": ">=1 per E3 query"
+        },
+        {
+          "baseline": "0/7",
+          "measurement": "get_thematic_context() non-None for Q1,Q2,Q4,Q5,Q11,Q16,Q18",
+          "metric": "Thematic context hits",
+          "target": "7/7"
+        },
+        {
+          "baseline": "N/A",
+          "measurement": "CurationResult.dimension_coverage for Q20",
+          "metric": "Curation diversity",
+          "target": ">=3 places, >=3 decades in top-10"
+        },
+        {
+          "baseline": "All pass",
+          "measurement": "pytest tests/ exit code 0 after each E",
+          "metric": "Backward compatibility",
+          "target": "All pass"
+        },
+        {
+          "baseline": "<200ms",
+          "measurement": "Wall-clock /chat endpoint timing",
+          "metric": "Latency overhead",
+          "target": "<500ms with all E"
+        }
+      ],
+      "overview": {
+        "baseline": {
+          "failCount": 7,
+          "maxScore": 25,
+          "percent": 30.2,
+          "score": 7.55,
+          "totalQuestions": 20
+        },
+        "dimensions": [
+          "accuracy",
+          "richness",
+          "crossRef",
+          "narrative",
+          "pedagogical"
+        ],
+        "targetAfterAll": {
+          "failCount": 0,
+          "percent": 62.8,
+          "score": 15.7
+        },
+        "targetAfterE1E2": {
+          "percent": 50.8,
+          "score": 12.7
+        }
+      },
+      "perEnhancementGates": [
+        {
+          "enhancement": "E1",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/metadata/test_agent_authority.py -k test_create -v",
+              "criterion": "Tables created with correct columns/indexes",
+              "gate": "Schema creation",
+              "passCondition": "Exit 0"
+            },
+            {
+              "command": "pytest tests/scripts/metadata/test_agent_authority.py -v",
+              "criterion": "10+ unit tests pass",
+              "gate": "CRUD unit tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "python -m app.cli seed-agent-authorities --db data/index/bibliographic.db --dry-run",
+              "criterion": "2400+ authorities, 3000+ primary, 1000+ cross-script aliases",
+              "gate": "Seeding counts",
+              "passCondition": "Expected counts in output"
+            },
+            {
+              "command": "pytest tests/scripts/query/test_db_adapter_agent_alias.py -v",
+              "criterion": "Word-reorder, cross-script, multi-form, fallback pass",
+              "gate": "Alias query integration",
+              "passCondition": "6 tests pass"
+            },
+            {
+              "command": "pytest tests/scripts/query/test_db_adapter.py -v",
+              "criterion": "Existing db_adapter tests unchanged",
+              "gate": "Backward compatibility",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "python -c \"from scripts.marc.m3_contract import validate_schema; print(validate_schema('data/index/bibliographic.db'))\"",
+              "criterion": "New tables pass schema validation",
+              "gate": "M3 contract",
+              "passCondition": "No errors"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Johann Buxtorf\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);print(r['response']['candidate_set']['count']);assert r['response']['candidate_set']['count']>=5\"",
+              "criterion": ">=5 results (was 0)",
+              "gate": "Q6 Buxtorf",
+              "passCondition": ">=5"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Moses Mendelssohn\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);print(r['response']['candidate_set']['count']);assert r['response']['candidate_set']['count']>=5\"",
+              "criterion": ">=5 results from Latin+Hebrew",
+              "gate": "Q7 Mendelssohn",
+              "passCondition": ">=5"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Maimonides\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);print(r['response']['candidate_set']['count']);assert r['response']['candidate_set']['count']>=15\"",
+              "criterion": ">=15 results (was 7)",
+              "gate": "Q8 Maimonides",
+              "passCondition": ">=15"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"works by Joseph Karo\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);print(r['response']['candidate_set']['count']);assert r['response']['candidate_set']['count']>=3\"",
+              "criterion": ">=3 results (was 0)",
+              "gate": "Q19 Karo",
+              "passCondition": ">=3"
+            }
+          ],
+          "name": "Agent Name Resolution Layer"
+        },
+        {
+          "enhancement": "E2",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/chat/test_analytical_router.py -v",
+              "criterion": "25 unit tests pass",
+              "gate": "Router unit tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curation_engine.py -v",
+              "criterion": "All pass",
+              "gate": "Curation engine tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/app/test_api_analytical.py -v",
+              "criterion": "8 integration tests pass",
+              "gate": "API integration",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "unset OPENAI_API_KEY && pytest tests/scripts/chat/test_analytical_router.py -v",
+              "criterion": "Detection works without OPENAI_API_KEY",
+              "gate": "No LLM dependency",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"chronological distribution of the collection\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);assert r['response'].get('metadata',{}).get('data',{}).get('field')=='date_decade'\"",
+              "criterion": "Decade breakdown, not raw records",
+              "gate": "Q14 aggregation",
+              "passCondition": "field==date_decade"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"major Hebrew printing centers represented\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);assert r['response'].get('metadata',{}).get('data',{}).get('field')=='place'\"",
+              "criterion": "Place-by-count for Hebrew books",
+              "gate": "Q15 place breakdown",
+              "passCondition": "field==place"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"curated selection for Hebrew printing exhibit\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);m=r['response']['message'].lower();assert 'curated' in m or 'selection' in m or 'exhibit' in m\"",
+              "criterion": "Curated items, not 120 raw records",
+              "gate": "Q20 curation",
+              "passCondition": "Contains curation language"
+            },
+            {
+              "command": "pytest tests/ -v --timeout=60",
+              "criterion": "Full suite passes",
+              "gate": "No regression",
+              "passCondition": "Exit 0"
+            },
+            {
+              "command": "ruff check scripts/chat/analytical_router.py scripts/chat/curation_engine.py",
+              "criterion": "No new errors",
+              "gate": "Linting",
+              "passCondition": "Exit 0"
+            }
+          ],
+          "name": "Auto-Aggregation for Analytical Questions"
+        },
+        {
+          "enhancement": "E3",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/chat/test_cross_reference.py -v",
+              "criterion": "13 tests pass",
+              "gate": "Cross-ref unit tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_comparison_enhanced.py -v",
+              "criterion": "8 tests pass",
+              "gate": "Comparison tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_narrative_agent_e3.py -v",
+              "criterion": "6 tests pass",
+              "gate": "Narrative integration",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_formatter_e3.py -v",
+              "criterion": "5 tests pass",
+              "gate": "Follow-up tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_cross_reference_integration.py -k buxtorf -v --run-integration",
+              "criterion": ">=1 teacher_of connection found",
+              "gate": "Buxtorf network",
+              "passCondition": "Connection discovered"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_cross_reference_integration.py -k venice_amsterdam -v --run-integration",
+              "criterion": "Non-empty facets for both values",
+              "gate": "Venice-Amsterdam comparison",
+              "passCondition": "Facets populated"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_narrative_agent_e3.py -k no_connections -v",
+              "criterion": "Narrative works when no connections exist",
+              "gate": "Graceful degradation",
+              "passCondition": "Clean narrative, no error"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_cross_reference_integration.py -k performance --run-integration",
+              "criterion": "find_connections() <500ms for 100 records",
+              "gate": "Performance",
+              "passCondition": "<500ms"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_comparison_enhanced.py -k backward_compatible -v",
+              "criterion": "Old execute_comparison returns Dict[str,int]",
+              "gate": "Backward-compatible comparison",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/ -v",
+              "criterion": "Full suite passes",
+              "gate": "No regression",
+              "passCondition": "Exit 0"
+            }
+          ],
+          "name": "Entity Cross-Reference and Set Comparison"
+        },
+        {
+          "enhancement": "E4",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -v",
+              "criterion": "13 unit tests pass",
+              "gate": "Thematic context tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_formatter_pedagogical.py -v",
+              "criterion": "3 tests pass",
+              "gate": "Pedagogical formatter",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k citations -v",
+              "criterion": "Every ThematicEntry has >=1 Reference",
+              "gate": "All themes have citations",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k deterministic -v",
+              "criterion": "Same input always same output",
+              "gate": "Deterministic matching",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k unrelated -v",
+              "criterion": "Unrelated filters return None",
+              "gate": "No false matches",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k significance -v",
+              "criterion": "Same candidate same score, no API calls",
+              "gate": "Significance stable",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k labeled -v",
+              "criterion": "Output has '**Historical Context**' header",
+              "gate": "Context labeled",
+              "passCondition": "Header present"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_thematic_context.py -k performance -v",
+              "criterion": "Theme matching+scoring overhead <30ms",
+              "gate": "Performance <30ms",
+              "passCondition": "<30ms"
+            },
+            {
+              "command": "python3 -c \"from scripts.chat.thematic_context import significance_score;print('OK')\"",
+              "criterion": "significance_score importable by curation",
+              "gate": "E5 importable",
+              "passCondition": "Prints OK"
+            },
+            {
+              "command": "grep -c 'openai\\|llm_call\\|api_key' scripts/chat/thematic_context.py || echo 0",
+              "criterion": "THEMATIC_REGISTRY has only string literals",
+              "gate": "No LLM content",
+              "passCondition": "0 matches"
+            },
+            {
+              "command": "pytest tests/ -v",
+              "criterion": "Full suite passes",
+              "gate": "No regression",
+              "passCondition": "Exit 0"
+            }
+          ],
+          "name": "Contextual Narrative Depth Layer"
+        },
+        {
+          "enhancement": "E5",
+          "gates": [
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -v",
+              "criterion": "25 tests pass",
+              "gate": "Curator unit tests",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k improves_coverage -v",
+              "criterion": "Top-3-by-score same place; select_diverse picks >=2 places",
+              "gate": "Diversity works",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k fallback -v",
+              "criterion": "Scoring works when thematic_context unavailable",
+              "gate": "Fallback without E4",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k format_exhibit -v",
+              "criterion": "Header, items, significance notes, coverage summary",
+              "gate": "Exhibit format",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k recommendation_handler -v",
+              "criterion": "Replaces static stub",
+              "gate": "RECOMMENDATION handler",
+              "passCondition": "0 failures"
+            },
+            {
+              "command": "curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"message\":\"curated selection for Hebrew printing exhibit\"}' | python3 -c \"import sys,json;r=json.load(sys.stdin);items=r['response']['message'].lower().count('item ');print(f'Items:{items}');assert items>=5\"",
+              "criterion": ">=5 curated exhibit items with notes",
+              "gate": "Q20 scenario",
+              "passCondition": ">=5 items"
+            },
+            {
+              "command": "ruff check scripts/chat/curator.py scripts/chat/formatter.py app/api/main.py",
+              "criterion": "No errors",
+              "gate": "Linting",
+              "passCondition": "Exit 0"
+            },
+            {
+              "command": "pytest tests/scripts/chat/test_curator.py -k performance -v",
+              "criterion": "200 records scored+selected <1s",
+              "gate": "Performance",
+              "passCondition": "<1s"
+            },
+            {
+              "command": "pytest tests/ -v",
+              "criterion": "Full suite passes",
+              "gate": "No regression",
+              "passCondition": "Exit 0"
+            }
+          ],
+          "name": "Intelligent Selection and Exhibit Curation"
+        }
+      ],
+      "regressionTests": [
+        {
+          "currentScore": 12,
+          "minimumAcceptable": 12,
+          "query": "Q1: books printed by Bragadin press in Venice",
+          "riskFactors": [
+            "E3 comparison changes must not break publisher+place filter",
+            "E4 thematic context must not displace existing narrative"
+          ]
+        },
+        {
+          "currentScore": 15,
+          "minimumAcceptable": 14,
+          "query": "Q2: Hebrew books printed in Amsterdam 1620-1650",
+          "riskFactors": [
+            "E3 cross-reference integration could slow response",
+            "Multi-filter query (place+language+date) sensitive to adapter changes"
+          ]
+        },
+        {
+          "currentScore": 14,
+          "minimumAcceptable": 13,
+          "query": "Q4: incunabula in the collection",
+          "riskFactors": [
+            "E2 analytical routing must not misclassify as analytical",
+            "Date RANGE filter must keep working after E1 adapter changes"
+          ]
+        },
+        {
+          "currentScore": 14,
+          "minimumAcceptable": 13,
+          "query": "Q9: works by Josephus Flavius",
+          "riskFactors": [
+            "Subject CONTAINS filter unaffected by E1 but narrative agent changes in E3/E4 could regress richness"
+          ]
+        },
+        {
+          "currentScore": 14,
+          "minimumAcceptable": 13,
+          "query": "Q10: books on Jewish philosophy",
+          "riskFactors": [
+            "Subject filter stability; E3 narrative additions must not overflow response"
+          ]
+        },
+        {
+          "currentScore": 12,
+          "minimumAcceptable": 11,
+          "query": "Q13: books about book collecting",
+          "riskFactors": [
+            "Subject filter unchanged but formatter changes in E3/E4 could affect output"
+          ]
+        },
+        {
+          "currentScore": 11,
+          "minimumAcceptable": 11,
+          "query": "Q16: biblical commentaries",
+          "riskFactors": [
+            "E4 pedagogical framing must enhance not replace existing narrative"
+          ]
+        },
+        {
+          "currentScore": 15,
+          "minimumAcceptable": 14,
+          "query": "Q17: Hebrew grammar books",
+          "riskFactors": [
+            "Highest-scoring query; E3 cross-reference must not slow it; E1 Buxtorf alias should help not hurt"
+          ]
+        },
+        {
+          "currentScore": 12,
+          "minimumAcceptable": 11,
+          "query": "Q18: Talmud editions",
+          "riskFactors": [
+            "E4 thematic context for Talmud printing must enhance not replace"
+          ]
+        }
+      ],
+      "releaseQualityGates": {
+        "gates": [
+          {
+            "command": "pytest tests/ -v --timeout=120",
+            "criterion": "Zero failures across entire suite",
+            "gate": "All unit tests pass",
+            "passCondition": "Exit 0, 0 failures"
+          },
+          {
+            "command": "Run 20 queries via evaluation procedure; min score >= 1",
+            "criterion": "No query scores 0/25",
+            "gate": "Zero FAIL queries",
+            "passCondition": "Min per-query >= 1"
+          },
+          {
+            "command": "Calculate from evaluation results",
+            "criterion": "Average meets target",
+            "gate": "Overall score >= 15.0",
+            "passCondition": "Average >= 15.0"
+          },
+          {
+            "command": "Compare pre/post for Q1,Q2,Q4,Q5,Q9,Q10,Q13,Q16,Q17,Q18",
+            "criterion": "Queries >=11 at baseline still >=11",
+            "gate": "No regressions",
+            "passCondition": "All >= baseline-1"
+          },
+          {
+            "command": "ruff check scripts/ app/ --select E,W,F",
+            "criterion": "No ruff errors",
+            "gate": "Linting clean",
+            "passCondition": "Exit 0"
+          },
+          {
+            "command": "curl -s http://localhost:8000/health | python3 -c \"import sys,json;r=json.load(sys.stdin);assert r['status']=='healthy' and r['database_connected']\"",
+            "criterion": "Server starts and responds",
+            "gate": "API health",
+            "passCondition": "Healthy"
+          },
+          {
+            "command": "pytest tests/app/test_api.py -k websocket -v",
+            "criterion": "Streaming works",
+            "gate": "WebSocket functional",
+            "passCondition": "Exit 0"
+          },
+          {
+            "command": "python -m app.cli query 'books printed in Paris' --db data/index/bibliographic.db 2>&1 | head -5",
+            "criterion": "Existing commands work",
+            "gate": "CLI backward compat",
+            "passCondition": "Returns results"
+          },
+          {
+            "command": "git diff --cached --name-only | xargs grep -l 'sk-' 2>/dev/null || echo clean",
+            "criterion": "No API keys in tracked files",
+            "gate": "No secrets",
+            "passCondition": "clean"
+          },
+          {
+            "command": "pytest tests/ --run-integration -v --timeout=120",
+            "criterion": "E2E with real DB pass",
+            "gate": "Integration tests",
+            "passCondition": "Exit 0"
+          }
+        ]
+      }
+    }
+  }
+}

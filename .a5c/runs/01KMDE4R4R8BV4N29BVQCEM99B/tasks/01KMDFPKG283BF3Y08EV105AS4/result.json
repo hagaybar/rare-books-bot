@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDFPKG283BF3Y08EV105AS4",
+  "taskId": "diagnostic-backend",
+  "invocationKey": "implement-unified-ui:S000007:diagnostic-backend",
+  "status": "ok",
+  "result": {
+    "endpointsCreated": [
+      "B5",
+      "B6",
+      "B7",
+      "B8",
+      "B9",
+      "B10",
+      "B11",
+      "B12"
+    ],
+    "testsPass": true
+  },
+  "startedAt": "2026-03-23T14:03:35.946Z",
+  "finishedAt": "2026-03-23T14:03:35.946Z",
+  "value": {
+    "endpointsCreated": [
+      "B5",
+      "B6",
+      "B7",
+      "B8",
+      "B9",
+      "B10",
+      "B11",
+      "B12"
+    ],
+    "testsPass": true
+  }
+}

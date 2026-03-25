@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGY34QGDB6T6S1QX4RY29DD",
+  "taskId": "e5-formatting",
+  "invocationKey": "implement-historian-enhancements:S000030:e5-formatting",
+  "stepId": "S000030",
+  "kind": "agent",
+  "title": "E5: Add exhibit formatting and exploration agent schema updates",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

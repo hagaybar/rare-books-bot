@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJ8EGTXW36DTE2ZN9P1GJPS",
+  "taskId": "verify-phase",
+  "invocationKey": "scholar-pipeline:S000013:verify-phase",
+  "status": "ok",
+  "result": {
+    "duration_s": 121,
+    "failed": 0,
+    "passed": 1299,
+    "status": "all_pass",
+    "warnings": 8
+  },
+  "startedAt": "2026-03-25T10:27:54.415Z",
+  "finishedAt": "2026-03-25T10:27:54.415Z",
+  "value": {
+    "duration_s": 121,
+    "failed": 0,
+    "passed": 1299,
+    "status": "all_pass",
+    "warnings": 8
+  }
+}

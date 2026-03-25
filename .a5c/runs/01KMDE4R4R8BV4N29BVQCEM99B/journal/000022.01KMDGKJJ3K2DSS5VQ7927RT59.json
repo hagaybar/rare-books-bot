@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T14:11:59.683Z",
+  "data": {
+    "effectId": "01KMDGKJHQ7RJMKW2ZJK2MH9M3",
+    "invocationKey": "implement-unified-ui:S000011:phase2-verify",
+    "invocationHash": "f38c8c966c82ebe098229cd4fed836cee7e80346f64679ec3d0ce44cdfe5b641",
+    "stepId": "S000011",
+    "taskId": "phase2-verify",
+    "kind": "shell",
+    "label": "verify",
+    "taskDefRef": "tasks/01KMDGKJHQ7RJMKW2ZJK2MH9M3/task.json",
+    "labels": [
+      "verify",
+      "build",
+      "phase2"
+    ]
+  },
+  "checksum": "3510844aef7cd81a8c5e1ccf88bf127db18ff44e16732143914f4074a2356983"
+}

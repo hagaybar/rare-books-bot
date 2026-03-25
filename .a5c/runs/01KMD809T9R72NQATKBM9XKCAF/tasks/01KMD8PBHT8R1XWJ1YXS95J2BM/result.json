@@ -1,0 +1,407 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD8PBHT8R1XWJ1YXS95J2BM",
+  "taskId": "api-response-verify",
+  "invocationKey": "empirical-verification:S000003:api-response-verify",
+  "status": "ok",
+  "result": {
+    "endpointShapes": {
+      "/chat": {
+        "candidateFields": [
+          "record_id",
+          "match_rationale",
+          "evidence",
+          "title",
+          "author",
+          "date_start",
+          "date_end",
+          "place_norm",
+          "place_raw",
+          "publisher",
+          "subjects",
+          "description"
+        ],
+        "chatResponseFields": [
+          "message",
+          "candidate_set",
+          "suggested_followups",
+          "clarification_needed",
+          "session_id",
+          "phase",
+          "confidence",
+          "metadata"
+        ],
+        "evidenceFields": [
+          "field",
+          "value",
+          "operator",
+          "matched_against",
+          "source",
+          "confidence",
+          "extraction_error"
+        ],
+        "responseFields": [
+          "success",
+          "response",
+          "error"
+        ]
+      },
+      "/health": {
+        "responseFields": [
+          "status",
+          "database_connected",
+          "session_store_ok"
+        ]
+      },
+      "/metadata/agent/chat": {
+        "actionEnum": [
+          "analysis",
+          "proposals",
+          "answer"
+        ],
+        "responseFields": [
+          "response",
+          "proposals",
+          "clusters",
+          "field",
+          "action"
+        ]
+      },
+      "/metadata/coverage": {
+        "responseFields": [
+          "date_coverage",
+          "place_coverage",
+          "publisher_coverage",
+          "agent_name_coverage",
+          "agent_role_coverage",
+          "total_imprint_rows",
+          "total_agent_rows"
+        ]
+      },
+      "/metadata/issues": {
+        "responseFields": [
+          "field",
+          "max_confidence",
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ]
+      },
+      "/metadata/publishers": {
+        "itemFields": [
+          "id",
+          "canonical_name",
+          "type",
+          "confidence",
+          "variant_count",
+          "imprint_count",
+          "variants"
+        ],
+        "responseFields": [
+          "total",
+          "items"
+        ]
+      },
+      "/ws/chat": {
+        "messageTypes": [
+          "session_created",
+          "progress",
+          "batch",
+          "complete",
+          "error"
+        ],
+        "notes": "No intent agent, no phase/confidence, no facets"
+      }
+    },
+    "gaps": [
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "performance monitoring",
+        "field": "execution_time_ms",
+        "impact": "Computed but not exposed in ChatResponse"
+      },
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "faceted navigation",
+        "field": "facets (FacetCounts)",
+        "impact": "Computed but discarded — never serialized to response"
+      },
+      {
+        "actuallyProvided": "partial",
+        "expectedBy": "query transparency",
+        "field": "query_plan",
+        "impact": "Available via session history but not in ChatResponse"
+      },
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "query quality indicators",
+        "field": "warnings (QueryWarning[])",
+        "impact": "Produced by QueryService but not forwarded"
+      },
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "parity with HTTP",
+        "field": "WebSocket phase/confidence",
+        "impact": "Two-phase impossible over WebSocket"
+      },
+      {
+        "actuallyProvided": "partial",
+        "expectedBy": "per-filter indicators",
+        "field": "filter.confidence",
+        "impact": "Schema allows but LLM always returns null"
+      },
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "direct record links",
+        "field": "Primo URL on Candidate",
+        "impact": "Requires separate API call"
+      }
+    ],
+    "recommendations": [
+      "Surface execution_time_ms in ChatResponse",
+      "Pass FacetCounts through to ChatResponse",
+      "Add query_plan or parsed filters to ChatResponse",
+      "Forward QueryWarning[] to ChatResponse.metadata",
+      "Bring WebSocket to parity with POST /chat",
+      "Embed Primo URLs on Candidate objects",
+      "Standardize metadata dict keys",
+      "Add pagination to /unmapped, /methods, /clusters"
+    ],
+    "surprises": [
+      {
+        "description": "MARC 500/520 notes available for previews",
+        "field": "Candidate.description"
+      },
+      {
+        "description": "Up to 3 subject headings as list",
+        "field": "Candidate.subjects"
+      },
+      {
+        "description": "Both raw and normalized available",
+        "field": "Candidate.place_raw + place_norm"
+      },
+      {
+        "description": "Exact SQL exposed for debug panel",
+        "field": "CandidateSet.sql"
+      },
+      {
+        "description": "Polymorphic dict varies by context",
+        "field": "ChatResponse.metadata"
+      },
+      {
+        "description": "Phase 2 includes bar_chart/pie_chart/table hint",
+        "field": "ExplorationResponse.visualization_hint"
+      },
+      {
+        "description": "Error field for partial evidence extraction",
+        "field": "Evidence.extraction_error"
+      },
+      {
+        "description": "Action field dictates UI state machine",
+        "field": "AgentChatResponse.action"
+      }
+    ]
+  },
+  "startedAt": "2026-03-23T11:58:55.428Z",
+  "finishedAt": "2026-03-23T11:58:55.428Z",
+  "value": {
+    "endpointShapes": {
+      "/chat": {
+        "candidateFields": [
+          "record_id",
+          "match_rationale",
+          "evidence",
+          "title",
+          "author",
+          "date_start",
+          "date_end",
+          "place_norm",
+          "place_raw",
+          "publisher",
+          "subjects",
+          "description"
+        ],
+        "chatResponseFields": [
+          "message",
+          "candidate_set",
+          "suggested_followups",
+          "clarification_needed",
+          "session_id",
+          "phase",
+          "confidence",
+          "metadata"
+        ],
+        "evidenceFields": [
+          "field",
+          "value",
+          "operator",
+          "matched_against",
+          "source",
+          "confidence",
+          "extraction_error"
+        ],
+        "responseFields": [
+          "success",
+          "response",
+          "error"
+        ]
+      },
+      "/health": {
+        "responseFields": [
+          "status",
+          "database_connected",
+          "session_store_ok"
+        ]
+      },
+      "/metadata/agent/chat": {
+        "actionEnum": [
+          "analysis",
+          "proposals",
+          "answer"
+        ],
+        "responseFields": [
+          "response",
+          "proposals",
+          "clusters",
+          "field",
+          "action"
+        ]
+      },
+      "/metadata/coverage": {
+        "responseFields": [
+          "date_coverage",
+          "place_coverage",
+          "publisher_coverage",
+          "agent_name_coverage",
+          "agent_role_coverage",
+          "total_imprint_rows",
+          "total_agent_rows"
+        ]
+      },
+      "/metadata/issues": {
+        "responseFields": [
+          "field",
+          "max_confidence",
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ]
+      },
+      "/metadata/publishers": {
+        "itemFields": [
+          "id",
+          "canonical_name",
+          "type",
+          "confidence",
+          "variant_count",
+          "imprint_count",
+          "variants"
+        ],
+        "responseFields": [
+          "total",
+          "items"
+        ]
+      },
+      "/ws/chat": {
+        "messageTypes": [
+          "session_created",
+          "progress",
+          "batch",
+          "complete",
+          "error"
+        ],
+        "notes": "No intent agent, no phase/confidence, no facets"
+      }
+    },
+    "gaps": [
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "performance monitoring",
+        "field": "execution_time_ms",
+        "impact": "Computed but not exposed in ChatResponse"
+      },
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "faceted navigation",
+        "field": "facets (FacetCounts)",
+        "impact": "Computed but discarded — never serialized to response"
+      },
+      {
+        "actuallyProvided": "partial",
+        "expectedBy": "query transparency",
+        "field": "query_plan",
+        "impact": "Available via session history but not in ChatResponse"
+      },
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "query quality indicators",
+        "field": "warnings (QueryWarning[])",
+        "impact": "Produced by QueryService but not forwarded"
+      },
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "parity with HTTP",
+        "field": "WebSocket phase/confidence",
+        "impact": "Two-phase impossible over WebSocket"
+      },
+      {
+        "actuallyProvided": "partial",
+        "expectedBy": "per-filter indicators",
+        "field": "filter.confidence",
+        "impact": "Schema allows but LLM always returns null"
+      },
+      {
+        "actuallyProvided": "no",
+        "expectedBy": "direct record links",
+        "field": "Primo URL on Candidate",
+        "impact": "Requires separate API call"
+      }
+    ],
+    "recommendations": [
+      "Surface execution_time_ms in ChatResponse",
+      "Pass FacetCounts through to ChatResponse",
+      "Add query_plan or parsed filters to ChatResponse",
+      "Forward QueryWarning[] to ChatResponse.metadata",
+      "Bring WebSocket to parity with POST /chat",
+      "Embed Primo URLs on Candidate objects",
+      "Standardize metadata dict keys",
+      "Add pagination to /unmapped, /methods, /clusters"
+    ],
+    "surprises": [
+      {
+        "description": "MARC 500/520 notes available for previews",
+        "field": "Candidate.description"
+      },
+      {
+        "description": "Up to 3 subject headings as list",
+        "field": "Candidate.subjects"
+      },
+      {
+        "description": "Both raw and normalized available",
+        "field": "Candidate.place_raw + place_norm"
+      },
+      {
+        "description": "Exact SQL exposed for debug panel",
+        "field": "CandidateSet.sql"
+      },
+      {
+        "description": "Polymorphic dict varies by context",
+        "field": "ChatResponse.metadata"
+      },
+      {
+        "description": "Phase 2 includes bar_chart/pie_chart/table hint",
+        "field": "ExplorationResponse.visualization_hint"
+      },
+      {
+        "description": "Error field for partial evidence extraction",
+        "field": "Evidence.extraction_error"
+      },
+      {
+        "description": "Action field dictates UI state machine",
+        "field": "AgentChatResponse.action"
+      }
+    ]
+  }
+}

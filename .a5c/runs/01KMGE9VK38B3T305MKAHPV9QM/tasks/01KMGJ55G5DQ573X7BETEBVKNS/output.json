@@ -1,0 +1,1 @@
+{"testsWritten": 25, "testFile": "tests/scripts/chat/test_analytical_router.py", "summary": "Tests already exist from previous iteration. 25 TDD unit tests across 7 test classes covering analytical detection, anti-signals, implied filters, case insensitivity. All fail with ModuleNotFoundError as expected."}

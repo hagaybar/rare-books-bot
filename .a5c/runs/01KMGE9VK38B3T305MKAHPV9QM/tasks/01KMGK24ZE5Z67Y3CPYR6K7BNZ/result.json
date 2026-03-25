@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGK24ZE5Z67Y3CPYR6K7BNZ",
+  "taskId": "e2-router",
+  "invocationKey": "implement-historian-enhancements:S000009:e2-router",
+  "status": "ok",
+  "result": {
+    "fileCreated": "scripts/chat/analytical_router.py",
+    "summary": "Analytical router (185 lines) with deterministic two-layer classification. All 25 tests pass including Q14/Q15/Q20 detection, anti-signals, implied filters.",
+    "testsFailed": 0,
+    "testsPassed": 25
+  },
+  "startedAt": "2026-03-24T18:54:14.805Z",
+  "finishedAt": "2026-03-24T18:54:14.805Z",
+  "value": {
+    "fileCreated": "scripts/chat/analytical_router.py",
+    "summary": "Analytical router (185 lines) with deterministic two-layer classification. All 25 tests pass including Q14/Q15/Q20 detection, anti-signals, implied filters.",
+    "testsFailed": 0,
+    "testsPassed": 25
+  }
+}

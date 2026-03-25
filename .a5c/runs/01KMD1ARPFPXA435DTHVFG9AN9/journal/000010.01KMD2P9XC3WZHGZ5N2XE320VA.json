@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T10:08:49.068Z",
+  "data": {
+    "effectId": "01KMD2P9X0J1HYXCMTXSWH9CY4",
+    "invocationKey": "ui-evaluation-and-redesign:S000005:redundancy-analysis",
+    "invocationHash": "caee8da03b634feaa9368792034eb00aad25e5c839ecf8b05944a8297d1dc293",
+    "stepId": "S000005",
+    "taskId": "redundancy-analysis",
+    "kind": "agent",
+    "label": "analysis",
+    "taskDefRef": "tasks/01KMD2P9X0J1HYXCMTXSWH9CY4/task.json",
+    "labels": [
+      "analysis",
+      "redundancy",
+      "features"
+    ]
+  },
+  "checksum": "8d37761ce30a6733e6e0daaa0cfd2c6bd3657354cc37911f31dc6c54e56ab130"
+}

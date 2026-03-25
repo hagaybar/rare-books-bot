@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMEBV8VJ9P210RZV8S82VTX6",
+  "taskId": "verify-narrative",
+  "invocationKey": "narrative-agent-prototype:S000003:verify-narrative",
+  "status": "ok",
+  "result": {
+    "overallVerdict": "needs-work",
+    "tests": [
+      {
+        "assessment": "needs-improvement",
+        "issues": [
+          "astronomer instead of rabbi"
+        ],
+        "query": "Maimonides"
+      },
+      {
+        "assessment": "needs-improvement",
+        "issues": [
+          "lowercase name"
+        ],
+        "query": "Josephus"
+      },
+      {
+        "assessment": "needs-improvement",
+        "issues": [
+          "redundant dates"
+        ],
+        "query": "Hebrew Venice"
+      },
+      {
+        "assessment": "correct",
+        "query": "16th century"
+      },
+      {
+        "assessment": "correct",
+        "query": "books"
+      }
+    ]
+  },
+  "startedAt": "2026-03-23T22:21:03.237Z",
+  "finishedAt": "2026-03-23T22:21:03.237Z",
+  "value": {
+    "overallVerdict": "needs-work",
+    "tests": [
+      {
+        "assessment": "needs-improvement",
+        "issues": [
+          "astronomer instead of rabbi"
+        ],
+        "query": "Maimonides"
+      },
+      {
+        "assessment": "needs-improvement",
+        "issues": [
+          "lowercase name"
+        ],
+        "query": "Josephus"
+      },
+      {
+        "assessment": "needs-improvement",
+        "issues": [
+          "redundant dates"
+        ],
+        "query": "Hebrew Venice"
+      },
+      {
+        "assessment": "correct",
+        "query": "16th century"
+      },
+      {
+        "assessment": "correct",
+        "query": "books"
+      }
+    ]
+  }
+}

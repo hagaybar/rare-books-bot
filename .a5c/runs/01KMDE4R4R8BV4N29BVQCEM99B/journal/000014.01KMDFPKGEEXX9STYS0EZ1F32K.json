@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T13:56:10.382Z",
+  "data": {
+    "effectId": "01KMDFPKG283BF3Y08EV105AS4",
+    "invocationKey": "implement-unified-ui:S000007:diagnostic-backend",
+    "invocationHash": "d7750a236c7c16254521e03377107339b416269129cadb556b2b571e5d496e05",
+    "stepId": "S000007",
+    "taskId": "diagnostic-backend",
+    "kind": "agent",
+    "label": "backend",
+    "taskDefRef": "tasks/01KMDFPKG283BF3Y08EV105AS4/task.json",
+    "labels": [
+      "backend",
+      "diagnostics",
+      "phase2"
+    ]
+  },
+  "checksum": "14d6773c78a4f16c3e4d8326a12f0b7cc7f5cc25d7d67fab84195e7bf58c12df"
+}

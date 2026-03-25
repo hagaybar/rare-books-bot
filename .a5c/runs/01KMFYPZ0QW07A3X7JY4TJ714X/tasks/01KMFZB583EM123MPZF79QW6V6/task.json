@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMFZB583EM123MPZF79QW6V6",
+  "taskId": "analyze-synthesize",
+  "invocationKey": "historian-evaluation:S000003:analyze-synthesize",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Steps 4-7: Gap analysis + code proposals + final synthesis report",
+  "labels": [
+    "analysis",
+    "report",
+    "synthesis"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMFZB583EM123MPZF79QW6V6/input.json",
+    "outputJsonPath": "tasks/01KMFZB583EM123MPZF79QW6V6/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "questions": {
+      "questions": "20 questions designed across 4 categories"
+    },
+    "simulation": {
+      "simulations": "20 queries simulated, 15 with results, 4 zero-result due to name normalization"
+    }
+  }
+}

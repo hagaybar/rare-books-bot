@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAVF07FM4B8GPSQ8SRY7MEX",
+  "taskId": "register-notebook",
+  "invocationKey": "notebooklm-context-builder:S000010:register-notebook",
+  "stepId": "S000010",
+  "kind": "agent",
+  "title": "Register notebook in notebooklm-connector library",
+  "io": {
+    "inputJsonPath": "tasks/01KMAVF07FM4B8GPSQ8SRY7MEX/input.json",
+    "outputJsonPath": "tasks/01KMAVF07FM4B8GPSQ8SRY7MEX/output.json"
+  },
+  "inputs": {
+    "notebookName": "Rare Books Bot",
+    "notebookUrl": "https://notebooklm.google.com/notebook/7472ca6f-417a-47a1-9f8c-dd87a9e25b17"
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD80MC22HAKAR26JWRVQEHX",
+  "taskId": "database-probe",
+  "invocationKey": "empirical-verification:S000001:database-probe",
+  "status": "ok",
+  "result": {
+    "anomalies": [
+      "38 records have no imprints (Faitlovitch Ethiopic manuscripts)",
+      "553 publisher_norm values (20.2%) are in Hebrew script, not transliterated",
+      "1,924 agent roles (44.1%) classified as 'other'",
+      "All 4,366 agents use base_clean only -- no alias map normalization",
+      "202 of 227 publisher authorities (89%) are unresearched stubs",
+      "Binary confidence distribution -- no 0.5-0.95 middle ground for place/publisher",
+      "'frankfurt' and 'frankfurt am main' are separate normalized values",
+      "authority_enrichment table is empty (0 rows)",
+      "61 dates (2.2%) are unparsed"
+    ],
+    "confidenceDistributions": {
+      "date": {
+        "0-0.5": 69,
+        "0.5-0.8": 0,
+        "0.8-0.95": 1306,
+        "0.95-1.0": 1398,
+        "null": 0
+      },
+      "place": {
+        "0-0.5": 19,
+        "0.5-0.8": 0,
+        "0.8-0.95": 0,
+        "0.95-1.0": 2754,
+        "null": 0
+      },
+      "publisher": {
+        "0-0.5": 33,
+        "0.5-0.8": 0,
+        "0.8-0.95": 0,
+        "0.95-1.0": 2740,
+        "null": 0
+      }
+    },
+    "coverageRates": {
+      "date": "97.5%",
+      "place": "99.3%",
+      "publisher": "98.8%"
+    },
+    "dateRange": {
+      "max": 2025,
+      "min": 1244
+    },
+    "summary": "2,796 records spanning 1244-2025. Strong normalization coverage (97-99%). Binary confidence model. Biggest gaps: agent normalization (100% base_clean), Hebrew publisher names (20.2%), unresearched publisher authorities (89%).",
+    "tableCounts": {
+      "agents": 4366,
+      "authority_enrichment": 0,
+      "imprints": 2773,
+      "languages": 3197,
+      "notes": 8037,
+      "publisher_authorities": 227,
+      "publisher_variants": 265,
+      "records": 2796,
+      "subjects": 5415,
+      "titles": 4791
+    },
+    "topValues": {
+      "places": [
+        [
+          "paris",
+          356
+        ],
+        [
+          "london",
+          230
+        ],
+        [
+          "amsterdam",
+          196
+        ],
+        [
+          "venice",
+          164
+        ],
+        [
+          "berlin",
+          123
+        ]
+      ],
+      "publishers": [
+        [
+          "[publisher unknown]",
+          115
+        ],
+        [
+          "[sine nomine]",
+          100
+        ],
+        [
+          "insel verlag",
+          16
+        ],
+        [
+          "verdiere, paris",
+          16
+        ]
+      ]
+    }
+  },
+  "startedAt": "2026-03-23T11:46:22.769Z",
+  "finishedAt": "2026-03-23T11:46:22.769Z",
+  "value": {
+    "anomalies": [
+      "38 records have no imprints (Faitlovitch Ethiopic manuscripts)",
+      "553 publisher_norm values (20.2%) are in Hebrew script, not transliterated",
+      "1,924 agent roles (44.1%) classified as 'other'",
+      "All 4,366 agents use base_clean only -- no alias map normalization",
+      "202 of 227 publisher authorities (89%) are unresearched stubs",
+      "Binary confidence distribution -- no 0.5-0.95 middle ground for place/publisher",
+      "'frankfurt' and 'frankfurt am main' are separate normalized values",
+      "authority_enrichment table is empty (0 rows)",
+      "61 dates (2.2%) are unparsed"
+    ],
+    "confidenceDistributions": {
+      "date": {
+        "0-0.5": 69,
+        "0.5-0.8": 0,
+        "0.8-0.95": 1306,
+        "0.95-1.0": 1398,
+        "null": 0
+      },
+      "place": {
+        "0-0.5": 19,
+        "0.5-0.8": 0,
+        "0.8-0.95": 0,
+        "0.95-1.0": 2754,
+        "null": 0
+      },
+      "publisher": {
+        "0-0.5": 33,
+        "0.5-0.8": 0,
+        "0.8-0.95": 0,
+        "0.95-1.0": 2740,
+        "null": 0
+      }
+    },
+    "coverageRates": {
+      "date": "97.5%",
+      "place": "99.3%",
+      "publisher": "98.8%"
+    },
+    "dateRange": {
+      "max": 2025,
+      "min": 1244
+    },
+    "summary": "2,796 records spanning 1244-2025. Strong normalization coverage (97-99%). Binary confidence model. Biggest gaps: agent normalization (100% base_clean), Hebrew publisher names (20.2%), unresearched publisher authorities (89%).",
+    "tableCounts": {
+      "agents": 4366,
+      "authority_enrichment": 0,
+      "imprints": 2773,
+      "languages": 3197,
+      "notes": 8037,
+      "publisher_authorities": 227,
+      "publisher_variants": 265,
+      "records": 2796,
+      "subjects": 5415,
+      "titles": 4791
+    },
+    "topValues": {
+      "places": [
+        [
+          "paris",
+          356
+        ],
+        [
+          "london",
+          230
+        ],
+        [
+          "amsterdam",
+          196
+        ],
+        [
+          "venice",
+          164
+        ],
+        [
+          "berlin",
+          123
+        ]
+      ],
+      "publishers": [
+        [
+          "[publisher unknown]",
+          115
+        ],
+        [
+          "[sine nomine]",
+          100
+        ],
+        [
+          "insel verlag",
+          16
+        ],
+        [
+          "verdiere, paris",
+          16
+        ]
+      ]
+    }
+  }
+}

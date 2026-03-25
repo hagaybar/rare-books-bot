@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGMJ6XDH7W1B7NG8Z6JSYS0",
+  "taskId": "e3-integration",
+  "invocationKey": "implement-historian-enhancements:S000018:e3-integration",
+  "stepId": "S000018",
+  "kind": "agent",
+  "title": "E3: Integrate cross-reference into narrative, comparison, formatter",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

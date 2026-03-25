@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T11:41:50.350Z",
+  "data": {
+    "effectId": "01KMD80MC22HAKAR26JWRVQEHX",
+    "invocationKey": "empirical-verification:S000001:database-probe",
+    "invocationHash": "ad0ee2490bafecbd5db0cc985db73e718c83d8078bfbc2e9665cc239c9ade543",
+    "stepId": "S000001",
+    "taskId": "database-probe",
+    "kind": "agent",
+    "label": "empirical",
+    "taskDefRef": "tasks/01KMD80MC22HAKAR26JWRVQEHX/task.json",
+    "labels": [
+      "empirical",
+      "database",
+      "data-quality"
+    ]
+  },
+  "checksum": "c0f6dd20ce93f478a26ddc07d4c4dbaa8133d8bca5eee5a3d130ef3411aedf4d"
+}

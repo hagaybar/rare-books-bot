@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T13:16:02.212Z",
+  "data": {
+    "effectId": "01KMDDD3RPFQ7R1MBX2C0TDPNX",
+    "invocationKey": "definitive-implementation-plan:S000004:finalize-plan",
+    "invocationHash": "33dd2889d316c62960d63ca8261ebb495aea29984a688e4c6f8a0c8b37c1d4be",
+    "stepId": "S000004",
+    "taskId": "finalize-plan",
+    "kind": "agent",
+    "label": "finalization",
+    "taskDefRef": "tasks/01KMDDD3RPFQ7R1MBX2C0TDPNX/task.json",
+    "labels": [
+      "finalization",
+      "editing",
+      "plan"
+    ]
+  },
+  "checksum": "34718f9ccda01a40d20dbc426adc5d268faa1f47e465ceb9b90875e34ec765b8"
+}

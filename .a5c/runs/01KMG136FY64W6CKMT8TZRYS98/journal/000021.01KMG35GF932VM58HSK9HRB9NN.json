@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T14:14:50.601Z",
+  "data": {
+    "effectId": "01KMG35GF0N2RK8RA0ZNPSNK85",
+    "invocationKey": "historian-enhancement-plan:S000011:generate-validation-plan",
+    "invocationHash": "d096a9933e334adf29c09389519d787e20d26b4fca0cfb7e2c80ad103aca03ce",
+    "stepId": "S000011",
+    "taskId": "generate-validation-plan",
+    "kind": "agent",
+    "label": "planning",
+    "taskDefRef": "tasks/01KMG35GF0N2RK8RA0ZNPSNK85/task.json",
+    "labels": [
+      "planning",
+      "validation"
+    ]
+  },
+  "checksum": "46639e92ba05832166f169fd013e5cf63cf9de304bc0eb75774ff7432795094e"
+}

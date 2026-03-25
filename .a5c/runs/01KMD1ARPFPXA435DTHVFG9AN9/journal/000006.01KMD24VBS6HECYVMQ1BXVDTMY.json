@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T09:59:17.113Z",
+  "data": {
+    "effectId": "01KMD24VBCBC7QW2QNM3RFG15M",
+    "invocationKey": "ui-evaluation-and-redesign:S000003:project-goal-inference",
+    "invocationHash": "e0ecc921fe5f35232134bc8c34b22d8a1ec66e1fca49ac55bbecc73eeff51841",
+    "stepId": "S000003",
+    "taskId": "project-goal-inference",
+    "kind": "agent",
+    "label": "product",
+    "taskDefRef": "tasks/01KMD24VBCBC7QW2QNM3RFG15M/task.json",
+    "labels": [
+      "product",
+      "strategy",
+      "goal"
+    ]
+  },
+  "checksum": "bfe0324129a9e119e3dacd847842d0387184d188f1c1526a8d3c81ba20794a68"
+}

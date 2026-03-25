@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDFPKG283BF3Y08EV105AS4",
+  "taskId": "diagnostic-backend",
+  "invocationKey": "implement-unified-ui:S000007:diagnostic-backend",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Phase 2: Diagnostic API Endpoints B5-B12",
+  "labels": [
+    "backend",
+    "diagnostics",
+    "phase2"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDFPKG283BF3Y08EV105AS4/input.json",
+    "outputJsonPath": "tasks/01KMDFPKG283BF3Y08EV105AS4/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

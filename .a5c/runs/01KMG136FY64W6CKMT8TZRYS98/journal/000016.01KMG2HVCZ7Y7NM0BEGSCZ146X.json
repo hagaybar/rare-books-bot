@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T14:04:06.431Z",
+  "data": {
+    "effectId": "01KMG2HVCCM7B4W8VZ99A9W26B",
+    "invocationKey": "historian-enhancement-plan:S000008:plan-e4-scholarly-narrative",
+    "invocationHash": "a447369757ac0dac8d47c6f00fc106cbdbeef159e5689f2a6b521d0dd275de48",
+    "stepId": "S000008",
+    "taskId": "plan-e4-scholarly-narrative",
+    "kind": "agent",
+    "label": "planning",
+    "taskDefRef": "tasks/01KMG2HVCCM7B4W8VZ99A9W26B/task.json",
+    "labels": [
+      "planning",
+      "e4",
+      "scholarly-narrative"
+    ]
+  },
+  "checksum": "ebb9f87b90e2af0a5e09604f789b266cf319f5279f82818da8386e2c542be80b"
+}

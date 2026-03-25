@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGKFSEXZX7G4CHFY2XWQ8KE",
+  "taskId": "e2-api-wiring",
+  "invocationKey": "implement-historian-enhancements:S000012:e2-api-wiring",
+  "status": "ok",
+  "result": {
+    "filesCreated": [
+      "tests/app/test_api_analytical.py"
+    ],
+    "filesModified": [
+      "app/api/main.py",
+      "scripts/chat/exploration_agent.py"
+    ],
+    "summary": "API wiring complete. handle_analytical_query(), wired into Phase 1 and WebSocket. 8 integration tests + 25 router + 10 curation = 43 tests pass.",
+    "testsPassed": 43
+  },
+  "startedAt": "2026-03-24T19:04:54.813Z",
+  "finishedAt": "2026-03-24T19:04:54.813Z",
+  "value": {
+    "filesCreated": [
+      "tests/app/test_api_analytical.py"
+    ],
+    "filesModified": [
+      "app/api/main.py",
+      "scripts/chat/exploration_agent.py"
+    ],
+    "summary": "API wiring complete. handle_analytical_query(), wired into Phase 1 and WebSocket. 8 integration tests + 25 router + 10 curation = 43 tests pass.",
+    "testsPassed": 43
+  }
+}

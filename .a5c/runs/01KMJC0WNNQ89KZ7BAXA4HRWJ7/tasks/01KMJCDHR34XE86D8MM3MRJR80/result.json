@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJCDHR34XE86D8MM3MRJR80",
+  "taskId": "frontend-fixes",
+  "invocationKey": "scholar-pipeline-fixes:S000005:frontend-fixes",
+  "status": "ok",
+  "result": {
+    "buildPassing": true,
+    "issuesFixed": [
+      "followup_buttons",
+      "link_styling",
+      "grounding_ui"
+    ],
+    "success": true
+  },
+  "startedAt": "2026-03-25T11:39:18.760Z",
+  "finishedAt": "2026-03-25T11:39:18.760Z",
+  "value": {
+    "buildPassing": true,
+    "issuesFixed": [
+      "followup_buttons",
+      "link_styling",
+      "grounding_ui"
+    ],
+    "success": true
+  }
+}

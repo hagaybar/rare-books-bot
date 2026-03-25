@@ -1,0 +1,213 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD3E4HR3C2YRZF3DH731QJF",
+  "taskId": "migration-plan",
+  "invocationKey": "ui-evaluation-and-redesign:S000007:migration-plan",
+  "status": "ok",
+  "result": {
+    "archives": [
+      "app/ui_chat/",
+      "app/ui_qa/pages/_wizard.py",
+      "app/qa.py",
+      "data/qa/qa.db"
+    ],
+    "deletionCriteria": [
+      "Feature parity verified",
+      "Data continuity confirmed",
+      "No active users",
+      "Tests pass",
+      "Documentation updated",
+      "Code archived"
+    ],
+    "earlyRetirements": [
+      "Streamlit Chat UI after Phase 1",
+      "app/qa.py after Phase 2 CLI consolidation",
+      "QA Wizard immediately"
+    ],
+    "phases": [
+      {
+        "dependsOn": [],
+        "description": "Restructure existing React app for 9-screen tiered route layout",
+        "duration": "1 week",
+        "name": "Phase 0: Foundation & Scaffolding"
+      },
+      {
+        "dependsOn": [
+          "Phase 0"
+        ],
+        "description": "Build primary conversational interface. Replaces Streamlit Chat UI.",
+        "duration": "2 weeks",
+        "name": "Phase 1: Chat Screen"
+      },
+      {
+        "dependsOn": [
+          "Phase 0"
+        ],
+        "description": "Replace QA Tool's core functionality in React.",
+        "duration": "2 weeks",
+        "name": "Phase 2: Query Debugger & DB Explorer"
+      },
+      {
+        "dependsOn": [
+          "Phase 0"
+        ],
+        "description": "Build Publisher Authorities and System Health pages.",
+        "duration": "1 week",
+        "name": "Phase 3: Admin Screens"
+      },
+      {
+        "dependsOn": [
+          "Phase 1",
+          "Phase 2",
+          "Phase 3"
+        ],
+        "description": "Cross-screen integration, shared components, test suite.",
+        "duration": "1-2 weeks",
+        "name": "Phase 4: Polish, Integration & Testing"
+      },
+      {
+        "dependsOn": [
+          "Phase 4"
+        ],
+        "description": "Remove Streamlit code, archive, update docs.",
+        "duration": "1 week",
+        "name": "Phase 5: Retirement & Cleanup"
+      }
+    ],
+    "risks": [
+      {
+        "mitigation": "Start with HTTP-only, add WebSocket as enhancement",
+        "risk": "WebSocket React complexity"
+      },
+      {
+        "mitigation": "Strict feature parity checklist",
+        "risk": "Query Debugger scope creep"
+      },
+      {
+        "mitigation": "MSW mocks from day 1",
+        "risk": "Diagnostic API blocking frontend"
+      },
+      {
+        "mitigation": "New API reads existing QA SQLite directly",
+        "risk": "QA labels inaccessibility"
+      },
+      {
+        "mitigation": "All 6 deletion criteria before removal",
+        "risk": "Unrecognized Streamlit dependency"
+      },
+      {
+        "mitigation": "Vite code splitting automatic per route",
+        "risk": "Bundle size growth"
+      }
+    ],
+    "temporaryCompatibility": [
+      "Both Chat UIs during Phase 1-4",
+      "Both QA tools during Phase 2",
+      "Old React routes redirect"
+    ]
+  },
+  "startedAt": "2026-03-23T10:26:29.621Z",
+  "finishedAt": "2026-03-23T10:26:29.621Z",
+  "value": {
+    "archives": [
+      "app/ui_chat/",
+      "app/ui_qa/pages/_wizard.py",
+      "app/qa.py",
+      "data/qa/qa.db"
+    ],
+    "deletionCriteria": [
+      "Feature parity verified",
+      "Data continuity confirmed",
+      "No active users",
+      "Tests pass",
+      "Documentation updated",
+      "Code archived"
+    ],
+    "earlyRetirements": [
+      "Streamlit Chat UI after Phase 1",
+      "app/qa.py after Phase 2 CLI consolidation",
+      "QA Wizard immediately"
+    ],
+    "phases": [
+      {
+        "dependsOn": [],
+        "description": "Restructure existing React app for 9-screen tiered route layout",
+        "duration": "1 week",
+        "name": "Phase 0: Foundation & Scaffolding"
+      },
+      {
+        "dependsOn": [
+          "Phase 0"
+        ],
+        "description": "Build primary conversational interface. Replaces Streamlit Chat UI.",
+        "duration": "2 weeks",
+        "name": "Phase 1: Chat Screen"
+      },
+      {
+        "dependsOn": [
+          "Phase 0"
+        ],
+        "description": "Replace QA Tool's core functionality in React.",
+        "duration": "2 weeks",
+        "name": "Phase 2: Query Debugger & DB Explorer"
+      },
+      {
+        "dependsOn": [
+          "Phase 0"
+        ],
+        "description": "Build Publisher Authorities and System Health pages.",
+        "duration": "1 week",
+        "name": "Phase 3: Admin Screens"
+      },
+      {
+        "dependsOn": [
+          "Phase 1",
+          "Phase 2",
+          "Phase 3"
+        ],
+        "description": "Cross-screen integration, shared components, test suite.",
+        "duration": "1-2 weeks",
+        "name": "Phase 4: Polish, Integration & Testing"
+      },
+      {
+        "dependsOn": [
+          "Phase 4"
+        ],
+        "description": "Remove Streamlit code, archive, update docs.",
+        "duration": "1 week",
+        "name": "Phase 5: Retirement & Cleanup"
+      }
+    ],
+    "risks": [
+      {
+        "mitigation": "Start with HTTP-only, add WebSocket as enhancement",
+        "risk": "WebSocket React complexity"
+      },
+      {
+        "mitigation": "Strict feature parity checklist",
+        "risk": "Query Debugger scope creep"
+      },
+      {
+        "mitigation": "MSW mocks from day 1",
+        "risk": "Diagnostic API blocking frontend"
+      },
+      {
+        "mitigation": "New API reads existing QA SQLite directly",
+        "risk": "QA labels inaccessibility"
+      },
+      {
+        "mitigation": "All 6 deletion criteria before removal",
+        "risk": "Unrecognized Streamlit dependency"
+      },
+      {
+        "mitigation": "Vite code splitting automatic per route",
+        "risk": "Bundle size growth"
+      }
+    ],
+    "temporaryCompatibility": [
+      "Both Chat UIs during Phase 1-4",
+      "Both QA tools during Phase 2",
+      "Old React routes redirect"
+    ]
+  }
+}

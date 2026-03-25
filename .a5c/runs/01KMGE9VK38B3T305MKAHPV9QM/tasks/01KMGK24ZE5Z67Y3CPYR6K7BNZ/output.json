@@ -1,0 +1,1 @@
+{"fileCreated": "scripts/chat/analytical_router.py", "testsPassed": 25, "testsFailed": 0, "summary": "Analytical router (185 lines) with deterministic two-layer classification. All 25 tests pass including Q14/Q15/Q20 detection, anti-signals, implied filters."}

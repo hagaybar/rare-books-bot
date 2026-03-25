@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T18:54:20.464Z",
+  "data": {
+    "effectId": "01KMGK5998N477V4XX1T4N06A5",
+    "invocationKey": "implement-historian-enhancements:S000010:e2-curation-tests",
+    "invocationHash": "165d653388b8ca39c90b24d4270d8bbe100c51af8a2c5bb5a17ef6e9d0eaf233",
+    "stepId": "S000010",
+    "taskId": "e2-curation-tests",
+    "kind": "agent",
+    "label": "E2: Write curation engine tests",
+    "taskDefRef": "tasks/01KMGK5998N477V4XX1T4N06A5/task.json"
+  },
+  "checksum": "5331c22c78360c83659c44886b29f688874449784b1a501076c0b479bd85a7c3"
+}

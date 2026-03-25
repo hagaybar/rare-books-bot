@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMATDBY562W0YG235FFH38RF",
+  "taskId": "upload-to-notebooklm",
+  "invocationKey": "notebooklm-context-builder:S000005:upload-to-notebooklm",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Upload documents to NotebookLM",
+  "io": {
+    "inputJsonPath": "tasks/01KMATDBY562W0YG235FFH38RF/input.json",
+    "outputJsonPath": "tasks/01KMATDBY562W0YG235FFH38RF/output.json"
+  },
+  "inputs": {
+    "documentFiles": [
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/01_project_overview.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/02_code_map.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/03_data_pipeline.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/04_query_and_chat.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/05_metadata_workbench.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/06_data_model.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/07_project_status.md"
+    ],
+    "notebookName": "Rare Books Bot",
+    "notebookUrl": "https://notebooklm.google.com/notebook/7472ca6f-417a-47a1-9f8c-dd87a9e25b17",
+    "outputDir": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources"
+  }
+}

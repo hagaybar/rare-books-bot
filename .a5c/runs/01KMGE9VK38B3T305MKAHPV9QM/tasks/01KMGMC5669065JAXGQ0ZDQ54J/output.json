@@ -1,0 +1,1 @@
+{"testsWritten": 14, "testFiles": ["tests/scripts/chat/test_comparison_enhanced.py", "tests/scripts/chat/test_narrative_agent_e3.py"], "summary": "14 tests: 8 comparison (facets, shared agents, backward compat, edge cases) + 6 narrative (connections section, performance guard, non-blocking, format). 13 fail as expected, 1 backward-compat passes."}

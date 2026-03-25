@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T13:05:38.769Z",
+  "data": {
+    "effectId": "01KMATDBY562W0YG235FFH38RF",
+    "invocationKey": "notebooklm-context-builder:S000005:upload-to-notebooklm",
+    "invocationHash": "4c3a85a37a593bcced2ad691a516910f1b7111496ab99d687c1d3664049acd94",
+    "stepId": "S000005",
+    "taskId": "upload-to-notebooklm",
+    "kind": "agent",
+    "label": "Upload documents to NotebookLM",
+    "taskDefRef": "tasks/01KMATDBY562W0YG235FFH38RF/task.json"
+  },
+  "checksum": "0052bf1d6b26f75bf756e5faa4e8d503dcb57f5b310c0ab962515a6d0022d7d2"
+}

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD24VBCBC7QW2QNM3RFG15M",
+  "taskId": "project-goal-inference",
+  "invocationKey": "ui-evaluation-and-redesign:S000003:project-goal-inference",
+  "status": "ok",
+  "result": {
+    "centerpiece": "The two-phase conversational query engine: intent interpretation with confidence scoring -> corpus exploration with aggregation, refinement, and enrichment, delivered through the chatbot UI",
+    "coreUseCases": [
+      "Natural language bibliographic query with evidence-based results traceable to MARC fields",
+      "Two-phase conversational exploration: define a result set with confidence scoring, then aggregate and analyze it",
+      "Multi-turn refinement and follow-up within a session",
+      "Normalization quality improvement via HITL metadata co-pilot",
+      "Query pipeline regression testing via gold sets"
+    ],
+    "noise": [
+      "configs/chunk_rules.yaml -- RAG template remnant",
+      "configs/outlook_helper.yaml -- RAG template remnant",
+      "scripts/api_clients/openai/completer.py -- orphaned OpenAI wrapper",
+      "Ghost reference to ProjectManager",
+      "TODO_CONVERSATIONAL_AGENT.md -- completed TODO list",
+      "project_basseline.txt -- misspelled baseline file",
+      "docs/salvaged_disscussion.txt -- unclear origin",
+      "Duplicate regression runner in QA Tool",
+      "Empty archive/ directory"
+    ],
+    "primaryUsers": [
+      "Bibliographic researchers and scholars who need to query rare book collections in natural language and trust the results",
+      "Metadata librarians who maintain normalization quality and authority records",
+      "Developers who validate query pipeline correctness"
+    ],
+    "projectGoal": "Enable scholars and librarians to discover rare books through natural language conversation, backed by a deterministic, evidence-based query engine over MARC XML bibliographic records with full provenance tracking.",
+    "secondary": [
+      "Metadata Co-pilot Workbench -- data quality admin for catalogers",
+      "QA Tool -- query pipeline validation and regression testing",
+      "Enrichment pipeline -- external data augmentation, partially integrated",
+      "CLI -- developer access to the M1-M4 pipeline",
+      "Publisher authority record system"
+    ]
+  },
+  "startedAt": "2026-03-23T10:03:58.930Z",
+  "finishedAt": "2026-03-23T10:03:58.930Z",
+  "value": {
+    "centerpiece": "The two-phase conversational query engine: intent interpretation with confidence scoring -> corpus exploration with aggregation, refinement, and enrichment, delivered through the chatbot UI",
+    "coreUseCases": [
+      "Natural language bibliographic query with evidence-based results traceable to MARC fields",
+      "Two-phase conversational exploration: define a result set with confidence scoring, then aggregate and analyze it",
+      "Multi-turn refinement and follow-up within a session",
+      "Normalization quality improvement via HITL metadata co-pilot",
+      "Query pipeline regression testing via gold sets"
+    ],
+    "noise": [
+      "configs/chunk_rules.yaml -- RAG template remnant",
+      "configs/outlook_helper.yaml -- RAG template remnant",
+      "scripts/api_clients/openai/completer.py -- orphaned OpenAI wrapper",
+      "Ghost reference to ProjectManager",
+      "TODO_CONVERSATIONAL_AGENT.md -- completed TODO list",
+      "project_basseline.txt -- misspelled baseline file",
+      "docs/salvaged_disscussion.txt -- unclear origin",
+      "Duplicate regression runner in QA Tool",
+      "Empty archive/ directory"
+    ],
+    "primaryUsers": [
+      "Bibliographic researchers and scholars who need to query rare book collections in natural language and trust the results",
+      "Metadata librarians who maintain normalization quality and authority records",
+      "Developers who validate query pipeline correctness"
+    ],
+    "projectGoal": "Enable scholars and librarians to discover rare books through natural language conversation, backed by a deterministic, evidence-based query engine over MARC XML bibliographic records with full provenance tracking.",
+    "secondary": [
+      "Metadata Co-pilot Workbench -- data quality admin for catalogers",
+      "QA Tool -- query pipeline validation and regression testing",
+      "Enrichment pipeline -- external data augmentation, partially integrated",
+      "CLI -- developer access to the M1-M4 pipeline",
+      "Publisher authority record system"
+    ]
+  }
+}

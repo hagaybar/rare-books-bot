@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:35:39.357Z",
+  "data": {
+    "effectId": "01KMGNGY2N5MHJ1S4MJAAS5H66",
+    "invocationKey": "implement-historian-enhancements:S000024:e4-pedagogical-tests",
+    "invocationHash": "945dbc322ae4fe6c6c53070e432d9384a2eb3802533e6d0c9227ec5916fc2678",
+    "stepId": "S000024",
+    "taskId": "e4-pedagogical-tests",
+    "kind": "agent",
+    "label": "E4: Write pedagogical formatting tests",
+    "taskDefRef": "tasks/01KMGNGY2N5MHJ1S4MJAAS5H66/task.json"
+  },
+  "checksum": "57467ff1959265565f6993c231970517db5dc5d6d5f9feb42e5de9b0fa621985"
+}

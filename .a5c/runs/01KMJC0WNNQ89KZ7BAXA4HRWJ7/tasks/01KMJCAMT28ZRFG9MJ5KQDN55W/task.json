@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJCAMT28ZRFG9MJ5KQDN55W",
+  "taskId": "verify",
+  "invocationKey": "scholar-pipeline-fixes:S000002:verify",
+  "stepId": "S000002",
+  "kind": "shell",
+  "title": "Verify: backend-fixes",
+  "io": {
+    "outputJsonPath": "tasks/01KMJCAMT28ZRFG9MJ5KQDN55W/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_interpreter.py tests/scripts/chat/test_executor.py tests/scripts/chat/test_narrator.py -v 2>&1 | tail -30",
+    "phase": "backend-fixes",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

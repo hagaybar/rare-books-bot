@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMD1PDPEKKJYSQSKMK09QJHX",
+  "taskId": "ui-deep-analysis",
+  "invocationKey": "ui-evaluation-and-redesign:S000002:ui-deep-analysis",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Phase 2: Deep analysis of each existing UI",
+  "labels": [
+    "analysis",
+    "audit",
+    "ui",
+    "ux"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMD1PDPEKKJYSQSKMK09QJHX/input.json",
+    "outputJsonPath": "tasks/01KMD1PDPEKKJYSQSKMK09QJHX/result.json"
+  },
+  "inputs": {
+    "inventory": {
+      "uis": [
+        {
+          "description": "React SPA with 4 routes (/, /workbench, /agent, /review). Proxies /metadata/* to FastAPI backend. Has pre-built dist/ but no production serving config. ~3,160 lines of TypeScript/TSX.",
+          "entryPoint": "cd frontend && npm run dev (http://localhost:5173)",
+          "location": "frontend/",
+          "name": "Metadata Co-pilot Workbench",
+          "purpose": "Agent-driven HITL system for improving bibliographic metadata quality. 4 pages: Dashboard, Workbench, Agent Chat, Review.",
+          "status": "active",
+          "targetUsers": "Librarians, metadata specialists",
+          "techStack": "React 19, TypeScript, Vite 8, Tailwind CSS 4, TanStack Query 5, TanStack Table 8, Recharts 3, React Router 7"
+        },
+        {
+          "description": "Multi-page Streamlit app with 7 page files. Calls QueryService in-process (no FastAPI dependency). Has own SQLite database at data/qa/qa.db. Includes guided wizard workflow, DB explorer, and 15 canonical test queries. ~3,530 lines of Python.",
+          "entryPoint": "poetry run streamlit run app/ui_qa/main.py (http://localhost:8501)",
+          "location": "app/ui_qa/",
+          "name": "QA Tool",
+          "purpose": "Quality assurance for M4 query pipeline: execute queries, label results as TP/FP/FN, track issues, export gold sets for regression testing. 6 visible pages plus 1 hidden wizard.",
+          "status": "active",
+          "targetUsers": "Developers, QA testers",
+          "techStack": "Streamlit 1.52+, Pandas, SQLite (own qa.db)"
+        },
+        {
+          "description": "Single-page Streamlit chat app that calls FastAPI /chat endpoint via HTTP. Has dedicated launcher script (run_chat_ui.sh) that starts both API and UI. Primo links configured for Tel Aviv University. ~450 lines of Python.",
+          "entryPoint": "poetry run streamlit run app/ui_chat/main.py or ./run_chat_ui.sh (http://localhost:8501)",
+          "location": "app/ui_chat/",
+          "name": "Chat UI",
+          "purpose": "Conversational discovery interface for searching the rare books collection. Chat-style with message history, follow-up suggestions, expandable results with Primo catalog links.",
+          "status": "active",
+          "targetUsers": "End-users, researchers, librarians",
+          "techStack": "Streamlit 1.52+, Requests"
+        },
+        {
+          "description": "5 commands: parse-marc, query, chat-init, chat-history, chat-cleanup. Calls scripts directly in-process. Stale documentation in app/README.md. ~334 lines.",
+          "entryPoint": "python -m app.cli <command>",
+          "location": "app/cli.py",
+          "name": "CLI",
+          "purpose": "Command-line interface for MARC pipeline operations: parse MARC XML, execute queries, manage chat sessions.",
+          "status": "active",
+          "targetUsers": "Developers, system operators",
+          "techStack": "Typer (Python CLI framework)"
+        },
+        {
+          "description": "CLI companion to the QA Tool. Uses exit codes 0/1 for CI integration. Gold sets are exported from the QA Tool UI. ~187 lines.",
+          "entryPoint": "python -m app.qa regress --gold data/qa/gold.json --db data/index/bibliographic.db",
+          "location": "app/qa.py",
+          "name": "QA Regression Runner",
+          "purpose": "Automated regression testing against gold set expectations. Validates that query results match expected includes/excludes.",
+          "status": "active",
+          "targetUsers": "Developers, CI/CD pipelines",
+          "techStack": "Typer (Python CLI framework)"
+        },
+        {
+          "description": "Two modules: main.py (chat/session/health/websocket endpoints, ~1,130 lines) and metadata.py (12 metadata quality endpoints, ~1,459 lines). Auto-generates Swagger UI at /docs and ReDoc at /redoc. ~3,024 lines total.",
+          "entryPoint": "uvicorn app.api.main:app --reload (http://localhost:8000, docs at /docs)",
+          "location": "app/api/",
+          "name": "FastAPI Backend (API Layer)",
+          "purpose": "Central HTTP API serving the Chat UI and Metadata Workbench. 17 REST endpoints plus 1 WebSocket. Also provides auto-generated Swagger UI and ReDoc documentation.",
+          "status": "active",
+          "targetUsers": "Frontend clients (React Workbench, Streamlit Chat UI), developers (Swagger/ReDoc)",
+          "techStack": "FastAPI 0.115, Pydantic, Uvicorn, slowapi (rate limiting), CORS middleware"
+        }
+      ]
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "prompt": "Deep product, UX, architecture, and implementation evaluation of all existing UIs to support design and build of a single new integrated UI for Rare Books Bot - beta version. The bot is the heart of the system. The new UI must include observability and debugging. Preferred direction: React or Angular."
+  }
+}

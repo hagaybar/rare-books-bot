@@ -1,0 +1,1121 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMG35GEA3M88TDT9GBAZS4HA",
+  "taskId": "generate-task-breakdown",
+  "invocationKey": "historian-enhancement-plan:S000010:generate-task-breakdown",
+  "status": "ok",
+  "result": {
+    "criticalPath": [
+      {
+        "bottleneck": "E4-T2 (authoring 8 thematic entries, 6h) and E3-T4 (cross-reference integration across narrative/comparison/formatter, 5h) are the largest single tasks on the critical path",
+        "description": "Longest dependency chain: E1 (agent aliases) -> E3 (cross-reference, depends on E1) -> E4 (scholarly narrative, depends on E3) -> E5 (curation, depends on E4 and E2) -> Final verification",
+        "estimatedHours": 97,
+        "path": "E1-T1 -> E1-T2 -> E1-T3 -> E1-T4 -> E1-T5/E1-T6 -> E1-T7 -> E3-T1 -> E3-T2 -> E3-T3 -> E3-T4 -> E3-T5 -> E3-T6 -> E4-T1 -> E4-T2 -> E4-T3 -> E4-T4 -> E4-T5 -> E5-T1 -> E5-T2 -> E5-T3 -> E5-T4 -> E5-T5 -> FINAL-T1"
+      }
+    ],
+    "milestones": [
+      {
+        "completionTasks": [
+          "E1-T7"
+        ],
+        "description": "Agent authorities and aliases seeded in production DB. Alias-aware query execution working with graceful fallback.",
+        "estimatedHoursTotal": 22,
+        "id": "M-E1",
+        "title": "Agent Name Alias System Complete"
+      },
+      {
+        "completionTasks": [
+          "E2-T6"
+        ],
+        "description": "Analytical queries (distribution, curation) detected and routed correctly. Q14, Q15, Q20 queries produce meaningful results.",
+        "estimatedHoursTotal": 21,
+        "id": "M-E2",
+        "title": "Analytical Query Routing Complete"
+      },
+      {
+        "completionTasks": [
+          "E3-T6"
+        ],
+        "description": "Entity relationships discovered and surfaced in narratives. Enhanced comparison with multi-faceted analysis. Cross-reference exploration intent working.",
+        "estimatedHoursTotal": 22,
+        "id": "M-E3",
+        "title": "Cross-Reference Engine Complete"
+      },
+      {
+        "completionTasks": [
+          "E4-T5"
+        ],
+        "description": "Thematic context, significance scoring, and pedagogical framing integrated. Target queries (Q1, Q2, Q4, Q5, Q11, Q16, Q18) show improved historian evaluation scores.",
+        "estimatedHoursTotal": 16,
+        "id": "M-E4",
+        "title": "Scholarly Narrative Depth Complete"
+      },
+      {
+        "completionTasks": [
+          "E5-T5"
+        ],
+        "description": "Exhibit-quality subset selection working with scoring, diversity selection, and exhibit formatting. RECOMMENDATION handler fully functional.",
+        "estimatedHoursTotal": 16,
+        "id": "M-E5",
+        "title": "Curation Engine Complete"
+      },
+      {
+        "completionTasks": [
+          "FINAL-T1"
+        ],
+        "description": "Full regression passed. All 5 enhancements working together in unified API with no regressions.",
+        "estimatedHoursTotal": 3,
+        "id": "M-FINAL",
+        "title": "All Enhancements Integrated and Verified"
+      }
+    ],
+    "parallelOpportunities": [
+      {
+        "description": "E1 and E2 can execute fully in parallel from day one. No shared dependencies.",
+        "parallelSets": [
+          [
+            "E1-T1",
+            "E1-T2",
+            "E1-T3",
+            "E1-T4",
+            "E1-T5",
+            "E1-T6",
+            "E1-T7"
+          ],
+          [
+            "E2-T1",
+            "E2-T2",
+            "E2-T3",
+            "E2-T4",
+            "E2-T5",
+            "E2-T6"
+          ]
+        ],
+        "timeSaving": "21 hours (full E2 duration runs in parallel with E1)"
+      },
+      {
+        "description": "Within E1, T5 (seeding script) and T6 (query path modification) can run in parallel after T4 completes.",
+        "parallelSets": [
+          [
+            "E1-T5"
+          ],
+          [
+            "E1-T6"
+          ]
+        ],
+        "timeSaving": "3 hours"
+      },
+      {
+        "description": "E3 can start as soon as E1 completes, while E2 may still be finishing. E2-T6 and E3-T1 can overlap.",
+        "parallelSets": [
+          [
+            "E2-T5",
+            "E2-T6"
+          ],
+          [
+            "E3-T1",
+            "E3-T2"
+          ]
+        ],
+        "timeSaving": "Up to 6 hours if E2 runs behind E1"
+      },
+      {
+        "description": "With two developers, one can work the E1->E3->E4->E5 chain while the other handles E2 and then assists with E4/E5.",
+        "parallelSets": [
+          [
+            "E1-T1 through E1-T7",
+            "E3-T1 through E3-T6",
+            "E4-T1 through E4-T5"
+          ],
+          [
+            "E2-T1 through E2-T6",
+            "E5-T1 through E5-T5"
+          ]
+        ],
+        "timeSaving": "Estimated 30-40% total calendar time reduction with 2 developers"
+      }
+    ],
+    "projectTitle": "Multi-Enhancement Implementation: Agent Aliases, Analytical Routing, Cross-Reference, Scholarly Narrative, and Curation",
+    "summary": {
+      "byComplexity": {
+        "high": 7,
+        "low": 3,
+        "medium": 20
+      },
+      "byEnhancement": {
+        "E1_AgentAliases": 7,
+        "E2_AnalyticalRouting": 6,
+        "E3_CrossReference": 6,
+        "E4_ScholarlyNarrative": 5,
+        "E5_CurationEngine": 5,
+        "Final_Verification": 1
+      },
+      "implementationTaskCount": 14,
+      "integrationVerificationCount": 6,
+      "tddPattern": "Each enhancement follows test-first -> implement -> integrate -> verify. Test tasks (prefix 'Tests:') always precede their corresponding implementation tasks.",
+      "testTaskCount": 9,
+      "totalTasks": 30
+    },
+    "tasks": [
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/metadata/test_agent_authority.py",
+        "dependencies": [],
+        "description": "Write unit tests for AgentAuthority/AgentAlias dataclasses, AgentAuthorityStore CRUD operations (create, search_by_alias, resolve_agent), and schema creation. Tests use in-memory SQLite. TDD: tests written before implementation.",
+        "enhancement": "E1",
+        "estimatedHours": 3,
+        "id": "E1-T1",
+        "order": 1,
+        "title": "Tests: AgentAuthorityStore and schema"
+      },
+      {
+        "complexity": "low",
+        "deliverable": "scripts/marc/m3_contract.py, scripts/marc/m3_schema.sql",
+        "dependencies": [
+          "E1-T1"
+        ],
+        "description": "Define agent_authorities and agent_aliases tables mirroring publisher pattern. Update M3Tables/M3Columns/M3Aliases constants in m3_contract.py and m3_schema.sql.",
+        "enhancement": "E1",
+        "estimatedHours": 2,
+        "id": "E1-T2",
+        "order": 2,
+        "title": "Schema and M3 contract updates for agent authorities"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/metadata/agent_authority.py",
+        "dependencies": [
+          "E1-T1",
+          "E1-T2"
+        ],
+        "description": "Create scripts/metadata/agent_authority.py with AgentAuthority and AgentAlias dataclasses, and AgentAuthorityStore class with ensure_tables(), add_authority(), search_by_alias(), resolve_agent() methods. Mirror publisher_authority.py pattern.",
+        "enhancement": "E1",
+        "estimatedHours": 4,
+        "id": "E1-T3",
+        "order": 3,
+        "title": "Implement AgentAuthorityStore CRUD module"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/metadata/test_seed_agent_authorities.py, tests/scripts/query/test_db_adapter_agent_alias.py",
+        "dependencies": [
+          "E1-T3"
+        ],
+        "description": "Write tests for seed_agent_authorities.py (seed_from_enrichment, generate_word_reorder_aliases, cross-script detection). Write integration tests for alias-aware query execution in db_adapter.py. TDD: tests before implementation.",
+        "enhancement": "E1",
+        "estimatedHours": 3,
+        "id": "E1-T4",
+        "order": 4,
+        "title": "Tests: Seeding script and alias-aware query execution"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/metadata/seed_agent_authorities.py, app/cli.py (modified)",
+        "dependencies": [
+          "E1-T3",
+          "E1-T4"
+        ],
+        "description": "Create scripts/metadata/seed_agent_authorities.py that populates authorities from existing data (group by authority_uri, generate word-reorder and cross-script aliases). Add seed-agent-authorities CLI command to app/cli.py.",
+        "enhancement": "E1",
+        "estimatedHours": 5,
+        "id": "E1-T5",
+        "order": 5,
+        "title": "Implement seeding script and CLI command"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/query/db_adapter.py (modified)",
+        "dependencies": [
+          "E1-T3",
+          "E1-T4"
+        ],
+        "description": "Update build_where_clause() in db_adapter.py to use alias table JOIN for AGENT_NORM filters. Add graceful fallback via _agent_alias_tables_exist() helper when tables are absent.",
+        "enhancement": "E1",
+        "estimatedHours": 3,
+        "id": "E1-T6",
+        "order": 5,
+        "title": "Modify AGENT_NORM query path for alias resolution"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "Passing test suite, seeded production database",
+        "dependencies": [
+          "E1-T5",
+          "E1-T6"
+        ],
+        "description": "Run seeding on production database, validate statistics (~2,400+ authorities, 3,000+ aliases). Run all E1 tests end-to-end. Verify alias-aware queries return expected results for Buxtorf, Mendelssohn test cases.",
+        "enhancement": "E1",
+        "estimatedHours": 2,
+        "id": "E1-T7",
+        "order": 6,
+        "title": "E1 integration verification: seed and validate"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_analytical_router.py",
+        "dependencies": [],
+        "description": "Write 25 unit tests for detect_analytical_query() covering Q14 (chronological), Q15 (geographic), Q20 (curation), edge cases (non-analytical queries, mixed signals). TDD: tests first.",
+        "enhancement": "E2",
+        "estimatedHours": 3,
+        "id": "E2-T1",
+        "order": 1,
+        "title": "Tests: Analytical router detection"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/chat/analytical_router.py",
+        "dependencies": [
+          "E2-T1"
+        ],
+        "description": "Create scripts/chat/analytical_router.py with AnalyticalIntent enum (TEMPORAL/GEOGRAPHIC/PUBLISHER/LANGUAGE/SUBJECT/CURATION), AnalyticalQueryResult model, and detect_analytical_query() using two-layer signal+pattern detection.",
+        "enhancement": "E2",
+        "estimatedHours": 4,
+        "id": "E2-T2",
+        "order": 2,
+        "title": "Implement analytical router and detection"
+      },
+      {
+        "complexity": "low",
+        "deliverable": "tests/scripts/chat/test_curation_engine.py",
+        "dependencies": [
+          "E2-T2"
+        ],
+        "description": "Write 8-10 unit tests for CurationScorer covering temporal rarity, language diversity, notable items selection. TDD: tests before implementation.",
+        "enhancement": "E2",
+        "estimatedHours": 2,
+        "id": "E2-T3",
+        "order": 3,
+        "title": "Tests: Curation engine"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/curation_engine.py, scripts/chat/aggregation.py (modified), scripts/chat/narrative_agent.py (modified)",
+        "dependencies": [
+          "E2-T2",
+          "E2-T3"
+        ],
+        "description": "Create scripts/chat/curation_engine.py with CurationScorer. Add execute_aggregation_full_collection() to aggregation.py for collection-wide queries. Add generate_analytical_narrative() to narrative_agent.py.",
+        "enhancement": "E2",
+        "estimatedHours": 5,
+        "id": "E2-T4",
+        "order": 4,
+        "title": "Implement curation engine and full-collection aggregation"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "app/api/main.py (modified), scripts/chat/models.py (modified), scripts/chat/exploration_agent.py (modified)",
+        "dependencies": [
+          "E2-T4"
+        ],
+        "description": "Add handle_analytical_query() to main.py. Insert detection into handle_query_definition_phase() after is_overview_query() check. Add matching logic to websocket_chat() handler. Extend ExplorationIntent for follow-up analytical queries.",
+        "enhancement": "E2",
+        "estimatedHours": 4,
+        "id": "E2-T5",
+        "order": 5,
+        "title": "Wire analytical routing into API and WebSocket"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/app/test_api_analytical.py",
+        "dependencies": [
+          "E2-T5"
+        ],
+        "description": "Write and run integration tests simulating exact Q14 (chronological distribution), Q15 (geographic spread), Q20 (exhibit recommendations) queries. Verify correct routing, aggregation results, and narrative formatting.",
+        "enhancement": "E2",
+        "estimatedHours": 3,
+        "id": "E2-T6",
+        "order": 6,
+        "title": "E2 integration verification: Q14, Q15, Q20 end-to-end"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_cross_reference.py, tests/scripts/chat/conftest.py (updated)",
+        "dependencies": [
+          "E1-T7"
+        ],
+        "description": "Write 13 unit tests for Connection/AgentNode models and cross-reference discovery engine using in-memory SQLite fixtures. Test shared-work, shared-place, shared-period connection types. TDD: tests first.",
+        "enhancement": "E3",
+        "estimatedHours": 3,
+        "id": "E3-T1",
+        "order": 7,
+        "title": "Tests: Cross-reference models and engine"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/cross_reference.py, scripts/chat/models.py (updated)",
+        "dependencies": [
+          "E3-T1"
+        ],
+        "description": "Create scripts/chat/cross_reference.py with Connection, AgentNode models and core discovery functions. Pure functions operating on SQLite data. Add CROSS_REFERENCE to ExplorationIntent enum in models.py.",
+        "enhancement": "E3",
+        "estimatedHours": 5,
+        "id": "E3-T2",
+        "order": 8,
+        "title": "Implement cross-reference data models and engine"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_comparison_enhanced.py, tests/scripts/chat/test_narrative_agent_e3.py",
+        "dependencies": [
+          "E3-T2"
+        ],
+        "description": "Write unit tests for multi-faceted comparison (ComparisonResult, ComparisonFacets) and narrative agent cross-reference section generation. 10+ tests covering comparison edge cases.",
+        "enhancement": "E3",
+        "estimatedHours": 3,
+        "id": "E3-T3",
+        "order": 9,
+        "title": "Tests: Enhanced comparison and narrative integration"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/narrative_agent.py (updated), scripts/chat/aggregation.py (updated), scripts/chat/formatter.py (updated)",
+        "dependencies": [
+          "E3-T2",
+          "E3-T3"
+        ],
+        "description": "Enhance generate_agent_narrative() with Connections section. Replace simple execute_comparison() with multi-faceted analysis. Update formatter.py with cross-reference formatting. Enhance follow-up suggestions with cross-reference prompts.",
+        "enhancement": "E3",
+        "estimatedHours": 5,
+        "id": "E3-T4",
+        "order": 10,
+        "title": "Integrate cross-references into narrative, comparison, and formatter"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "app/api/main.py (updated), scripts/chat/exploration_agent.py (updated)",
+        "dependencies": [
+          "E3-T4"
+        ],
+        "description": "Add CROSS_REFERENCE handler to API orchestrator in main.py for both Phase 1 (query results) and Phase 2 (exploration intents). Update exploration_agent.py to recognize cross-reference requests.",
+        "enhancement": "E3",
+        "estimatedHours": 3,
+        "id": "E3-T5",
+        "order": 11,
+        "title": "Wire cross-reference into API and exploration agent"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_cross_reference_integration.py, tests/scripts/chat/test_formatter_e3.py",
+        "dependencies": [
+          "E3-T5"
+        ],
+        "description": "Run integration tests against real bibliographic.db verifying cross-reference discovery on actual data. Verify end-to-end flow from query to cross-reference narrative. Validate all E3 tests pass.",
+        "enhancement": "E3",
+        "estimatedHours": 3,
+        "id": "E3-T6",
+        "order": 12,
+        "title": "E3 integration verification"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_thematic_context.py",
+        "dependencies": [
+          "E3-T6"
+        ],
+        "description": "Write 13 unit tests covering theme matching (venetian_hebrew_printing matches venice+16c+hebrew), non-matching, significance scoring factors (date rarity, language rarity, agent authority). TDD: tests first.",
+        "enhancement": "E4",
+        "estimatedHours": 3,
+        "id": "E4-T1",
+        "order": 13,
+        "title": "Tests: Thematic context matching and significance scoring"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/thematic_context.py",
+        "dependencies": [
+          "E4-T1"
+        ],
+        "description": "Create scripts/chat/thematic_context.py with ThematicBlock/SignificanceResult/NotableItem models, THEMATIC_REGISTRY (8 pre-authored entries), get_thematic_context(), significance_score(), and get_notable_items() functions.",
+        "enhancement": "E4",
+        "estimatedHours": 6,
+        "id": "E4-T2",
+        "order": 14,
+        "title": "Implement thematic context module with 8 entries"
+      },
+      {
+        "complexity": "low",
+        "deliverable": "tests/scripts/chat/test_formatter_pedagogical.py",
+        "dependencies": [
+          "E4-T2"
+        ],
+        "description": "Write 3 unit tests for format_teaching_note() and citation formatting in formatter.py. Verify proper markdown output and edge cases.",
+        "enhancement": "E4",
+        "estimatedHours": 1,
+        "id": "E4-T3",
+        "order": 15,
+        "title": "Tests: Pedagogical formatting"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/chat/formatter.py (modified), scripts/chat/models.py (modified), app/api/main.py (modified)",
+        "dependencies": [
+          "E4-T2",
+          "E4-T3"
+        ],
+        "description": "Add format_teaching_note() to formatter.py. Add optional thematic_context field to ChatResponse model. Integrate get_thematic_context() and get_notable_items() into handle_query_definition_phase() after agent narrative block.",
+        "enhancement": "E4",
+        "estimatedHours": 3,
+        "id": "E4-T4",
+        "order": 16,
+        "title": "Add pedagogical framing and wire into API"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/integration/test_thematic_integration.py",
+        "dependencies": [
+          "E4-T4"
+        ],
+        "description": "Run integration tests against real database for 7 target queries (Q1, Q2, Q4, Q5, Q11, Q16, Q18). Verify thematic context appears for matching queries, notable items are scored correctly, and pedagogical framing renders properly.",
+        "enhancement": "E4",
+        "estimatedHours": 3,
+        "id": "E4-T5",
+        "order": 17,
+        "title": "E4 integration verification"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_curator.py",
+        "dependencies": [
+          "E4-T5",
+          "E2-T6"
+        ],
+        "description": "Write 25 tests for ScoredCandidate model, score_candidates() (using E4 significance_score or fallback), select_diverse() greedy algorithm, fetch_record_metadata() helper. TDD: tests first.",
+        "enhancement": "E5",
+        "estimatedHours": 3,
+        "id": "E5-T1",
+        "order": 18,
+        "title": "Tests: Curator scoring and diversity selection"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/curator.py",
+        "dependencies": [
+          "E5-T1"
+        ],
+        "description": "Create scripts/chat/curator.py with ScoredCandidate model, fetch_record_metadata() SQL helper, score_candidates() using E4 significance scoring, and select_diverse() greedy diversity-aware selection (~230 LOC).",
+        "enhancement": "E5",
+        "estimatedHours": 5,
+        "id": "E5-T2",
+        "order": 19,
+        "title": "Implement curator module"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/chat/formatter.py (modified), scripts/chat/exploration_agent.py (modified)",
+        "dependencies": [
+          "E5-T2"
+        ],
+        "description": "Add exhibit-style formatting functions to formatter.py (~45 LOC). Extend ExplorationRequestLLM with recommendation fields for curation parameter parsing. Add CURATION to ExplorationIntent if not done in E2.",
+        "enhancement": "E5",
+        "estimatedHours": 3,
+        "id": "E5-T3",
+        "order": 20,
+        "title": "Add exhibit formatting and exploration schema updates"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "app/api/main.py (modified)",
+        "dependencies": [
+          "E5-T2",
+          "E5-T3"
+        ],
+        "description": "Replace the static RECOMMENDATION stub in main.py with working curation logic that calls curator.score_candidates(), select_diverse(), and exhibit formatter. Handle both initial curation queries and follow-up refinements.",
+        "enhancement": "E5",
+        "estimatedHours": 3,
+        "id": "E5-T4",
+        "order": 21,
+        "title": "Wire RECOMMENDATION handler in API"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "Passing test suite, verified curation output",
+        "dependencies": [
+          "E5-T4"
+        ],
+        "description": "Run end-to-end tests for curation queries (Q20-style exhibit recommendations). Verify scoring, diverse selection, and exhibit formatting produce quality output. Validate all E5 tests pass.",
+        "enhancement": "E5",
+        "estimatedHours": 2,
+        "id": "E5-T5",
+        "order": 22,
+        "title": "E5 integration verification"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "Full passing test suite, regression report",
+        "dependencies": [
+          "E1-T7",
+          "E2-T6",
+          "E3-T6",
+          "E4-T5",
+          "E5-T5"
+        ],
+        "description": "Run complete test suite across all enhancements. Verify no regressions in existing chat/query functionality. Run QA gold set regression. Validate that all 5 enhancements work together correctly in the unified API.",
+        "enhancement": "ALL",
+        "estimatedHours": 3,
+        "id": "FINAL-T1",
+        "order": 23,
+        "title": "Full regression and cross-enhancement verification"
+      }
+    ],
+    "totalEstimatedHours": 100,
+    "totalTasks": 30
+  },
+  "startedAt": "2026-03-24T17:04:44.496Z",
+  "finishedAt": "2026-03-24T17:04:44.496Z",
+  "value": {
+    "criticalPath": [
+      {
+        "bottleneck": "E4-T2 (authoring 8 thematic entries, 6h) and E3-T4 (cross-reference integration across narrative/comparison/formatter, 5h) are the largest single tasks on the critical path",
+        "description": "Longest dependency chain: E1 (agent aliases) -> E3 (cross-reference, depends on E1) -> E4 (scholarly narrative, depends on E3) -> E5 (curation, depends on E4 and E2) -> Final verification",
+        "estimatedHours": 97,
+        "path": "E1-T1 -> E1-T2 -> E1-T3 -> E1-T4 -> E1-T5/E1-T6 -> E1-T7 -> E3-T1 -> E3-T2 -> E3-T3 -> E3-T4 -> E3-T5 -> E3-T6 -> E4-T1 -> E4-T2 -> E4-T3 -> E4-T4 -> E4-T5 -> E5-T1 -> E5-T2 -> E5-T3 -> E5-T4 -> E5-T5 -> FINAL-T1"
+      }
+    ],
+    "milestones": [
+      {
+        "completionTasks": [
+          "E1-T7"
+        ],
+        "description": "Agent authorities and aliases seeded in production DB. Alias-aware query execution working with graceful fallback.",
+        "estimatedHoursTotal": 22,
+        "id": "M-E1",
+        "title": "Agent Name Alias System Complete"
+      },
+      {
+        "completionTasks": [
+          "E2-T6"
+        ],
+        "description": "Analytical queries (distribution, curation) detected and routed correctly. Q14, Q15, Q20 queries produce meaningful results.",
+        "estimatedHoursTotal": 21,
+        "id": "M-E2",
+        "title": "Analytical Query Routing Complete"
+      },
+      {
+        "completionTasks": [
+          "E3-T6"
+        ],
+        "description": "Entity relationships discovered and surfaced in narratives. Enhanced comparison with multi-faceted analysis. Cross-reference exploration intent working.",
+        "estimatedHoursTotal": 22,
+        "id": "M-E3",
+        "title": "Cross-Reference Engine Complete"
+      },
+      {
+        "completionTasks": [
+          "E4-T5"
+        ],
+        "description": "Thematic context, significance scoring, and pedagogical framing integrated. Target queries (Q1, Q2, Q4, Q5, Q11, Q16, Q18) show improved historian evaluation scores.",
+        "estimatedHoursTotal": 16,
+        "id": "M-E4",
+        "title": "Scholarly Narrative Depth Complete"
+      },
+      {
+        "completionTasks": [
+          "E5-T5"
+        ],
+        "description": "Exhibit-quality subset selection working with scoring, diversity selection, and exhibit formatting. RECOMMENDATION handler fully functional.",
+        "estimatedHoursTotal": 16,
+        "id": "M-E5",
+        "title": "Curation Engine Complete"
+      },
+      {
+        "completionTasks": [
+          "FINAL-T1"
+        ],
+        "description": "Full regression passed. All 5 enhancements working together in unified API with no regressions.",
+        "estimatedHoursTotal": 3,
+        "id": "M-FINAL",
+        "title": "All Enhancements Integrated and Verified"
+      }
+    ],
+    "parallelOpportunities": [
+      {
+        "description": "E1 and E2 can execute fully in parallel from day one. No shared dependencies.",
+        "parallelSets": [
+          [
+            "E1-T1",
+            "E1-T2",
+            "E1-T3",
+            "E1-T4",
+            "E1-T5",
+            "E1-T6",
+            "E1-T7"
+          ],
+          [
+            "E2-T1",
+            "E2-T2",
+            "E2-T3",
+            "E2-T4",
+            "E2-T5",
+            "E2-T6"
+          ]
+        ],
+        "timeSaving": "21 hours (full E2 duration runs in parallel with E1)"
+      },
+      {
+        "description": "Within E1, T5 (seeding script) and T6 (query path modification) can run in parallel after T4 completes.",
+        "parallelSets": [
+          [
+            "E1-T5"
+          ],
+          [
+            "E1-T6"
+          ]
+        ],
+        "timeSaving": "3 hours"
+      },
+      {
+        "description": "E3 can start as soon as E1 completes, while E2 may still be finishing. E2-T6 and E3-T1 can overlap.",
+        "parallelSets": [
+          [
+            "E2-T5",
+            "E2-T6"
+          ],
+          [
+            "E3-T1",
+            "E3-T2"
+          ]
+        ],
+        "timeSaving": "Up to 6 hours if E2 runs behind E1"
+      },
+      {
+        "description": "With two developers, one can work the E1->E3->E4->E5 chain while the other handles E2 and then assists with E4/E5.",
+        "parallelSets": [
+          [
+            "E1-T1 through E1-T7",
+            "E3-T1 through E3-T6",
+            "E4-T1 through E4-T5"
+          ],
+          [
+            "E2-T1 through E2-T6",
+            "E5-T1 through E5-T5"
+          ]
+        ],
+        "timeSaving": "Estimated 30-40% total calendar time reduction with 2 developers"
+      }
+    ],
+    "projectTitle": "Multi-Enhancement Implementation: Agent Aliases, Analytical Routing, Cross-Reference, Scholarly Narrative, and Curation",
+    "summary": {
+      "byComplexity": {
+        "high": 7,
+        "low": 3,
+        "medium": 20
+      },
+      "byEnhancement": {
+        "E1_AgentAliases": 7,
+        "E2_AnalyticalRouting": 6,
+        "E3_CrossReference": 6,
+        "E4_ScholarlyNarrative": 5,
+        "E5_CurationEngine": 5,
+        "Final_Verification": 1
+      },
+      "implementationTaskCount": 14,
+      "integrationVerificationCount": 6,
+      "tddPattern": "Each enhancement follows test-first -> implement -> integrate -> verify. Test tasks (prefix 'Tests:') always precede their corresponding implementation tasks.",
+      "testTaskCount": 9,
+      "totalTasks": 30
+    },
+    "tasks": [
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/metadata/test_agent_authority.py",
+        "dependencies": [],
+        "description": "Write unit tests for AgentAuthority/AgentAlias dataclasses, AgentAuthorityStore CRUD operations (create, search_by_alias, resolve_agent), and schema creation. Tests use in-memory SQLite. TDD: tests written before implementation.",
+        "enhancement": "E1",
+        "estimatedHours": 3,
+        "id": "E1-T1",
+        "order": 1,
+        "title": "Tests: AgentAuthorityStore and schema"
+      },
+      {
+        "complexity": "low",
+        "deliverable": "scripts/marc/m3_contract.py, scripts/marc/m3_schema.sql",
+        "dependencies": [
+          "E1-T1"
+        ],
+        "description": "Define agent_authorities and agent_aliases tables mirroring publisher pattern. Update M3Tables/M3Columns/M3Aliases constants in m3_contract.py and m3_schema.sql.",
+        "enhancement": "E1",
+        "estimatedHours": 2,
+        "id": "E1-T2",
+        "order": 2,
+        "title": "Schema and M3 contract updates for agent authorities"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/metadata/agent_authority.py",
+        "dependencies": [
+          "E1-T1",
+          "E1-T2"
+        ],
+        "description": "Create scripts/metadata/agent_authority.py with AgentAuthority and AgentAlias dataclasses, and AgentAuthorityStore class with ensure_tables(), add_authority(), search_by_alias(), resolve_agent() methods. Mirror publisher_authority.py pattern.",
+        "enhancement": "E1",
+        "estimatedHours": 4,
+        "id": "E1-T3",
+        "order": 3,
+        "title": "Implement AgentAuthorityStore CRUD module"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/metadata/test_seed_agent_authorities.py, tests/scripts/query/test_db_adapter_agent_alias.py",
+        "dependencies": [
+          "E1-T3"
+        ],
+        "description": "Write tests for seed_agent_authorities.py (seed_from_enrichment, generate_word_reorder_aliases, cross-script detection). Write integration tests for alias-aware query execution in db_adapter.py. TDD: tests before implementation.",
+        "enhancement": "E1",
+        "estimatedHours": 3,
+        "id": "E1-T4",
+        "order": 4,
+        "title": "Tests: Seeding script and alias-aware query execution"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/metadata/seed_agent_authorities.py, app/cli.py (modified)",
+        "dependencies": [
+          "E1-T3",
+          "E1-T4"
+        ],
+        "description": "Create scripts/metadata/seed_agent_authorities.py that populates authorities from existing data (group by authority_uri, generate word-reorder and cross-script aliases). Add seed-agent-authorities CLI command to app/cli.py.",
+        "enhancement": "E1",
+        "estimatedHours": 5,
+        "id": "E1-T5",
+        "order": 5,
+        "title": "Implement seeding script and CLI command"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/query/db_adapter.py (modified)",
+        "dependencies": [
+          "E1-T3",
+          "E1-T4"
+        ],
+        "description": "Update build_where_clause() in db_adapter.py to use alias table JOIN for AGENT_NORM filters. Add graceful fallback via _agent_alias_tables_exist() helper when tables are absent.",
+        "enhancement": "E1",
+        "estimatedHours": 3,
+        "id": "E1-T6",
+        "order": 5,
+        "title": "Modify AGENT_NORM query path for alias resolution"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "Passing test suite, seeded production database",
+        "dependencies": [
+          "E1-T5",
+          "E1-T6"
+        ],
+        "description": "Run seeding on production database, validate statistics (~2,400+ authorities, 3,000+ aliases). Run all E1 tests end-to-end. Verify alias-aware queries return expected results for Buxtorf, Mendelssohn test cases.",
+        "enhancement": "E1",
+        "estimatedHours": 2,
+        "id": "E1-T7",
+        "order": 6,
+        "title": "E1 integration verification: seed and validate"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_analytical_router.py",
+        "dependencies": [],
+        "description": "Write 25 unit tests for detect_analytical_query() covering Q14 (chronological), Q15 (geographic), Q20 (curation), edge cases (non-analytical queries, mixed signals). TDD: tests first.",
+        "enhancement": "E2",
+        "estimatedHours": 3,
+        "id": "E2-T1",
+        "order": 1,
+        "title": "Tests: Analytical router detection"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/chat/analytical_router.py",
+        "dependencies": [
+          "E2-T1"
+        ],
+        "description": "Create scripts/chat/analytical_router.py with AnalyticalIntent enum (TEMPORAL/GEOGRAPHIC/PUBLISHER/LANGUAGE/SUBJECT/CURATION), AnalyticalQueryResult model, and detect_analytical_query() using two-layer signal+pattern detection.",
+        "enhancement": "E2",
+        "estimatedHours": 4,
+        "id": "E2-T2",
+        "order": 2,
+        "title": "Implement analytical router and detection"
+      },
+      {
+        "complexity": "low",
+        "deliverable": "tests/scripts/chat/test_curation_engine.py",
+        "dependencies": [
+          "E2-T2"
+        ],
+        "description": "Write 8-10 unit tests for CurationScorer covering temporal rarity, language diversity, notable items selection. TDD: tests before implementation.",
+        "enhancement": "E2",
+        "estimatedHours": 2,
+        "id": "E2-T3",
+        "order": 3,
+        "title": "Tests: Curation engine"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/curation_engine.py, scripts/chat/aggregation.py (modified), scripts/chat/narrative_agent.py (modified)",
+        "dependencies": [
+          "E2-T2",
+          "E2-T3"
+        ],
+        "description": "Create scripts/chat/curation_engine.py with CurationScorer. Add execute_aggregation_full_collection() to aggregation.py for collection-wide queries. Add generate_analytical_narrative() to narrative_agent.py.",
+        "enhancement": "E2",
+        "estimatedHours": 5,
+        "id": "E2-T4",
+        "order": 4,
+        "title": "Implement curation engine and full-collection aggregation"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "app/api/main.py (modified), scripts/chat/models.py (modified), scripts/chat/exploration_agent.py (modified)",
+        "dependencies": [
+          "E2-T4"
+        ],
+        "description": "Add handle_analytical_query() to main.py. Insert detection into handle_query_definition_phase() after is_overview_query() check. Add matching logic to websocket_chat() handler. Extend ExplorationIntent for follow-up analytical queries.",
+        "enhancement": "E2",
+        "estimatedHours": 4,
+        "id": "E2-T5",
+        "order": 5,
+        "title": "Wire analytical routing into API and WebSocket"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/app/test_api_analytical.py",
+        "dependencies": [
+          "E2-T5"
+        ],
+        "description": "Write and run integration tests simulating exact Q14 (chronological distribution), Q15 (geographic spread), Q20 (exhibit recommendations) queries. Verify correct routing, aggregation results, and narrative formatting.",
+        "enhancement": "E2",
+        "estimatedHours": 3,
+        "id": "E2-T6",
+        "order": 6,
+        "title": "E2 integration verification: Q14, Q15, Q20 end-to-end"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_cross_reference.py, tests/scripts/chat/conftest.py (updated)",
+        "dependencies": [
+          "E1-T7"
+        ],
+        "description": "Write 13 unit tests for Connection/AgentNode models and cross-reference discovery engine using in-memory SQLite fixtures. Test shared-work, shared-place, shared-period connection types. TDD: tests first.",
+        "enhancement": "E3",
+        "estimatedHours": 3,
+        "id": "E3-T1",
+        "order": 7,
+        "title": "Tests: Cross-reference models and engine"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/cross_reference.py, scripts/chat/models.py (updated)",
+        "dependencies": [
+          "E3-T1"
+        ],
+        "description": "Create scripts/chat/cross_reference.py with Connection, AgentNode models and core discovery functions. Pure functions operating on SQLite data. Add CROSS_REFERENCE to ExplorationIntent enum in models.py.",
+        "enhancement": "E3",
+        "estimatedHours": 5,
+        "id": "E3-T2",
+        "order": 8,
+        "title": "Implement cross-reference data models and engine"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_comparison_enhanced.py, tests/scripts/chat/test_narrative_agent_e3.py",
+        "dependencies": [
+          "E3-T2"
+        ],
+        "description": "Write unit tests for multi-faceted comparison (ComparisonResult, ComparisonFacets) and narrative agent cross-reference section generation. 10+ tests covering comparison edge cases.",
+        "enhancement": "E3",
+        "estimatedHours": 3,
+        "id": "E3-T3",
+        "order": 9,
+        "title": "Tests: Enhanced comparison and narrative integration"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/narrative_agent.py (updated), scripts/chat/aggregation.py (updated), scripts/chat/formatter.py (updated)",
+        "dependencies": [
+          "E3-T2",
+          "E3-T3"
+        ],
+        "description": "Enhance generate_agent_narrative() with Connections section. Replace simple execute_comparison() with multi-faceted analysis. Update formatter.py with cross-reference formatting. Enhance follow-up suggestions with cross-reference prompts.",
+        "enhancement": "E3",
+        "estimatedHours": 5,
+        "id": "E3-T4",
+        "order": 10,
+        "title": "Integrate cross-references into narrative, comparison, and formatter"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "app/api/main.py (updated), scripts/chat/exploration_agent.py (updated)",
+        "dependencies": [
+          "E3-T4"
+        ],
+        "description": "Add CROSS_REFERENCE handler to API orchestrator in main.py for both Phase 1 (query results) and Phase 2 (exploration intents). Update exploration_agent.py to recognize cross-reference requests.",
+        "enhancement": "E3",
+        "estimatedHours": 3,
+        "id": "E3-T5",
+        "order": 11,
+        "title": "Wire cross-reference into API and exploration agent"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_cross_reference_integration.py, tests/scripts/chat/test_formatter_e3.py",
+        "dependencies": [
+          "E3-T5"
+        ],
+        "description": "Run integration tests against real bibliographic.db verifying cross-reference discovery on actual data. Verify end-to-end flow from query to cross-reference narrative. Validate all E3 tests pass.",
+        "enhancement": "E3",
+        "estimatedHours": 3,
+        "id": "E3-T6",
+        "order": 12,
+        "title": "E3 integration verification"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_thematic_context.py",
+        "dependencies": [
+          "E3-T6"
+        ],
+        "description": "Write 13 unit tests covering theme matching (venetian_hebrew_printing matches venice+16c+hebrew), non-matching, significance scoring factors (date rarity, language rarity, agent authority). TDD: tests first.",
+        "enhancement": "E4",
+        "estimatedHours": 3,
+        "id": "E4-T1",
+        "order": 13,
+        "title": "Tests: Thematic context matching and significance scoring"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/thematic_context.py",
+        "dependencies": [
+          "E4-T1"
+        ],
+        "description": "Create scripts/chat/thematic_context.py with ThematicBlock/SignificanceResult/NotableItem models, THEMATIC_REGISTRY (8 pre-authored entries), get_thematic_context(), significance_score(), and get_notable_items() functions.",
+        "enhancement": "E4",
+        "estimatedHours": 6,
+        "id": "E4-T2",
+        "order": 14,
+        "title": "Implement thematic context module with 8 entries"
+      },
+      {
+        "complexity": "low",
+        "deliverable": "tests/scripts/chat/test_formatter_pedagogical.py",
+        "dependencies": [
+          "E4-T2"
+        ],
+        "description": "Write 3 unit tests for format_teaching_note() and citation formatting in formatter.py. Verify proper markdown output and edge cases.",
+        "enhancement": "E4",
+        "estimatedHours": 1,
+        "id": "E4-T3",
+        "order": 15,
+        "title": "Tests: Pedagogical formatting"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/chat/formatter.py (modified), scripts/chat/models.py (modified), app/api/main.py (modified)",
+        "dependencies": [
+          "E4-T2",
+          "E4-T3"
+        ],
+        "description": "Add format_teaching_note() to formatter.py. Add optional thematic_context field to ChatResponse model. Integrate get_thematic_context() and get_notable_items() into handle_query_definition_phase() after agent narrative block.",
+        "enhancement": "E4",
+        "estimatedHours": 3,
+        "id": "E4-T4",
+        "order": 16,
+        "title": "Add pedagogical framing and wire into API"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/integration/test_thematic_integration.py",
+        "dependencies": [
+          "E4-T4"
+        ],
+        "description": "Run integration tests against real database for 7 target queries (Q1, Q2, Q4, Q5, Q11, Q16, Q18). Verify thematic context appears for matching queries, notable items are scored correctly, and pedagogical framing renders properly.",
+        "enhancement": "E4",
+        "estimatedHours": 3,
+        "id": "E4-T5",
+        "order": 17,
+        "title": "E4 integration verification"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "tests/scripts/chat/test_curator.py",
+        "dependencies": [
+          "E4-T5",
+          "E2-T6"
+        ],
+        "description": "Write 25 tests for ScoredCandidate model, score_candidates() (using E4 significance_score or fallback), select_diverse() greedy algorithm, fetch_record_metadata() helper. TDD: tests first.",
+        "enhancement": "E5",
+        "estimatedHours": 3,
+        "id": "E5-T1",
+        "order": 18,
+        "title": "Tests: Curator scoring and diversity selection"
+      },
+      {
+        "complexity": "high",
+        "deliverable": "scripts/chat/curator.py",
+        "dependencies": [
+          "E5-T1"
+        ],
+        "description": "Create scripts/chat/curator.py with ScoredCandidate model, fetch_record_metadata() SQL helper, score_candidates() using E4 significance scoring, and select_diverse() greedy diversity-aware selection (~230 LOC).",
+        "enhancement": "E5",
+        "estimatedHours": 5,
+        "id": "E5-T2",
+        "order": 19,
+        "title": "Implement curator module"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "scripts/chat/formatter.py (modified), scripts/chat/exploration_agent.py (modified)",
+        "dependencies": [
+          "E5-T2"
+        ],
+        "description": "Add exhibit-style formatting functions to formatter.py (~45 LOC). Extend ExplorationRequestLLM with recommendation fields for curation parameter parsing. Add CURATION to ExplorationIntent if not done in E2.",
+        "enhancement": "E5",
+        "estimatedHours": 3,
+        "id": "E5-T3",
+        "order": 20,
+        "title": "Add exhibit formatting and exploration schema updates"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "app/api/main.py (modified)",
+        "dependencies": [
+          "E5-T2",
+          "E5-T3"
+        ],
+        "description": "Replace the static RECOMMENDATION stub in main.py with working curation logic that calls curator.score_candidates(), select_diverse(), and exhibit formatter. Handle both initial curation queries and follow-up refinements.",
+        "enhancement": "E5",
+        "estimatedHours": 3,
+        "id": "E5-T4",
+        "order": 21,
+        "title": "Wire RECOMMENDATION handler in API"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "Passing test suite, verified curation output",
+        "dependencies": [
+          "E5-T4"
+        ],
+        "description": "Run end-to-end tests for curation queries (Q20-style exhibit recommendations). Verify scoring, diverse selection, and exhibit formatting produce quality output. Validate all E5 tests pass.",
+        "enhancement": "E5",
+        "estimatedHours": 2,
+        "id": "E5-T5",
+        "order": 22,
+        "title": "E5 integration verification"
+      },
+      {
+        "complexity": "medium",
+        "deliverable": "Full passing test suite, regression report",
+        "dependencies": [
+          "E1-T7",
+          "E2-T6",
+          "E3-T6",
+          "E4-T5",
+          "E5-T5"
+        ],
+        "description": "Run complete test suite across all enhancements. Verify no regressions in existing chat/query functionality. Run QA gold set regression. Validate that all 5 enhancements work together correctly in the unified API.",
+        "enhancement": "ALL",
+        "estimatedHours": 3,
+        "id": "FINAL-T1",
+        "order": 23,
+        "title": "Full regression and cross-enhancement verification"
+      }
+    ],
+    "totalEstimatedHours": 100,
+    "totalTasks": 30
+  }
+}

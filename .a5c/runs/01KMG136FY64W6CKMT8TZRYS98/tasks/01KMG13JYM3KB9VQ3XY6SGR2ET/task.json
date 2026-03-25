@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMG13JYM3KB9VQ3XY6SGR2ET",
+  "taskId": "analyze-narrative-pipeline",
+  "invocationKey": "historian-enhancement-plan:S000003:analyze-narrative-pipeline",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Analyze narrative pipeline — narrative_agent, aggregation, exploration, formatter",
+  "labels": [
+    "narrative-pipeline",
+    "research"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMG13JYM3KB9VQ3XY6SGR2ET/input.json",
+    "outputJsonPath": "tasks/01KMG13JYM3KB9VQ3XY6SGR2ET/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

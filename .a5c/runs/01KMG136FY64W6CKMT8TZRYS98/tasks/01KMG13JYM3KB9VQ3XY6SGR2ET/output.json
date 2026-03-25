@@ -1,0 +1,145 @@
+{
+  "narrativeAgent": {
+    "maxResultSet": 100,
+    "enrichmentFlow": "Fetches agent enrichment by joining records -> agents -> authority_enrichment tables in SQLite via get_agent_enrichment_for_records(). Requires agent_norm match through authority_uri. Parses person_info JSON from authority_enrichment.person_info column. Deduplicates by agent_norm, collecting record_ids and roles per agent. No external API calls at narrative time -- purely SQLite lookups against pre-populated authority_enrichment table.",
+    "narrativeTypes": [
+      "single_agent_bio (format: 'About the author: ...')",
+      "multi_agent_bio (format: 'Notable figures in these results:' as bullet list, up to max_agents=5)",
+      "occupational_summary (appended when >=2 distinct primary occupations, e.g. 'This set includes works by 3 rabbis, 2 physicians, and a printer.')"
+    ],
+    "limitations": [
+      "Skips narrative entirely when candidate_set has >100 candidates (_MAX_RESULT_SET=100, line 21)",
+      "Skips narrative when candidate_set is empty",
+      "Skips when no agents have person_info in authority_enrichment (requires pre-populated enrichment data)",
+      "Filters agents to only those with birth_year, occupations, or description -- agents with only names are excluded (line 229-232)",
+      "Maximum 5 featured agents (max_agents default, line 212) -- additional agents are silently dropped",
+      "No place/publisher narrative -- only agent (person) biographies are supported",
+      "No thematic or subject-based narrative generation",
+      "No cross-referencing between agents (e.g., teacher-student relationships across results)",
+      "Occupational summary only fires if >=2 distinct primary occupations exist (line 193)",
+      "Templates are rigid -- no LLM-generated prose, purely deterministic string formatting"
+    ]
+  },
+  "aggregation": {
+    "supportedFields": [
+      "publisher",
+      "place",
+      "country",
+      "language",
+      "date_decade",
+      "date_century",
+      "subject",
+      "agent",
+      "agent_role"
+    ],
+    "canHandleFullCollection": true,
+    "overviewDetection": "is_overview_query() uses a two-phase heuristic: (1) reject if query contains any of ~50 search criteria keywords (languages, places, time periods, subjects, entity references); (2) accept if query matches exact greetings ('hi', 'hello', 'help') OR matches overview patterns ('tell me about', 'overview', 'what kind of books') combined with either a collection reference ('collection', 'catalog', 'library') or short query length (<40 chars). Pure string matching, no LLM involved.",
+    "formatCapabilities": "format_collection_overview() produces markdown with: total record count, date range (earliest-latest with Hebrew calendar filter <=2100), century distribution with percentages, top languages (with code-to-name mapping for 11 languages), top places (title-cased), top subjects (truncated at 50 chars), and a 'What would you like to explore?' section with 4 suggested search types. get_collection_overview() queries the full DB without record_id scoping. Also has METADATA_QUERIES dict for count_language, count_place, count_country, count_publisher, earliest_date, latest_date, date_range. Supports refinement via apply_refinement() for 7 fields (language, place, country, publisher, year, subject, agent) with EQUALS/CONTAINS/RANGE ops."
+  },
+  "explorationAgent": {
+    "intentTypes": [
+      "metadata_question",
+      "aggregation",
+      "enrichment_request",
+      "recommendation",
+      "comparison",
+      "refinement",
+      "new_query"
+    ],
+    "comparisonSupport": "Schema fully supports comparison via comparison_field and comparison_values fields in ExplorationRequestLLM (lines 94-101). The LLM system prompt includes a COMPARISON example (Venice vs Rome). execute_comparison() in aggregation.py (line 782) iterates over values and calls execute_count_query() for each, returning a Dict[str, int]. In main.py (line 900-929), comparison results are formatted as a simple list with counts and percentages. However, the 'Comparison Queries' section in aggregation.py (line 490-492) is empty -- there are no dedicated SQL queries for side-by-side comparison. Comparison only supports 4 fields: place, country, publisher, language (others return count=0). No visualization data is returned beyond a flat count per value.",
+    "recommendationSupport": "Recommendation is defined as an intent type in ExplorationIntent enum (line 47 of models.py) and in the LLM schema (line 54 of exploration_agent.py), but it is explicitly a future feature. The system prompt says '(Future feature - classify but note limited support)' (line 195). In main.py (line 1025-1038), the handler returns a static message: 'Recommendations based on your research goals are not yet available.' No ranking, relevance scoring, or recommendation logic exists."
+  },
+  "formatter": {
+    "followupLogic": "generate_followups() (line 82) analyzes evidence fields from candidates to detect which filter types were used (date, place, publisher, subject). It suggests adding unused filter types as refinements. If count>20, suggests narrowing. For zero results, returns 5 hardcoded broadening suggestions. Returns at most 5 suggestions. Logic is purely rule-based -- inspects evidence field names, no LLM involvement. Does not consider exploration-phase context (aggregation followups are handled separately in exploration_agent.py).",
+    "formatStructure": "format_for_chat() (line 151) produces: (1) summary line ('Found N books...'), (2) query text reminder, (3) detailed results up to max_candidates=10 with evidence bullet points showing field matches, operators, confidence percentages, and MARC source references, OR (4) compact format (just record IDs) when include_evidence=False. Zero results get a static suggestions block. format_summary() (line 219) returns a one-line count. format_evidence() (line 16) renders evidence as indented bullet points with operator-aware descriptions (=, LIKE, BETWEEN) and source references in brackets."
+  },
+  "missingModules": [
+    {
+      "name": "cross_reference",
+      "path": "scripts/chat/cross_reference.py",
+      "enhancementNeeded": "Cross-referencing between agents in results (teacher-student networks, shared publishers/printers, co-occurring agents across records). The narrative_agent already fetches teachers/students from person_info but does not cross-reference them against other agents in the result set."
+    },
+    {
+      "name": "curator",
+      "path": "scripts/chat/curator.py",
+      "enhancementNeeded": "Curated recommendation engine for the RECOMMENDATION intent, which is currently a stub returning a static 'not yet available' message. Would need relevance scoring, subject similarity, and research-context-aware ranking within a subgroup."
+    },
+    {
+      "name": "thematic_context",
+      "path": "scripts/chat/thematic_context.py",
+      "enhancementNeeded": "Thematic/subject-level narrative generation. Current narrative_agent only covers agent biographies. This module would provide subject-based context (e.g., 'This collection of astronomy texts spans the Copernican revolution') using subject headings and temporal/geographic distributions."
+    }
+  ],
+  "modificationPoints": [
+    {
+      "file": "scripts/chat/narrative_agent.py",
+      "function": "generate_agent_narrative",
+      "line": 220,
+      "changeNeeded": "Raise or remove the _MAX_RESULT_SET=100 cap to support narrative for larger result sets, possibly with a sampling strategy instead of full skip",
+      "enhancement": "Allow narrative generation for large result sets by sampling top-N most-enriched agents rather than returning None"
+    },
+    {
+      "file": "scripts/chat/narrative_agent.py",
+      "function": "generate_agent_narrative",
+      "line": 229,
+      "changeNeeded": "Add thematic/subject narrative alongside agent biography narrative",
+      "enhancement": "After agent bios, generate a thematic paragraph based on subject headings, date clustering, and geographic distribution of the candidate set"
+    },
+    {
+      "file": "scripts/chat/narrative_agent.py",
+      "function": "_format_agent_bio",
+      "line": 104,
+      "changeNeeded": "Cross-reference teachers/students against other agents in the same result set",
+      "enhancement": "When a teacher or student also appears in the result set, add an inline link/reference to connect the narratives"
+    },
+    {
+      "file": "scripts/chat/aggregation.py",
+      "function": "execute_comparison",
+      "line": 782,
+      "changeNeeded": "Replace naive loop-of-count-queries with a single SQL query that groups by the compared values for efficiency",
+      "enhancement": "Add dedicated comparison SQL templates and support additional fields (subject, agent, date_decade) beyond the current 4 (place, country, publisher, language)"
+    },
+    {
+      "file": "scripts/chat/aggregation.py",
+      "function": "is_overview_query",
+      "line": 688,
+      "changeNeeded": "Keyword list is brittle and English-only; misses Hebrew or mixed-language queries",
+      "enhancement": "Consider LLM-based intent classification as fallback when keyword heuristic has low confidence, or add multilingual keyword sets"
+    },
+    {
+      "file": "scripts/chat/exploration_agent.py",
+      "function": "ExplorationRequestLLM",
+      "line": 45,
+      "changeNeeded": "No fields for recommendation parameters (e.g., relevance criteria, research context)",
+      "enhancement": "Add recommendation_criteria and recommendation_context optional fields to the LLM schema so the intent classifier can extract ranking signals"
+    },
+    {
+      "file": "scripts/chat/formatter.py",
+      "function": "generate_followups",
+      "line": 82,
+      "changeNeeded": "Followups are only based on Phase 1 evidence fields; no awareness of exploration phase context (aggregation results, active subgroup)",
+      "enhancement": "Accept optional exploration context parameter to generate phase-aware followups (e.g., after aggregation: 'Filter to top publisher', after comparison: 'Show decade breakdown for the leading value')"
+    },
+    {
+      "file": "scripts/chat/formatter.py",
+      "function": "format_for_chat",
+      "line": 151,
+      "changeNeeded": "No integration point for narrative_agent output -- narrative must be appended externally",
+      "enhancement": "Add optional narrative parameter or call generate_agent_narrative internally to append biographical context after the result listing"
+    },
+    {
+      "file": "app/api/main.py",
+      "function": "handle_exploration (RECOMMENDATION branch)",
+      "line": 1025,
+      "changeNeeded": "Recommendation handler is a stub returning a static string",
+      "enhancement": "Implement actual recommendation logic using subject overlap scoring, temporal proximity, and agent co-occurrence within the active subgroup"
+    },
+    {
+      "file": "app/api/main.py",
+      "function": "handle_exploration (COMPARISON branch)",
+      "line": 900,
+      "changeNeeded": "Comparison response has no visualization_hint and hardcoded followups",
+      "enhancement": "Add visualization_hint='bar_chart' and generate context-aware followups based on comparison results (e.g., suggest drilling into the dominant value)"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"fileCreated": "scripts/chat/curator.py", "testsPassed": 27, "testsFailed": 0, "summary": "Curator module (~270 lines) with ScoredCandidate, CurationRequest, CurationResult, fetch_record_metadata, score_candidates, select_diverse. Also added format_exhibit_item/response to formatter.py and recommendation fields to exploration_agent.py. All 27 tests pass."}

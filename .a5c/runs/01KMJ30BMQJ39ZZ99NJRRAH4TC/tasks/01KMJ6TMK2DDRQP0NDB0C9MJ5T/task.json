@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ6TMK2DDRQP0NDB0C9MJ5T",
+  "taskId": "implement-task",
+  "invocationKey": "scholar-pipeline:S000011:implement-task",
+  "stepId": "S000011",
+  "kind": "agent",
+  "title": "Implement Task 7: Evidence Reports",
+  "io": {
+    "inputJsonPath": "tasks/01KMJ6TMK2DDRQP0NDB0C9MJ5T/input.json",
+    "outputJsonPath": "tasks/01KMJ6TMK2DDRQP0NDB0C9MJ5T/result.json"
+  },
+  "inputs": {
+    "description": "Implement Task 7 from the plan: Create tests/app/test_scholar_evidence.py with the 20 historian evaluation queries. Create reports/scholar-pipeline/ directory. Each test captures full pipeline trace (interpreter plan, executor result, narrator response, latency) and saves to reports/scholar-pipeline/<run-id>/. Include summary.md generation. Mark with @pytest.mark.integration (requires OPENAI_API_KEY). If OPENAI_API_KEY is available, run the evidence tests and save results. If not, just create the test file and verify it's syntactically valid.",
+    "planPath": "docs/superpowers/plans/2026-03-25-scholar-pipeline.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-scholar-pipeline-design.md",
+    "taskName": "Evidence Reports",
+    "taskNumber": 7,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -c \"import tests.app.test_scholar_evidence\" 2>&1"
+  }
+}

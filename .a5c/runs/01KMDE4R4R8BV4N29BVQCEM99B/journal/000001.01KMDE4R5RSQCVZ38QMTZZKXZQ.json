@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-23T13:28:56.760Z",
+  "data": {
+    "runId": "01KMDE4R4R8BV4N29BVQCEM99B",
+    "processId": "implement-unified-ui",
+    "entrypoint": {
+      "importPath": "../../processes/implement-unified-ui.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Implement the unified Rare Books Bot UI per IMPLEMENTATION_PLAN.md. All 6 phases. Clean up redundant code."
+  },
+  "checksum": "cbe8a675d937c5153adf56312f49aa6790ced74590c7a10c76ce687af97fab7f"
+}

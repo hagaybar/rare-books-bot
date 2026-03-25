@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMASAABMB3GQME1TEDKHNDZ9",
+  "taskId": "generate-documents",
+  "invocationKey": "notebooklm-context-builder:S000002:generate-documents",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Generate 7 curated context documents for NotebookLM",
+  "io": {
+    "inputJsonPath": "tasks/01KMASAABMB3GQME1TEDKHNDZ9/input.json",
+    "outputJsonPath": "tasks/01KMASAABMB3GQME1TEDKHNDZ9/output.json"
+  },
+  "inputs": {
+    "analysisPath": "/home/hagaybar/projects/rare-books-bot/.a5c/runs/01KMARRREPVKWN8J2BGVJ0WJ6G/artifacts/repo_analysis.json",
+    "outputDir": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources",
+    "repoRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

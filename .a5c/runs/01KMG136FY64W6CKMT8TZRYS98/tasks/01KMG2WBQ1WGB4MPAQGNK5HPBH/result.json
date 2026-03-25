@@ -1,0 +1,1225 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMG2WBQ1WGB4MPAQGNK5HPBH",
+  "taskId": "plan-e5-curation",
+  "invocationKey": "historian-enhancement-plan:S000009:plan-e5-curation",
+  "status": "ok",
+  "result": {
+    "acceptanceCriteria": [
+      {
+        "description": "User can ask 'select 10 for an exhibit' in Phase 2 and receive a formatted list of 10 items with significance notes, instead of the current 'not yet available' message.",
+        "id": "AC1",
+        "verification": "Manual test via /chat endpoint with a session in CORPUS_EXPLORATION phase."
+      },
+      {
+        "description": "Selected items are diverse: for a 120-record subgroup spanning 5 decades and 8 places, the 10 selected items cover at least 3 decades and 3 places.",
+        "id": "AC2",
+        "verification": "Automated test test_select_diverse_improves_coverage."
+      },
+      {
+        "description": "Each selected item includes a human-readable significance note explaining why it was chosen (e.g., 'Early printing (1475)', 'Rich enrichment data').",
+        "id": "AC3",
+        "verification": "Automated test test_format_exhibit_item_complete."
+      },
+      {
+        "description": "The curation engine works without E4's thematic_context module, falling back to basic heuristic scoring.",
+        "id": "AC4",
+        "verification": "Automated test test_score_candidates_fallback_scoring."
+      },
+      {
+        "description": "Exploration agent correctly classifies curation requests: 'select 10 for exhibit', 'most important items', 'representative sample', 'rarest books', 'diverse selection' all map to RECOMMENDATION intent.",
+        "id": "AC5",
+        "verification": "System prompt update with 5 explicit examples. LLM classification test (integration, requires API key)."
+      },
+      {
+        "description": "Exhibit response includes dimension coverage summary: 'Coverage: 5 decades, 4 places, 3 languages, 6 agents.'",
+        "id": "AC6",
+        "verification": "Automated test test_format_exhibit_response_coverage_summary."
+      },
+      {
+        "description": "User can specify the number of items to select: 'pick 5', 'select 20 items', 'top 15'. recommendation_count is extracted by the LLM and clamped to [1, 50].",
+        "id": "AC7",
+        "verification": "Schema test for ExplorationRequestLLM.recommendation_count field. Handler clamp test."
+      },
+      {
+        "description": "All 25 new tests pass. No regressions in existing test suite.",
+        "id": "AC8",
+        "verification": "pytest tests/ -v"
+      },
+      {
+        "description": "Q20 score improves from 1/25 to at least 12/25: the 120-record curated exhibit query now returns a meaningful, ranked, diverse selection with significance explanations.",
+        "id": "AC9",
+        "verification": "Manual evaluation against Q20 rubric after implementation."
+      }
+    ],
+    "affectedComponents": [
+      {
+        "description": "Core curation module: scoring, diverse selection, and exhibit formatting. Contains ScoredCandidate model, score_candidates(), select_diverse(), and format_exhibit().",
+        "file": "scripts/chat/curator.py",
+        "status": "NEW"
+      },
+      {
+        "description": "Add recommendation_count and recommendation_criteria fields to ExplorationRequestLLM schema. Update system prompt with RECOMMENDATION examples showing curation-style requests.",
+        "file": "scripts/chat/exploration_agent.py",
+        "status": "MODIFY"
+      },
+      {
+        "description": "Replace static RECOMMENDATION stub (lines 1025-1038) with working handler that calls curator.score_candidates() and curator.select_diverse(), then formats exhibit response.",
+        "file": "app/api/main.py",
+        "status": "MODIFY"
+      },
+      {
+        "description": "Add format_exhibit_item() and format_exhibit_response() functions for exhibit-style display with significance notes.",
+        "file": "scripts/chat/formatter.py",
+        "status": "MODIFY"
+      },
+      {
+        "description": "ExplorationIntent.RECOMMENDATION already exists. ChatResponse.metadata dict can carry curation metadata without schema changes.",
+        "file": "scripts/chat/models.py",
+        "status": "NO CHANGE"
+      },
+      {
+        "description": "E4 defines significance_score() with factors: date_rarity, enrichment_richness, place_rarity, subject_richness. E5 imports and reuses this function. If E4 is not yet implemented, curator.py includes a minimal fallback stub that returns a flat 0.5 score with a warning log.",
+        "file": "scripts/chat/thematic_context.py",
+        "status": "DEPENDENCY (E4)"
+      },
+      {
+        "description": "Unit tests for scoring, diverse selection, exhibit formatting, and edge cases.",
+        "file": "tests/scripts/chat/test_curator.py",
+        "status": "NEW"
+      }
+    ],
+    "deliverables": [
+      {
+        "description": "Core curation module with ScoredCandidate, CurationRequest, CurationResult models, fetch_record_metadata(), score_candidates(), select_diverse(), and _fallback_significance_score().",
+        "estimated_loc": 230,
+        "file": "scripts/chat/curator.py",
+        "type": "NEW"
+      },
+      {
+        "description": "Added recommendation_count and recommendation_criteria fields to ExplorationRequestLLM and ExplorationRequest. Updated system prompt RECOMMENDATION section with 5 examples.",
+        "estimated_loc_delta": 35,
+        "file": "scripts/chat/exploration_agent.py",
+        "type": "MODIFIED"
+      },
+      {
+        "description": "Replaced static RECOMMENDATION stub with working handler that calls curator functions and returns exhibit-formatted response.",
+        "estimated_loc_delta": 40,
+        "file": "app/api/main.py",
+        "type": "MODIFIED"
+      },
+      {
+        "description": "Added format_exhibit_item() and format_exhibit_response() functions.",
+        "estimated_loc_delta": 45,
+        "file": "scripts/chat/formatter.py",
+        "type": "MODIFIED"
+      },
+      {
+        "description": "25 tests covering models, scoring, diverse selection, formatting, edge cases, and integration.",
+        "estimated_loc": 150,
+        "file": "tests/scripts/chat/test_curator.py",
+        "type": "NEW"
+      }
+    ],
+    "goal": "Build a curation engine (scripts/chat/curator.py) that scores, diversely selects, and formats exhibit-quality subsets from large CandidateSets. Replace the static RECOMMENDATION stub in main.py with a working handler that parses curation requests ('select 10 for exhibit', 'most important items', 'representative sample'), scores candidates on significance, selects a diverse subset across date/place/language/agent dimensions, and returns exhibit-formatted responses with significance notes.",
+    "implementationSteps": [
+      {
+        "description": "Create the new module with Pydantic models and function signatures.",
+        "details": [
+          "Define ScoredCandidate(BaseModel) with fields: record_id (str), significance_score (float, 0.0-1.0), reasons (List[str]), metadata (Dict[str, Any]) for dimension values used in diversity selection.",
+          "Define CurationRequest(BaseModel) with fields: n (int, default=10), criteria (Optional[str]), dimensions (List[str], default=['date','place','language','agent']).",
+          "Define CurationResult(BaseModel) with fields: selected (List[ScoredCandidate]), total_scored (int), selection_method (str), dimension_coverage (Dict[str, List[str]]).",
+          "Import significance_score from scripts.chat.thematic_context with try/except ImportError fallback.",
+          "Fallback stub: _fallback_significance_score(record_metadata: dict) -> float returns 0.5 and logs warning that E4 thematic_context is not yet available."
+        ],
+        "estimated_loc": 60,
+        "file": "scripts/chat/curator.py",
+        "step": 1,
+        "test_first": true,
+        "title": "Create ScoredCandidate model and curator.py skeleton"
+      },
+      {
+        "description": "SQL helper that fetches all metadata needed for scoring from bibliographic.db for a batch of record IDs.",
+        "details": [
+          "Takes record_ids (List[str]) and db_path (Path) as arguments.",
+          "Single query joins records, imprints, languages, agents, subjects, and authority_enrichment tables.",
+          "Returns Dict[str, dict] mapping mms_id -> {date_start, date_end, place_norm, country_name, publisher_norm, languages: List[str], agents: List[str], subjects: List[str], has_enrichment: bool, enrichment_count: int}.",
+          "Uses parameterized SQL with placeholders for safety.",
+          "Batches queries if record_ids > 500 to avoid SQLite variable limits."
+        ],
+        "estimated_loc": 55,
+        "file": "scripts/chat/curator.py",
+        "step": 2,
+        "test_first": true,
+        "title": "Implement fetch_record_metadata() helper"
+      },
+      {
+        "description": "Score all candidates in a subgroup using significance_score() from E4 (or fallback).",
+        "details": [
+          "Function signature: score_candidates(record_ids: List[str], db_path: Path) -> List[ScoredCandidate].",
+          "Calls fetch_record_metadata() to get metadata for all records.",
+          "For each record, calls significance_score(metadata) from thematic_context.py (E4 dependency).",
+          "Populates ScoredCandidate.reasons with human-readable explanations: 'Early printing (1475)', 'Rich enrichment data (3 Wikidata links)', 'Rare place of publication (Kraków)', 'Multiple subject headings (4 subjects)'.",
+          "Returns list sorted by significance_score descending.",
+          "If significance_score is unavailable (E4 not implemented), uses fallback that assigns: 0.1 for date_rarity (earlier = higher), 0.1 for enrichment presence, 0.05 for non-null place, 0.05 for having subjects. This ensures basic ordering even without E4."
+        ],
+        "estimated_loc": 50,
+        "file": "scripts/chat/curator.py",
+        "step": 3,
+        "test_first": true,
+        "title": "Implement score_candidates()"
+      },
+      {
+        "description": "Greedy diversity-aware selection algorithm.",
+        "details": [
+          "Function signature: select_diverse(scored: List[ScoredCandidate], n: int = 10, dimensions: List[str] = None) -> CurationResult.",
+          "Default dimensions: ['date_decade', 'place_norm', 'language', 'agent'].",
+          "Algorithm (greedy with diversity bonus):",
+          "  1. Sort scored list by significance_score descending.",
+          "  2. Pick the highest-scoring candidate as the first selection.",
+          "  3. For each subsequent slot: iterate remaining candidates, compute a diversity bonus for each based on how many NEW dimension values it would add to the selection.",
+          "  4. Diversity bonus formula: bonus = 0.15 * (new_dimension_values / total_dimensions). A candidate adding a new decade AND a new place gets bonus = 0.15 * 2/4 = 0.075.",
+          "  5. Pick candidate with highest (significance_score + diversity_bonus).",
+          "  6. Track selected dimension values in a dict: {dimension: set(values_already_selected)}.",
+          "  7. Continue until n items selected or candidates exhausted.",
+          "Returns CurationResult with selected items, total_scored count, selection_method='greedy_diverse', and dimension_coverage showing which values were covered.",
+          "Edge case: if n >= len(scored), return all scored items sorted by score (no diversity filtering needed).",
+          "Edge case: if scored is empty, return empty CurationResult."
+        ],
+        "estimated_loc": 65,
+        "file": "scripts/chat/curator.py",
+        "step": 4,
+        "test_first": true,
+        "title": "Implement select_diverse()"
+      },
+      {
+        "description": "Add exhibit-style formatting functions.",
+        "details": [
+          "Add format_exhibit_item(scored: ScoredCandidate, index: int, candidate: Candidate) -> str.",
+          "Format: 'Item {index} ({date_start}, {place_norm}): {title} -- {significance_note}'.",
+          "significance_note is the top reason from scored.reasons, or 'Selected for diversity' if only diversity contributed.",
+          "Add format_exhibit_response(curation_result: CurationResult, query_context: str) -> str.",
+          "Includes header: 'Curated selection of {n} items from {total} in this collection.'",
+          "Includes dimension coverage summary: 'Coverage: 5 decades, 4 places, 3 languages, 6 agents.'",
+          "Lists each item using format_exhibit_item().",
+          "Footer: 'Items selected for significance and diversity across date, place, language, and agent dimensions.'"
+        ],
+        "estimated_loc": 45,
+        "file": "scripts/chat/formatter.py",
+        "step": 5,
+        "test_first": false,
+        "title": "Add exhibit formatting to formatter.py"
+      },
+      {
+        "description": "Extend the LLM schema to parse curation parameters from natural language.",
+        "details": [
+          "Add recommendation_count field to ExplorationRequestLLM: Optional[int] = Field(None, description='Number of items to select for exhibit/recommendation (e.g., 10, 5, 20)'). Default extraction: 10.",
+          "Add recommendation_criteria field to ExplorationRequestLLM: Optional[str] = Field(None, description='Selection criteria: exhibit, representative, important, significant, rare, diverse').",
+          "Add same fields to ExplorationRequest dataclass.",
+          "Update EXPLORATION_AGENT_SYSTEM_PROMPT RECOMMENDATION section with richer description and examples:",
+          "  - 'select 10 for an exhibit' -> intent=recommendation, recommendation_count=10, recommendation_criteria='exhibit'",
+          "  - 'most important items' -> intent=recommendation, recommendation_count=10, recommendation_criteria='important'",
+          "  - 'representative sample of 20' -> intent=recommendation, recommendation_count=20, recommendation_criteria='representative'",
+          "  - 'pick the rarest books' -> intent=recommendation, recommendation_count=10, recommendation_criteria='rare'",
+          "  - 'diverse selection' -> intent=recommendation, recommendation_count=10, recommendation_criteria='diverse'"
+        ],
+        "estimated_loc": 35,
+        "file": "scripts/chat/exploration_agent.py",
+        "step": 6,
+        "test_first": false,
+        "title": "Add recommendation fields to ExplorationRequestLLM"
+      },
+      {
+        "description": "Replace the static stub with working curation logic.",
+        "details": [
+          "Import from scripts.chat.curator: score_candidates, select_diverse, CurationRequest.",
+          "Import from scripts.chat.formatter: format_exhibit_response.",
+          "Replace lines 1025-1038 (the static RECOMMENDATION handler) with:",
+          "  1. Extract recommendation_count from exploration_request (default 10, clamp to 1-50 range).",
+          "  2. Extract recommendation_criteria from exploration_request (default 'exhibit').",
+          "  3. Call score_candidates(active_subgroup.record_ids, bib_db).",
+          "  4. Call select_diverse(scored, n=recommendation_count).",
+          "  5. Call format_exhibit_response(curation_result, active_subgroup.defining_query).",
+          "  6. Build ChatResponse with: message=formatted_exhibit, metadata={'curation': {'total_scored': ..., 'selected_count': ..., 'dimension_coverage': ...}}, suggested_followups=['Show the full list', 'Select more items', 'Focus on a specific century', 'Show only items from {top_place}'].",
+          "  7. Followup suggestions should be context-aware based on dimension_coverage."
+        ],
+        "estimated_loc": 40,
+        "file": "app/api/main.py",
+        "step": 7,
+        "test_first": false,
+        "title": "Wire up RECOMMENDATION handler in main.py"
+      },
+      {
+        "description": "TDD tests written before implementation (steps 1-4), plus integration tests.",
+        "details": [
+          "Test score_candidates with mock DB: verify scores are floats in [0, 1], verify sorting descending, verify reasons are non-empty strings.",
+          "Test select_diverse with synthetic scored list: 20 items with known dimension values. Verify n items returned, verify dimension coverage is broader than top-n-by-score alone.",
+          "Test select_diverse edge cases: n > len(scored), n=0, n=1, empty scored list.",
+          "Test diversity algorithm: construct a case where top-3-by-score are all from same place/decade. Verify select_diverse(n=3) picks at least 2 different places.",
+          "Test format_exhibit_item: verify output contains date, place, title, and significance note.",
+          "Test format_exhibit_response: verify header, items, footer, and dimension coverage summary.",
+          "Test fallback scoring when thematic_context is not available.",
+          "Integration test (marked @pytest.mark.integration): run full pipeline against real bibliographic.db with a known subgroup."
+        ],
+        "estimated_loc": 150,
+        "file": "tests/scripts/chat/test_curator.py",
+        "step": 8,
+        "test_first": true,
+        "title": "Write comprehensive tests"
+      }
+    ],
+    "qualityGates": [
+      {
+        "blocking": true,
+        "check": "pytest tests/scripts/chat/test_curator.py -v",
+        "gate": "All unit tests pass"
+      },
+      {
+        "blocking": true,
+        "check": "pytest tests/ -v --ignore=tests/integration",
+        "gate": "No regressions in existing tests"
+      },
+      {
+        "blocking": true,
+        "check": "ruff check scripts/chat/curator.py scripts/chat/formatter.py scripts/chat/exploration_agent.py app/api/main.py",
+        "gate": "Ruff linting passes"
+      },
+      {
+        "blocking": true,
+        "check": "All public functions have full type hints including return types",
+        "gate": "Type hints complete"
+      },
+      {
+        "blocking": true,
+        "check": "The test_select_diverse_improves_coverage test passes: given 10 items where top-3-by-score are all from Rome/1500s, select_diverse(n=3) produces at least 2 distinct places.",
+        "gate": "Diversity actually works"
+      },
+      {
+        "blocking": true,
+        "check": "Manual test: run a query returning 120 records, ask 'select 10 for exhibit', verify response contains 10 formatted items with significance notes and dimension coverage spanning at least 3 decades and 3 places.",
+        "gate": "Q20 scenario validation"
+      },
+      {
+        "blocking": true,
+        "check": "test_score_candidates_fallback_scoring passes: when thematic_context is not importable, curator still produces non-degenerate scores.",
+        "gate": "Fallback scoring works without E4"
+      },
+      {
+        "blocking": false,
+        "check": "score_candidates + select_diverse for 200 records completes in <1 second (wall clock).",
+        "gate": "Performance acceptable"
+      }
+    ],
+    "reportFailuresAddressed": [
+      {
+        "current_score": 1,
+        "description": "Curated exhibit: 120 records returned, no selection/ranking capability",
+        "how_fixed": "Curation engine scores all 120 records, selects a diverse top-N subset (default 10), and formats them as exhibit items with significance notes. The user can request specific N values ('select 5', 'pick 15'). Exhibit formatting includes: item number, date, place, title, and a significance note explaining why this item was chosen.",
+        "max_score": 25,
+        "query_id": "Q20",
+        "target_score": 12
+      },
+      {
+        "description": "Large result sets lack representative sampling",
+        "how_fixed": "The select_diverse() function can be invoked whenever a large result set needs a representative subset, providing automatic sampling across key bibliographic dimensions.",
+        "indirect": true,
+        "query_id": "Q4"
+      },
+      {
+        "description": "Large result sets lack representative sampling",
+        "how_fixed": "Same mechanism as Q4 -- diverse selection provides representative cross-section.",
+        "indirect": true,
+        "query_id": "Q11"
+      },
+      {
+        "description": "Large result sets lack representative sampling",
+        "how_fixed": "Same mechanism as Q4 -- diverse selection provides representative cross-section.",
+        "indirect": true,
+        "query_id": "Q14"
+      },
+      {
+        "description": "Large result sets lack representative sampling",
+        "how_fixed": "Same mechanism as Q4 -- diverse selection provides representative cross-section.",
+        "indirect": true,
+        "query_id": "Q15"
+      }
+    ],
+    "retrievalChanges": [
+      {
+        "component": "fetch_record_metadata (curator.py)",
+        "description": "Batch fetch of metadata for scoring. Joins records, imprints, languages, agents, subjects, authority_enrichment.",
+        "indexes_used": [
+          "idx_records_mms_id",
+          "idx_imprints_record_id",
+          "idx_languages_record_id",
+          "idx_agents_record_id",
+          "idx_subjects_record_id",
+          "idx_enrichment_authority_uri"
+        ],
+        "performance_note": "For 120 records (Q20 case), this is a single query returning ~500 rows after joins. Aggregation into per-record metadata dicts happens in Python. Well within acceptable latency (<100ms with existing indexes).",
+        "sql_sketch": "SELECT r.mms_id, i.date_start, i.date_end, i.place_norm, i.country_name, i.publisher_norm, l.code AS language, a.agent_norm, (SELECT COUNT(*) FROM subjects s WHERE s.record_id = r.id) AS subject_count, (SELECT COUNT(*) FROM authority_enrichment ae JOIN agents ag ON ag.authority_uri = ae.authority_uri WHERE ag.record_id = r.id) AS enrichment_count FROM records r LEFT JOIN imprints i ON i.record_id = r.id LEFT JOIN languages l ON l.record_id = r.id LEFT JOIN agents a ON a.record_id = r.id WHERE r.mms_id IN ({placeholders})",
+        "type": "NEW SQL query"
+      },
+      {
+        "component": "RECOMMENDATION handler (main.py)",
+        "description": "The existing handler at lines 1025-1038 returns a static message. The new handler calls curator.score_candidates() and curator.select_diverse(), which internally run the fetch_record_metadata SQL query. No changes to existing SQL queries or indexes.",
+        "type": "REPLACE static stub"
+      }
+    ],
+    "risksAndEdgeCases": [
+      {
+        "mitigation": "curator.py includes a try/except ImportError for significance_score from thematic_context.py. Fallback stub (_fallback_significance_score) uses basic heuristics: date antiquity (earlier = higher), enrichment presence, place completeness, subject count. This ensures E5 is functional even before E4 is delivered. The fallback logs a warning so we know when it is active. When E4 lands, the fallback is automatically bypassed.",
+        "risk": "E4 dependency not yet implemented",
+        "severity": "MEDIUM",
+        "test_strategy": "Test both paths: mock thematic_context import success AND failure. Verify fallback produces non-degenerate scores (not all 0.5)."
+      },
+      {
+        "mitigation": "If n >= total records, select_diverse returns all records sorted by score with selection_method='top_n'. format_exhibit_response adjusts header: 'Showing all {n} items (collection has only {total}).' No diversity algorithm needed.",
+        "risk": "Very small subgroups (1-3 records)",
+        "severity": "LOW",
+        "test_strategy": "Explicit test case with 2 records, n=10."
+      },
+      {
+        "mitigation": "fetch_record_metadata batches SQL queries in groups of 500 to avoid SQLite SQLITE_MAX_VARIABLE_NUMBER limit (default 999). score_candidates processes all records but the greedy selection algorithm only iterates n * total times, which is O(n * N) -- for n=10 and N=1000, that is 10,000 iterations, negligible. Total latency should be <500ms.",
+        "risk": "Very large subgroups (1000+ records)",
+        "severity": "MEDIUM",
+        "test_strategy": "Benchmark test with 1000 synthetic scored items to verify select_diverse completes in <100ms."
+      },
+      {
+        "mitigation": "Score factors degrade gracefully: if date_start is NULL, date_rarity contributes 0. If all fields are NULL, the record gets a minimal score (near 0.0) and is unlikely to be selected unless the pool is very sparse. Records with no metadata get reasons=['Limited metadata available'].",
+        "risk": "Missing metadata for scoring (NULL date_start, NULL place_norm)",
+        "severity": "LOW",
+        "test_strategy": "Test with records that have all-NULL metadata. Verify they score low but do not crash."
+      },
+      {
+        "mitigation": "If no new dimension values can be added (diversity bonus is always 0), the algorithm degrades to pure top-N-by-score, which is still a valid and useful selection. selection_method is set to 'top_n_fallback' in this case.",
+        "risk": "Diversity algorithm degeneracy (all candidates identical on all dimensions)",
+        "severity": "LOW",
+        "test_strategy": "Test with 20 items all having identical date_decade, place, language, and agent."
+      },
+      {
+        "mitigation": "Step 6 updates the system prompt with 5 explicit RECOMMENDATION examples covering the key phrasings: 'select N for exhibit', 'most important', 'representative sample', 'rarest books', 'diverse selection'. The prompt explicitly distinguishes RECOMMENDATION from AGGREGATION: 'RECOMMENDATION selects specific items; AGGREGATION counts/groups them.'",
+        "risk": "LLM misclassifies curation request as AGGREGATION or METADATA_QUESTION",
+        "severity": "MEDIUM",
+        "test_strategy": "Add 5 exploration agent classification tests with curation-style inputs, verifying intent=RECOMMENDATION."
+      },
+      {
+        "mitigation": "Handler clamps recommendation_count to [1, 50] range. If LLM returns None, default to 10. If user asks for 'all', set to min(50, total_records).",
+        "risk": "recommendation_count out of range",
+        "severity": "LOW",
+        "test_strategy": "Test with recommendation_count=0, 100, None, and negative values."
+      }
+    ],
+    "schemaChanges": [
+      {
+        "change": "ADD fields",
+        "component": "ExplorationRequestLLM (exploration_agent.py)",
+        "fields": [
+          {
+            "default": null,
+            "description": "Number of items to select for exhibit/recommendation (e.g., 10, 5, 20)",
+            "name": "recommendation_count",
+            "type": "Optional[int]"
+          },
+          {
+            "default": null,
+            "description": "Selection criteria: exhibit, representative, important, significant, rare, diverse",
+            "name": "recommendation_criteria",
+            "type": "Optional[str]"
+          }
+        ]
+      },
+      {
+        "change": "ADD fields",
+        "component": "ExplorationRequest (exploration_agent.py)",
+        "fields": [
+          {
+            "default": null,
+            "name": "recommendation_count",
+            "type": "Optional[int]"
+          },
+          {
+            "default": null,
+            "name": "recommendation_criteria",
+            "type": "Optional[str]"
+          }
+        ]
+      },
+      {
+        "change": "NEW model",
+        "component": "ScoredCandidate (curator.py)",
+        "fields": [
+          {
+            "description": "MMS ID of the scored record",
+            "name": "record_id",
+            "type": "str"
+          },
+          {
+            "constraints": "ge=0.0, le=1.0",
+            "description": "Overall significance score (0.0-1.0)",
+            "name": "significance_score",
+            "type": "float"
+          },
+          {
+            "description": "Human-readable reasons for the score, e.g., 'Early printing (1475)', 'Rich enrichment data'",
+            "name": "reasons",
+            "type": "List[str]"
+          },
+          {
+            "default": {},
+            "description": "Dimension values used for diversity selection: {date_decade: '1470s', place_norm: 'rome', language: 'lat', agent: 'aldus manutius'}",
+            "name": "metadata",
+            "type": "Dict[str, Any]"
+          }
+        ]
+      },
+      {
+        "change": "NEW model",
+        "component": "CurationRequest (curator.py)",
+        "fields": [
+          {
+            "default": 10,
+            "description": "Number of items to select",
+            "name": "n",
+            "type": "int"
+          },
+          {
+            "default": null,
+            "description": "Selection criteria from user request",
+            "name": "criteria",
+            "type": "Optional[str]"
+          },
+          {
+            "default": [
+              "date_decade",
+              "place_norm",
+              "language",
+              "agent"
+            ],
+            "description": "Dimensions for diversity selection",
+            "name": "dimensions",
+            "type": "List[str]"
+          }
+        ]
+      },
+      {
+        "change": "NEW model",
+        "component": "CurationResult (curator.py)",
+        "fields": [
+          {
+            "description": "Selected items in exhibit order",
+            "name": "selected",
+            "type": "List[ScoredCandidate]"
+          },
+          {
+            "description": "Total number of candidates that were scored",
+            "name": "total_scored",
+            "type": "int"
+          },
+          {
+            "description": "Algorithm used: 'greedy_diverse' or 'top_n' (when n >= total)",
+            "name": "selection_method",
+            "type": "str"
+          },
+          {
+            "description": "Coverage achieved per dimension: {'date_decade': ['1470s', '1510s', '1550s'], 'place_norm': ['rome', 'venice', 'paris']}",
+            "name": "dimension_coverage",
+            "type": "Dict[str, List[str]]"
+          }
+        ]
+      },
+      {
+        "change": "NO SCHEMA CHANGE",
+        "component": "ChatResponse.metadata (models.py)",
+        "note": "metadata is already Dict[str, Any]. Curation responses will populate metadata['curation'] with: total_scored, selected_count, dimension_coverage, selection_method."
+      }
+    ],
+    "tddPlan": {
+      "description": "Tests are written BEFORE implementation for core logic (steps 1-4). Formatter and integration tests are written alongside implementation.",
+      "estimated_test_loc": 150,
+      "test_file": "tests/scripts/chat/test_curator.py",
+      "test_groups": [
+        {
+          "group": "ScoredCandidate model validation",
+          "tests": [
+            "test_scored_candidate_valid: score 0.5, 2 reasons, valid metadata dict",
+            "test_scored_candidate_score_bounds: score < 0 raises ValidationError, score > 1 raises ValidationError",
+            "test_scored_candidate_empty_reasons: empty reasons list is allowed (metadata-poor record)"
+          ],
+          "write_before_step": 1
+        },
+        {
+          "group": "fetch_record_metadata",
+          "tests": [
+            "test_fetch_metadata_returns_all_fields: in-memory SQLite with 3 records, verify dict keys",
+            "test_fetch_metadata_missing_record: mms_id not in DB returns empty dict for that ID",
+            "test_fetch_metadata_null_fields: record with NULL date_start still returns entry with date_start=None",
+            "test_fetch_metadata_batching: 600 record IDs trigger 2 batches (500 + 100)"
+          ],
+          "write_before_step": 2
+        },
+        {
+          "group": "score_candidates",
+          "tests": [
+            "test_score_candidates_sorted_descending: 5 records with known metadata, verify output order",
+            "test_score_candidates_reasons_populated: each ScoredCandidate has at least 1 reason string",
+            "test_score_candidates_empty_input: empty record_ids returns empty list",
+            "test_score_candidates_fallback_scoring: mock ImportError on thematic_context, verify fallback produces varied scores"
+          ],
+          "write_before_step": 3
+        },
+        {
+          "group": "select_diverse",
+          "tests": [
+            "test_select_diverse_basic: 20 items, n=5, verify 5 returned",
+            "test_select_diverse_improves_coverage: construct 10 items where top-3-by-score are all from Rome/1500s. Verify select_diverse(n=3) covers at least 2 distinct places.",
+            "test_select_diverse_n_exceeds_total: 5 items, n=10, verify all 5 returned, selection_method='top_n'",
+            "test_select_diverse_empty_input: empty list returns empty CurationResult",
+            "test_select_diverse_single_item: 1 item, n=5, returns 1 item",
+            "test_select_diverse_dimension_coverage_populated: verify dimension_coverage dict has entries for each requested dimension",
+            "test_select_diverse_identical_dimensions: all items same dimensions, verify degrades to top-N"
+          ],
+          "write_before_step": 4
+        },
+        {
+          "group": "exhibit formatting",
+          "tests": [
+            "test_format_exhibit_item_complete: verify output contains 'Item 1', date, place, title, significance note",
+            "test_format_exhibit_item_missing_date: verify graceful handling when date_start is None",
+            "test_format_exhibit_response_header: verify 'Curated selection of N items from M'",
+            "test_format_exhibit_response_coverage_summary: verify dimension counts in output"
+          ],
+          "write_with_step": 5
+        },
+        {
+          "group": "exploration agent schema",
+          "tests": [
+            "test_exploration_request_recommendation_fields: ExplorationRequestLLM accepts recommendation_count and recommendation_criteria",
+            "test_exploration_request_recommendation_defaults: recommendation_count defaults to None, recommendation_criteria defaults to None"
+          ],
+          "write_with_step": 6
+        },
+        {
+          "group": "integration (main.py handler)",
+          "tests": [
+            "test_recommendation_handler_returns_exhibit: mock exploration_request with intent=RECOMMENDATION, verify response.message contains 'Curated selection'",
+            "test_recommendation_handler_metadata: verify response.metadata['curation'] contains total_scored and selected_count",
+            "test_recommendation_handler_followups: verify suggested_followups are non-empty and context-relevant"
+          ],
+          "write_with_step": 7
+        }
+      ],
+      "total_test_count": 25
+    }
+  },
+  "startedAt": "2026-03-24T14:14:45.196Z",
+  "finishedAt": "2026-03-24T14:14:45.196Z",
+  "value": {
+    "acceptanceCriteria": [
+      {
+        "description": "User can ask 'select 10 for an exhibit' in Phase 2 and receive a formatted list of 10 items with significance notes, instead of the current 'not yet available' message.",
+        "id": "AC1",
+        "verification": "Manual test via /chat endpoint with a session in CORPUS_EXPLORATION phase."
+      },
+      {
+        "description": "Selected items are diverse: for a 120-record subgroup spanning 5 decades and 8 places, the 10 selected items cover at least 3 decades and 3 places.",
+        "id": "AC2",
+        "verification": "Automated test test_select_diverse_improves_coverage."
+      },
+      {
+        "description": "Each selected item includes a human-readable significance note explaining why it was chosen (e.g., 'Early printing (1475)', 'Rich enrichment data').",
+        "id": "AC3",
+        "verification": "Automated test test_format_exhibit_item_complete."
+      },
+      {
+        "description": "The curation engine works without E4's thematic_context module, falling back to basic heuristic scoring.",
+        "id": "AC4",
+        "verification": "Automated test test_score_candidates_fallback_scoring."
+      },
+      {
+        "description": "Exploration agent correctly classifies curation requests: 'select 10 for exhibit', 'most important items', 'representative sample', 'rarest books', 'diverse selection' all map to RECOMMENDATION intent.",
+        "id": "AC5",
+        "verification": "System prompt update with 5 explicit examples. LLM classification test (integration, requires API key)."
+      },
+      {
+        "description": "Exhibit response includes dimension coverage summary: 'Coverage: 5 decades, 4 places, 3 languages, 6 agents.'",
+        "id": "AC6",
+        "verification": "Automated test test_format_exhibit_response_coverage_summary."
+      },
+      {
+        "description": "User can specify the number of items to select: 'pick 5', 'select 20 items', 'top 15'. recommendation_count is extracted by the LLM and clamped to [1, 50].",
+        "id": "AC7",
+        "verification": "Schema test for ExplorationRequestLLM.recommendation_count field. Handler clamp test."
+      },
+      {
+        "description": "All 25 new tests pass. No regressions in existing test suite.",
+        "id": "AC8",
+        "verification": "pytest tests/ -v"
+      },
+      {
+        "description": "Q20 score improves from 1/25 to at least 12/25: the 120-record curated exhibit query now returns a meaningful, ranked, diverse selection with significance explanations.",
+        "id": "AC9",
+        "verification": "Manual evaluation against Q20 rubric after implementation."
+      }
+    ],
+    "affectedComponents": [
+      {
+        "description": "Core curation module: scoring, diverse selection, and exhibit formatting. Contains ScoredCandidate model, score_candidates(), select_diverse(), and format_exhibit().",
+        "file": "scripts/chat/curator.py",
+        "status": "NEW"
+      },
+      {
+        "description": "Add recommendation_count and recommendation_criteria fields to ExplorationRequestLLM schema. Update system prompt with RECOMMENDATION examples showing curation-style requests.",
+        "file": "scripts/chat/exploration_agent.py",
+        "status": "MODIFY"
+      },
+      {
+        "description": "Replace static RECOMMENDATION stub (lines 1025-1038) with working handler that calls curator.score_candidates() and curator.select_diverse(), then formats exhibit response.",
+        "file": "app/api/main.py",
+        "status": "MODIFY"
+      },
+      {
+        "description": "Add format_exhibit_item() and format_exhibit_response() functions for exhibit-style display with significance notes.",
+        "file": "scripts/chat/formatter.py",
+        "status": "MODIFY"
+      },
+      {
+        "description": "ExplorationIntent.RECOMMENDATION already exists. ChatResponse.metadata dict can carry curation metadata without schema changes.",
+        "file": "scripts/chat/models.py",
+        "status": "NO CHANGE"
+      },
+      {
+        "description": "E4 defines significance_score() with factors: date_rarity, enrichment_richness, place_rarity, subject_richness. E5 imports and reuses this function. If E4 is not yet implemented, curator.py includes a minimal fallback stub that returns a flat 0.5 score with a warning log.",
+        "file": "scripts/chat/thematic_context.py",
+        "status": "DEPENDENCY (E4)"
+      },
+      {
+        "description": "Unit tests for scoring, diverse selection, exhibit formatting, and edge cases.",
+        "file": "tests/scripts/chat/test_curator.py",
+        "status": "NEW"
+      }
+    ],
+    "deliverables": [
+      {
+        "description": "Core curation module with ScoredCandidate, CurationRequest, CurationResult models, fetch_record_metadata(), score_candidates(), select_diverse(), and _fallback_significance_score().",
+        "estimated_loc": 230,
+        "file": "scripts/chat/curator.py",
+        "type": "NEW"
+      },
+      {
+        "description": "Added recommendation_count and recommendation_criteria fields to ExplorationRequestLLM and ExplorationRequest. Updated system prompt RECOMMENDATION section with 5 examples.",
+        "estimated_loc_delta": 35,
+        "file": "scripts/chat/exploration_agent.py",
+        "type": "MODIFIED"
+      },
+      {
+        "description": "Replaced static RECOMMENDATION stub with working handler that calls curator functions and returns exhibit-formatted response.",
+        "estimated_loc_delta": 40,
+        "file": "app/api/main.py",
+        "type": "MODIFIED"
+      },
+      {
+        "description": "Added format_exhibit_item() and format_exhibit_response() functions.",
+        "estimated_loc_delta": 45,
+        "file": "scripts/chat/formatter.py",
+        "type": "MODIFIED"
+      },
+      {
+        "description": "25 tests covering models, scoring, diverse selection, formatting, edge cases, and integration.",
+        "estimated_loc": 150,
+        "file": "tests/scripts/chat/test_curator.py",
+        "type": "NEW"
+      }
+    ],
+    "goal": "Build a curation engine (scripts/chat/curator.py) that scores, diversely selects, and formats exhibit-quality subsets from large CandidateSets. Replace the static RECOMMENDATION stub in main.py with a working handler that parses curation requests ('select 10 for exhibit', 'most important items', 'representative sample'), scores candidates on significance, selects a diverse subset across date/place/language/agent dimensions, and returns exhibit-formatted responses with significance notes.",
+    "implementationSteps": [
+      {
+        "description": "Create the new module with Pydantic models and function signatures.",
+        "details": [
+          "Define ScoredCandidate(BaseModel) with fields: record_id (str), significance_score (float, 0.0-1.0), reasons (List[str]), metadata (Dict[str, Any]) for dimension values used in diversity selection.",
+          "Define CurationRequest(BaseModel) with fields: n (int, default=10), criteria (Optional[str]), dimensions (List[str], default=['date','place','language','agent']).",
+          "Define CurationResult(BaseModel) with fields: selected (List[ScoredCandidate]), total_scored (int), selection_method (str), dimension_coverage (Dict[str, List[str]]).",
+          "Import significance_score from scripts.chat.thematic_context with try/except ImportError fallback.",
+          "Fallback stub: _fallback_significance_score(record_metadata: dict) -> float returns 0.5 and logs warning that E4 thematic_context is not yet available."
+        ],
+        "estimated_loc": 60,
+        "file": "scripts/chat/curator.py",
+        "step": 1,
+        "test_first": true,
+        "title": "Create ScoredCandidate model and curator.py skeleton"
+      },
+      {
+        "description": "SQL helper that fetches all metadata needed for scoring from bibliographic.db for a batch of record IDs.",
+        "details": [
+          "Takes record_ids (List[str]) and db_path (Path) as arguments.",
+          "Single query joins records, imprints, languages, agents, subjects, and authority_enrichment tables.",
+          "Returns Dict[str, dict] mapping mms_id -> {date_start, date_end, place_norm, country_name, publisher_norm, languages: List[str], agents: List[str], subjects: List[str], has_enrichment: bool, enrichment_count: int}.",
+          "Uses parameterized SQL with placeholders for safety.",
+          "Batches queries if record_ids > 500 to avoid SQLite variable limits."
+        ],
+        "estimated_loc": 55,
+        "file": "scripts/chat/curator.py",
+        "step": 2,
+        "test_first": true,
+        "title": "Implement fetch_record_metadata() helper"
+      },
+      {
+        "description": "Score all candidates in a subgroup using significance_score() from E4 (or fallback).",
+        "details": [
+          "Function signature: score_candidates(record_ids: List[str], db_path: Path) -> List[ScoredCandidate].",
+          "Calls fetch_record_metadata() to get metadata for all records.",
+          "For each record, calls significance_score(metadata) from thematic_context.py (E4 dependency).",
+          "Populates ScoredCandidate.reasons with human-readable explanations: 'Early printing (1475)', 'Rich enrichment data (3 Wikidata links)', 'Rare place of publication (Kraków)', 'Multiple subject headings (4 subjects)'.",
+          "Returns list sorted by significance_score descending.",
+          "If significance_score is unavailable (E4 not implemented), uses fallback that assigns: 0.1 for date_rarity (earlier = higher), 0.1 for enrichment presence, 0.05 for non-null place, 0.05 for having subjects. This ensures basic ordering even without E4."
+        ],
+        "estimated_loc": 50,
+        "file": "scripts/chat/curator.py",
+        "step": 3,
+        "test_first": true,
+        "title": "Implement score_candidates()"
+      },
+      {
+        "description": "Greedy diversity-aware selection algorithm.",
+        "details": [
+          "Function signature: select_diverse(scored: List[ScoredCandidate], n: int = 10, dimensions: List[str] = None) -> CurationResult.",
+          "Default dimensions: ['date_decade', 'place_norm', 'language', 'agent'].",
+          "Algorithm (greedy with diversity bonus):",
+          "  1. Sort scored list by significance_score descending.",
+          "  2. Pick the highest-scoring candidate as the first selection.",
+          "  3. For each subsequent slot: iterate remaining candidates, compute a diversity bonus for each based on how many NEW dimension values it would add to the selection.",
+          "  4. Diversity bonus formula: bonus = 0.15 * (new_dimension_values / total_dimensions). A candidate adding a new decade AND a new place gets bonus = 0.15 * 2/4 = 0.075.",
+          "  5. Pick candidate with highest (significance_score + diversity_bonus).",
+          "  6. Track selected dimension values in a dict: {dimension: set(values_already_selected)}.",
+          "  7. Continue until n items selected or candidates exhausted.",
+          "Returns CurationResult with selected items, total_scored count, selection_method='greedy_diverse', and dimension_coverage showing which values were covered.",
+          "Edge case: if n >= len(scored), return all scored items sorted by score (no diversity filtering needed).",
+          "Edge case: if scored is empty, return empty CurationResult."
+        ],
+        "estimated_loc": 65,
+        "file": "scripts/chat/curator.py",
+        "step": 4,
+        "test_first": true,
+        "title": "Implement select_diverse()"
+      },
+      {
+        "description": "Add exhibit-style formatting functions.",
+        "details": [
+          "Add format_exhibit_item(scored: ScoredCandidate, index: int, candidate: Candidate) -> str.",
+          "Format: 'Item {index} ({date_start}, {place_norm}): {title} -- {significance_note}'.",
+          "significance_note is the top reason from scored.reasons, or 'Selected for diversity' if only diversity contributed.",
+          "Add format_exhibit_response(curation_result: CurationResult, query_context: str) -> str.",
+          "Includes header: 'Curated selection of {n} items from {total} in this collection.'",
+          "Includes dimension coverage summary: 'Coverage: 5 decades, 4 places, 3 languages, 6 agents.'",
+          "Lists each item using format_exhibit_item().",
+          "Footer: 'Items selected for significance and diversity across date, place, language, and agent dimensions.'"
+        ],
+        "estimated_loc": 45,
+        "file": "scripts/chat/formatter.py",
+        "step": 5,
+        "test_first": false,
+        "title": "Add exhibit formatting to formatter.py"
+      },
+      {
+        "description": "Extend the LLM schema to parse curation parameters from natural language.",
+        "details": [
+          "Add recommendation_count field to ExplorationRequestLLM: Optional[int] = Field(None, description='Number of items to select for exhibit/recommendation (e.g., 10, 5, 20)'). Default extraction: 10.",
+          "Add recommendation_criteria field to ExplorationRequestLLM: Optional[str] = Field(None, description='Selection criteria: exhibit, representative, important, significant, rare, diverse').",
+          "Add same fields to ExplorationRequest dataclass.",
+          "Update EXPLORATION_AGENT_SYSTEM_PROMPT RECOMMENDATION section with richer description and examples:",
+          "  - 'select 10 for an exhibit' -> intent=recommendation, recommendation_count=10, recommendation_criteria='exhibit'",
+          "  - 'most important items' -> intent=recommendation, recommendation_count=10, recommendation_criteria='important'",
+          "  - 'representative sample of 20' -> intent=recommendation, recommendation_count=20, recommendation_criteria='representative'",
+          "  - 'pick the rarest books' -> intent=recommendation, recommendation_count=10, recommendation_criteria='rare'",
+          "  - 'diverse selection' -> intent=recommendation, recommendation_count=10, recommendation_criteria='diverse'"
+        ],
+        "estimated_loc": 35,
+        "file": "scripts/chat/exploration_agent.py",
+        "step": 6,
+        "test_first": false,
+        "title": "Add recommendation fields to ExplorationRequestLLM"
+      },
+      {
+        "description": "Replace the static stub with working curation logic.",
+        "details": [
+          "Import from scripts.chat.curator: score_candidates, select_diverse, CurationRequest.",
+          "Import from scripts.chat.formatter: format_exhibit_response.",
+          "Replace lines 1025-1038 (the static RECOMMENDATION handler) with:",
+          "  1. Extract recommendation_count from exploration_request (default 10, clamp to 1-50 range).",
+          "  2. Extract recommendation_criteria from exploration_request (default 'exhibit').",
+          "  3. Call score_candidates(active_subgroup.record_ids, bib_db).",
+          "  4. Call select_diverse(scored, n=recommendation_count).",
+          "  5. Call format_exhibit_response(curation_result, active_subgroup.defining_query).",
+          "  6. Build ChatResponse with: message=formatted_exhibit, metadata={'curation': {'total_scored': ..., 'selected_count': ..., 'dimension_coverage': ...}}, suggested_followups=['Show the full list', 'Select more items', 'Focus on a specific century', 'Show only items from {top_place}'].",
+          "  7. Followup suggestions should be context-aware based on dimension_coverage."
+        ],
+        "estimated_loc": 40,
+        "file": "app/api/main.py",
+        "step": 7,
+        "test_first": false,
+        "title": "Wire up RECOMMENDATION handler in main.py"
+      },
+      {
+        "description": "TDD tests written before implementation (steps 1-4), plus integration tests.",
+        "details": [
+          "Test score_candidates with mock DB: verify scores are floats in [0, 1], verify sorting descending, verify reasons are non-empty strings.",
+          "Test select_diverse with synthetic scored list: 20 items with known dimension values. Verify n items returned, verify dimension coverage is broader than top-n-by-score alone.",
+          "Test select_diverse edge cases: n > len(scored), n=0, n=1, empty scored list.",
+          "Test diversity algorithm: construct a case where top-3-by-score are all from same place/decade. Verify select_diverse(n=3) picks at least 2 different places.",
+          "Test format_exhibit_item: verify output contains date, place, title, and significance note.",
+          "Test format_exhibit_response: verify header, items, footer, and dimension coverage summary.",
+          "Test fallback scoring when thematic_context is not available.",
+          "Integration test (marked @pytest.mark.integration): run full pipeline against real bibliographic.db with a known subgroup."
+        ],
+        "estimated_loc": 150,
+        "file": "tests/scripts/chat/test_curator.py",
+        "step": 8,
+        "test_first": true,
+        "title": "Write comprehensive tests"
+      }
+    ],
+    "qualityGates": [
+      {
+        "blocking": true,
+        "check": "pytest tests/scripts/chat/test_curator.py -v",
+        "gate": "All unit tests pass"
+      },
+      {
+        "blocking": true,
+        "check": "pytest tests/ -v --ignore=tests/integration",
+        "gate": "No regressions in existing tests"
+      },
+      {
+        "blocking": true,
+        "check": "ruff check scripts/chat/curator.py scripts/chat/formatter.py scripts/chat/exploration_agent.py app/api/main.py",
+        "gate": "Ruff linting passes"
+      },
+      {
+        "blocking": true,
+        "check": "All public functions have full type hints including return types",
+        "gate": "Type hints complete"
+      },
+      {
+        "blocking": true,
+        "check": "The test_select_diverse_improves_coverage test passes: given 10 items where top-3-by-score are all from Rome/1500s, select_diverse(n=3) produces at least 2 distinct places.",
+        "gate": "Diversity actually works"
+      },
+      {
+        "blocking": true,
+        "check": "Manual test: run a query returning 120 records, ask 'select 10 for exhibit', verify response contains 10 formatted items with significance notes and dimension coverage spanning at least 3 decades and 3 places.",
+        "gate": "Q20 scenario validation"
+      },
+      {
+        "blocking": true,
+        "check": "test_score_candidates_fallback_scoring passes: when thematic_context is not importable, curator still produces non-degenerate scores.",
+        "gate": "Fallback scoring works without E4"
+      },
+      {
+        "blocking": false,
+        "check": "score_candidates + select_diverse for 200 records completes in <1 second (wall clock).",
+        "gate": "Performance acceptable"
+      }
+    ],
+    "reportFailuresAddressed": [
+      {
+        "current_score": 1,
+        "description": "Curated exhibit: 120 records returned, no selection/ranking capability",
+        "how_fixed": "Curation engine scores all 120 records, selects a diverse top-N subset (default 10), and formats them as exhibit items with significance notes. The user can request specific N values ('select 5', 'pick 15'). Exhibit formatting includes: item number, date, place, title, and a significance note explaining why this item was chosen.",
+        "max_score": 25,
+        "query_id": "Q20",
+        "target_score": 12
+      },
+      {
+        "description": "Large result sets lack representative sampling",
+        "how_fixed": "The select_diverse() function can be invoked whenever a large result set needs a representative subset, providing automatic sampling across key bibliographic dimensions.",
+        "indirect": true,
+        "query_id": "Q4"
+      },
+      {
+        "description": "Large result sets lack representative sampling",
+        "how_fixed": "Same mechanism as Q4 -- diverse selection provides representative cross-section.",
+        "indirect": true,
+        "query_id": "Q11"
+      },
+      {
+        "description": "Large result sets lack representative sampling",
+        "how_fixed": "Same mechanism as Q4 -- diverse selection provides representative cross-section.",
+        "indirect": true,
+        "query_id": "Q14"
+      },
+      {
+        "description": "Large result sets lack representative sampling",
+        "how_fixed": "Same mechanism as Q4 -- diverse selection provides representative cross-section.",
+        "indirect": true,
+        "query_id": "Q15"
+      }
+    ],
+    "retrievalChanges": [
+      {
+        "component": "fetch_record_metadata (curator.py)",
+        "description": "Batch fetch of metadata for scoring. Joins records, imprints, languages, agents, subjects, authority_enrichment.",
+        "indexes_used": [
+          "idx_records_mms_id",
+          "idx_imprints_record_id",
+          "idx_languages_record_id",
+          "idx_agents_record_id",
+          "idx_subjects_record_id",
+          "idx_enrichment_authority_uri"
+        ],
+        "performance_note": "For 120 records (Q20 case), this is a single query returning ~500 rows after joins. Aggregation into per-record metadata dicts happens in Python. Well within acceptable latency (<100ms with existing indexes).",
+        "sql_sketch": "SELECT r.mms_id, i.date_start, i.date_end, i.place_norm, i.country_name, i.publisher_norm, l.code AS language, a.agent_norm, (SELECT COUNT(*) FROM subjects s WHERE s.record_id = r.id) AS subject_count, (SELECT COUNT(*) FROM authority_enrichment ae JOIN agents ag ON ag.authority_uri = ae.authority_uri WHERE ag.record_id = r.id) AS enrichment_count FROM records r LEFT JOIN imprints i ON i.record_id = r.id LEFT JOIN languages l ON l.record_id = r.id LEFT JOIN agents a ON a.record_id = r.id WHERE r.mms_id IN ({placeholders})",
+        "type": "NEW SQL query"
+      },
+      {
+        "component": "RECOMMENDATION handler (main.py)",
+        "description": "The existing handler at lines 1025-1038 returns a static message. The new handler calls curator.score_candidates() and curator.select_diverse(), which internally run the fetch_record_metadata SQL query. No changes to existing SQL queries or indexes.",
+        "type": "REPLACE static stub"
+      }
+    ],
+    "risksAndEdgeCases": [
+      {
+        "mitigation": "curator.py includes a try/except ImportError for significance_score from thematic_context.py. Fallback stub (_fallback_significance_score) uses basic heuristics: date antiquity (earlier = higher), enrichment presence, place completeness, subject count. This ensures E5 is functional even before E4 is delivered. The fallback logs a warning so we know when it is active. When E4 lands, the fallback is automatically bypassed.",
+        "risk": "E4 dependency not yet implemented",
+        "severity": "MEDIUM",
+        "test_strategy": "Test both paths: mock thematic_context import success AND failure. Verify fallback produces non-degenerate scores (not all 0.5)."
+      },
+      {
+        "mitigation": "If n >= total records, select_diverse returns all records sorted by score with selection_method='top_n'. format_exhibit_response adjusts header: 'Showing all {n} items (collection has only {total}).' No diversity algorithm needed.",
+        "risk": "Very small subgroups (1-3 records)",
+        "severity": "LOW",
+        "test_strategy": "Explicit test case with 2 records, n=10."
+      },
+      {
+        "mitigation": "fetch_record_metadata batches SQL queries in groups of 500 to avoid SQLite SQLITE_MAX_VARIABLE_NUMBER limit (default 999). score_candidates processes all records but the greedy selection algorithm only iterates n * total times, which is O(n * N) -- for n=10 and N=1000, that is 10,000 iterations, negligible. Total latency should be <500ms.",
+        "risk": "Very large subgroups (1000+ records)",
+        "severity": "MEDIUM",
+        "test_strategy": "Benchmark test with 1000 synthetic scored items to verify select_diverse completes in <100ms."
+      },
+      {
+        "mitigation": "Score factors degrade gracefully: if date_start is NULL, date_rarity contributes 0. If all fields are NULL, the record gets a minimal score (near 0.0) and is unlikely to be selected unless the pool is very sparse. Records with no metadata get reasons=['Limited metadata available'].",
+        "risk": "Missing metadata for scoring (NULL date_start, NULL place_norm)",
+        "severity": "LOW",
+        "test_strategy": "Test with records that have all-NULL metadata. Verify they score low but do not crash."
+      },
+      {
+        "mitigation": "If no new dimension values can be added (diversity bonus is always 0), the algorithm degrades to pure top-N-by-score, which is still a valid and useful selection. selection_method is set to 'top_n_fallback' in this case.",
+        "risk": "Diversity algorithm degeneracy (all candidates identical on all dimensions)",
+        "severity": "LOW",
+        "test_strategy": "Test with 20 items all having identical date_decade, place, language, and agent."
+      },
+      {
+        "mitigation": "Step 6 updates the system prompt with 5 explicit RECOMMENDATION examples covering the key phrasings: 'select N for exhibit', 'most important', 'representative sample', 'rarest books', 'diverse selection'. The prompt explicitly distinguishes RECOMMENDATION from AGGREGATION: 'RECOMMENDATION selects specific items; AGGREGATION counts/groups them.'",
+        "risk": "LLM misclassifies curation request as AGGREGATION or METADATA_QUESTION",
+        "severity": "MEDIUM",
+        "test_strategy": "Add 5 exploration agent classification tests with curation-style inputs, verifying intent=RECOMMENDATION."
+      },
+      {
+        "mitigation": "Handler clamps recommendation_count to [1, 50] range. If LLM returns None, default to 10. If user asks for 'all', set to min(50, total_records).",
+        "risk": "recommendation_count out of range",
+        "severity": "LOW",
+        "test_strategy": "Test with recommendation_count=0, 100, None, and negative values."
+      }
+    ],
+    "schemaChanges": [
+      {
+        "change": "ADD fields",
+        "component": "ExplorationRequestLLM (exploration_agent.py)",
+        "fields": [
+          {
+            "default": null,
+            "description": "Number of items to select for exhibit/recommendation (e.g., 10, 5, 20)",
+            "name": "recommendation_count",
+            "type": "Optional[int]"
+          },
+          {
+            "default": null,
+            "description": "Selection criteria: exhibit, representative, important, significant, rare, diverse",
+            "name": "recommendation_criteria",
+            "type": "Optional[str]"
+          }
+        ]
+      },
+      {
+        "change": "ADD fields",
+        "component": "ExplorationRequest (exploration_agent.py)",
+        "fields": [
+          {
+            "default": null,
+            "name": "recommendation_count",
+            "type": "Optional[int]"
+          },
+          {
+            "default": null,
+            "name": "recommendation_criteria",
+            "type": "Optional[str]"
+          }
+        ]
+      },
+      {
+        "change": "NEW model",
+        "component": "ScoredCandidate (curator.py)",
+        "fields": [
+          {
+            "description": "MMS ID of the scored record",
+            "name": "record_id",
+            "type": "str"
+          },
+          {
+            "constraints": "ge=0.0, le=1.0",
+            "description": "Overall significance score (0.0-1.0)",
+            "name": "significance_score",
+            "type": "float"
+          },
+          {
+            "description": "Human-readable reasons for the score, e.g., 'Early printing (1475)', 'Rich enrichment data'",
+            "name": "reasons",
+            "type": "List[str]"
+          },
+          {
+            "default": {},
+            "description": "Dimension values used for diversity selection: {date_decade: '1470s', place_norm: 'rome', language: 'lat', agent: 'aldus manutius'}",
+            "name": "metadata",
+            "type": "Dict[str, Any]"
+          }
+        ]
+      },
+      {
+        "change": "NEW model",
+        "component": "CurationRequest (curator.py)",
+        "fields": [
+          {
+            "default": 10,
+            "description": "Number of items to select",
+            "name": "n",
+            "type": "int"
+          },
+          {
+            "default": null,
+            "description": "Selection criteria from user request",
+            "name": "criteria",
+            "type": "Optional[str]"
+          },
+          {
+            "default": [
+              "date_decade",
+              "place_norm",
+              "language",
+              "agent"
+            ],
+            "description": "Dimensions for diversity selection",
+            "name": "dimensions",
+            "type": "List[str]"
+          }
+        ]
+      },
+      {
+        "change": "NEW model",
+        "component": "CurationResult (curator.py)",
+        "fields": [
+          {
+            "description": "Selected items in exhibit order",
+            "name": "selected",
+            "type": "List[ScoredCandidate]"
+          },
+          {
+            "description": "Total number of candidates that were scored",
+            "name": "total_scored",
+            "type": "int"
+          },
+          {
+            "description": "Algorithm used: 'greedy_diverse' or 'top_n' (when n >= total)",
+            "name": "selection_method",
+            "type": "str"
+          },
+          {
+            "description": "Coverage achieved per dimension: {'date_decade': ['1470s', '1510s', '1550s'], 'place_norm': ['rome', 'venice', 'paris']}",
+            "name": "dimension_coverage",
+            "type": "Dict[str, List[str]]"
+          }
+        ]
+      },
+      {
+        "change": "NO SCHEMA CHANGE",
+        "component": "ChatResponse.metadata (models.py)",
+        "note": "metadata is already Dict[str, Any]. Curation responses will populate metadata['curation'] with: total_scored, selected_count, dimension_coverage, selection_method."
+      }
+    ],
+    "tddPlan": {
+      "description": "Tests are written BEFORE implementation for core logic (steps 1-4). Formatter and integration tests are written alongside implementation.",
+      "estimated_test_loc": 150,
+      "test_file": "tests/scripts/chat/test_curator.py",
+      "test_groups": [
+        {
+          "group": "ScoredCandidate model validation",
+          "tests": [
+            "test_scored_candidate_valid: score 0.5, 2 reasons, valid metadata dict",
+            "test_scored_candidate_score_bounds: score < 0 raises ValidationError, score > 1 raises ValidationError",
+            "test_scored_candidate_empty_reasons: empty reasons list is allowed (metadata-poor record)"
+          ],
+          "write_before_step": 1
+        },
+        {
+          "group": "fetch_record_metadata",
+          "tests": [
+            "test_fetch_metadata_returns_all_fields: in-memory SQLite with 3 records, verify dict keys",
+            "test_fetch_metadata_missing_record: mms_id not in DB returns empty dict for that ID",
+            "test_fetch_metadata_null_fields: record with NULL date_start still returns entry with date_start=None",
+            "test_fetch_metadata_batching: 600 record IDs trigger 2 batches (500 + 100)"
+          ],
+          "write_before_step": 2
+        },
+        {
+          "group": "score_candidates",
+          "tests": [
+            "test_score_candidates_sorted_descending: 5 records with known metadata, verify output order",
+            "test_score_candidates_reasons_populated: each ScoredCandidate has at least 1 reason string",
+            "test_score_candidates_empty_input: empty record_ids returns empty list",
+            "test_score_candidates_fallback_scoring: mock ImportError on thematic_context, verify fallback produces varied scores"
+          ],
+          "write_before_step": 3
+        },
+        {
+          "group": "select_diverse",
+          "tests": [
+            "test_select_diverse_basic: 20 items, n=5, verify 5 returned",
+            "test_select_diverse_improves_coverage: construct 10 items where top-3-by-score are all from Rome/1500s. Verify select_diverse(n=3) covers at least 2 distinct places.",
+            "test_select_diverse_n_exceeds_total: 5 items, n=10, verify all 5 returned, selection_method='top_n'",
+            "test_select_diverse_empty_input: empty list returns empty CurationResult",
+            "test_select_diverse_single_item: 1 item, n=5, returns 1 item",
+            "test_select_diverse_dimension_coverage_populated: verify dimension_coverage dict has entries for each requested dimension",
+            "test_select_diverse_identical_dimensions: all items same dimensions, verify degrades to top-N"
+          ],
+          "write_before_step": 4
+        },
+        {
+          "group": "exhibit formatting",
+          "tests": [
+            "test_format_exhibit_item_complete: verify output contains 'Item 1', date, place, title, significance note",
+            "test_format_exhibit_item_missing_date: verify graceful handling when date_start is None",
+            "test_format_exhibit_response_header: verify 'Curated selection of N items from M'",
+            "test_format_exhibit_response_coverage_summary: verify dimension counts in output"
+          ],
+          "write_with_step": 5
+        },
+        {
+          "group": "exploration agent schema",
+          "tests": [
+            "test_exploration_request_recommendation_fields: ExplorationRequestLLM accepts recommendation_count and recommendation_criteria",
+            "test_exploration_request_recommendation_defaults: recommendation_count defaults to None, recommendation_criteria defaults to None"
+          ],
+          "write_with_step": 6
+        },
+        {
+          "group": "integration (main.py handler)",
+          "tests": [
+            "test_recommendation_handler_returns_exhibit: mock exploration_request with intent=RECOMMENDATION, verify response.message contains 'Curated selection'",
+            "test_recommendation_handler_metadata: verify response.metadata['curation'] contains total_scored and selected_count",
+            "test_recommendation_handler_followups: verify suggested_followups are non-empty and context-relevant"
+          ],
+          "write_with_step": 7
+        }
+      ],
+      "total_test_count": 25
+    }
+  }
+}

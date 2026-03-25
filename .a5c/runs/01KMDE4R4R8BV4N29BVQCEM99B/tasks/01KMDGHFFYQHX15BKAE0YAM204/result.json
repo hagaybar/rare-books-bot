@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDGHFFYQHX15BKAE0YAM204",
+  "taskId": "cli-consolidate",
+  "invocationKey": "implement-unified-ui:S000010:cli-consolidate",
+  "status": "ok",
+  "result": {
+    "status": "done"
+  },
+  "startedAt": "2026-03-23T14:11:52.408Z",
+  "finishedAt": "2026-03-23T14:11:52.408Z",
+  "value": {
+    "status": "done"
+  }
+}

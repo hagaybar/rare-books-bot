@@ -1,0 +1,181 @@
+{
+  "normalizeFilterValue": {
+    "location": "scripts/query/db_adapter.py",
+    "lineRange": [53, 113],
+    "steps": [
+      "PUBLISHER / IMPRINT_PLACE: casefold -> remove brackets [\\[\\]] -> remove punctuation (keep \\w \\s -) -> collapse spaces -> strip",
+      "LANGUAGE: simple lowercase",
+      "TITLE / SUBJECT: lowercase; for CONTAINS ops with spaces, escape internal double-quotes and wrap in double-quotes for FTS5 phrase matching",
+      "AGENT (deprecated): casefold only",
+      "AGENT_NORM / AGENT_ROLE / AGENT_TYPE: casefold -> remove brackets -> remove commas -> strip trailing punctuation (.,;:) -> collapse spaces -> strip"
+    ],
+    "limitations": [
+      "No transliteration or Unicode normalization (e.g., Hebrew/Latin script variants pass through unchanged)",
+      "AGENT (deprecated) does only casefold; no comma or punctuation stripping like AGENT_NORM, leading to inconsistent matching if old field is used",
+      "FTS5 quoting for TITLE/SUBJECT only triggers on multi-word CONTAINS; single-word queries get no quoting, and EQUALS queries are compared raw (no FTS5)",
+      "No synonym expansion (e.g., 'Oxford University Press' vs 'oxford' will not match unless the normalized DB value is exactly 'oxford')",
+      "COUNTRY field is not routed through normalize_filter_value at all — build_where_clause handles it inline with simple .lower().strip()",
+      "No diacritic/accent folding (e.g., 'Zürich' vs 'zurich' may not match)"
+    ]
+  },
+  "buildWhereClause": {
+    "location": "scripts/query/db_adapter.py",
+    "lineRange": [116, 343],
+    "agentHandler": {
+      "field": "AGENT_NORM",
+      "lineRange": [293, 312],
+      "equalsSQL": "LOWER(REPLACE(agents_alias.agent_norm, ',', '')) = LOWER(:param)",
+      "containsSQL": "LOWER(REPLACE(agents_alias.agent_norm, ',', '')) LIKE LOWER(:param)",
+      "commaInsensitive": true,
+      "description": "Uses SQL REPLACE to strip commas from the DB column at query time, and normalize_filter_value strips commas from the search term. This enables matching 'Smith John' against 'Smith, John' in the database. Both EQUALS and CONTAINS ops are supported. The AGENTS table is LEFT JOINed via needed_joins set.",
+      "joinTable": "agents (LEFT JOIN on records.id = agents.record_id)"
+    },
+    "publisherHandler": {
+      "field": "PUBLISHER",
+      "lineRange": [138, 153],
+      "equalsSQL": "LOWER(imprints_alias.publisher_norm) = LOWER(:param)",
+      "containsSQL": "LOWER(imprints_alias.publisher_norm) LIKE LOWER(:param) with % wildcards",
+      "description": "Matches against publisher_norm column in imprints table. Uses LOWER() on both sides for case-insensitive matching. CONTAINS wraps value in % wildcards. Supports negate via NOT(). Join is INNER JOIN on imprints."
+    },
+    "otherHandlers": {
+      "IMPRINT_PLACE": "Same pattern as PUBLISHER but on place_norm column (lines 155-170)",
+      "COUNTRY": "Inline lowercase+strip on filter.value, no normalize_filter_value call (lines 172-188)",
+      "YEAR": "RANGE only: overlap match date_end >= start AND date_start <= end (lines 190-207)",
+      "LANGUAGE": "EQUALS or IN on languages.code; LEFT JOIN (lines 209-228)",
+      "TITLE": "EQUALS on titles.value or CONTAINS via FTS5 EXISTS subquery on titles_fts (lines 230-253)",
+      "SUBJECT": "CONTAINS only via FTS5 EXISTS subquery on subjects_fts (lines 255-278)",
+      "AGENT": "CONTAINS only on agent_raw with LIKE (deprecated, lines 280-291)",
+      "AGENT_ROLE": "EQUALS only on role_norm (lines 314-326)",
+      "AGENT_TYPE": "EQUALS only on agent_type (lines 328-340)"
+    },
+    "combineLogic": "All conditions are ANDed together (line 342: ' AND '.join(conditions))"
+  },
+  "intentAgent": {
+    "intentTypes": [
+      "High confidence search (0.95-1.0): Clear query with specific criteria — proceeds to execution",
+      "Medium confidence search (0.85-0.94): Mostly clear with minor ambiguities — proceeds to execution",
+      "Low confidence search (0.70-0.84): Multiple interpretations possible — MAY still proceed if filters were extracted",
+      "Very low confidence / vague (below 0.70): Too vague to search — asks for clarification unless filters exist",
+      "Overview / greeting: Detected by is_overview_query() BEFORE intent agent runs — returns collection stats directly"
+    ],
+    "schema": {
+      "IntentInterpretationLLM": {
+        "location": "scripts/chat/intent_agent.py",
+        "lineRange": [110, 134],
+        "fields": {
+          "overall_confidence": "float 0.0-1.0, overall confidence in understanding user intent",
+          "explanation": "Natural language explanation starting with 'You're looking for...' or 'I understand you want...'",
+          "uncertainties": "List[str], specific areas of uncertainty when confidence < 0.85",
+          "query_plan": "QueryPlanLLM with filters, soft_filters, limit, version, query_text"
+        }
+      },
+      "IntentInterpretation": {
+        "location": "scripts/chat/intent_agent.py",
+        "lineRange": [137, 164],
+        "fields": {
+          "proceed_to_execution": "Computed: True if overall_confidence >= 0.85 OR len(filters) > 0"
+        }
+      },
+      "FilterLLM": {
+        "location": "scripts/chat/intent_agent.py",
+        "lineRange": [40, 78],
+        "fields": {
+          "field": "string: publisher, imprint_place, country, year, language, title, subject, agent_norm, agent_role",
+          "op": "string: EQUALS, CONTAINS, RANGE, IN",
+          "value": "Optional string for EQUALS/CONTAINS",
+          "start": "Optional int for RANGE start year",
+          "end": "Optional int for RANGE end year",
+          "negate": "bool, default False",
+          "confidence": "Optional float 0.0-1.0 per-filter confidence",
+          "notes": "Optional string about this filter interpretation"
+        }
+      }
+    },
+    "systemPromptAnalysis": "The INTENT_AGENT_SYSTEM_PROMPT (lines 168-335) defines 9 filter fields, 3 operations, country-vs-city distinction rules, century-to-year-range conversions (e.g., 16th century = 1501-1600), ISO 639-2 language codes, and 6 worked examples ranging from high-confidence (0.95) to very-low (0.15). It instructs the LLM to always provide overall_confidence, explanation, uncertainties when <0.85, and a valid query_plan. Values should be normalized (lowercase). The prompt does NOT mention AGENT_TYPE as a filter field (only agent_norm and agent_role are listed), creating a gap where AGENT_TYPE queries may not be emitted by the LLM."
+  },
+  "phase1Routing": {
+    "overviewDetection": "is_overview_query() in scripts/chat/aggregation.py (lines 688-779) runs BEFORE the intent agent. It uses a three-tier check: (1) reject if query contains any of ~60 hardcoded search criteria keywords (languages, places, centuries, subjects, entities); (2) match exactly against 10 greeting/generic strings; (3) check for overview patterns ('what can you tell me', 'overview', etc.) combined with either a collection reference keyword OR query length < 40 chars. Returns True only for genuinely generic overview requests.",
+    "confidenceThreshold": 0.85,
+    "confidenceThresholdLocation": "scripts/chat/intent_agent.py line 28",
+    "executionFlow": "1. handle_query_definition_phase() (main.py:424) checks is_overview_query() first — if True, returns collection stats with confidence=1.0 and hardcoded followup suggestions, skipping intent agent entirely. 2. If not overview, calls interpret_query() (intent_agent.py:430) which invokes OpenAI gpt-4o with structured output (IntentInterpretationLLM schema). 3. The LLM returns confidence + filters + explanation. 4. IntentInterpretation.__init__ computes proceed_to_execution = (confidence >= 0.85) OR (len(filters) > 0). 5. If proceed_to_execution is False (no filters AND low confidence), returns clarification prompt without executing any SQL. 6. If proceed_to_execution is True, executes query via QueryService.execute_plan(), enriches with narrative agent, generates followups, and transitions session to CORPUS_EXPLORATION phase if results > 0. 7. On zero results, stays in QUERY_DEFINITION phase with broadening suggestions."
+  },
+  "modificationPoints": [
+    {
+      "file": "scripts/query/db_adapter.py",
+      "function": "normalize_filter_value",
+      "line": 67,
+      "changeNeeded": "COUNTRY field bypassed — build_where_clause does inline .lower().strip() at line 178 instead of routing through normalize_filter_value",
+      "enhancement": "Route COUNTRY through normalize_filter_value for consistency; add an explicit branch like PUBLISHER/IMPRINT_PLACE"
+    },
+    {
+      "file": "scripts/query/db_adapter.py",
+      "function": "normalize_filter_value",
+      "line": 92,
+      "changeNeeded": "AGENT (deprecated) only does casefold, while AGENT_NORM does casefold + bracket removal + comma removal + trailing punct strip",
+      "enhancement": "Either deprecation-warn callers to migrate to AGENT_NORM, or align AGENT normalization with AGENT_NORM to avoid silent mismatches"
+    },
+    {
+      "file": "scripts/query/db_adapter.py",
+      "function": "normalize_filter_value",
+      "line": 53,
+      "changeNeeded": "No Unicode/diacritic normalization (NFC/NFD, accent folding) anywhere in the pipeline",
+      "enhancement": "Add unicodedata.normalize('NFC', value) as a first step for all text fields, and optionally unidecode for accent folding on publisher/place/agent"
+    },
+    {
+      "file": "scripts/chat/intent_agent.py",
+      "function": "INTENT_AGENT_SYSTEM_PROMPT",
+      "line": 182,
+      "changeNeeded": "System prompt lists 'agent_norm' and 'agent_role' as filter fields but omits 'agent_type'. The LLM will never emit agent_type filters because it does not know the field exists.",
+      "enhancement": "Add 'agent_type' to FILTER FIELDS AVAILABLE section with description: 'agent_type: Type of agent (personal, corporate, meeting)'"
+    },
+    {
+      "file": "scripts/chat/intent_agent.py",
+      "function": "INTENT_AGENT_SYSTEM_PROMPT",
+      "line": 182,
+      "changeNeeded": "System prompt does not list the 'agent' (deprecated) field, but it also does not mention that agent_norm is comma-insensitive. Users searching 'Smith, John' vs 'Smith John' rely on this being handled transparently.",
+      "enhancement": "Add a note to the prompt: 'agent_norm searches are comma-insensitive — omit commas in values (e.g., use \"smith john\" not \"smith, john\")'"
+    },
+    {
+      "file": "scripts/chat/intent_agent.py",
+      "function": "interpret_query",
+      "line": 163,
+      "changeNeeded": "proceed_to_execution is True whenever any filter exists, regardless of how low overall_confidence is. A query with confidence 0.2 but one weak filter will still execute.",
+      "enhancement": "Consider adding a minimum confidence floor (e.g., >= 0.4) even when filters exist, or surface the low confidence as a warning alongside results"
+    },
+    {
+      "file": "scripts/chat/aggregation.py",
+      "function": "is_overview_query",
+      "line": 706,
+      "changeNeeded": "Hardcoded keyword lists for search criteria detection (languages, places, subjects) are brittle and incomplete. New collection content requires manual list updates.",
+      "enhancement": "Replace with a lightweight LLM classifier or regex pattern matching against FilterField values, or at minimum extract the keyword lists to a config file"
+    },
+    {
+      "file": "app/api/main.py",
+      "function": "handle_query_definition_phase",
+      "line": 450,
+      "changeNeeded": "Overview detection runs before intent agent, so overview queries never get logged as LLM calls or cached in intent_cache.jsonl. This creates a blind spot in query analytics.",
+      "enhancement": "Log overview detections separately to the interaction logger or intent cache so analytics can track what fraction of queries are overview vs search"
+    },
+    {
+      "file": "scripts/query/db_adapter.py",
+      "function": "build_where_clause",
+      "line": 293,
+      "changeNeeded": "AGENT_NORM uses SQL REPLACE to strip commas at query time on every row scan. For large agent tables this is an unindexable operation — the query planner cannot use indexes on agent_norm.",
+      "enhancement": "Add a pre-computed comma-stripped column (agent_norm_search) to the agents table at indexing time, and query against that column directly for indexable lookups"
+    },
+    {
+      "file": "scripts/query/execute.py",
+      "function": "execute_plan",
+      "line": 545,
+      "changeNeeded": "Subject hint retry (lines 545-574) calls compile_query_with_subject_hints which makes another LLM API call. This is invisible to the caller — no retry metadata is surfaced in the CandidateSet.",
+      "enhancement": "Add retry_attempt and subject_hints_used metadata to the CandidateSet debug/metadata so the UI can display 'Results found after subject term adjustment'"
+    },
+    {
+      "file": "scripts/query/db_adapter.py",
+      "function": "build_where_clause",
+      "line": 280,
+      "changeNeeded": "AGENT field only supports CONTAINS (LIKE), AGENT_NORM supports EQUALS and CONTAINS, AGENT_ROLE/AGENT_TYPE support only EQUALS. SUBJECT only supports CONTAINS. These asymmetries are not documented and may surprise callers.",
+      "enhancement": "Add EQUALS support for AGENT (deprecated or not), CONTAINS for AGENT_ROLE/AGENT_TYPE, and EQUALS for SUBJECT. Or document the restrictions clearly in the FilterField enum docstrings."
+    }
+  ]
+}

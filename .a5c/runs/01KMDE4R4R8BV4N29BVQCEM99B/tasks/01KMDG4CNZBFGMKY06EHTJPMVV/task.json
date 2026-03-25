@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDG4CNZBFGMKY06EHTJPMVV",
+  "taskId": "query-debugger",
+  "invocationKey": "implement-unified-ui:S000008:query-debugger",
+  "stepId": "S000008",
+  "kind": "agent",
+  "title": "Phase 2: Query Debugger Frontend",
+  "labels": [
+    "diagnostics",
+    "frontend",
+    "phase2"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDG4CNZBFGMKY06EHTJPMVV/input.json",
+    "outputJsonPath": "tasks/01KMDG4CNZBFGMKY06EHTJPMVV/result.json"
+  },
+  "inputs": {
+    "diagnosticBackend": {
+      "endpointsCreated": [
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9",
+        "B10",
+        "B11",
+        "B12"
+      ],
+      "testsPass": true
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

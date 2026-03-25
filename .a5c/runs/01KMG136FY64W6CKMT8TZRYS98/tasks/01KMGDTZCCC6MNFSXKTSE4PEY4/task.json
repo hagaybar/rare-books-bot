@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGDTZCCC6MNFSXKTSE4PEY4",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "historian-enhancement-plan:S000014:__sdk.breakpoint",
+  "stepId": "S000014",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "files": [
+          {
+            "format": "markdown",
+            "label": "Implementation Plan",
+            "path": "reports/historian-enhancement-plan.md"
+          }
+        ]
+      },
+      "question": "Implementation plan generated. Review and approve?",
+      "title": "Enhancement Plan Review"
+    },
+    "requestedAt": "2026-03-24T17:21:19.756Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "files": [
+          {
+            "format": "markdown",
+            "label": "Implementation Plan",
+            "path": "reports/historian-enhancement-plan.md"
+          }
+        ]
+      },
+      "question": "Implementation plan generated. Review and approve?",
+      "title": "Enhancement Plan Review"
+    },
+    "requestedAt": "2026-03-24T17:21:19.756Z"
+  }
+}

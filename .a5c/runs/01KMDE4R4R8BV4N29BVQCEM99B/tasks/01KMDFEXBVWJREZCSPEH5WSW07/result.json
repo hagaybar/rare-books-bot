@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDFEXBVWJREZCSPEH5WSW07",
+  "taskId": "publisher-readonly",
+  "invocationKey": "implement-unified-ui:S000005:publisher-readonly",
+  "status": "ok",
+  "result": {
+    "buildStatus": "success",
+    "filesCreated": [
+      "types/publishers.ts",
+      "api/publishers.ts",
+      "pages/admin/Publishers.tsx"
+    ]
+  },
+  "startedAt": "2026-03-23T13:55:12.128Z",
+  "finishedAt": "2026-03-23T13:55:12.128Z",
+  "value": {
+    "buildStatus": "success",
+    "filesCreated": [
+      "types/publishers.ts",
+      "api/publishers.ts",
+      "pages/admin/Publishers.tsx"
+    ]
+  }
+}

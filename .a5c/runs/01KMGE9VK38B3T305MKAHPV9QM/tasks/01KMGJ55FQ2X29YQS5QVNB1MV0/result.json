@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGJ55FQ2X29YQS5QVNB1MV0",
+  "taskId": "e1-schema",
+  "invocationKey": "implement-historian-enhancements:S000002:e1-schema",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "scripts/marc/m3_schema.sql",
+      "scripts/marc/m3_contract.py"
+    ],
+    "summary": "Added agent_authorities and agent_aliases tables to m3_schema.sql with indexes. Registered in m3_contract.py (M3Tables, M3Columns, M3Aliases, EXPECTED_SCHEMA). Also added missing publisher_authorities/publisher_variants contract entries. All 29 schema/contract tests pass.",
+    "tablesAdded": [
+      "agent_authorities",
+      "agent_aliases"
+    ]
+  },
+  "startedAt": "2026-03-24T18:39:50.336Z",
+  "finishedAt": "2026-03-24T18:39:50.336Z",
+  "value": {
+    "filesModified": [
+      "scripts/marc/m3_schema.sql",
+      "scripts/marc/m3_contract.py"
+    ],
+    "summary": "Added agent_authorities and agent_aliases tables to m3_schema.sql with indexes. Registered in m3_contract.py (M3Tables, M3Columns, M3Aliases, EXPECTED_SCHEMA). Also added missing publisher_authorities/publisher_variants contract entries. All 29 schema/contract tests pass.",
+    "tablesAdded": [
+      "agent_authorities",
+      "agent_aliases"
+    ]
+  }
+}

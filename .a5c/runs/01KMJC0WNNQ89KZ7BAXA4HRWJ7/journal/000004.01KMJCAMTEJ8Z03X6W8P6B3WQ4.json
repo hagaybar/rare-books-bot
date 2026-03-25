@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T11:33:24.942Z",
+  "data": {
+    "effectId": "01KMJCAMT28ZRFG9MJ5KQDN55W",
+    "invocationKey": "scholar-pipeline-fixes:S000002:verify",
+    "invocationHash": "b429bc226b15324693264633c4ba4129fbd9fa58e32be891c35f57d26ab42bea",
+    "stepId": "S000002",
+    "taskId": "verify",
+    "kind": "shell",
+    "label": "Verify: backend-fixes",
+    "taskDefRef": "tasks/01KMJCAMT28ZRFG9MJ5KQDN55W/task.json"
+  },
+  "checksum": "d743e5048a78c466f7c9259c449362a307be61461173336a139450f3e9bfcd2c"
+}

@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T13:08:01.423Z",
+  "data": {
+    "effectId": "01KMFZB583EM123MPZF79QW6V6",
+    "invocationKey": "historian-evaluation:S000003:analyze-synthesize",
+    "invocationHash": "133ecbec22e6af7debd1f79e563d421c8cdd00fc688ceadfad75ca1bc1cdf45c",
+    "stepId": "S000003",
+    "taskId": "analyze-synthesize",
+    "kind": "agent",
+    "label": "analysis",
+    "taskDefRef": "tasks/01KMFZB583EM123MPZF79QW6V6/task.json",
+    "labels": [
+      "analysis",
+      "synthesis",
+      "report"
+    ]
+  },
+  "checksum": "04b79021e5af0c14ac3b1fd2e12609e4102834f40aa04923a8c511495a6a312a"
+}

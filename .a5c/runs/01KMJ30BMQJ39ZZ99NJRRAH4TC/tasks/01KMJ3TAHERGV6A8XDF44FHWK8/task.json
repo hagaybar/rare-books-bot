@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ3TAHERGV6A8XDF44FHWK8",
+  "taskId": "verify-phase",
+  "invocationKey": "scholar-pipeline:S000002:verify-phase",
+  "stepId": "S000002",
+  "kind": "shell",
+  "title": "Verify: phase1-models",
+  "io": {
+    "outputJsonPath": "tasks/01KMJ3TAHERGV6A8XDF44FHWK8/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_plan_models.py -v 2>&1 | tail -40",
+    "description": "Verify plan models and Primo URL extraction pass all tests",
+    "phase": "phase1-models",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMG13JXJ6838B19J618QRXRW",
+  "taskId": "analyze-report",
+  "invocationKey": "historian-enhancement-plan:S000001:analyze-report",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Analyze historian evaluation report — extract structured enhancement data",
+  "labels": [
+    "report-analysis",
+    "research"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMG13JXJ6838B19J618QRXRW/input.json",
+    "outputJsonPath": "tasks/01KMG13JXJ6838B19J618QRXRW/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "reportPath": "reports/historian-evaluation.md"
+  }
+}

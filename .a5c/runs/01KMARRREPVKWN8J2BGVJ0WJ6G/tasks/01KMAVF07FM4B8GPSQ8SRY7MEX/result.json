@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAVF07FM4B8GPSQ8SRY7MEX",
+  "taskId": "register-notebook",
+  "invocationKey": "notebooklm-context-builder:S000010:register-notebook",
+  "status": "ok",
+  "result": {
+    "id": "rare-books-bot",
+    "name": "Rare Books Bot",
+    "registered": true
+  },
+  "startedAt": "2026-03-22T13:37:59.887Z",
+  "finishedAt": "2026-03-22T13:37:59.887Z",
+  "value": {
+    "id": "rare-books-bot",
+    "name": "Rare Books Bot",
+    "registered": true
+  }
+}

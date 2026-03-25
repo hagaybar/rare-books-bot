@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAVATE4E1DPEYETA9VQ8FSB",
+  "taskId": "validate-update-outputs",
+  "invocationKey": "notebooklm-context-builder:S000009:validate-update-outputs",
+  "stepId": "S000009",
+  "kind": "agent",
+  "title": "Validate update pipe outputs",
+  "io": {
+    "inputJsonPath": "tasks/01KMAVATE4E1DPEYETA9VQ8FSB/input.json",
+    "outputJsonPath": "tasks/01KMAVATE4E1DPEYETA9VQ8FSB/output.json"
+  },
+  "inputs": {
+    "outputDir": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDE51D41CJFQG54CXP8S6B2",
+  "taskId": "phase0-foundation",
+  "invocationKey": "implement-unified-ui:S000001:phase0-foundation",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Phase 0: Foundation & Scaffolding",
+  "labels": [
+    "frontend",
+    "phase0",
+    "scaffolding"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDE51D41CJFQG54CXP8S6B2/input.json",
+    "outputJsonPath": "tasks/01KMDE51D41CJFQG54CXP8S6B2/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

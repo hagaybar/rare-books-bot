@@ -1,0 +1,1 @@
+{"filesModified": ["app/api/main.py"], "testsPassed": 1341, "summary": "RECOMMENDATION stub replaced with working handler using score_candidates + select_diverse + format_exhibit_response. All 1341 tests pass."}

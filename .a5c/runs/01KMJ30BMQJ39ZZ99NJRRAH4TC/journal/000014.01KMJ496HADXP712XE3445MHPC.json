@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T09:12:48.938Z",
+  "data": {
+    "effectId": "01KMJ496GYHV4Y6DW81VRFKCS8",
+    "invocationKey": "scholar-pipeline:S000007:implement-task",
+    "invocationHash": "9f4e17d45242fa6dcd2dc9b5d8eab3ad361075271e3f5107ba32b1549b17efbc",
+    "stepId": "S000007",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Implement Task 4: Executor Step Handlers",
+    "taskDefRef": "tasks/01KMJ496GYHV4Y6DW81VRFKCS8/task.json"
+  },
+  "checksum": "26b68836231f8e6aadb37239d4e88d41b89a16e36acfb43cd2c986e02ec92365"
+}

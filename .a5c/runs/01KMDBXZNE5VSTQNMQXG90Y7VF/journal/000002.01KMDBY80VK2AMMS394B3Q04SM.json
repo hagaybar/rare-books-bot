@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T12:50:26.459Z",
+  "data": {
+    "effectId": "01KMDBY80EBBBA7G1YDHFWGA7C",
+    "invocationKey": "definitive-implementation-plan:S000001:extract-reconcile",
+    "invocationHash": "736ce9b909d0c4a723fad15d54f6a84fa0824956ef59cf545e2440065b7d929a",
+    "stepId": "S000001",
+    "taskId": "extract-reconcile",
+    "kind": "agent",
+    "label": "synthesis",
+    "taskDefRef": "tasks/01KMDBY80EBBBA7G1YDHFWGA7C/task.json",
+    "labels": [
+      "synthesis",
+      "reconciliation",
+      "extraction"
+    ]
+  },
+  "checksum": "77e0c71f9221234a2108bdbbd6fde45593b9bee964954f6be543185430671797"
+}

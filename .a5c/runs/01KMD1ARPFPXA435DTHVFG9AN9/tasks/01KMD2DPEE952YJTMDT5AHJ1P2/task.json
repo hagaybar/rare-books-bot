@@ -1,0 +1,410 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMD2DPEE952YJTMDT5AHJ1P2",
+  "taskId": "alignment-assessment",
+  "invocationKey": "ui-evaluation-and-redesign:S000004:alignment-assessment",
+  "stepId": "S000004",
+  "kind": "agent",
+  "title": "Phase 4: Assess alignment of each UI with the real goal",
+  "labels": [
+    "alignment",
+    "assessment",
+    "product"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMD2DPEE952YJTMDT5AHJ1P2/input.json",
+    "outputJsonPath": "tasks/01KMD2DPEE952YJTMDT5AHJ1P2/result.json"
+  },
+  "inputs": {
+    "analysis": {
+      "evaluations": [
+        {
+          "architecturalCoherence": "high",
+          "backendCoupling": "moderate",
+          "coreFeatures": [
+            "Coverage dashboard",
+            "Issue table with inline editing",
+            "Batch corrections",
+            "Agent chat with proposals",
+            "Correction history with export"
+          ],
+          "deadFeatures": [
+            "Hardcoded Primo NLI URL",
+            "Static version label"
+          ],
+          "doNotSurvive": [
+            "Hardcoded Primo URL",
+            "Sequential mutation firing for batch",
+            "Emoji in AgentChat"
+          ],
+          "maintainability": "high",
+          "missingFeatures": [
+            "No full record detail view",
+            "No undo/rollback",
+            "No auth",
+            "No date correction",
+            "No keyboard shortcuts"
+          ],
+          "name": "Metadata Co-pilot Workbench (frontend/)",
+          "overlappingFeatures": [
+            "Coverage statistics (QA)",
+            "Database browsing (QA)",
+            "Primo URLs (Chat UI)"
+          ],
+          "technicalQuality": "high",
+          "uniqueFeatures": [
+            "Inline editable cells",
+            "Weighted quality score",
+            "Cluster-based review",
+            "Agent proposal lifecycle",
+            "CSV/JSON export"
+          ],
+          "uxQuality": "high",
+          "verdict": "Strongest UI. Should be the foundation for the unified UI.",
+          "workflows": [
+            "Coverage overview with drill-down",
+            "Issue triage with inline editing",
+            "Agent-assisted normalization",
+            "Correction audit with export"
+          ]
+        },
+        {
+          "architecturalCoherence": "medium",
+          "backendCoupling": "loose",
+          "coreFeatures": [
+            "NL query execution",
+            "Candidate labeling (TP/FP/FN/UNK)",
+            "Guided wizard",
+            "Gold set export",
+            "Issue tag analytics",
+            "DB explorer"
+          ],
+          "deadFeatures": [
+            "Load Last Run button",
+            "Unused filters parameter",
+            "Duplicate regression runner"
+          ],
+          "doNotSurvive": [
+            "Duplicate regression runner",
+            "DB Explorer page",
+            "sys.path manipulation",
+            "Direct sqlite3 bypassing db.py"
+          ],
+          "maintainability": "medium",
+          "missingFeatures": [
+            "No precision/recall metrics",
+            "No integration with Workbench",
+            "No Primo links",
+            "No delta comparison"
+          ],
+          "name": "QA Tool (app/ui_qa/)",
+          "overlappingFeatures": [
+            "NL query execution (CLI, Chat, API)",
+            "Regression testing (app/qa.py)",
+            "Database browsing (Workbench)"
+          ],
+          "technicalQuality": "medium",
+          "uniqueFeatures": [
+            "Guided wizard with step gating",
+            "Issue tag taxonomy",
+            "Problem query ranking",
+            "Canonical query library",
+            "Evidence spot-check"
+          ],
+          "uxQuality": "medium",
+          "verdict": "Valuable QA infrastructure with code quality issues. Unique features should be preserved.",
+          "workflows": [
+            "Ad-hoc query testing",
+            "Guided SMOKE/RECALL sessions",
+            "FN discovery via DB search",
+            "Issue analytics",
+            "Gold set export",
+            "DB exploration"
+          ]
+        },
+        {
+          "architecturalCoherence": "high",
+          "backendCoupling": "tight",
+          "coreFeatures": [
+            "Chat interface",
+            "HTTP client to /chat",
+            "Session management",
+            "Rich bibliographic formatting",
+            "Primo URLs (TAU)",
+            "Follow-up suggestions"
+          ],
+          "deadFeatures": [],
+          "doNotSurvive": [
+            "Streamlit platform",
+            "Hardcoded localhost API URL",
+            "Synchronous HTTP calls"
+          ],
+          "maintainability": "high",
+          "missingFeatures": [
+            "No WebSocket streaming",
+            "No faceted browsing",
+            "No result sorting",
+            "No export",
+            "No debug mode",
+            "No pagination"
+          ],
+          "name": "Chat UI (app/ui_chat/)",
+          "overlappingFeatures": [
+            "NL query execution (CLI, QA)",
+            "Session management (API, QA)",
+            "Primo URLs (Workbench)"
+          ],
+          "technicalQuality": "medium",
+          "uniqueFeatures": [
+            "True conversational interface",
+            "Rich bibliographic formatting",
+            "Smart date/place helpers",
+            "Follow-up suggestion buttons"
+          ],
+          "uxQuality": "medium",
+          "verdict": "Right idea, wrong platform. Conversational discovery should migrate to React.",
+          "workflows": [
+            "Bibliographic query with results",
+            "Multi-turn conversation",
+            "Example query selection"
+          ]
+        },
+        {
+          "architecturalCoherence": "high",
+          "backendCoupling": "loose",
+          "coreFeatures": [
+            "MARC parsing command",
+            "NL query with file output",
+            "Session creation/history/cleanup"
+          ],
+          "deadFeatures": [
+            "index command referenced in CLAUDE.md but not implemented"
+          ],
+          "doNotSurvive": [
+            "Emoji in CLI output"
+          ],
+          "maintainability": "high",
+          "missingFeatures": [
+            "No index command",
+            "No normalize command",
+            "No interactive mode"
+          ],
+          "name": "CLI (app/cli.py)",
+          "overlappingFeatures": [
+            "NL query execution (Chat, QA, API)",
+            "Session management (API, Chat)"
+          ],
+          "technicalQuality": "high",
+          "uniqueFeatures": [
+            "MARC XML parsing (only UI exposing M1)",
+            "Artifact file output",
+            "Session-aware CLI queries"
+          ],
+          "uxQuality": "medium",
+          "verdict": "Solid developer tool. Keep as developer/ops interface.",
+          "workflows": [
+            "MARC XML parsing",
+            "NL query execution",
+            "Session management"
+          ]
+        },
+        {
+          "architecturalCoherence": "high",
+          "backendCoupling": "loose",
+          "coreFeatures": [
+            "Gold set loading",
+            "Sequential query execution",
+            "CI exit codes",
+            "JSON log output"
+          ],
+          "deadFeatures": [
+            "Entire tool duplicated in QA Tool"
+          ],
+          "doNotSurvive": [
+            "Emoji in output",
+            "Duplicate in QA Tool should be removed"
+          ],
+          "maintainability": "high",
+          "missingFeatures": [
+            "No parallel execution",
+            "No timeout",
+            "No JUnit output"
+          ],
+          "name": "QA Regression Runner (app/qa.py)",
+          "overlappingFeatures": [
+            "Regression testing (QA Tool Gold Set page)"
+          ],
+          "technicalQuality": "medium",
+          "uniqueFeatures": [
+            "CI-compatible exit codes",
+            "JSON log output",
+            "Standalone executable"
+          ],
+          "uxQuality": "medium",
+          "verdict": "Essential but duplicated. Should be canonical regression runner.",
+          "workflows": [
+            "CI regression testing"
+          ]
+        },
+        {
+          "architecturalCoherence": "medium",
+          "backendCoupling": "tight",
+          "coreFeatures": [
+            "Two-phase conversation model",
+            "Intent agent with confidence",
+            "Coverage reports",
+            "Atomic corrections",
+            "Agent harness routing",
+            "Rate limiting",
+            "WebSocket streaming"
+          ],
+          "deadFeatures": [
+            "Enrichment service unused",
+            "Retained _bib_db variable",
+            "CORS allow-all"
+          ],
+          "doNotSurvive": [
+            "Global mutable state",
+            "CORS allow-all",
+            "Uncached coverage reports",
+            "Inline SQL"
+          ],
+          "maintainability": "medium",
+          "missingFeatures": [
+            "No auth",
+            "No per-user rate limiting",
+            "No API versioning",
+            "No coverage caching",
+            "No connection pooling"
+          ],
+          "name": "FastAPI Backend (app/api/)",
+          "overlappingFeatures": [
+            "Query execution (CLI/QA bypass this)",
+            "Session management (QA has own)",
+            "Coverage stats (generated here)"
+          ],
+          "technicalQuality": "medium",
+          "uniqueFeatures": [
+            "Two-phase conversation model",
+            "Intent agent with LLM scoring",
+            "Exploration phase",
+            "Interaction logging",
+            "Atomic alias map updates",
+            "Batch corrections"
+          ],
+          "uxQuality": "medium",
+          "verdict": "Correct architectural center but growing complex. Needs decomposition and caching.",
+          "workflows": [
+            "Two-phase chat",
+            "Coverage audit",
+            "Issue triage",
+            "Corrections",
+            "Agent analysis",
+            "WebSocket streaming",
+            "Publisher browsing"
+          ]
+        }
+      ]
+    },
+    "inventory": {
+      "uis": [
+        {
+          "description": "React SPA with 4 routes (/, /workbench, /agent, /review). Proxies /metadata/* to FastAPI backend. Has pre-built dist/ but no production serving config. ~3,160 lines of TypeScript/TSX.",
+          "entryPoint": "cd frontend && npm run dev (http://localhost:5173)",
+          "location": "frontend/",
+          "name": "Metadata Co-pilot Workbench",
+          "purpose": "Agent-driven HITL system for improving bibliographic metadata quality. 4 pages: Dashboard, Workbench, Agent Chat, Review.",
+          "status": "active",
+          "targetUsers": "Librarians, metadata specialists",
+          "techStack": "React 19, TypeScript, Vite 8, Tailwind CSS 4, TanStack Query 5, TanStack Table 8, Recharts 3, React Router 7"
+        },
+        {
+          "description": "Multi-page Streamlit app with 7 page files. Calls QueryService in-process (no FastAPI dependency). Has own SQLite database at data/qa/qa.db. Includes guided wizard workflow, DB explorer, and 15 canonical test queries. ~3,530 lines of Python.",
+          "entryPoint": "poetry run streamlit run app/ui_qa/main.py (http://localhost:8501)",
+          "location": "app/ui_qa/",
+          "name": "QA Tool",
+          "purpose": "Quality assurance for M4 query pipeline: execute queries, label results as TP/FP/FN, track issues, export gold sets for regression testing. 6 visible pages plus 1 hidden wizard.",
+          "status": "active",
+          "targetUsers": "Developers, QA testers",
+          "techStack": "Streamlit 1.52+, Pandas, SQLite (own qa.db)"
+        },
+        {
+          "description": "Single-page Streamlit chat app that calls FastAPI /chat endpoint via HTTP. Has dedicated launcher script (run_chat_ui.sh) that starts both API and UI. Primo links configured for Tel Aviv University. ~450 lines of Python.",
+          "entryPoint": "poetry run streamlit run app/ui_chat/main.py or ./run_chat_ui.sh (http://localhost:8501)",
+          "location": "app/ui_chat/",
+          "name": "Chat UI",
+          "purpose": "Conversational discovery interface for searching the rare books collection. Chat-style with message history, follow-up suggestions, expandable results with Primo catalog links.",
+          "status": "active",
+          "targetUsers": "End-users, researchers, librarians",
+          "techStack": "Streamlit 1.52+, Requests"
+        },
+        {
+          "description": "5 commands: parse-marc, query, chat-init, chat-history, chat-cleanup. Calls scripts directly in-process. Stale documentation in app/README.md. ~334 lines.",
+          "entryPoint": "python -m app.cli <command>",
+          "location": "app/cli.py",
+          "name": "CLI",
+          "purpose": "Command-line interface for MARC pipeline operations: parse MARC XML, execute queries, manage chat sessions.",
+          "status": "active",
+          "targetUsers": "Developers, system operators",
+          "techStack": "Typer (Python CLI framework)"
+        },
+        {
+          "description": "CLI companion to the QA Tool. Uses exit codes 0/1 for CI integration. Gold sets are exported from the QA Tool UI. ~187 lines.",
+          "entryPoint": "python -m app.qa regress --gold data/qa/gold.json --db data/index/bibliographic.db",
+          "location": "app/qa.py",
+          "name": "QA Regression Runner",
+          "purpose": "Automated regression testing against gold set expectations. Validates that query results match expected includes/excludes.",
+          "status": "active",
+          "targetUsers": "Developers, CI/CD pipelines",
+          "techStack": "Typer (Python CLI framework)"
+        },
+        {
+          "description": "Two modules: main.py (chat/session/health/websocket endpoints, ~1,130 lines) and metadata.py (12 metadata quality endpoints, ~1,459 lines). Auto-generates Swagger UI at /docs and ReDoc at /redoc. ~3,024 lines total.",
+          "entryPoint": "uvicorn app.api.main:app --reload (http://localhost:8000, docs at /docs)",
+          "location": "app/api/",
+          "name": "FastAPI Backend (API Layer)",
+          "purpose": "Central HTTP API serving the Chat UI and Metadata Workbench. 17 REST endpoints plus 1 WebSocket. Also provides auto-generated Swagger UI and ReDoc documentation.",
+          "status": "active",
+          "targetUsers": "Frontend clients (React Workbench, Streamlit Chat UI), developers (Swagger/ReDoc)",
+          "techStack": "FastAPI 0.115, Pydantic, Uvicorn, slowapi (rate limiting), CORS middleware"
+        }
+      ]
+    },
+    "projectGoal": {
+      "centerpiece": "The two-phase conversational query engine: intent interpretation with confidence scoring -> corpus exploration with aggregation, refinement, and enrichment, delivered through the chatbot UI",
+      "coreUseCases": [
+        "Natural language bibliographic query with evidence-based results traceable to MARC fields",
+        "Two-phase conversational exploration: define a result set with confidence scoring, then aggregate and analyze it",
+        "Multi-turn refinement and follow-up within a session",
+        "Normalization quality improvement via HITL metadata co-pilot",
+        "Query pipeline regression testing via gold sets"
+      ],
+      "noise": [
+        "configs/chunk_rules.yaml -- RAG template remnant",
+        "configs/outlook_helper.yaml -- RAG template remnant",
+        "scripts/api_clients/openai/completer.py -- orphaned OpenAI wrapper",
+        "Ghost reference to ProjectManager",
+        "TODO_CONVERSATIONAL_AGENT.md -- completed TODO list",
+        "project_basseline.txt -- misspelled baseline file",
+        "docs/salvaged_disscussion.txt -- unclear origin",
+        "Duplicate regression runner in QA Tool",
+        "Empty archive/ directory"
+      ],
+      "primaryUsers": [
+        "Bibliographic researchers and scholars who need to query rare book collections in natural language and trust the results",
+        "Metadata librarians who maintain normalization quality and authority records",
+        "Developers who validate query pipeline correctness"
+      ],
+      "projectGoal": "Enable scholars and librarians to discover rare books through natural language conversation, backed by a deterministic, evidence-based query engine over MARC XML bibliographic records with full provenance tracking.",
+      "secondary": [
+        "Metadata Co-pilot Workbench -- data quality admin for catalogers",
+        "QA Tool -- query pipeline validation and regression testing",
+        "Enrichment pipeline -- external data augmentation, partially integrated",
+        "CLI -- developer access to the M1-M4 pipeline",
+        "Publisher authority record system"
+      ]
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "prompt": "Deep product, UX, architecture, and implementation evaluation of all existing UIs to support design and build of a single new integrated UI for Rare Books Bot - beta version. The bot is the heart of the system. The new UI must include observability and debugging. Preferred direction: React or Angular."
+  }
+}

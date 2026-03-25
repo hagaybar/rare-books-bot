@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDYJ26J7KHFDB2BYB1S7WDE",
+  "taskId": "phase4-verify",
+  "invocationKey": "implement-unified-ui:S000015:phase4-verify",
+  "status": "ok",
+  "result": {
+    "buildOutput": "success"
+  },
+  "startedAt": "2026-03-23T18:16:02.909Z",
+  "finishedAt": "2026-03-23T18:16:02.909Z",
+  "value": {
+    "buildOutput": "success"
+  }
+}

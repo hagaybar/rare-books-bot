@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-23T21:23:03.960Z",
+  "data": {
+    "runId": "01KME98WKZSY9ME40S9HWDDW1W",
+    "processId": "narrative-agent-prototype",
+    "entrypoint": {
+      "importPath": "../../processes/narrative-agent-prototype.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Build narrative agent prototype for agent biographical enrichment in chat"
+  },
+  "checksum": "03d808bad1b696b7c0664a3f3114aa6616ec5c044c2a806a305c9ada753d2d2c"
+}

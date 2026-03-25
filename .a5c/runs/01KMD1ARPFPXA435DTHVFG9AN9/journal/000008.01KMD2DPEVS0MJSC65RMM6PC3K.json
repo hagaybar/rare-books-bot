@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T10:04:07.003Z",
+  "data": {
+    "effectId": "01KMD2DPEE952YJTMDT5AHJ1P2",
+    "invocationKey": "ui-evaluation-and-redesign:S000004:alignment-assessment",
+    "invocationHash": "48c2463b744b4fe53183e2d36cf33c821cb3c544b683fb5a5270f2fb671d1bb8",
+    "stepId": "S000004",
+    "taskId": "alignment-assessment",
+    "kind": "agent",
+    "label": "product",
+    "taskDefRef": "tasks/01KMD2DPEE952YJTMDT5AHJ1P2/task.json",
+    "labels": [
+      "product",
+      "alignment",
+      "assessment"
+    ]
+  },
+  "checksum": "e0a1248473f28105e4928deceb0c8a2e093860dd11e3d6c3ef4056f508f7f716"
+}

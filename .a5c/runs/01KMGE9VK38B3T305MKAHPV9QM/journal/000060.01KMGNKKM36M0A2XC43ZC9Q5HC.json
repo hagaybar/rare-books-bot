@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:37:06.947Z",
+  "data": {
+    "effectId": "01KMGNKKKVJGTH96MA92WN4G2M",
+    "invocationKey": "implement-historian-enhancements:S000025:e4-api-wiring",
+    "invocationHash": "9007eff305df5587411c90e80fd05489b84eb130109e192f91edac3e8203f3f6",
+    "stepId": "S000025",
+    "taskId": "e4-api-wiring",
+    "kind": "agent",
+    "label": "E4: Add pedagogical framing and wire thematic context into API",
+    "taskDefRef": "tasks/01KMGNKKKVJGTH96MA92WN4G2M/task.json"
+  },
+  "checksum": "608f1d37418f881f8dfd5d9cb3de0988b78b31911aebcabf12d133a8a0b1d136"
+}

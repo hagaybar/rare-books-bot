@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAV9Y63KA49FA0KRT4EXPCB",
+  "taskId": "verify-update-pipe",
+  "invocationKey": "notebooklm-context-builder:S000008:verify-update-pipe",
+  "status": "ok",
+  "result": {
+    "filesGenerated": 7,
+    "success": true,
+    "totalWords": 9948,
+    "warnings": [
+      "PROJECT_DESCRIPTION.md path needs correction (should be docs/PROJECT_DESCRIPTION.md)"
+    ]
+  },
+  "startedAt": "2026-03-22T13:21:37.326Z",
+  "finishedAt": "2026-03-22T13:21:37.326Z",
+  "value": {
+    "filesGenerated": 7,
+    "success": true,
+    "totalWords": 9948,
+    "warnings": [
+      "PROJECT_DESCRIPTION.md path needs correction (should be docs/PROJECT_DESCRIPTION.md)"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:04:59.487Z",
+  "data": {
+    "effectId": "01KMGKRSAK8796R86SE3E8M7VS",
+    "invocationKey": "implement-historian-enhancements:S000013:e2-verify",
+    "invocationHash": "29efe0fafa46acb8c2e34b0bf2ca1e39aaaaf9ff1fba37bf081050a8883ec3bd",
+    "stepId": "S000013",
+    "taskId": "e2-verify",
+    "kind": "shell",
+    "label": "E2: Run all E2 tests to verify completion",
+    "taskDefRef": "tasks/01KMGKRSAK8796R86SE3E8M7VS/task.json"
+  },
+  "checksum": "145bde7a4d17ce68614e034458852ce24c4a23929e40b93997b5f3661b66b3d2"
+}

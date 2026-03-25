@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAT79FK4204TG3D5MM72DFN",
+  "taskId": "quality-review",
+  "invocationKey": "notebooklm-context-builder:S000003:quality-review",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Review document quality and completeness",
+  "io": {
+    "inputJsonPath": "tasks/01KMAT79FK4204TG3D5MM72DFN/input.json",
+    "outputJsonPath": "tasks/01KMAT79FK4204TG3D5MM72DFN/output.json"
+  },
+  "inputs": {
+    "documentFiles": [
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/01_project_overview.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/02_code_map.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/03_data_pipeline.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/04_query_and_chat.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/05_metadata_workbench.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/06_data_model.md",
+      "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/07_project_status.md"
+    ],
+    "outputDir": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources",
+    "repoRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

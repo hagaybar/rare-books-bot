@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGKRSAK8796R86SE3E8M7VS",
+  "taskId": "e2-verify",
+  "invocationKey": "implement-historian-enhancements:S000013:e2-verify",
+  "stepId": "S000013",
+  "kind": "shell",
+  "title": "E2: Run all E2 tests to verify completion",
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_analytical_router.py tests/scripts/chat/test_curation_engine.py tests/app/test_api_analytical.py -v --timeout=60 2>&1 | tail -30",
+    "description": "Run E2 tests and verify analytical routing works",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMG13JZ2KJVCK0DPKFDQ6DWG",
+  "taskId": "analyze-data-model",
+  "invocationKey": "historian-enhancement-plan:S000004:analyze-data-model",
+  "status": "ok",
+  "result": {
+    "agentsTable": {
+      "distinctAuthorityUris": 2434,
+      "distinctNormValues": 3102,
+      "recordsWithAuthorityUri": 3613,
+      "sampleData": [
+        {
+          "agent_norm": "faïtlovitch, jacques",
+          "count": 40
+        },
+        {
+          "agent_norm": "wurmbrand, max",
+          "count": 38
+        },
+        {
+          "agent_norm": "faïtlovitch collection. ancient ethiopic manuscripts collection",
+          "count": 30
+        },
+        {
+          "agent_norm": "josephus, flavius",
+          "count": 30
+        },
+        {
+          "agent_norm": "buxtorf, johann",
+          "count": 26
+        },
+        {
+          "agent_norm": "schwerin, ludwig",
+          "count": 17
+        },
+        {
+          "agent_norm": "buchon, j. a. c",
+          "count": 16
+        },
+        {
+          "agent_norm": "משה בן מימון",
+          "count": 15
+        },
+        {
+          "agent_norm": "schwencke, johan",
+          "count": 13
+        },
+        {
+          "agent_norm": "אברבנאל, יצחק בן יהודה",
+          "count": 13
+        },
+        {
+          "agent_norm": "קארו, יוסף בן אפרים",
+          "count": 13
+        },
+        {
+          "agent_norm": "ludolf, hiob",
+          "count": 11
+        },
+        {
+          "agent_norm": "mendelssohn, moses",
+          "count": 11
+        },
+        {
+          "agent_norm": "cicero, marcus tullius",
+          "count": 10
+        }
+      ],
+      "schema": "CREATE TABLE agents (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    record_id INTEGER NOT NULL,\n    agent_index INTEGER NOT NULL,\n    agent_raw TEXT NOT NULL,\n    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),\n    role_raw TEXT,\n    role_source TEXT,\n    authority_uri TEXT,\n    agent_norm TEXT NOT NULL,\n    agent_confidence REAL NOT NULL CHECK(agent_confidence BETWEEN 0 AND 1),\n    agent_method TEXT NOT NULL,\n    agent_notes TEXT,\n    role_norm TEXT NOT NULL,\n    role_confidence REAL NOT NULL CHECK(role_confidence BETWEEN 0 AND 1),\n    role_method TEXT NOT NULL,\n    provenance_json TEXT NOT NULL,\n    FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE\n)",
+      "wordOrderPattern": "surname, given (Western names in inverted order; Hebrew names in direct order with patronymic: given ben father)"
+    },
+    "authorityEnrichment": {
+      "hasHebrewLabels": true,
+      "hebrewLabelCount": 21,
+      "hebrewLabelExamples": [
+        "אנדרה מסון",
+        "פרנק מאזארל",
+        "ז'ראר דה נרוואל",
+        "ברנאר פיקאר",
+        "חברת שונצינו של ידידי הספרים היהודיים"
+      ],
+      "personInfoStructure": "JSON object with keys: birth_year, death_year, birth_place, death_place, nationality, occupations, description, teachers, students, notable_works",
+      "schema": "CREATE TABLE authority_enrichment (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    authority_uri TEXT NOT NULL UNIQUE,\n    nli_id TEXT,\n    wikidata_id TEXT,\n    viaf_id TEXT,\n    isni_id TEXT,\n    loc_id TEXT,\n    label TEXT,\n    description TEXT,\n    person_info TEXT,\n    place_info TEXT,\n    image_url TEXT,\n    wikipedia_url TEXT,\n    source TEXT NOT NULL,\n    confidence REAL,\n    fetched_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL\n)",
+      "totalRecords": 5667
+    },
+    "imprintsTable": {
+      "relevantColumns": [
+        "publisher_raw (raw publisher string from MARC, potential seed for agent-publisher cross-reference)",
+        "publisher_norm (normalized publisher key, links to publisher_authorities via variants)",
+        "place_raw (raw place string, contextual for agent activity location)",
+        "place_norm (normalized place key)",
+        "date_start / date_end (date range for activity period cross-reference)"
+      ],
+      "schema": "CREATE TABLE imprints (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    record_id INTEGER NOT NULL,\n    occurrence INTEGER NOT NULL,\n    date_raw TEXT,\n    place_raw TEXT,\n    publisher_raw TEXT,\n    manufacturer_raw TEXT,\n    source_tags TEXT NOT NULL,\n    date_start INTEGER,\n    date_end INTEGER,\n    date_label TEXT,\n    date_confidence REAL,\n    date_method TEXT,\n    place_norm TEXT,\n    place_display TEXT,\n    place_confidence REAL,\n    place_method TEXT,\n    publisher_norm TEXT,\n    publisher_display TEXT,\n    publisher_confidence REAL,\n    publisher_method TEXT,\n    country_code TEXT,\n    country_name TEXT,\n    FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE\n)"
+    },
+    "problematicAgents": {
+      "buxtorf": "Stored as single norm 'buxtorf, johann' -- but historically there were two Johann Buxtorfs (father 1564-1629 and son 1599-1664), both Hebraists in Basel. The current schema collapses them into one agent_norm. Raw forms all appear as 'Buxtorf, Johann,' with no disambiguation. authority_uri may distinguish them but agent_norm does not.",
+      "karo": "Stored only in Hebrew as 'קארו, יוסף בן אפרים' (13 records). No Latin/English form exists (e.g., 'Karo, Joseph' or 'Caro, Joseph'). A search for 'Joseph Karo' or 'Caro' would fail entirely. The LIKE '%karo%' query also matched unrelated agents (Beaumarchais [caron], Carolus, Caroline) showing the difficulty of substring matching.",
+      "maimonides": "Split across two norms that are NOT linked: 'maimonides, moses' (Latin form) and 'משה בן מימון' (Hebrew patronymic form, 15 records). These represent the same person (Rabbi Moshe ben Maimon / Rambam) but appear as separate agents. A query for 'Maimonides' would miss the 15 Hebrew-form records.",
+      "mendelssohn": "Stored as single norm 'mendelssohn, moses' (11 records). Only Moses Mendelssohn appears. Raw form: 'Mendelssohn, Moses,'. No Hebrew form present despite being a major figure in Jewish Enlightenment literature."
+    },
+    "proposedAgentAliasSchema": "CREATE TABLE agent_aliases (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    authority_id INTEGER NOT NULL,\n    alias_form TEXT NOT NULL,\n    alias_form_lower TEXT NOT NULL,\n    script TEXT DEFAULT 'latin',\n    language TEXT,\n    alias_type TEXT NOT NULL CHECK(alias_type IN (\n        'primary',          -- the preferred display form for this script\n        'variant_spelling',  -- alternate transliteration or spelling\n        'cross_script',      -- same person in different script (e.g., Hebrew <-> Latin)\n        'patronymic',        -- patronymic form (e.g., ben Maimon)\n        'acronym',           -- rabbinic acronym (e.g., Rambam)\n        'historical'         -- historical Latin or vernacular name form\n    )),\n    is_primary INTEGER NOT NULL DEFAULT 0,\n    priority INTEGER NOT NULL DEFAULT 0,\n    notes TEXT,\n    source TEXT,\n    created_at TEXT NOT NULL,\n    FOREIGN KEY (authority_id) REFERENCES agent_authorities(id) ON DELETE CASCADE\n);\n\nCREATE TABLE agent_authorities (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    canonical_name TEXT NOT NULL,\n    canonical_name_lower TEXT NOT NULL,\n    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),\n    birth_year INTEGER,\n    death_year INTEGER,\n    nationality TEXT,\n    occupation TEXT,\n    notes TEXT,\n    viaf_id TEXT,\n    wikidata_id TEXT,\n    nli_id TEXT,\n    isni_id TEXT,\n    confidence REAL NOT NULL DEFAULT 0.5,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n);\n\nCREATE UNIQUE INDEX idx_agent_auth_canonical_lower ON agent_authorities(canonical_name_lower);\nCREATE INDEX idx_agent_auth_type ON agent_authorities(agent_type);\nCREATE INDEX idx_agent_aliases_authority ON agent_aliases(authority_id);\nCREATE UNIQUE INDEX idx_agent_aliases_form_lower ON agent_aliases(alias_form_lower);\nCREATE INDEX idx_agent_aliases_script ON agent_aliases(script);\nCREATE INDEX idx_agent_aliases_type ON agent_aliases(alias_type);",
+    "publisherAuthorities": {
+      "sampleVariantMappings": [
+        {
+          "canonical": "[publisher unknown]",
+          "variant": "חמו\"ל"
+        },
+        {
+          "canonical": "[publisher unknown]",
+          "variant": "[חמו\"ל]"
+        },
+        {
+          "canonical": "House of Elzevir",
+          "variant": "ex officina elzeviriana"
+        },
+        {
+          "canonical": "Bragadin Press, Venice",
+          "variant": "nella stamparia bragadina"
+        },
+        {
+          "canonical": "Vendramin Press, Venice",
+          "variant": "nella stamparia vendramina"
+        }
+      ],
+      "schema": "CREATE TABLE publisher_authorities (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    canonical_name TEXT NOT NULL,\n    canonical_name_lower TEXT NOT NULL,\n    type TEXT NOT NULL CHECK(type IN ('printing_house', 'private_press', 'modern_publisher', 'bibliophile_society', 'unknown_marker', 'unresearched')),\n    dates_active TEXT,\n    date_start INTEGER,\n    date_end INTEGER,\n    location TEXT,\n    notes TEXT,\n    sources TEXT,\n    confidence REAL NOT NULL DEFAULT 0.5,\n    is_missing_marker INTEGER NOT NULL DEFAULT 0,\n    viaf_id TEXT,\n    wikidata_id TEXT,\n    cerl_id TEXT,\n    branch TEXT,\n    primary_language TEXT,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n)",
+      "totalAuthorities": 227,
+      "totalVariants": 265,
+      "variantPattern": "Two-table normalized authority system: publisher_authorities holds canonical identities (one row per publisher) with external IDs (VIAF, Wikidata, CERL); publisher_variants holds name forms (many-to-one FK to authorities) with script detection, language tagging, priority ordering, and case-insensitive unique index on variant_form_lower for fast lookup. Variants include Latin, Hebrew, and transliterated forms."
+    },
+    "seedDataSources": [
+      {
+        "estimatedRecords": "2,434 distinct authority URIs with enrichment data covering 3,613 agent rows; provides external IDs and biographical metadata for seeding agent_authorities",
+        "fieldPath": "agents.authority_uri JOIN authority_enrichment.authority_uri -> label, person_info (birth/death years, occupations), wikidata_id, viaf_id",
+        "source": "agents.authority_uri -> authority_enrichment"
+      },
+      {
+        "estimatedRecords": "3,102 distinct agent_norm values that can be clustered by edit distance and cross-script matching to identify same-person groups (e.g., maimonides/משה בן מימון)",
+        "fieldPath": "agents.agent_norm (3,102 distinct values) + agent_raw + agent_type",
+        "source": "agents table (agent_norm clustering)"
+      },
+      {
+        "estimatedRecords": "5,667 enrichment records with structured biographical JSON; can populate agent_authorities biographical fields",
+        "fieldPath": "authority_enrichment.person_info JSON -> birth_year, death_year, nationality, occupations, description",
+        "source": "authority_enrichment.person_info"
+      },
+      {
+        "estimatedRecords": "21 Hebrew-script labels providing cross-script alias candidates for agent_aliases with alias_type='cross_script'",
+        "fieldPath": "authority_enrichment.label where script is Hebrew",
+        "source": "authority_enrichment.label (Hebrew labels)"
+      },
+      {
+        "estimatedRecords": "All agent rows; raw forms like 'Buxtorf, Johann,' and 'Maimonides, Moses,' provide variant_spelling aliases distinct from agent_norm",
+        "fieldPath": "agents.agent_raw -> variant spelling forms before normalization",
+        "source": "agents.agent_raw (raw MARC forms)"
+      },
+      {
+        "estimatedRecords": "227 authorities / 265 variants -- serves as architectural template, not direct seed data",
+        "fieldPath": "Existing publisher authority system provides the proven two-table pattern to replicate",
+        "source": "publisher_authorities/publisher_variants (pattern reference)"
+      }
+    ]
+  },
+  "startedAt": "2026-03-24T13:41:53.907Z",
+  "finishedAt": "2026-03-24T13:41:53.907Z",
+  "value": {
+    "agentsTable": {
+      "distinctAuthorityUris": 2434,
+      "distinctNormValues": 3102,
+      "recordsWithAuthorityUri": 3613,
+      "sampleData": [
+        {
+          "agent_norm": "faïtlovitch, jacques",
+          "count": 40
+        },
+        {
+          "agent_norm": "wurmbrand, max",
+          "count": 38
+        },
+        {
+          "agent_norm": "faïtlovitch collection. ancient ethiopic manuscripts collection",
+          "count": 30
+        },
+        {
+          "agent_norm": "josephus, flavius",
+          "count": 30
+        },
+        {
+          "agent_norm": "buxtorf, johann",
+          "count": 26
+        },
+        {
+          "agent_norm": "schwerin, ludwig",
+          "count": 17
+        },
+        {
+          "agent_norm": "buchon, j. a. c",
+          "count": 16
+        },
+        {
+          "agent_norm": "משה בן מימון",
+          "count": 15
+        },
+        {
+          "agent_norm": "schwencke, johan",
+          "count": 13
+        },
+        {
+          "agent_norm": "אברבנאל, יצחק בן יהודה",
+          "count": 13
+        },
+        {
+          "agent_norm": "קארו, יוסף בן אפרים",
+          "count": 13
+        },
+        {
+          "agent_norm": "ludolf, hiob",
+          "count": 11
+        },
+        {
+          "agent_norm": "mendelssohn, moses",
+          "count": 11
+        },
+        {
+          "agent_norm": "cicero, marcus tullius",
+          "count": 10
+        }
+      ],
+      "schema": "CREATE TABLE agents (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    record_id INTEGER NOT NULL,\n    agent_index INTEGER NOT NULL,\n    agent_raw TEXT NOT NULL,\n    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),\n    role_raw TEXT,\n    role_source TEXT,\n    authority_uri TEXT,\n    agent_norm TEXT NOT NULL,\n    agent_confidence REAL NOT NULL CHECK(agent_confidence BETWEEN 0 AND 1),\n    agent_method TEXT NOT NULL,\n    agent_notes TEXT,\n    role_norm TEXT NOT NULL,\n    role_confidence REAL NOT NULL CHECK(role_confidence BETWEEN 0 AND 1),\n    role_method TEXT NOT NULL,\n    provenance_json TEXT NOT NULL,\n    FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE\n)",
+      "wordOrderPattern": "surname, given (Western names in inverted order; Hebrew names in direct order with patronymic: given ben father)"
+    },
+    "authorityEnrichment": {
+      "hasHebrewLabels": true,
+      "hebrewLabelCount": 21,
+      "hebrewLabelExamples": [
+        "אנדרה מסון",
+        "פרנק מאזארל",
+        "ז'ראר דה נרוואל",
+        "ברנאר פיקאר",
+        "חברת שונצינו של ידידי הספרים היהודיים"
+      ],
+      "personInfoStructure": "JSON object with keys: birth_year, death_year, birth_place, death_place, nationality, occupations, description, teachers, students, notable_works",
+      "schema": "CREATE TABLE authority_enrichment (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    authority_uri TEXT NOT NULL UNIQUE,\n    nli_id TEXT,\n    wikidata_id TEXT,\n    viaf_id TEXT,\n    isni_id TEXT,\n    loc_id TEXT,\n    label TEXT,\n    description TEXT,\n    person_info TEXT,\n    place_info TEXT,\n    image_url TEXT,\n    wikipedia_url TEXT,\n    source TEXT NOT NULL,\n    confidence REAL,\n    fetched_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL\n)",
+      "totalRecords": 5667
+    },
+    "imprintsTable": {
+      "relevantColumns": [
+        "publisher_raw (raw publisher string from MARC, potential seed for agent-publisher cross-reference)",
+        "publisher_norm (normalized publisher key, links to publisher_authorities via variants)",
+        "place_raw (raw place string, contextual for agent activity location)",
+        "place_norm (normalized place key)",
+        "date_start / date_end (date range for activity period cross-reference)"
+      ],
+      "schema": "CREATE TABLE imprints (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    record_id INTEGER NOT NULL,\n    occurrence INTEGER NOT NULL,\n    date_raw TEXT,\n    place_raw TEXT,\n    publisher_raw TEXT,\n    manufacturer_raw TEXT,\n    source_tags TEXT NOT NULL,\n    date_start INTEGER,\n    date_end INTEGER,\n    date_label TEXT,\n    date_confidence REAL,\n    date_method TEXT,\n    place_norm TEXT,\n    place_display TEXT,\n    place_confidence REAL,\n    place_method TEXT,\n    publisher_norm TEXT,\n    publisher_display TEXT,\n    publisher_confidence REAL,\n    publisher_method TEXT,\n    country_code TEXT,\n    country_name TEXT,\n    FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE\n)"
+    },
+    "problematicAgents": {
+      "buxtorf": "Stored as single norm 'buxtorf, johann' -- but historically there were two Johann Buxtorfs (father 1564-1629 and son 1599-1664), both Hebraists in Basel. The current schema collapses them into one agent_norm. Raw forms all appear as 'Buxtorf, Johann,' with no disambiguation. authority_uri may distinguish them but agent_norm does not.",
+      "karo": "Stored only in Hebrew as 'קארו, יוסף בן אפרים' (13 records). No Latin/English form exists (e.g., 'Karo, Joseph' or 'Caro, Joseph'). A search for 'Joseph Karo' or 'Caro' would fail entirely. The LIKE '%karo%' query also matched unrelated agents (Beaumarchais [caron], Carolus, Caroline) showing the difficulty of substring matching.",
+      "maimonides": "Split across two norms that are NOT linked: 'maimonides, moses' (Latin form) and 'משה בן מימון' (Hebrew patronymic form, 15 records). These represent the same person (Rabbi Moshe ben Maimon / Rambam) but appear as separate agents. A query for 'Maimonides' would miss the 15 Hebrew-form records.",
+      "mendelssohn": "Stored as single norm 'mendelssohn, moses' (11 records). Only Moses Mendelssohn appears. Raw form: 'Mendelssohn, Moses,'. No Hebrew form present despite being a major figure in Jewish Enlightenment literature."
+    },
+    "proposedAgentAliasSchema": "CREATE TABLE agent_aliases (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    authority_id INTEGER NOT NULL,\n    alias_form TEXT NOT NULL,\n    alias_form_lower TEXT NOT NULL,\n    script TEXT DEFAULT 'latin',\n    language TEXT,\n    alias_type TEXT NOT NULL CHECK(alias_type IN (\n        'primary',          -- the preferred display form for this script\n        'variant_spelling',  -- alternate transliteration or spelling\n        'cross_script',      -- same person in different script (e.g., Hebrew <-> Latin)\n        'patronymic',        -- patronymic form (e.g., ben Maimon)\n        'acronym',           -- rabbinic acronym (e.g., Rambam)\n        'historical'         -- historical Latin or vernacular name form\n    )),\n    is_primary INTEGER NOT NULL DEFAULT 0,\n    priority INTEGER NOT NULL DEFAULT 0,\n    notes TEXT,\n    source TEXT,\n    created_at TEXT NOT NULL,\n    FOREIGN KEY (authority_id) REFERENCES agent_authorities(id) ON DELETE CASCADE\n);\n\nCREATE TABLE agent_authorities (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    canonical_name TEXT NOT NULL,\n    canonical_name_lower TEXT NOT NULL,\n    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),\n    birth_year INTEGER,\n    death_year INTEGER,\n    nationality TEXT,\n    occupation TEXT,\n    notes TEXT,\n    viaf_id TEXT,\n    wikidata_id TEXT,\n    nli_id TEXT,\n    isni_id TEXT,\n    confidence REAL NOT NULL DEFAULT 0.5,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n);\n\nCREATE UNIQUE INDEX idx_agent_auth_canonical_lower ON agent_authorities(canonical_name_lower);\nCREATE INDEX idx_agent_auth_type ON agent_authorities(agent_type);\nCREATE INDEX idx_agent_aliases_authority ON agent_aliases(authority_id);\nCREATE UNIQUE INDEX idx_agent_aliases_form_lower ON agent_aliases(alias_form_lower);\nCREATE INDEX idx_agent_aliases_script ON agent_aliases(script);\nCREATE INDEX idx_agent_aliases_type ON agent_aliases(alias_type);",
+    "publisherAuthorities": {
+      "sampleVariantMappings": [
+        {
+          "canonical": "[publisher unknown]",
+          "variant": "חמו\"ל"
+        },
+        {
+          "canonical": "[publisher unknown]",
+          "variant": "[חמו\"ל]"
+        },
+        {
+          "canonical": "House of Elzevir",
+          "variant": "ex officina elzeviriana"
+        },
+        {
+          "canonical": "Bragadin Press, Venice",
+          "variant": "nella stamparia bragadina"
+        },
+        {
+          "canonical": "Vendramin Press, Venice",
+          "variant": "nella stamparia vendramina"
+        }
+      ],
+      "schema": "CREATE TABLE publisher_authorities (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    canonical_name TEXT NOT NULL,\n    canonical_name_lower TEXT NOT NULL,\n    type TEXT NOT NULL CHECK(type IN ('printing_house', 'private_press', 'modern_publisher', 'bibliophile_society', 'unknown_marker', 'unresearched')),\n    dates_active TEXT,\n    date_start INTEGER,\n    date_end INTEGER,\n    location TEXT,\n    notes TEXT,\n    sources TEXT,\n    confidence REAL NOT NULL DEFAULT 0.5,\n    is_missing_marker INTEGER NOT NULL DEFAULT 0,\n    viaf_id TEXT,\n    wikidata_id TEXT,\n    cerl_id TEXT,\n    branch TEXT,\n    primary_language TEXT,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n)",
+      "totalAuthorities": 227,
+      "totalVariants": 265,
+      "variantPattern": "Two-table normalized authority system: publisher_authorities holds canonical identities (one row per publisher) with external IDs (VIAF, Wikidata, CERL); publisher_variants holds name forms (many-to-one FK to authorities) with script detection, language tagging, priority ordering, and case-insensitive unique index on variant_form_lower for fast lookup. Variants include Latin, Hebrew, and transliterated forms."
+    },
+    "seedDataSources": [
+      {
+        "estimatedRecords": "2,434 distinct authority URIs with enrichment data covering 3,613 agent rows; provides external IDs and biographical metadata for seeding agent_authorities",
+        "fieldPath": "agents.authority_uri JOIN authority_enrichment.authority_uri -> label, person_info (birth/death years, occupations), wikidata_id, viaf_id",
+        "source": "agents.authority_uri -> authority_enrichment"
+      },
+      {
+        "estimatedRecords": "3,102 distinct agent_norm values that can be clustered by edit distance and cross-script matching to identify same-person groups (e.g., maimonides/משה בן מימון)",
+        "fieldPath": "agents.agent_norm (3,102 distinct values) + agent_raw + agent_type",
+        "source": "agents table (agent_norm clustering)"
+      },
+      {
+        "estimatedRecords": "5,667 enrichment records with structured biographical JSON; can populate agent_authorities biographical fields",
+        "fieldPath": "authority_enrichment.person_info JSON -> birth_year, death_year, nationality, occupations, description",
+        "source": "authority_enrichment.person_info"
+      },
+      {
+        "estimatedRecords": "21 Hebrew-script labels providing cross-script alias candidates for agent_aliases with alias_type='cross_script'",
+        "fieldPath": "authority_enrichment.label where script is Hebrew",
+        "source": "authority_enrichment.label (Hebrew labels)"
+      },
+      {
+        "estimatedRecords": "All agent rows; raw forms like 'Buxtorf, Johann,' and 'Maimonides, Moses,' provide variant_spelling aliases distinct from agent_norm",
+        "fieldPath": "agents.agent_raw -> variant spelling forms before normalization",
+        "source": "agents.agent_raw (raw MARC forms)"
+      },
+      {
+        "estimatedRecords": "227 authorities / 265 variants -- serves as architectural template, not direct seed data",
+        "fieldPath": "Existing publisher authority system provides the proven two-table pattern to replicate",
+        "source": "publisher_authorities/publisher_variants (pattern reference)"
+      }
+    ]
+  }
+}

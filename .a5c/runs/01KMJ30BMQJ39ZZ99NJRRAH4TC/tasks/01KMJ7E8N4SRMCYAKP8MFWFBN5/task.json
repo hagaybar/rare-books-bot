@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ7E8N4SRMCYAKP8MFWFBN5",
+  "taskId": "implement-task",
+  "invocationKey": "scholar-pipeline:S000012:implement-task",
+  "stepId": "S000012",
+  "kind": "agent",
+  "title": "Implement Task 8: Cleanup Removed Modules",
+  "io": {
+    "inputJsonPath": "tasks/01KMJ7E8N4SRMCYAKP8MFWFBN5/input.json",
+    "outputJsonPath": "tasks/01KMJ7E8N4SRMCYAKP8MFWFBN5/result.json"
+  },
+  "inputs": {
+    "description": "Implement Task 8 from the plan: Remove deprecated source and test files. Remove: intent_agent.py, analytical_router.py, formatter.py, narrative_agent.py, thematic_context.py, clarification.py, curator.py, exploration_agent.py, llm_compiler.py, execute.py. Remove associated test files. Clean up commented-out imports in app/api/main.py. Check scripts/query/service.py for broken imports. Run full test suite to verify no regressions. Use git rm for each file. Commit with descriptive message.",
+    "planPath": "docs/superpowers/plans/2026-03-25-scholar-pipeline.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-scholar-pipeline-design.md",
+    "taskName": "Cleanup Removed Modules",
+    "taskNumber": 8,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/ -v --ignore=tests/app/test_scholar_evidence.py -x 2>&1 | tail -40"
+  }
+}

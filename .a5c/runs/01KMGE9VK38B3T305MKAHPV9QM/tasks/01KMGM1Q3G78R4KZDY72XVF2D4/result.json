@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGM1Q3G78R4KZDY72XVF2D4",
+  "taskId": "e3-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000015:e3-write-tests",
+  "status": "ok",
+  "result": {
+    "summary": "13 TDD tests covering graph construction, teacher/student, co-publication, same_place_period, neighbors, self-loops, max_results, confidence values, dedup, AgentNode fields. All fail with ModuleNotFoundError.",
+    "testFile": "tests/scripts/chat/test_cross_reference.py",
+    "testsWritten": 13
+  },
+  "startedAt": "2026-03-24T19:12:56.109Z",
+  "finishedAt": "2026-03-24T19:12:56.109Z",
+  "value": {
+    "summary": "13 TDD tests covering graph construction, teacher/student, co-publication, same_place_period, neighbors, self-loops, max_results, confidence values, dedup, AgentNode fields. All fail with ModuleNotFoundError.",
+    "testFile": "tests/scripts/chat/test_cross_reference.py",
+    "testsWritten": 13
+  }
+}

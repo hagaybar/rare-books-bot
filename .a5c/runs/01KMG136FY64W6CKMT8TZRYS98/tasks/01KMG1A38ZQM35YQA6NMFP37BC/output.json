@@ -1,0 +1,451 @@
+{
+  "goal": "Create an agent name alias table (agent_authorities + agent_aliases) that enables order-insensitive, cross-script matching for bibliographic agent queries. This directly mirrors the existing publisher_authorities/publisher_variants pattern and leverages the 2,434 authority URIs and 1,937 Wikidata-linked enrichment records already in the database. By seeding aliases from authority_enrichment labels and Hebrew labels, queries like 'johann buxtorf', 'Moses Mendelssohn', 'Joseph Karo', and 'Maimonides' will resolve to all matching agent_norm values regardless of name order (surname-first vs given-first) or script (Latin vs Hebrew). The query adapter's AGENT_NORM handler (db_adapter.py lines 293-312) will be extended to JOIN through agent_aliases, converting single-string matching into authority-group matching that finds all records linked to the same canonical identity.",
+
+  "reportFailuresAddressed": [
+    {
+      "questionId": "Q6",
+      "currentBehavior": "Query 'johann buxtorf' produces AGENT_NORM CONTAINS 'johann buxtorf'. DB has 'buxtorf, johann' (surname-first). LOWER(REPLACE(agent_norm, ',', '')) = 'buxtorf johann' which does not match 'johann buxtorf' because word order differs.",
+      "rootCause": "The normalize_filter_value function (db_adapter.py:95-110) removes commas and casefolds, but the SQL LIKE/EQUALS comparison is still positional — 'johann buxtorf' != 'buxtorf johann'. No word-order normalization exists.",
+      "expectedFix": "Create agent_aliases entry linking 'buxtorf, johann' agent_norm to authority_id. Seed alias 'Johannes Buxtorf' from authority_enrichment.label and 'johann buxtorf' as word-reordered variant. Query 'johann buxtorf' resolves via alias table to authority_id, then JOINs to all agent_norm values under that authority."
+    },
+    {
+      "questionId": "Q7",
+      "currentBehavior": "Query 'Moses Mendelssohn' produces AGENT_NORM CONTAINS 'moses mendelssohn'. DB has two forms: 'mendelssohn, moses' (Latin) and 'מנדלסון, משה' (Hebrew). Only the Latin form partially matches via comma-removal but word order still fails.",
+      "rootCause": "Word-order mismatch (same as Q6) plus cross-script gap. The Hebrew form 'מנדלסון, משה' shares the same authority_uri but no alias linkage exists to connect a Latin query to the Hebrew agent_norm.",
+      "expectedFix": "Create authority record for Mendelssohn. Seed aliases: 'mendelssohn, moses', 'מנדלסון, משה', 'Moses Mendelssohn' (from enrichment label), 'משה מנדלסון' (from Hebrew label). Query resolves via any alias to authority_id, matching both Latin and Hebrew records."
+    },
+    {
+      "questionId": "Q8",
+      "currentBehavior": "Query 'Maimonides' finds 7 records via 'maimonides, moses' agent_norm but misses 15+ records catalogued under 'משה בן מימון' (Hebrew patronymic form). Both share the same authority_uri but the query only matches the Latin form.",
+      "rootCause": "Two distinct agent_norm values ('maimonides, moses' and 'משה בן מימון') point to the same authority_uri (987007265654005171) but the current CONTAINS match on agent_norm cannot bridge across scripts. The enrichment table has label='Moshe ben Maimon' and hebrew_label='רמב\"ם' but these are not used in query resolution.",
+      "expectedFix": "Create authority record for Maimonides. Seed aliases from all sources: 'maimonides, moses', 'משה בן מימון', 'Moshe ben Maimon' (enrichment label), 'רמב\"ם' (Hebrew acronym from enrichment). Query 'Maimonides' matches alias, resolves to authority_id, finds all 22+ records across both agent_norm values."
+    },
+    {
+      "questionId": "Q19",
+      "currentBehavior": "Query 'Joseph Karo' produces AGENT_NORM CONTAINS 'joseph karo'. DB only has Hebrew form 'קארו, יוסף בן אפרים'. Zero records match because Latin search cannot find Hebrew-only agent_norm.",
+      "rootCause": "No Latin agent_norm exists for Karo — all records use the Hebrew form. The enrichment table has label='Joseph ben Ephraim Karo' and hebrew_label='יוסף קארו' linked to the authority_uri, but these are not used during query execution.",
+      "expectedFix": "Create authority record for Karo. Seed aliases: 'קארו, יוסף בן אפרים' (from agent_norm), 'Joseph ben Ephraim Karo' (from enrichment label), 'joseph karo' (simplified Latin form), 'יוסף קארו' (Hebrew label from enrichment). Query 'Joseph Karo' matches alias, resolves to authority_id, finds all Hebrew-catalogued records."
+    },
+    {
+      "questionId": "Q3",
+      "currentBehavior": "Query 'Aldine Press' may compile to PUBLISHER EQUALS or AGENT_NORM. The publisher_norm values include 'in aedibus aldi', 'apud aldum', 'aldine press, venice' etc. A simple EQUALS on 'aldine' or 'aldus' fails because the Latin forms are verbose and varied.",
+      "rootCause": "Q3 is primarily a publisher normalization issue (EQUALS vs CONTAINS, and variant publisher names). However, the agent side also has 'manuzio, aldo' in the agents table. An agent alias for 'Aldus Manutius' -> 'manuzio, aldo' would help queries that target the printer as a person rather than a publisher brand.",
+      "expectedFix": "Create agent authority for Aldus Manutius. Seed aliases: 'manuzio, aldo' (from agent_norm), 'Aldus Manutius' (common English form), 'Aldo Manuzio' (Italian form from enrichment). This handles the agent/printer dimension of Q3. The publisher dimension requires separate publisher_variants work (out of scope for E1 but complementary)."
+    }
+  ],
+
+  "affectedComponents": [
+    {
+      "file": "scripts/metadata/agent_authority.py",
+      "functions": ["AgentAuthorityStore", "AgentAuthority", "AgentAlias", "init_schema", "create", "search_by_alias", "get_by_id", "list_all", "add_alias", "resolve_agent_norm_to_authority_ids"],
+      "changeType": "create"
+    },
+    {
+      "file": "scripts/metadata/seed_agent_authorities.py",
+      "functions": ["seed_from_enrichment", "generate_word_reorder_aliases", "generate_cross_script_aliases", "seed_all"],
+      "changeType": "create"
+    },
+    {
+      "file": "scripts/query/db_adapter.py",
+      "functions": ["build_where_clause (AGENT_NORM branch, lines 293-312)", "build_join_clauses (add agent_aliases JOIN)", "normalize_filter_value (AGENT_NORM branch, lines 95-110)"],
+      "changeType": "modify"
+    },
+    {
+      "file": "scripts/marc/m3_contract.py",
+      "functions": ["M3Tables (add AGENT_AUTHORITIES, AGENT_ALIASES)", "M3Columns (add AgentAuthorities, AgentAliases inner classes)", "M3Aliases (add AGENT_AUTHORITIES, AGENT_ALIASES)", "EXPECTED_SCHEMA (add new table entries)"],
+      "changeType": "modify"
+    },
+    {
+      "file": "scripts/marc/m3_schema.sql",
+      "functions": ["agent_authorities CREATE TABLE", "agent_aliases CREATE TABLE", "indexes"],
+      "changeType": "modify"
+    },
+    {
+      "file": "tests/scripts/metadata/test_agent_authority.py",
+      "functions": ["TestAgentAuthorityStore", "test_create_and_retrieve", "test_search_by_alias", "test_cross_script_alias", "test_word_reorder_alias", "test_resolve_to_authority_ids"],
+      "changeType": "create"
+    },
+    {
+      "file": "tests/scripts/query/test_db_adapter_agent_alias.py",
+      "functions": ["test_agent_norm_joins_through_aliases", "test_agent_norm_cross_script", "test_agent_norm_word_reorder", "test_agent_norm_fallback_no_alias"],
+      "changeType": "create"
+    },
+    {
+      "file": "tests/scripts/metadata/test_seed_agent_authorities.py",
+      "functions": ["test_seed_from_enrichment_labels", "test_word_reorder_generation", "test_cross_script_generation", "test_deduplication"],
+      "changeType": "create"
+    }
+  ],
+
+  "implementationSteps": [
+    {
+      "step": 1,
+      "title": "Define agent_authorities and agent_aliases schema",
+      "description": "Create the two new tables mirroring publisher_authorities/publisher_variants pattern. agent_authorities holds one row per canonical agent identity with fields: id, canonical_name, canonical_name_lower, agent_type (personal/corporate/meeting), dates_active, wikidata_id, viaf_id, nli_id, authority_uri (link to authority_enrichment), confidence, created_at, updated_at. agent_aliases holds one row per name variant with fields: id, authority_id (FK), alias_form, alias_form_lower, alias_type (primary/variant_spelling/cross_script/patronymic/acronym/word_reorder), script (latin/hebrew/arabic/other), language, is_primary, priority, notes, created_at. Add to m3_schema.sql as additive DDL with IF NOT EXISTS. Do NOT modify existing agents table.",
+      "file": "scripts/marc/m3_schema.sql",
+      "function": "New DDL block: AGENT AUTHORITY TABLES section",
+      "testStrategy": "Unit test: create tables in in-memory SQLite, verify with PRAGMA table_info that all columns exist. Test FK constraint enforcement. Test unique index on alias_form_lower."
+    },
+    {
+      "step": 2,
+      "title": "Update M3 contract with new table/column constants",
+      "description": "Add AGENT_AUTHORITIES and AGENT_ALIASES to M3Tables. Add AgentAuthorities and AgentAliases inner classes to M3Columns with all column name constants. Add aliases to M3Aliases (aa for agent_authorities, al for agent_aliases). Add both tables to EXPECTED_SCHEMA dict so schema validation covers them. This ensures the contract stays in sync with the schema.",
+      "file": "scripts/marc/m3_contract.py",
+      "function": "M3Tables, M3Columns, M3Aliases, EXPECTED_SCHEMA",
+      "testStrategy": "Existing validate_schema test should now include the new tables. Add a test that creates an in-memory DB with just the new tables and verifies validate_schema returns no errors for them."
+    },
+    {
+      "step": 3,
+      "title": "Implement AgentAuthorityStore CRUD module",
+      "description": "Create scripts/metadata/agent_authority.py mirroring publisher_authority.py pattern. Dataclasses: AgentAuthority (canonical_name, agent_type, wikidata_id, viaf_id, nli_id, authority_uri, confidence, aliases list) and AgentAlias (alias_form, alias_type, script, language, is_primary, priority, notes). Store class with methods: init_schema(), create(), get_by_id(), get_by_canonical_name(), search_by_alias() (case-insensitive lookup via alias_form_lower), list_all(), add_alias(), update(), delete(). Key method: resolve_agent_norm_to_authority_ids(search_term, conn) -> List[int] which takes a user search string and returns matching authority IDs via alias lookup. Also add get_all_agent_norms_for_authority(authority_id, conn) -> List[str] which returns all agent_norm values linked to an authority through the agents table's authority_uri.",
+      "file": "scripts/metadata/agent_authority.py",
+      "function": "AgentAuthorityStore class with full CRUD",
+      "testStrategy": "In-memory SQLite tests for every CRUD operation. Test search_by_alias with case variations. Test that FK cascade works on delete. Test resolve_agent_norm_to_authority_ids returns correct authority IDs."
+    },
+    {
+      "step": 4,
+      "title": "Implement alias seeding script",
+      "description": "Create scripts/metadata/seed_agent_authorities.py that populates agent_authorities and agent_aliases from existing data. Strategy: (1) Group agents by authority_uri — each unique authority_uri becomes one authority record. (2) For each authority_uri, gather all distinct agent_norm values as primary aliases. (3) Look up authority_enrichment for the URI — add enrichment.label as 'variant_spelling' alias, add hebrew_label (from person_info JSON) as 'cross_script' alias. (4) For each Latin-script agent_norm in 'Last, First' format, generate a 'First Last' word-reorder alias. (5) Handle agents without authority_uri: create a standalone authority per distinct agent_norm with just one primary alias. (6) Deduplicate aliases (unique alias_form_lower constraint). The script should be idempotent (skip existing records) and log statistics: total authorities created, aliases per type, cross-script aliases found.",
+      "file": "scripts/metadata/seed_agent_authorities.py",
+      "function": "seed_from_enrichment(), generate_word_reorder_aliases(), seed_all()",
+      "testStrategy": "Test with a small in-memory DB containing 5-10 agents with known authority_uri values and mock authority_enrichment rows. Verify correct number of authorities and aliases created. Test word-reorder: 'buxtorf, johann' -> alias 'johann buxtorf'. Test cross-script: Hebrew label from enrichment creates Hebrew alias."
+    },
+    {
+      "step": 5,
+      "title": "Modify AGENT_NORM query path to use alias resolution",
+      "description": "Modify build_where_clause() in db_adapter.py to change the AGENT_NORM handler (lines 293-312). New logic: (1) Check if agent_aliases table exists (graceful fallback). (2) If alias table exists, use a subquery: find all authority_ids matching the search term via agent_aliases, then find all agent_norm values linked to those authorities (via agents.authority_uri = agent_authorities.authority_uri), then match records whose agent_norm is in that set. (3) Also OR-in the existing direct match (for agents without authority records). The SQL pattern becomes: EXISTS(SELECT 1 FROM agent_aliases al JOIN agent_authorities aa ON al.authority_id = aa.id JOIN agents a2 ON a2.authority_uri = aa.authority_uri WHERE a2.record_id = r.id AND al.alias_form_lower LIKE :param). This avoids modifying the main JOIN structure — the alias resolution is self-contained in an EXISTS subquery. The normalize_filter_value AGENT_NORM branch (lines 95-110) stays the same since it already casefolds and strips commas.",
+      "file": "scripts/query/db_adapter.py",
+      "function": "build_where_clause() AGENT_NORM branch (lines 293-312)",
+      "testStrategy": "Integration test with in-memory DB containing agents, agent_authorities, and agent_aliases tables populated with test data. Test: query 'johann buxtorf' matches records with agent_norm='buxtorf, johann'. Test: query 'Joseph Karo' matches records with agent_norm='קארו, יוסף בן אפרים'. Test: query 'maimonides' matches records with both 'maimonides, moses' and 'משה בן מימון'. Test: fallback — query still works when alias tables do not exist."
+    },
+    {
+      "step": 6,
+      "title": "Add graceful fallback when alias tables do not exist",
+      "description": "The modified AGENT_NORM handler must detect whether agent_aliases/agent_authorities tables exist at query time. Add a helper function _agent_alias_tables_exist(conn) that checks sqlite_master for both tables. Cache the result in a module-level variable (checked once per process, like _schema_validated). If tables do not exist, fall back to the current behavior (direct REPLACE/LOWER match on agent_norm). This ensures the system works correctly during the transition period before seeding is run.",
+      "file": "scripts/query/db_adapter.py",
+      "function": "_agent_alias_tables_exist(), build_where_clause()",
+      "testStrategy": "Test with in-memory DB that does NOT have alias tables — verify query still works with existing behavior. Test with in-memory DB that HAS alias tables but they are empty — verify fallback works. Test with populated alias tables — verify alias resolution works."
+    },
+    {
+      "step": 7,
+      "title": "Add CLI command for seeding agent authorities",
+      "description": "Add a new CLI command to app/cli.py: 'seed-agent-authorities' that runs the seeding script against the production bibliographic.db. Parameters: --db (path to database, default data/index/bibliographic.db), --dry-run (show what would be created without writing), --verbose (show per-authority details). The command should: (1) init schema (create tables if not exist), (2) run seed_all(), (3) print summary statistics (authorities created, aliases by type, coverage percentage).",
+      "file": "app/cli.py",
+      "function": "seed_agent_authorities command",
+      "testStrategy": "Test CLI invocation with --dry-run flag against a small test DB. Verify output includes expected statistics. Verify no data written in dry-run mode."
+    },
+    {
+      "step": 8,
+      "title": "Write comprehensive unit tests for AgentAuthorityStore",
+      "description": "Create tests/scripts/metadata/test_agent_authority.py with test classes: TestAgentAlias (dataclass creation, script detection), TestAgentAuthorityStore (CRUD operations, search_by_alias, resolve_agent_norm_to_authority_ids), TestEdgeCases (duplicate alias handling, missing authority_uri, empty canonical_name, Unicode normalization). Use in-memory SQLite fixtures following the pattern in test_publisher_authority.py. Test the key scenarios: Maimonides (two agent_norms -> one authority), Karo (Hebrew-only -> Latin alias), Buxtorf (word reorder), Mendelssohn (Latin + Hebrew).",
+      "file": "tests/scripts/metadata/test_agent_authority.py",
+      "function": "All test classes",
+      "testStrategy": "Self-testing: all tests use in-memory SQLite, no external dependencies. Each test creates specific data for its scenario and asserts expected outcomes."
+    },
+    {
+      "step": 9,
+      "title": "Write integration tests for alias-aware query execution",
+      "description": "Create tests/scripts/query/test_db_adapter_agent_alias.py with integration tests that set up a complete mini-database (records, agents, agent_authorities, agent_aliases, authority_enrichment) and run actual queries through the full build_where_clause -> build_full_query pipeline. Test cases: (1) 'johann buxtorf' finds records with agent_norm='buxtorf, johann', (2) 'Joseph Karo' finds records with agent_norm='קארו, יוסף בן אפרים', (3) 'Maimonides' finds records with both 'maimonides, moses' and 'משה בן מימון', (4) 'Moses Mendelssohn' finds records with 'mendelssohn, moses' and 'מנדלסון, משה', (5) fallback: query works correctly when alias tables don't exist.",
+      "file": "tests/scripts/query/test_db_adapter_agent_alias.py",
+      "function": "Integration test functions",
+      "testStrategy": "Each test sets up complete schema with sample data, runs query through full pipeline, asserts correct MMS IDs returned."
+    },
+    {
+      "step": 10,
+      "title": "Write seeding script tests",
+      "description": "Create tests/scripts/metadata/test_seed_agent_authorities.py. Test seed_from_enrichment() with mock data: verify correct authority count, alias types, cross-script alias creation. Test generate_word_reorder_aliases(): verify 'buxtorf, johann' -> 'johann buxtorf', handle multi-part names correctly. Test deduplication: running seed twice should not create duplicates. Test edge cases: agents without authority_uri, agents with multiple authority_uri values, enrichment records without hebrew_label.",
+      "file": "tests/scripts/metadata/test_seed_agent_authorities.py",
+      "function": "All test functions",
+      "testStrategy": "In-memory SQLite tests with controlled data. Verify counts and alias values after seeding."
+    },
+    {
+      "step": 11,
+      "title": "Run seeding on production database and validate",
+      "description": "Execute the seed-agent-authorities CLI command against the production bibliographic.db. Verify statistics: expect approximately 2,400+ authorities (one per distinct authority_uri group), 3,000+ primary aliases (from agent_norm values), 1,900+ variant aliases (from enrichment labels), 1,000+ cross-script aliases (from Hebrew labels), and significant word-reorder aliases. Run the historian evaluation queries (Q6, Q7, Q8, Q19) and verify improved results. This step is manual validation, not automated.",
+      "file": "app/cli.py",
+      "function": "seed-agent-authorities CLI command (execution)",
+      "testStrategy": "Manual validation: run each failing query, verify result count improvement. Compare against historian expected results. Document results in a validation report."
+    }
+  ],
+
+  "schemaChanges": [
+    {
+      "type": "create_table",
+      "sql": "CREATE TABLE IF NOT EXISTS agent_authorities (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    canonical_name TEXT NOT NULL,\n    canonical_name_lower TEXT NOT NULL,\n    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),\n    dates_active TEXT,\n    date_start INTEGER,\n    date_end INTEGER,\n    notes TEXT,\n    sources TEXT,\n    confidence REAL NOT NULL DEFAULT 0.5,\n    authority_uri TEXT,\n    wikidata_id TEXT,\n    viaf_id TEXT,\n    nli_id TEXT,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n);",
+      "description": "One row per canonical agent identity. Links to authority_enrichment via authority_uri. Stores external IDs directly for fast lookup. agent_type mirrors the agents table CHECK constraint. The authority_uri column connects this table to the agents table (agents.authority_uri = agent_authorities.authority_uri) enabling the critical join path for query resolution.",
+      "seedDataSource": "Derived from agents table grouped by authority_uri, enriched with authority_enrichment data (wikidata_id, viaf_id, label). Agents without authority_uri get standalone authority records."
+    },
+    {
+      "type": "create_index",
+      "sql": "CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_auth_canonical_lower ON agent_authorities(canonical_name_lower);\nCREATE INDEX IF NOT EXISTS idx_agent_auth_type ON agent_authorities(agent_type);\nCREATE INDEX IF NOT EXISTS idx_agent_auth_authority_uri ON agent_authorities(authority_uri);\nCREATE INDEX IF NOT EXISTS idx_agent_auth_wikidata ON agent_authorities(wikidata_id);",
+      "description": "Indexes for efficient lookup by canonical name (unique, case-insensitive), agent type filtering, authority URI JOIN, and Wikidata ID lookup.",
+      "seedDataSource": "N/A (indexes are auto-populated)"
+    },
+    {
+      "type": "create_table",
+      "sql": "CREATE TABLE IF NOT EXISTS agent_aliases (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    authority_id INTEGER NOT NULL REFERENCES agent_authorities(id) ON DELETE CASCADE,\n    alias_form TEXT NOT NULL,\n    alias_form_lower TEXT NOT NULL,\n    alias_type TEXT NOT NULL CHECK(alias_type IN (\n        'primary', 'variant_spelling', 'cross_script',\n        'patronymic', 'acronym', 'word_reorder', 'historical'\n    )),\n    script TEXT DEFAULT 'latin',\n    language TEXT,\n    is_primary INTEGER NOT NULL DEFAULT 0,\n    priority INTEGER NOT NULL DEFAULT 0,\n    notes TEXT,\n    created_at TEXT NOT NULL\n);",
+      "description": "One row per name variant, FK to agent_authorities. alias_type categorizes the relationship: primary (exact agent_norm value), variant_spelling (enrichment label), cross_script (Hebrew/Arabic form), patronymic (Hebrew patronymic), acronym (e.g. Rambam), word_reorder (first-last from last-first), historical (historical name form). The alias_form_lower column is the key lookup field used in query resolution.",
+      "seedDataSource": "Primary aliases from agents.agent_norm values. Variant aliases from authority_enrichment.label. Cross-script aliases from authority_enrichment.person_info->hebrew_label. Word-reorder aliases generated by splitting 'Last, First' -> 'First Last'."
+    },
+    {
+      "type": "create_index",
+      "sql": "CREATE INDEX IF NOT EXISTS idx_agent_alias_authority ON agent_aliases(authority_id);\nCREATE UNIQUE INDEX IF NOT EXISTS idx_agent_alias_form_lower ON agent_aliases(alias_form_lower);\nCREATE INDEX IF NOT EXISTS idx_agent_alias_type ON agent_aliases(alias_type);\nCREATE INDEX IF NOT EXISTS idx_agent_alias_script ON agent_aliases(script);",
+      "description": "Indexes for efficient alias lookup. The UNIQUE index on alias_form_lower ensures one-to-one mapping from any alias string to exactly one authority (prevents ambiguous resolution). The authority_id index supports FK lookups for listing all aliases of an authority.",
+      "seedDataSource": "N/A (indexes are auto-populated)"
+    }
+  ],
+
+  "retrievalChanges": {
+    "queryCompilation": "No changes needed to the LLM compiler (scripts/query/llm_compiler.py). The system prompt already directs agent queries to use AGENT_NORM field with CONTAINS operation. The alias resolution happens entirely at the SQL execution layer, transparent to query planning. The LLM continues to output 'agent_norm' + 'CONTAINS' + 'joseph karo' and the adapter resolves it to matching records via aliases.",
+    "filterNormalization": "Minimal changes to normalize_filter_value() (db_adapter.py:95-110). The existing AGENT_NORM normalization (casefold, remove brackets, remove commas, strip punctuation, collapse whitespace) is already correct for alias lookup since alias_form_lower is also lowercased. One addition: when constructing the alias lookup SQL, apply the same normalization to strip commas from the alias_form_lower comparison, ensuring 'joseph karo' matches an alias stored as 'karo, joseph'. Alternatively, store alias_form_lower already comma-stripped — but keeping commas in storage preserves the original form and is safer.",
+    "sqlGeneration": "Major change to the AGENT_NORM branch of build_where_clause() (db_adapter.py:293-312). The current pattern generates: LOWER(REPLACE(a.agent_norm, ',', '')) LIKE LOWER(:param). The new pattern generates an OR of two conditions: (1) The existing direct match for backward compatibility: LOWER(REPLACE(a.agent_norm, ',', '')) LIKE :param, and (2) An EXISTS subquery for alias resolution: EXISTS(SELECT 1 FROM agent_aliases al JOIN agent_authorities aa ON al.authority_id = aa.id WHERE LOWER(REPLACE(al.alias_form_lower, ',', '')) LIKE :param AND aa.authority_uri = a.authority_uri). The second condition finds all agents sharing an authority_uri with any authority whose aliases match the search term. For CONTAINS operations, the LIKE with wildcards works. For EQUALS, exact match on alias_form_lower. The JOIN path is: agent_aliases -> agent_authorities (via authority_id) -> agents (via authority_uri match). This avoids adding new tables to the main FROM/JOIN clause and is self-contained."
+  },
+
+  "risksAndEdgeCases": [
+    {
+      "risk": "Alias collision: two different people share the same name form (e.g., 'Johann Buxtorf I' and 'Johann Buxtorf II' both normalize to 'buxtorf, johann')",
+      "mitigation": "The UNIQUE index on alias_form_lower means only one authority can own a given alias. For father/son cases like Buxtorf, they currently share the same agent_norm in the DB. Create a single authority with notes documenting the ambiguity. The alias resolves to all records for both father and son, which is acceptable recall behavior. Precision refinement (distinguishing father from son) is a separate enhancement.",
+      "severity": "medium"
+    },
+    {
+      "risk": "Performance: EXISTS subquery on agent_aliases may slow down queries if the alias table is large",
+      "mitigation": "The UNIQUE index on alias_form_lower ensures O(1) lookup. The JOIN to agent_authorities via authority_id is indexed. The JOIN to agents via authority_uri is already indexed (idx_agents_authority_uri). Expected alias table size is ~8,000-10,000 rows — trivial for SQLite. Benchmark with EXPLAIN QUERY PLAN to verify index usage.",
+      "severity": "low"
+    },
+    {
+      "risk": "Agents without authority_uri (~700 distinct agent_norms) cannot be linked through the authority_uri join path",
+      "mitigation": "The OR condition in the SQL preserves the existing direct match on agent_norm. Agents without authority_uri continue to work exactly as today. Standalone authority records are created for these agents (with authority_uri=NULL) so they can still have aliases (word-reorder variants). The alias subquery includes a fallback path: alias_form_lower direct match against the search term, with a secondary join to agents via a simple agent_norm comparison rather than authority_uri.",
+      "severity": "medium"
+    },
+    {
+      "risk": "Hebrew text normalization: casefold() on Hebrew text may not behave as expected for all Unicode ranges",
+      "mitigation": "Hebrew characters are already stable under casefold() (no case distinction). The alias_form_lower is generated by Python's str.lower() which handles Hebrew correctly. Test with actual Hebrew strings from the database (e.g., 'משה בן מימון', 'קארו, יוסף בן אפרים'). Add specific unit tests for Hebrew alias storage and retrieval.",
+      "severity": "low"
+    },
+    {
+      "risk": "Seeding idempotency: running the seed script multiple times should not create duplicate records",
+      "mitigation": "Use INSERT OR IGNORE for aliases (UNIQUE index on alias_form_lower catches duplicates). For authorities, check existence by authority_uri before creating. The seed script should be explicitly idempotent with logging of skipped records vs newly created records.",
+      "severity": "low"
+    },
+    {
+      "risk": "Schema migration: existing production database needs the new tables added without disrupting existing data",
+      "mitigation": "All DDL uses CREATE TABLE IF NOT EXISTS and CREATE INDEX IF NOT EXISTS. No existing tables are modified. The init_schema() method can be run safely on an existing database. The fallback mechanism (_agent_alias_tables_exist) means queries work correctly even before tables are created or populated.",
+      "severity": "low"
+    },
+    {
+      "risk": "Word-reorder alias generation may produce incorrect splits for complex names like 'de la Cruz, Juan' or Hebrew patronymics like 'משה בן מימון'",
+      "mitigation": "Only apply word-reorder to names matching the simple 'Last, First' pattern (exactly one comma, Latin script). Skip names with multiple commas, Hebrew/Arabic script, or complex particles. Keep the original agent_norm as a primary alias regardless. Test with the actual top-20 most frequent agent_norm values to verify correctness.",
+      "severity": "medium"
+    },
+    {
+      "risk": "The UNIQUE constraint on alias_form_lower prevents the same name form from being an alias for two different authorities, but edge cases exist (e.g., 'Moses' could refer to multiple people)",
+      "mitigation": "Short/ambiguous names should not be added as aliases. The seeding script should have a minimum length threshold (>3 characters) and skip single-word common names. The word-reorder and cross-script aliases are longer and more specific, reducing collision risk. If a collision is detected during seeding, log a warning and skip the duplicate alias (the first authority to claim it wins).",
+      "severity": "medium"
+    }
+  ],
+
+  "tddPlan": {
+    "testFile": "tests/scripts/metadata/test_agent_authority.py",
+    "unitTests": [
+      {
+        "name": "test_create_authority_and_retrieve",
+        "description": "Create an AgentAuthority with two aliases, retrieve by ID, verify all fields including aliases are correct",
+        "assertion": "authority.canonical_name == 'Maimonides, Moses' and len(authority.aliases) == 2"
+      },
+      {
+        "name": "test_search_by_alias_case_insensitive",
+        "description": "Create authority with alias 'Moshe ben Maimon', search by 'moshe ben maimon', verify match",
+        "assertion": "search_by_alias('moshe ben maimon').canonical_name == 'Maimonides, Moses'"
+      },
+      {
+        "name": "test_search_by_alias_cross_script",
+        "description": "Create authority with Hebrew alias 'רמב\"ם', search by exact Hebrew string, verify match",
+        "assertion": "search_by_alias('רמב\"ם').canonical_name == 'Maimonides, Moses'"
+      },
+      {
+        "name": "test_search_by_alias_word_reorder",
+        "description": "Create authority with alias 'johann buxtorf' (word-reordered from 'buxtorf, johann'), search matches",
+        "assertion": "search_by_alias('johann buxtorf') is not None"
+      },
+      {
+        "name": "test_unique_alias_constraint",
+        "description": "Attempt to create two different authorities with the same alias_form_lower, expect IntegrityError",
+        "assertion": "pytest.raises(sqlite3.IntegrityError)"
+      },
+      {
+        "name": "test_delete_cascades_aliases",
+        "description": "Delete an authority, verify its aliases are also deleted",
+        "assertion": "len(conn.execute('SELECT * FROM agent_aliases WHERE authority_id = ?', (auth_id,)).fetchall()) == 0"
+      },
+      {
+        "name": "test_detect_script_hebrew",
+        "description": "Verify script detection correctly identifies Hebrew text",
+        "assertion": "detect_script('משה בן מימון') == 'hebrew'"
+      },
+      {
+        "name": "test_detect_script_latin",
+        "description": "Verify script detection correctly identifies Latin text",
+        "assertion": "detect_script('Johannes Buxtorf') == 'latin'"
+      },
+      {
+        "name": "test_list_all_with_type_filter",
+        "description": "Create authorities of different types, filter by 'personal', verify only personal returned",
+        "assertion": "all(a.agent_type == 'personal' for a in store.list_all(type_filter='personal'))"
+      },
+      {
+        "name": "test_add_alias_to_existing_authority",
+        "description": "Create authority, then add a new alias via add_alias(), verify it appears in search",
+        "assertion": "search_by_alias('new alias form') is not None"
+      }
+    ],
+    "integrationTests": [
+      {
+        "name": "test_query_buxtorf_word_reorder",
+        "query": "books by Johann Buxtorf",
+        "expectedMinResults": 1
+      },
+      {
+        "name": "test_query_mendelssohn_cross_script",
+        "query": "books by Moses Mendelssohn",
+        "expectedMinResults": 2
+      },
+      {
+        "name": "test_query_maimonides_all_forms",
+        "query": "books by Maimonides",
+        "expectedMinResults": 3
+      },
+      {
+        "name": "test_query_karo_latin_to_hebrew",
+        "query": "books by Joseph Karo",
+        "expectedMinResults": 1
+      },
+      {
+        "name": "test_query_aldus_manutius",
+        "query": "books printed by Aldus Manutius",
+        "expectedMinResults": 1
+      },
+      {
+        "name": "test_query_fallback_no_alias_tables",
+        "query": "books by unknown author",
+        "expectedMinResults": 0
+      }
+    ]
+  },
+
+  "qualityGates": [
+    {
+      "gate": "Schema creation succeeds",
+      "criterion": "agent_authorities and agent_aliases tables created with correct columns, constraints, and indexes on both in-memory and file-backed SQLite",
+      "toolOrCommand": "pytest tests/scripts/metadata/test_agent_authority.py -k 'test_create' -v"
+    },
+    {
+      "gate": "CRUD operations pass",
+      "criterion": "All 10+ unit tests in test_agent_authority.py pass with 100% success rate",
+      "toolOrCommand": "pytest tests/scripts/metadata/test_agent_authority.py -v"
+    },
+    {
+      "gate": "Seeding produces expected counts",
+      "criterion": "Seeding creates 2,400+ authorities, 3,000+ primary aliases, 1,000+ cross-script aliases, and 1,500+ word-reorder aliases from the production database",
+      "toolOrCommand": "python -m app.cli seed-agent-authorities --db data/index/bibliographic.db --dry-run"
+    },
+    {
+      "gate": "Alias resolution works in queries",
+      "criterion": "All 6 integration tests pass: word-reorder, cross-script, multi-form, Latin-to-Hebrew, and fallback scenarios",
+      "toolOrCommand": "pytest tests/scripts/query/test_db_adapter_agent_alias.py -v"
+    },
+    {
+      "gate": "Existing tests still pass",
+      "criterion": "All existing tests in tests/scripts/query/test_db_adapter.py pass without modification (backward compatibility)",
+      "toolOrCommand": "pytest tests/scripts/query/test_db_adapter.py -v"
+    },
+    {
+      "gate": "No performance regression",
+      "criterion": "Query execution time with alias resolution is within 2x of baseline (measured via EXPLAIN QUERY PLAN showing index usage on alias_form_lower)",
+      "toolOrCommand": "sqlite3 data/index/bibliographic.db 'EXPLAIN QUERY PLAN SELECT ...' (manual check)"
+    },
+    {
+      "gate": "Historian query validation",
+      "criterion": "Q6 (Buxtorf) returns 5+ results, Q7 (Mendelssohn) returns 5+ results, Q8 (Maimonides) returns 15+ results, Q19 (Karo) returns 3+ results",
+      "toolOrCommand": "python -m app.cli query 'books by Johann Buxtorf' --db data/index/bibliographic.db (manual for each query)"
+    },
+    {
+      "gate": "M3 contract validation passes",
+      "criterion": "validate_schema() returns no errors when run against a database with the new tables",
+      "toolOrCommand": "python -c \"from scripts.marc.m3_contract import validate_schema; print(validate_schema('data/index/bibliographic.db'))\""
+    }
+  ],
+
+  "deliverables": [
+    {
+      "file": "scripts/metadata/agent_authority.py",
+      "description": "AgentAuthorityStore module: dataclasses (AgentAuthority, AgentAlias), CRUD operations, alias search, and authority resolution. Mirrors publisher_authority.py pattern. ~300 lines."
+    },
+    {
+      "file": "scripts/metadata/seed_agent_authorities.py",
+      "description": "Seeding script: populates agent_authorities and agent_aliases from agents table + authority_enrichment data. Generates word-reorder and cross-script aliases. Idempotent, with statistics logging. ~250 lines."
+    },
+    {
+      "file": "scripts/query/db_adapter.py",
+      "description": "Modified: AGENT_NORM branch in build_where_clause() (lines 293-312) extended with alias resolution EXISTS subquery. New helper _agent_alias_tables_exist(). ~30 lines added/modified."
+    },
+    {
+      "file": "scripts/marc/m3_contract.py",
+      "description": "Modified: Added AGENT_AUTHORITIES and AGENT_ALIASES to M3Tables, M3Columns, M3Aliases, and EXPECTED_SCHEMA. ~40 lines added."
+    },
+    {
+      "file": "scripts/marc/m3_schema.sql",
+      "description": "Modified: Added CREATE TABLE IF NOT EXISTS statements for agent_authorities and agent_aliases with indexes. ~50 lines added at the end."
+    },
+    {
+      "file": "tests/scripts/metadata/test_agent_authority.py",
+      "description": "Unit tests for AgentAuthorityStore: CRUD operations, alias search, cross-script handling, edge cases. ~200 lines."
+    },
+    {
+      "file": "tests/scripts/query/test_db_adapter_agent_alias.py",
+      "description": "Integration tests for alias-aware query execution: word-reorder, cross-script, multi-form, fallback scenarios. Sets up complete mini-database for end-to-end testing. ~250 lines."
+    },
+    {
+      "file": "tests/scripts/metadata/test_seed_agent_authorities.py",
+      "description": "Unit tests for seeding script: enrichment-based seeding, word-reorder generation, deduplication, edge cases. ~150 lines."
+    },
+    {
+      "file": "app/cli.py",
+      "description": "Modified: Added seed-agent-authorities command with --db, --dry-run, --verbose flags. ~30 lines added."
+    }
+  ],
+
+  "acceptanceCriteria": [
+    {
+      "criterion": "Q6 (Buxtorf): Query 'Johann Buxtorf' returns all records currently found by searching 'buxtorf, johann' directly in the agents table",
+      "verification": "Run query through API, verify result count matches: python -m app.cli query 'books by Johann Buxtorf'. Expected: 5+ results (all records with agent_norm='buxtorf, johann' regardless of word order in query)."
+    },
+    {
+      "criterion": "Q7 (Mendelssohn): Query 'Moses Mendelssohn' returns records from both Latin ('mendelssohn, moses') and Hebrew ('מנדלסון, משה') agent_norm forms",
+      "verification": "Run query, verify both Latin and Hebrew records present in CandidateSet. Expected: results include records with agent_norm in both scripts. Verify via evidence fields in response."
+    },
+    {
+      "criterion": "Q8 (Maimonides): Query 'Maimonides' returns records from 'maimonides, moses' AND 'משה בן מימון' agent_norm forms, improving from 7 to 20+ results",
+      "verification": "Run query, count results. Compare with baseline (7 results from Latin form only). Verify at least 15+ additional Hebrew-form records are included. Check that enrichment acronym 'רמב\"ם' also resolves."
+    },
+    {
+      "criterion": "Q19 (Joseph Karo): Query 'Joseph Karo' returns records previously only findable via Hebrew 'קארו, יוסף בן אפרים'",
+      "verification": "Run query, verify non-zero results. Baseline was 0 results. Any result proves the cross-script alias is working. Expected: 3+ results."
+    },
+    {
+      "criterion": "Backward compatibility: All existing queries that use AGENT_NORM continue to work identically",
+      "verification": "Run full existing test suite: pytest tests/scripts/query/test_db_adapter.py -v. All tests must pass without modification."
+    },
+    {
+      "criterion": "Schema is additive: No existing tables are modified, only new tables created",
+      "verification": "Inspect m3_schema.sql diff — only additions at the end. Run PRAGMA table_info on agents table before and after — identical columns. The agents, authority_enrichment, and other existing tables are unchanged."
+    },
+    {
+      "criterion": "Raw MARC values preserved: No destructive normalization applied to any existing data",
+      "verification": "Verify agents.agent_raw values are unchanged after seeding. The seed script only reads from existing tables (agents, authority_enrichment) and writes to new tables (agent_authorities, agent_aliases). No UPDATE statements on existing tables."
+    },
+    {
+      "criterion": "Graceful degradation: System works correctly if alias tables don't exist or are empty",
+      "verification": "Integration test: run AGENT_NORM query against database without agent_authorities/agent_aliases tables. Verify existing behavior preserved (direct match on agent_norm)."
+    }
+  ]
+}

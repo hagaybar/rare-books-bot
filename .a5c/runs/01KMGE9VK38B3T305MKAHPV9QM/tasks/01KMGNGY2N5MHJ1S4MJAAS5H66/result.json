@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGNGY2N5MHJ1S4MJAAS5H66",
+  "taskId": "e4-pedagogical-tests",
+  "invocationKey": "implement-historian-enhancements:S000024:e4-pedagogical-tests",
+  "status": "ok",
+  "result": {
+    "summary": "3 tests: teaching note format, citations format, thematic followups. All fail with ImportError as expected.",
+    "testFile": "tests/scripts/chat/test_formatter_pedagogical.py",
+    "testsWritten": 3
+  },
+  "startedAt": "2026-03-24T19:37:00.865Z",
+  "finishedAt": "2026-03-24T19:37:00.865Z",
+  "value": {
+    "summary": "3 tests: teaching note format, citations format, thematic followups. All fail with ImportError as expected.",
+    "testFile": "tests/scripts/chat/test_formatter_pedagogical.py",
+    "testsWritten": 3
+  }
+}

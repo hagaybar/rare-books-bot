@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDF42Z0R04KG73P2Z5T6GMW",
+  "taskId": "chat-screen",
+  "invocationKey": "implement-unified-ui:S000004:chat-screen",
+  "status": "ok",
+  "result": {
+    "buildStatus": "success",
+    "filesCreated": [
+      "types/chat.ts",
+      "api/chat.ts",
+      "components/shared/ConfidenceBadge.tsx",
+      "components/shared/PrimoLink.tsx",
+      "components/shared/CandidateCard.tsx",
+      "components/chat/PhaseIndicator.tsx",
+      "components/chat/FollowUpChips.tsx",
+      "components/chat/MessageBubble.tsx",
+      "pages/Chat.tsx"
+    ]
+  },
+  "startedAt": "2026-03-23T13:51:52.134Z",
+  "finishedAt": "2026-03-23T13:51:52.134Z",
+  "value": {
+    "buildStatus": "success",
+    "filesCreated": [
+      "types/chat.ts",
+      "api/chat.ts",
+      "components/shared/ConfidenceBadge.tsx",
+      "components/shared/PrimoLink.tsx",
+      "components/shared/CandidateCard.tsx",
+      "components/chat/PhaseIndicator.tsx",
+      "components/chat/FollowUpChips.tsx",
+      "components/chat/MessageBubble.tsx",
+      "pages/Chat.tsx"
+    ]
+  }
+}

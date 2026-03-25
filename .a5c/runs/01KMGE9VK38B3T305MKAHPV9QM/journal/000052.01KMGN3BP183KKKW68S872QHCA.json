@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:28:14.529Z",
+  "data": {
+    "effectId": "01KMGN3BNNY6DQKHS9JAWE1QFZ",
+    "invocationKey": "implement-historian-enhancements:S000021:verify-phase",
+    "invocationHash": "81542cb55ab1dae2aca2e5d30d4b462f2952e5055f8bb1e835caef80e503339f",
+    "stepId": "S000021",
+    "taskId": "verify-phase",
+    "kind": "agent",
+    "label": "Verify phase: phase2-e3",
+    "taskDefRef": "tasks/01KMGN3BNNY6DQKHS9JAWE1QFZ/task.json"
+  },
+  "checksum": "2cf20f7fc303663fffee3f59bae15267a1c3c0604eade6b39023da8851916015"
+}

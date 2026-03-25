@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T11:35:00.111Z",
+  "data": {
+    "effectId": "01KMJCDHR34XE86D8MM3MRJR80",
+    "invocationKey": "scholar-pipeline-fixes:S000005:frontend-fixes",
+    "invocationHash": "649644004beb95c9f2cb61f445e89f010e27b1fcbda0ff099b60dafaa52ef05d",
+    "stepId": "S000005",
+    "taskId": "frontend-fixes",
+    "kind": "agent",
+    "label": "Fix frontend: link styling, grounding UI, followup rendering",
+    "taskDefRef": "tasks/01KMJCDHR34XE86D8MM3MRJR80/task.json"
+  },
+  "checksum": "81f5102d8be4627be97f710a15205e108426793ec498db31cfbb978c58c2a0cc"
+}

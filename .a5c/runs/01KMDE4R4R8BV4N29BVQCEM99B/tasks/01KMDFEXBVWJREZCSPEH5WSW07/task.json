@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDFEXBVWJREZCSPEH5WSW07",
+  "taskId": "publisher-readonly",
+  "invocationKey": "implement-unified-ui:S000005:publisher-readonly",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Phase 3a: Publisher Authorities Read-Only View",
+  "labels": [
+    "admin",
+    "frontend",
+    "phase3a"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDFEXBVWJREZCSPEH5WSW07/input.json",
+    "outputJsonPath": "tasks/01KMDFEXBVWJREZCSPEH5WSW07/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

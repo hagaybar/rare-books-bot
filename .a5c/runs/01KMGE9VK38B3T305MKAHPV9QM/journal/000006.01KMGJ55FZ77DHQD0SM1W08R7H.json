@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T18:36:47.999Z",
+  "data": {
+    "effectId": "01KMGJ55FQ2X29YQS5QVNB1MV0",
+    "invocationKey": "implement-historian-enhancements:S000002:e1-schema",
+    "invocationHash": "b5bacb79a9b323af90e394c35d82c37beac5c706c5f4995dddf3cb5a5ba2f8b7",
+    "stepId": "S000002",
+    "taskId": "e1-schema",
+    "kind": "agent",
+    "label": "E1: Schema and M3 contract updates",
+    "taskDefRef": "tasks/01KMGJ55FQ2X29YQS5QVNB1MV0/task.json"
+  },
+  "checksum": "2afc1379560d2c90968b312f8d8b93c591aea3f58ce5d5451564945c3cda0fb5"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T18:47:39.143Z",
+  "data": {
+    "effectId": "01KMGJS1C0JD1SSEBZ67WHKAAS",
+    "invocationKey": "implement-historian-enhancements:S000006:e1-query-path",
+    "invocationHash": "f9444091440b52636b859ccc3a9b31845f99723dd62158b98fd9c15ad954dc73",
+    "stepId": "S000006",
+    "taskId": "e1-query-path",
+    "kind": "agent",
+    "label": "E1: Modify AGENT_NORM query path for alias resolution",
+    "taskDefRef": "tasks/01KMGJS1C0JD1SSEBZ67WHKAAS/task.json"
+  },
+  "checksum": "ddf322d1809a9ff50096f8ab6019e02476c0866f0f6eac24c1839edc80369177"
+}

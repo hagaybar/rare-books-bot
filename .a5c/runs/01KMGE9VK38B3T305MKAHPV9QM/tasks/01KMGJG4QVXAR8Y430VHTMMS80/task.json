@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGJG4QVXAR8Y430VHTMMS80",
+  "taskId": "e1-integration-tests",
+  "invocationKey": "implement-historian-enhancements:S000004:e1-integration-tests",
+  "stepId": "S000004",
+  "kind": "agent",
+  "title": "E1: Write seeding and alias-aware query integration tests",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMFZB583EM123MPZF79QW6V6",
+  "taskId": "analyze-synthesize",
+  "invocationKey": "historian-evaluation:S000003:analyze-synthesize",
+  "status": "ok",
+  "result": {
+    "averageScore": 7.55,
+    "reportPath": "reports/historian-evaluation.md",
+    "topEnhancements": [
+      {
+        "effort": "3.5d",
+        "impact": 70,
+        "name": "Agent Name Resolution Layer"
+      },
+      {
+        "effort": "3d",
+        "impact": 33,
+        "name": "Auto-Aggregation for Analytical Questions"
+      },
+      {
+        "effort": "4.5d",
+        "impact": 24,
+        "name": "Entity Cross-Reference and Set Comparison"
+      },
+      {
+        "effort": "4d",
+        "impact": 21,
+        "name": "Scholarly Narrative Enrichment"
+      },
+      {
+        "effort": "3.5d",
+        "impact": 15,
+        "name": "Intelligent Selection and Exhibit Curation"
+      }
+    ]
+  },
+  "startedAt": "2026-03-24T13:13:50.058Z",
+  "finishedAt": "2026-03-24T13:13:50.058Z",
+  "value": {
+    "averageScore": 7.55,
+    "reportPath": "reports/historian-evaluation.md",
+    "topEnhancements": [
+      {
+        "effort": "3.5d",
+        "impact": 70,
+        "name": "Agent Name Resolution Layer"
+      },
+      {
+        "effort": "3d",
+        "impact": 33,
+        "name": "Auto-Aggregation for Analytical Questions"
+      },
+      {
+        "effort": "4.5d",
+        "impact": 24,
+        "name": "Entity Cross-Reference and Set Comparison"
+      },
+      {
+        "effort": "4d",
+        "impact": 21,
+        "name": "Scholarly Narrative Enrichment"
+      },
+      {
+        "effort": "3.5d",
+        "impact": 15,
+        "name": "Intelligent Selection and Exhibit Curation"
+      }
+    ]
+  }
+}

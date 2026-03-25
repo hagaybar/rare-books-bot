@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDGD2EDH79AXP7WH0NZQP7W",
+  "taskId": "db-explorer",
+  "invocationKey": "implement-unified-ui:S000009:db-explorer",
+  "stepId": "S000009",
+  "kind": "agent",
+  "title": "Phase 2: Database Explorer Frontend",
+  "labels": [
+    "diagnostics",
+    "frontend",
+    "phase2"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDGD2EDH79AXP7WH0NZQP7W/input.json",
+    "outputJsonPath": "tasks/01KMDGD2EDH79AXP7WH0NZQP7W/result.json"
+  },
+  "inputs": {
+    "diagnosticBackend": {
+      "endpointsCreated": [
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B9",
+        "B10",
+        "B11",
+        "B12"
+      ],
+      "testsPass": true
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

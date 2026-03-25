@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGEA6V0WAFRV71HVVATP3XQ",
+  "taskId": "e1-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000001:e1-write-tests",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "E1: Write AgentAuthorityStore unit tests (TDD)",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

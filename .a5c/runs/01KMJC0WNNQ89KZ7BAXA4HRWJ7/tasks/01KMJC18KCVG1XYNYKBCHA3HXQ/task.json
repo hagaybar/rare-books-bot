@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJC18KCVG1XYNYKBCHA3HXQ",
+  "taskId": "backend-fixes",
+  "invocationKey": "scholar-pipeline-fixes:S000001:backend-fixes",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Fix backend issues: JSON parsing, index remapping, agent links",
+  "io": {
+    "inputJsonPath": "tasks/01KMJC18KCVG1XYNYKBCHA3HXQ/input.json",
+    "outputJsonPath": "tasks/01KMJC18KCVG1XYNYKBCHA3HXQ/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

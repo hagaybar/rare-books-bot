@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:23:18.902Z",
+  "data": {
+    "effectId": "01KMGMTAZEMPFABW9CW5JK6GTA",
+    "invocationKey": "implement-historian-enhancements:S000019:e3-api-wiring",
+    "invocationHash": "56206158b864b28e302d5d1adeaceae3a9830083347e5e4da1e47c70eab9cd99",
+    "stepId": "S000019",
+    "taskId": "e3-api-wiring",
+    "kind": "agent",
+    "label": "E3: Wire cross-reference into API and exploration agent",
+    "taskDefRef": "tasks/01KMGMTAZEMPFABW9CW5JK6GTA/task.json"
+  },
+  "checksum": "e18925ed554124f06fa6c29fe296c7dc9f06efe27640bff367f6ecbeffea1be0"
+}

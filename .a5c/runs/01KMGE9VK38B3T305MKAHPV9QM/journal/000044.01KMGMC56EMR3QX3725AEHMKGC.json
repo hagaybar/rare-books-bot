@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:15:34.222Z",
+  "data": {
+    "effectId": "01KMGMC5669065JAXGQ0ZDQ54J",
+    "invocationKey": "implement-historian-enhancements:S000017:e3-comparison-tests",
+    "invocationHash": "b1dcece937e3bd2ea89f46ee710bdb1b4063a0d3d0157686c8b7ea0cdfd37df4",
+    "stepId": "S000017",
+    "taskId": "e3-comparison-tests",
+    "kind": "agent",
+    "label": "E3: Write enhanced comparison and narrative tests",
+    "taskDefRef": "tasks/01KMGMC5669065JAXGQ0ZDQ54J/task.json"
+  },
+  "checksum": "82c842f419e2a95ccbd52188e76bcd3c8c81ca9436a6ab94ba5a2014915884a7"
+}

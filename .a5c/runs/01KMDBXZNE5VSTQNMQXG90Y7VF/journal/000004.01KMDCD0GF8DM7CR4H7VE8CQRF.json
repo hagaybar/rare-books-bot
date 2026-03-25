@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T12:58:30.287Z",
+  "data": {
+    "effectId": "01KMDCD0G1JY9ZJ8QPVF06D2DD",
+    "invocationKey": "definitive-implementation-plan:S000002:write-plan",
+    "invocationHash": "690f220135a98f23484cdf513f93d198fde0609572f8325792994107025e449e",
+    "stepId": "S000002",
+    "taskId": "write-plan",
+    "kind": "agent",
+    "label": "writing",
+    "taskDefRef": "tasks/01KMDCD0G1JY9ZJ8QPVF06D2DD/task.json",
+    "labels": [
+      "writing",
+      "plan",
+      "synthesis"
+    ]
+  },
+  "checksum": "fbf2b65091146e8f57dad0d482544106400b62541cfbb4d0bcb03d83bc99ddd7"
+}

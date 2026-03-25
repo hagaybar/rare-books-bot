@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMAV9Y63KA49FA0KRT4EXPCB",
+  "taskId": "verify-update-pipe",
+  "invocationKey": "notebooklm-context-builder:S000008:verify-update-pipe",
+  "stepId": "S000008",
+  "kind": "shell",
+  "title": "Run update utility and verify output",
+  "io": {
+    "outputJsonPath": "tasks/01KMAV9Y63KA49FA0KRT4EXPCB/output.json"
+  },
+  "inputs": {
+    "outputDir": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources",
+    "repoRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

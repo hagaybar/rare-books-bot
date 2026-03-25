@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJCNNBB7KF4K79XC22FG5ZM",
+  "taskId": "verify",
+  "invocationKey": "scholar-pipeline-fixes:S000006:verify",
+  "stepId": "S000006",
+  "kind": "shell",
+  "title": "Verify: frontend-build",
+  "io": {
+    "outputJsonPath": "tasks/01KMJCNNBB7KF4K79XC22FG5ZM/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot/frontend && npm run build 2>&1 | tail -10",
+    "phase": "frontend-build",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMATCZF3YVHT33AWVKMZ7J9D",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "notebooklm-context-builder:S000004:__sdk.breakpoint",
+  "stepId": "S000004",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "files": [
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/01_project_overview.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/02_code_map.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/03_data_pipeline.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/04_query_and_chat.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/05_metadata_workbench.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/06_data_model.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/07_project_status.md"
+          }
+        ]
+      },
+      "question": "Quality review complete. Overall score: 97/100.\nDocuments generated in: /home/hagaybar/projects/rare-books-bot/data/notebooklm/sources\n\nPlease review the 7 documents in the output directory.\nApprove to proceed with uploading to NotebookLM, or reject to request changes.",
+      "title": "Review Generated Documents Before Upload"
+    },
+    "requestedAt": "2026-03-22T13:05:25.987Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "files": [
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/01_project_overview.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/02_code_map.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/03_data_pipeline.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/04_query_and_chat.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/05_metadata_workbench.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/06_data_model.md"
+          },
+          {
+            "format": "markdown",
+            "path": "/home/hagaybar/projects/rare-books-bot/data/notebooklm/sources/07_project_status.md"
+          }
+        ]
+      },
+      "question": "Quality review complete. Overall score: 97/100.\nDocuments generated in: /home/hagaybar/projects/rare-books-bot/data/notebooklm/sources\n\nPlease review the 7 documents in the output directory.\nApprove to proceed with uploading to NotebookLM, or reject to request changes.",
+      "title": "Review Generated Documents Before Upload"
+    },
+    "requestedAt": "2026-03-22T13:05:25.987Z"
+  }
+}

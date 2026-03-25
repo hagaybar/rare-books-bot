@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJCDHR34XE86D8MM3MRJR80",
+  "taskId": "frontend-fixes",
+  "invocationKey": "scholar-pipeline-fixes:S000005:frontend-fixes",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Fix frontend: link styling, grounding UI, followup rendering",
+  "io": {
+    "inputJsonPath": "tasks/01KMJCDHR34XE86D8MM3MRJR80/input.json",
+    "outputJsonPath": "tasks/01KMJCDHR34XE86D8MM3MRJR80/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

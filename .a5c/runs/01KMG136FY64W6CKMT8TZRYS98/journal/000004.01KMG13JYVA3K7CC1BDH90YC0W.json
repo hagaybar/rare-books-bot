@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T13:38:50.459Z",
+  "data": {
+    "effectId": "01KMG13JYM3KB9VQ3XY6SGR2ET",
+    "invocationKey": "historian-enhancement-plan:S000003:analyze-narrative-pipeline",
+    "invocationHash": "a464c87cded4a74a3f324bf5a3f982939df145eedd7e305c608fede3d405745b",
+    "stepId": "S000003",
+    "taskId": "analyze-narrative-pipeline",
+    "kind": "agent",
+    "label": "research",
+    "taskDefRef": "tasks/01KMG13JYM3KB9VQ3XY6SGR2ET/task.json",
+    "labels": [
+      "research",
+      "narrative-pipeline"
+    ]
+  },
+  "checksum": "bbcae04663fbe68b133f03ca0770e606b6a965a39283b6353a01427c7a9e34c3"
+}

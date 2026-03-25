@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMFYYXX574JQ7PXNKKT9SK0H",
+  "taskId": "simulate-queries",
+  "invocationKey": "historian-evaluation:S000002:simulate-queries",
+  "status": "ok",
+  "result": {
+    "simulations": "20 queries simulated, 15 with results, 4 zero-result due to name normalization"
+  },
+  "startedAt": "2026-03-24T13:07:53.561Z",
+  "finishedAt": "2026-03-24T13:07:53.561Z",
+  "value": {
+    "simulations": "20 queries simulated, 15 with results, 4 zero-result due to name normalization"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGM1Q3G78R4KZDY72XVF2D4",
+  "taskId": "e3-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000015:e3-write-tests",
+  "stepId": "S000015",
+  "kind": "agent",
+  "title": "E3: Write cross-reference engine tests (TDD)",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

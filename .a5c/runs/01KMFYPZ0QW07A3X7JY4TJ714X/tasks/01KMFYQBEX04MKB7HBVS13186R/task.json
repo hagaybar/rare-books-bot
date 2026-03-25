@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMFYQBEX04MKB7HBVS13186R",
+  "taskId": "design-questions",
+  "invocationKey": "historian-evaluation:S000001:design-questions",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Step 1-2: Design 20 historian questions with quality criteria",
+  "labels": [
+    "historian",
+    "questions",
+    "research"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMFYQBEX04MKB7HBVS13186R/input.json",
+    "outputJsonPath": "tasks/01KMFYQBEX04MKB7HBVS13186R/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

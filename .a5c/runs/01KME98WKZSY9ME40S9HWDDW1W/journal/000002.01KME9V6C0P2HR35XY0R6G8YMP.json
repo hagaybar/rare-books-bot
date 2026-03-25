@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T21:33:03.744Z",
+  "data": {
+    "effectId": "01KME9V6BMA047XT2Q165A546J",
+    "invocationKey": "narrative-agent-prototype:S000001:build-narrative-agent",
+    "invocationHash": "a8c45d407094699299132217536257126935b07fda6113f6832ec8777ee41db2",
+    "stepId": "S000001",
+    "taskId": "build-narrative-agent",
+    "kind": "agent",
+    "label": "backend",
+    "taskDefRef": "tasks/01KME9V6BMA047XT2Q165A546J/task.json",
+    "labels": [
+      "backend",
+      "narrative",
+      "agent"
+    ]
+  },
+  "checksum": "6992c2a37fe7a674332e9832bd955c4b6d5f6b4ae0a241dfebd4c90520b0d501"
+}

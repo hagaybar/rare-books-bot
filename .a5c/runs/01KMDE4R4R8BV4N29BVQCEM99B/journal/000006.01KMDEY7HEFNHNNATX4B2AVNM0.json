@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T13:42:51.694Z",
+  "data": {
+    "effectId": "01KMDEY7H22XTNW4V3REA01V21",
+    "invocationKey": "implement-unified-ui:S000003:backend-micro-tasks",
+    "invocationHash": "8c754742beb92d42177c30b5a6ee75802ca44bccf2c499ea22eab10f25a4b85e",
+    "stepId": "S000003",
+    "taskId": "backend-micro-tasks",
+    "kind": "agent",
+    "label": "backend",
+    "taskDefRef": "tasks/01KMDEY7H22XTNW4V3REA01V21/task.json",
+    "labels": [
+      "backend",
+      "api",
+      "phase1"
+    ]
+  },
+  "checksum": "5c98f3ba159fca3079b30867e8fc0e509be956bd640ebac4b0ca043272a9e19f"
+}

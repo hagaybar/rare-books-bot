@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDGD2EDH79AXP7WH0NZQP7W",
+  "taskId": "db-explorer",
+  "invocationKey": "implement-unified-ui:S000009:db-explorer",
+  "status": "ok",
+  "result": {
+    "buildStatus": "success",
+    "filesCreated": [
+      "pages/diagnostics/DatabaseExplorer.tsx"
+    ]
+  },
+  "startedAt": "2026-03-23T14:10:42.788Z",
+  "finishedAt": "2026-03-23T14:10:42.788Z",
+  "value": {
+    "buildStatus": "success",
+    "filesCreated": [
+      "pages/diagnostics/DatabaseExplorer.tsx"
+    ]
+  }
+}

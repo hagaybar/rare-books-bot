@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T13:21:14.959Z",
+  "data": {
+    "effectId": "01KMAV9Y63KA49FA0KRT4EXPCB",
+    "invocationKey": "notebooklm-context-builder:S000008:verify-update-pipe",
+    "invocationHash": "46f0d261392b95fbc8a3a391d61dc0b67c85d0e32771157b3a949166f8040380",
+    "stepId": "S000008",
+    "taskId": "verify-update-pipe",
+    "kind": "shell",
+    "label": "Run update utility and verify output",
+    "taskDefRef": "tasks/01KMAV9Y63KA49FA0KRT4EXPCB/task.json"
+  },
+  "checksum": "ba49685dcc1d357433ff978a11b1a215785a549c8f93746cc3eb889fddd03153"
+}

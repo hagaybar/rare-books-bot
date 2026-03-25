@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T13:07:16.711Z",
+  "data": {
+    "effectId": "01KMATGBJW9YZM6N1SHSMK4P2J",
+    "invocationKey": "notebooklm-context-builder:S000006:verify-notebook",
+    "invocationHash": "ba5fa858b5fa4f244143e857f39642b8e8c85e5937c570872e2eb7642d014fed",
+    "stepId": "S000006",
+    "taskId": "verify-notebook",
+    "kind": "agent",
+    "label": "Verify NotebookLM coverage with test questions",
+    "taskDefRef": "tasks/01KMATGBJW9YZM6N1SHSMK4P2J/task.json"
+  },
+  "checksum": "1eca2c8f75c888dc01550e46cfbd329fa51ea9d5c9abc85477f6b60b988ed0a0"
+}

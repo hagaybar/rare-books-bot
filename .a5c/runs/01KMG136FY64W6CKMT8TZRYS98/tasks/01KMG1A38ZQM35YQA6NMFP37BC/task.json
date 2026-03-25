@@ -1,0 +1,1212 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMG1A38ZQM35YQA6NMFP37BC",
+  "taskId": "plan-e1-agent-aliases",
+  "invocationKey": "historian-enhancement-plan:S000005:plan-e1-agent-aliases",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "E1: Plan Agent Name Alias Table with Order-Insensitive Matching",
+  "labels": [
+    "agent-aliases",
+    "e1",
+    "planning"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMG1A38ZQM35YQA6NMFP37BC/input.json",
+    "outputJsonPath": "tasks/01KMG1A38ZQM35YQA6NMFP37BC/result.json"
+  },
+  "inputs": {
+    "dataModelAnalysis": {
+      "agentsTable": {
+        "distinctAuthorityUris": 2434,
+        "distinctNormValues": 3102,
+        "recordsWithAuthorityUri": 3613,
+        "sampleData": [
+          {
+            "agent_norm": "faïtlovitch, jacques",
+            "count": 40
+          },
+          {
+            "agent_norm": "wurmbrand, max",
+            "count": 38
+          },
+          {
+            "agent_norm": "faïtlovitch collection. ancient ethiopic manuscripts collection",
+            "count": 30
+          },
+          {
+            "agent_norm": "josephus, flavius",
+            "count": 30
+          },
+          {
+            "agent_norm": "buxtorf, johann",
+            "count": 26
+          },
+          {
+            "agent_norm": "schwerin, ludwig",
+            "count": 17
+          },
+          {
+            "agent_norm": "buchon, j. a. c",
+            "count": 16
+          },
+          {
+            "agent_norm": "משה בן מימון",
+            "count": 15
+          },
+          {
+            "agent_norm": "schwencke, johan",
+            "count": 13
+          },
+          {
+            "agent_norm": "אברבנאל, יצחק בן יהודה",
+            "count": 13
+          },
+          {
+            "agent_norm": "קארו, יוסף בן אפרים",
+            "count": 13
+          },
+          {
+            "agent_norm": "ludolf, hiob",
+            "count": 11
+          },
+          {
+            "agent_norm": "mendelssohn, moses",
+            "count": 11
+          },
+          {
+            "agent_norm": "cicero, marcus tullius",
+            "count": 10
+          }
+        ],
+        "schema": "CREATE TABLE agents (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    record_id INTEGER NOT NULL,\n    agent_index INTEGER NOT NULL,\n    agent_raw TEXT NOT NULL,\n    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),\n    role_raw TEXT,\n    role_source TEXT,\n    authority_uri TEXT,\n    agent_norm TEXT NOT NULL,\n    agent_confidence REAL NOT NULL CHECK(agent_confidence BETWEEN 0 AND 1),\n    agent_method TEXT NOT NULL,\n    agent_notes TEXT,\n    role_norm TEXT NOT NULL,\n    role_confidence REAL NOT NULL CHECK(role_confidence BETWEEN 0 AND 1),\n    role_method TEXT NOT NULL,\n    provenance_json TEXT NOT NULL,\n    FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE\n)",
+        "wordOrderPattern": "surname, given (Western names in inverted order; Hebrew names in direct order with patronymic: given ben father)"
+      },
+      "authorityEnrichment": {
+        "hasHebrewLabels": true,
+        "hebrewLabelCount": 21,
+        "hebrewLabelExamples": [
+          "אנדרה מסון",
+          "פרנק מאזארל",
+          "ז'ראר דה נרוואל",
+          "ברנאר פיקאר",
+          "חברת שונצינו של ידידי הספרים היהודיים"
+        ],
+        "personInfoStructure": "JSON object with keys: birth_year, death_year, birth_place, death_place, nationality, occupations, description, teachers, students, notable_works",
+        "schema": "CREATE TABLE authority_enrichment (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    authority_uri TEXT NOT NULL UNIQUE,\n    nli_id TEXT,\n    wikidata_id TEXT,\n    viaf_id TEXT,\n    isni_id TEXT,\n    loc_id TEXT,\n    label TEXT,\n    description TEXT,\n    person_info TEXT,\n    place_info TEXT,\n    image_url TEXT,\n    wikipedia_url TEXT,\n    source TEXT NOT NULL,\n    confidence REAL,\n    fetched_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL\n)",
+        "totalRecords": 5667
+      },
+      "imprintsTable": {
+        "relevantColumns": [
+          "publisher_raw (raw publisher string from MARC, potential seed for agent-publisher cross-reference)",
+          "publisher_norm (normalized publisher key, links to publisher_authorities via variants)",
+          "place_raw (raw place string, contextual for agent activity location)",
+          "place_norm (normalized place key)",
+          "date_start / date_end (date range for activity period cross-reference)"
+        ],
+        "schema": "CREATE TABLE imprints (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    record_id INTEGER NOT NULL,\n    occurrence INTEGER NOT NULL,\n    date_raw TEXT,\n    place_raw TEXT,\n    publisher_raw TEXT,\n    manufacturer_raw TEXT,\n    source_tags TEXT NOT NULL,\n    date_start INTEGER,\n    date_end INTEGER,\n    date_label TEXT,\n    date_confidence REAL,\n    date_method TEXT,\n    place_norm TEXT,\n    place_display TEXT,\n    place_confidence REAL,\n    place_method TEXT,\n    publisher_norm TEXT,\n    publisher_display TEXT,\n    publisher_confidence REAL,\n    publisher_method TEXT,\n    country_code TEXT,\n    country_name TEXT,\n    FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE\n)"
+      },
+      "problematicAgents": {
+        "buxtorf": "Stored as single norm 'buxtorf, johann' -- but historically there were two Johann Buxtorfs (father 1564-1629 and son 1599-1664), both Hebraists in Basel. The current schema collapses them into one agent_norm. Raw forms all appear as 'Buxtorf, Johann,' with no disambiguation. authority_uri may distinguish them but agent_norm does not.",
+        "karo": "Stored only in Hebrew as 'קארו, יוסף בן אפרים' (13 records). No Latin/English form exists (e.g., 'Karo, Joseph' or 'Caro, Joseph'). A search for 'Joseph Karo' or 'Caro' would fail entirely. The LIKE '%karo%' query also matched unrelated agents (Beaumarchais [caron], Carolus, Caroline) showing the difficulty of substring matching.",
+        "maimonides": "Split across two norms that are NOT linked: 'maimonides, moses' (Latin form) and 'משה בן מימון' (Hebrew patronymic form, 15 records). These represent the same person (Rabbi Moshe ben Maimon / Rambam) but appear as separate agents. A query for 'Maimonides' would miss the 15 Hebrew-form records.",
+        "mendelssohn": "Stored as single norm 'mendelssohn, moses' (11 records). Only Moses Mendelssohn appears. Raw form: 'Mendelssohn, Moses,'. No Hebrew form present despite being a major figure in Jewish Enlightenment literature."
+      },
+      "proposedAgentAliasSchema": "CREATE TABLE agent_aliases (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    authority_id INTEGER NOT NULL,\n    alias_form TEXT NOT NULL,\n    alias_form_lower TEXT NOT NULL,\n    script TEXT DEFAULT 'latin',\n    language TEXT,\n    alias_type TEXT NOT NULL CHECK(alias_type IN (\n        'primary',          -- the preferred display form for this script\n        'variant_spelling',  -- alternate transliteration or spelling\n        'cross_script',      -- same person in different script (e.g., Hebrew <-> Latin)\n        'patronymic',        -- patronymic form (e.g., ben Maimon)\n        'acronym',           -- rabbinic acronym (e.g., Rambam)\n        'historical'         -- historical Latin or vernacular name form\n    )),\n    is_primary INTEGER NOT NULL DEFAULT 0,\n    priority INTEGER NOT NULL DEFAULT 0,\n    notes TEXT,\n    source TEXT,\n    created_at TEXT NOT NULL,\n    FOREIGN KEY (authority_id) REFERENCES agent_authorities(id) ON DELETE CASCADE\n);\n\nCREATE TABLE agent_authorities (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    canonical_name TEXT NOT NULL,\n    canonical_name_lower TEXT NOT NULL,\n    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),\n    birth_year INTEGER,\n    death_year INTEGER,\n    nationality TEXT,\n    occupation TEXT,\n    notes TEXT,\n    viaf_id TEXT,\n    wikidata_id TEXT,\n    nli_id TEXT,\n    isni_id TEXT,\n    confidence REAL NOT NULL DEFAULT 0.5,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n);\n\nCREATE UNIQUE INDEX idx_agent_auth_canonical_lower ON agent_authorities(canonical_name_lower);\nCREATE INDEX idx_agent_auth_type ON agent_authorities(agent_type);\nCREATE INDEX idx_agent_aliases_authority ON agent_aliases(authority_id);\nCREATE UNIQUE INDEX idx_agent_aliases_form_lower ON agent_aliases(alias_form_lower);\nCREATE INDEX idx_agent_aliases_script ON agent_aliases(script);\nCREATE INDEX idx_agent_aliases_type ON agent_aliases(alias_type);",
+      "publisherAuthorities": {
+        "sampleVariantMappings": [
+          {
+            "canonical": "[publisher unknown]",
+            "variant": "חמו\"ל"
+          },
+          {
+            "canonical": "[publisher unknown]",
+            "variant": "[חמו\"ל]"
+          },
+          {
+            "canonical": "House of Elzevir",
+            "variant": "ex officina elzeviriana"
+          },
+          {
+            "canonical": "Bragadin Press, Venice",
+            "variant": "nella stamparia bragadina"
+          },
+          {
+            "canonical": "Vendramin Press, Venice",
+            "variant": "nella stamparia vendramina"
+          }
+        ],
+        "schema": "CREATE TABLE publisher_authorities (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    canonical_name TEXT NOT NULL,\n    canonical_name_lower TEXT NOT NULL,\n    type TEXT NOT NULL CHECK(type IN ('printing_house', 'private_press', 'modern_publisher', 'bibliophile_society', 'unknown_marker', 'unresearched')),\n    dates_active TEXT,\n    date_start INTEGER,\n    date_end INTEGER,\n    location TEXT,\n    notes TEXT,\n    sources TEXT,\n    confidence REAL NOT NULL DEFAULT 0.5,\n    is_missing_marker INTEGER NOT NULL DEFAULT 0,\n    viaf_id TEXT,\n    wikidata_id TEXT,\n    cerl_id TEXT,\n    branch TEXT,\n    primary_language TEXT,\n    created_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n)",
+        "totalAuthorities": 227,
+        "totalVariants": 265,
+        "variantPattern": "Two-table normalized authority system: publisher_authorities holds canonical identities (one row per publisher) with external IDs (VIAF, Wikidata, CERL); publisher_variants holds name forms (many-to-one FK to authorities) with script detection, language tagging, priority ordering, and case-insensitive unique index on variant_form_lower for fast lookup. Variants include Latin, Hebrew, and transliterated forms."
+      },
+      "seedDataSources": [
+        {
+          "estimatedRecords": "2,434 distinct authority URIs with enrichment data covering 3,613 agent rows; provides external IDs and biographical metadata for seeding agent_authorities",
+          "fieldPath": "agents.authority_uri JOIN authority_enrichment.authority_uri -> label, person_info (birth/death years, occupations), wikidata_id, viaf_id",
+          "source": "agents.authority_uri -> authority_enrichment"
+        },
+        {
+          "estimatedRecords": "3,102 distinct agent_norm values that can be clustered by edit distance and cross-script matching to identify same-person groups (e.g., maimonides/משה בן מימון)",
+          "fieldPath": "agents.agent_norm (3,102 distinct values) + agent_raw + agent_type",
+          "source": "agents table (agent_norm clustering)"
+        },
+        {
+          "estimatedRecords": "5,667 enrichment records with structured biographical JSON; can populate agent_authorities biographical fields",
+          "fieldPath": "authority_enrichment.person_info JSON -> birth_year, death_year, nationality, occupations, description",
+          "source": "authority_enrichment.person_info"
+        },
+        {
+          "estimatedRecords": "21 Hebrew-script labels providing cross-script alias candidates for agent_aliases with alias_type='cross_script'",
+          "fieldPath": "authority_enrichment.label where script is Hebrew",
+          "source": "authority_enrichment.label (Hebrew labels)"
+        },
+        {
+          "estimatedRecords": "All agent rows; raw forms like 'Buxtorf, Johann,' and 'Maimonides, Moses,' provide variant_spelling aliases distinct from agent_norm",
+          "fieldPath": "agents.agent_raw -> variant spelling forms before normalization",
+          "source": "agents.agent_raw (raw MARC forms)"
+        },
+        {
+          "estimatedRecords": "227 authorities / 265 variants -- serves as architectural template, not direct seed data",
+          "fieldPath": "Existing publisher authority system provides the proven two-table pattern to replicate",
+          "source": "publisher_authorities/publisher_variants (pattern reference)"
+        }
+      ]
+    },
+    "narrativePipelineAnalysis": {
+      "aggregation": {
+        "canHandleFullCollection": true,
+        "formatCapabilities": "format_collection_overview() produces markdown with: total record count, date range (earliest-latest with Hebrew calendar filter <=2100), century distribution with percentages, top languages (with code-to-name mapping for 11 languages), top places (title-cased), top subjects (truncated at 50 chars), and a 'What would you like to explore?' section with 4 suggested search types. get_collection_overview() queries the full DB without record_id scoping. Also has METADATA_QUERIES dict for count_language, count_place, count_country, count_publisher, earliest_date, latest_date, date_range. Supports refinement via apply_refinement() for 7 fields (language, place, country, publisher, year, subject, agent) with EQUALS/CONTAINS/RANGE ops.",
+        "overviewDetection": "is_overview_query() uses a two-phase heuristic: (1) reject if query contains any of ~50 search criteria keywords (languages, places, time periods, subjects, entity references); (2) accept if query matches exact greetings ('hi', 'hello', 'help') OR matches overview patterns ('tell me about', 'overview', 'what kind of books') combined with either a collection reference ('collection', 'catalog', 'library') or short query length (<40 chars). Pure string matching, no LLM involved.",
+        "supportedFields": [
+          "publisher",
+          "place",
+          "country",
+          "language",
+          "date_decade",
+          "date_century",
+          "subject",
+          "agent",
+          "agent_role"
+        ]
+      },
+      "explorationAgent": {
+        "comparisonSupport": "Schema fully supports comparison via comparison_field and comparison_values fields in ExplorationRequestLLM (lines 94-101). The LLM system prompt includes a COMPARISON example (Venice vs Rome). execute_comparison() in aggregation.py (line 782) iterates over values and calls execute_count_query() for each, returning a Dict[str, int]. In main.py (line 900-929), comparison results are formatted as a simple list with counts and percentages. However, the 'Comparison Queries' section in aggregation.py (line 490-492) is empty -- there are no dedicated SQL queries for side-by-side comparison. Comparison only supports 4 fields: place, country, publisher, language (others return count=0). No visualization data is returned beyond a flat count per value.",
+        "intentTypes": [
+          "metadata_question",
+          "aggregation",
+          "enrichment_request",
+          "recommendation",
+          "comparison",
+          "refinement",
+          "new_query"
+        ],
+        "recommendationSupport": "Recommendation is defined as an intent type in ExplorationIntent enum (line 47 of models.py) and in the LLM schema (line 54 of exploration_agent.py), but it is explicitly a future feature. The system prompt says '(Future feature - classify but note limited support)' (line 195). In main.py (line 1025-1038), the handler returns a static message: 'Recommendations based on your research goals are not yet available.' No ranking, relevance scoring, or recommendation logic exists."
+      },
+      "formatter": {
+        "followupLogic": "generate_followups() (line 82) analyzes evidence fields from candidates to detect which filter types were used (date, place, publisher, subject). It suggests adding unused filter types as refinements. If count>20, suggests narrowing. For zero results, returns 5 hardcoded broadening suggestions. Returns at most 5 suggestions. Logic is purely rule-based -- inspects evidence field names, no LLM involvement. Does not consider exploration-phase context (aggregation followups are handled separately in exploration_agent.py).",
+        "formatStructure": "format_for_chat() (line 151) produces: (1) summary line ('Found N books...'), (2) query text reminder, (3) detailed results up to max_candidates=10 with evidence bullet points showing field matches, operators, confidence percentages, and MARC source references, OR (4) compact format (just record IDs) when include_evidence=False. Zero results get a static suggestions block. format_summary() (line 219) returns a one-line count. format_evidence() (line 16) renders evidence as indented bullet points with operator-aware descriptions (=, LIKE, BETWEEN) and source references in brackets."
+      },
+      "missingModules": [
+        {
+          "enhancementNeeded": "Cross-referencing between agents in results (teacher-student networks, shared publishers/printers, co-occurring agents across records). The narrative_agent already fetches teachers/students from person_info but does not cross-reference them against other agents in the result set.",
+          "name": "cross_reference",
+          "path": "scripts/chat/cross_reference.py"
+        },
+        {
+          "enhancementNeeded": "Curated recommendation engine for the RECOMMENDATION intent, which is currently a stub returning a static 'not yet available' message. Would need relevance scoring, subject similarity, and research-context-aware ranking within a subgroup.",
+          "name": "curator",
+          "path": "scripts/chat/curator.py"
+        },
+        {
+          "enhancementNeeded": "Thematic/subject-level narrative generation. Current narrative_agent only covers agent biographies. This module would provide subject-based context (e.g., 'This collection of astronomy texts spans the Copernican revolution') using subject headings and temporal/geographic distributions.",
+          "name": "thematic_context",
+          "path": "scripts/chat/thematic_context.py"
+        }
+      ],
+      "modificationPoints": [
+        {
+          "changeNeeded": "Raise or remove the _MAX_RESULT_SET=100 cap to support narrative for larger result sets, possibly with a sampling strategy instead of full skip",
+          "enhancement": "Allow narrative generation for large result sets by sampling top-N most-enriched agents rather than returning None",
+          "file": "scripts/chat/narrative_agent.py",
+          "function": "generate_agent_narrative",
+          "line": 220
+        },
+        {
+          "changeNeeded": "Add thematic/subject narrative alongside agent biography narrative",
+          "enhancement": "After agent bios, generate a thematic paragraph based on subject headings, date clustering, and geographic distribution of the candidate set",
+          "file": "scripts/chat/narrative_agent.py",
+          "function": "generate_agent_narrative",
+          "line": 229
+        },
+        {
+          "changeNeeded": "Cross-reference teachers/students against other agents in the same result set",
+          "enhancement": "When a teacher or student also appears in the result set, add an inline link/reference to connect the narratives",
+          "file": "scripts/chat/narrative_agent.py",
+          "function": "_format_agent_bio",
+          "line": 104
+        },
+        {
+          "changeNeeded": "Replace naive loop-of-count-queries with a single SQL query that groups by the compared values for efficiency",
+          "enhancement": "Add dedicated comparison SQL templates and support additional fields (subject, agent, date_decade) beyond the current 4 (place, country, publisher, language)",
+          "file": "scripts/chat/aggregation.py",
+          "function": "execute_comparison",
+          "line": 782
+        },
+        {
+          "changeNeeded": "Keyword list is brittle and English-only; misses Hebrew or mixed-language queries",
+          "enhancement": "Consider LLM-based intent classification as fallback when keyword heuristic has low confidence, or add multilingual keyword sets",
+          "file": "scripts/chat/aggregation.py",
+          "function": "is_overview_query",
+          "line": 688
+        },
+        {
+          "changeNeeded": "No fields for recommendation parameters (e.g., relevance criteria, research context)",
+          "enhancement": "Add recommendation_criteria and recommendation_context optional fields to the LLM schema so the intent classifier can extract ranking signals",
+          "file": "scripts/chat/exploration_agent.py",
+          "function": "ExplorationRequestLLM",
+          "line": 45
+        },
+        {
+          "changeNeeded": "Followups are only based on Phase 1 evidence fields; no awareness of exploration phase context (aggregation results, active subgroup)",
+          "enhancement": "Accept optional exploration context parameter to generate phase-aware followups (e.g., after aggregation: 'Filter to top publisher', after comparison: 'Show decade breakdown for the leading value')",
+          "file": "scripts/chat/formatter.py",
+          "function": "generate_followups",
+          "line": 82
+        },
+        {
+          "changeNeeded": "No integration point for narrative_agent output -- narrative must be appended externally",
+          "enhancement": "Add optional narrative parameter or call generate_agent_narrative internally to append biographical context after the result listing",
+          "file": "scripts/chat/formatter.py",
+          "function": "format_for_chat",
+          "line": 151
+        },
+        {
+          "changeNeeded": "Recommendation handler is a stub returning a static string",
+          "enhancement": "Implement actual recommendation logic using subject overlap scoring, temporal proximity, and agent co-occurrence within the active subgroup",
+          "file": "app/api/main.py",
+          "function": "handle_exploration (RECOMMENDATION branch)",
+          "line": 1025
+        },
+        {
+          "changeNeeded": "Comparison response has no visualization_hint and hardcoded followups",
+          "enhancement": "Add visualization_hint='bar_chart' and generate context-aware followups based on comparison results (e.g., suggest drilling into the dominant value)",
+          "file": "app/api/main.py",
+          "function": "handle_exploration (COMPARISON branch)",
+          "line": 900
+        }
+      ],
+      "narrativeAgent": {
+        "enrichmentFlow": "Fetches agent enrichment by joining records -> agents -> authority_enrichment tables in SQLite via get_agent_enrichment_for_records(). Requires agent_norm match through authority_uri. Parses person_info JSON from authority_enrichment.person_info column. Deduplicates by agent_norm, collecting record_ids and roles per agent. No external API calls at narrative time -- purely SQLite lookups against pre-populated authority_enrichment table.",
+        "limitations": [
+          "Skips narrative entirely when candidate_set has >100 candidates (_MAX_RESULT_SET=100, line 21)",
+          "Skips narrative when candidate_set is empty",
+          "Skips when no agents have person_info in authority_enrichment (requires pre-populated enrichment data)",
+          "Filters agents to only those with birth_year, occupations, or description -- agents with only names are excluded (line 229-232)",
+          "Maximum 5 featured agents (max_agents default, line 212) -- additional agents are silently dropped",
+          "No place/publisher narrative -- only agent (person) biographies are supported",
+          "No thematic or subject-based narrative generation",
+          "No cross-referencing between agents (e.g., teacher-student relationships across results)",
+          "Occupational summary only fires if >=2 distinct primary occupations exist (line 193)",
+          "Templates are rigid -- no LLM-generated prose, purely deterministic string formatting"
+        ],
+        "maxResultSet": 100,
+        "narrativeTypes": [
+          "single_agent_bio (format: 'About the author: ...')",
+          "multi_agent_bio (format: 'Notable figures in these results:' as bullet list, up to max_agents=5)",
+          "occupational_summary (appended when >=2 distinct primary occupations, e.g. 'This set includes works by 3 rabbis, 2 physicians, and a printer.')"
+        ]
+      }
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "queryPipelineAnalysis": {
+      "buildWhereClause": {
+        "agentHandler": {
+          "commaInsensitive": true,
+          "containsSQL": "LOWER(REPLACE(agents_alias.agent_norm, ',', '')) LIKE LOWER(:param)",
+          "description": "Uses SQL REPLACE to strip commas from the DB column at query time, and normalize_filter_value strips commas from the search term. This enables matching 'Smith John' against 'Smith, John' in the database. Both EQUALS and CONTAINS ops are supported. The AGENTS table is LEFT JOINed via needed_joins set.",
+          "equalsSQL": "LOWER(REPLACE(agents_alias.agent_norm, ',', '')) = LOWER(:param)",
+          "field": "AGENT_NORM",
+          "joinTable": "agents (LEFT JOIN on records.id = agents.record_id)",
+          "lineRange": [
+            293,
+            312
+          ]
+        },
+        "combineLogic": "All conditions are ANDed together (line 342: ' AND '.join(conditions))",
+        "lineRange": [
+          116,
+          343
+        ],
+        "location": "scripts/query/db_adapter.py",
+        "otherHandlers": {
+          "AGENT": "CONTAINS only on agent_raw with LIKE (deprecated, lines 280-291)",
+          "AGENT_ROLE": "EQUALS only on role_norm (lines 314-326)",
+          "AGENT_TYPE": "EQUALS only on agent_type (lines 328-340)",
+          "COUNTRY": "Inline lowercase+strip on filter.value, no normalize_filter_value call (lines 172-188)",
+          "IMPRINT_PLACE": "Same pattern as PUBLISHER but on place_norm column (lines 155-170)",
+          "LANGUAGE": "EQUALS or IN on languages.code; LEFT JOIN (lines 209-228)",
+          "SUBJECT": "CONTAINS only via FTS5 EXISTS subquery on subjects_fts (lines 255-278)",
+          "TITLE": "EQUALS on titles.value or CONTAINS via FTS5 EXISTS subquery on titles_fts (lines 230-253)",
+          "YEAR": "RANGE only: overlap match date_end >= start AND date_start <= end (lines 190-207)"
+        },
+        "publisherHandler": {
+          "containsSQL": "LOWER(imprints_alias.publisher_norm) LIKE LOWER(:param) with % wildcards",
+          "description": "Matches against publisher_norm column in imprints table. Uses LOWER() on both sides for case-insensitive matching. CONTAINS wraps value in % wildcards. Supports negate via NOT(). Join is INNER JOIN on imprints.",
+          "equalsSQL": "LOWER(imprints_alias.publisher_norm) = LOWER(:param)",
+          "field": "PUBLISHER",
+          "lineRange": [
+            138,
+            153
+          ]
+        }
+      },
+      "intentAgent": {
+        "intentTypes": [
+          "High confidence search (0.95-1.0): Clear query with specific criteria — proceeds to execution",
+          "Medium confidence search (0.85-0.94): Mostly clear with minor ambiguities — proceeds to execution",
+          "Low confidence search (0.70-0.84): Multiple interpretations possible — MAY still proceed if filters were extracted",
+          "Very low confidence / vague (below 0.70): Too vague to search — asks for clarification unless filters exist",
+          "Overview / greeting: Detected by is_overview_query() BEFORE intent agent runs — returns collection stats directly"
+        ],
+        "schema": {
+          "FilterLLM": {
+            "fields": {
+              "confidence": "Optional float 0.0-1.0 per-filter confidence",
+              "end": "Optional int for RANGE end year",
+              "field": "string: publisher, imprint_place, country, year, language, title, subject, agent_norm, agent_role",
+              "negate": "bool, default False",
+              "notes": "Optional string about this filter interpretation",
+              "op": "string: EQUALS, CONTAINS, RANGE, IN",
+              "start": "Optional int for RANGE start year",
+              "value": "Optional string for EQUALS/CONTAINS"
+            },
+            "lineRange": [
+              40,
+              78
+            ],
+            "location": "scripts/chat/intent_agent.py"
+          },
+          "IntentInterpretation": {
+            "fields": {
+              "proceed_to_execution": "Computed: True if overall_confidence >= 0.85 OR len(filters) > 0"
+            },
+            "lineRange": [
+              137,
+              164
+            ],
+            "location": "scripts/chat/intent_agent.py"
+          },
+          "IntentInterpretationLLM": {
+            "fields": {
+              "explanation": "Natural language explanation starting with 'You're looking for...' or 'I understand you want...'",
+              "overall_confidence": "float 0.0-1.0, overall confidence in understanding user intent",
+              "query_plan": "QueryPlanLLM with filters, soft_filters, limit, version, query_text",
+              "uncertainties": "List[str], specific areas of uncertainty when confidence < 0.85"
+            },
+            "lineRange": [
+              110,
+              134
+            ],
+            "location": "scripts/chat/intent_agent.py"
+          }
+        },
+        "systemPromptAnalysis": "The INTENT_AGENT_SYSTEM_PROMPT (lines 168-335) defines 9 filter fields, 3 operations, country-vs-city distinction rules, century-to-year-range conversions (e.g., 16th century = 1501-1600), ISO 639-2 language codes, and 6 worked examples ranging from high-confidence (0.95) to very-low (0.15). It instructs the LLM to always provide overall_confidence, explanation, uncertainties when <0.85, and a valid query_plan. Values should be normalized (lowercase). The prompt does NOT mention AGENT_TYPE as a filter field (only agent_norm and agent_role are listed), creating a gap where AGENT_TYPE queries may not be emitted by the LLM."
+      },
+      "modificationPoints": [
+        {
+          "changeNeeded": "COUNTRY field bypassed — build_where_clause does inline .lower().strip() at line 178 instead of routing through normalize_filter_value",
+          "enhancement": "Route COUNTRY through normalize_filter_value for consistency; add an explicit branch like PUBLISHER/IMPRINT_PLACE",
+          "file": "scripts/query/db_adapter.py",
+          "function": "normalize_filter_value",
+          "line": 67
+        },
+        {
+          "changeNeeded": "AGENT (deprecated) only does casefold, while AGENT_NORM does casefold + bracket removal + comma removal + trailing punct strip",
+          "enhancement": "Either deprecation-warn callers to migrate to AGENT_NORM, or align AGENT normalization with AGENT_NORM to avoid silent mismatches",
+          "file": "scripts/query/db_adapter.py",
+          "function": "normalize_filter_value",
+          "line": 92
+        },
+        {
+          "changeNeeded": "No Unicode/diacritic normalization (NFC/NFD, accent folding) anywhere in the pipeline",
+          "enhancement": "Add unicodedata.normalize('NFC', value) as a first step for all text fields, and optionally unidecode for accent folding on publisher/place/agent",
+          "file": "scripts/query/db_adapter.py",
+          "function": "normalize_filter_value",
+          "line": 53
+        },
+        {
+          "changeNeeded": "System prompt lists 'agent_norm' and 'agent_role' as filter fields but omits 'agent_type'. The LLM will never emit agent_type filters because it does not know the field exists.",
+          "enhancement": "Add 'agent_type' to FILTER FIELDS AVAILABLE section with description: 'agent_type: Type of agent (personal, corporate, meeting)'",
+          "file": "scripts/chat/intent_agent.py",
+          "function": "INTENT_AGENT_SYSTEM_PROMPT",
+          "line": 182
+        },
+        {
+          "changeNeeded": "System prompt does not list the 'agent' (deprecated) field, but it also does not mention that agent_norm is comma-insensitive. Users searching 'Smith, John' vs 'Smith John' rely on this being handled transparently.",
+          "enhancement": "Add a note to the prompt: 'agent_norm searches are comma-insensitive — omit commas in values (e.g., use \"smith john\" not \"smith, john\")'",
+          "file": "scripts/chat/intent_agent.py",
+          "function": "INTENT_AGENT_SYSTEM_PROMPT",
+          "line": 182
+        },
+        {
+          "changeNeeded": "proceed_to_execution is True whenever any filter exists, regardless of how low overall_confidence is. A query with confidence 0.2 but one weak filter will still execute.",
+          "enhancement": "Consider adding a minimum confidence floor (e.g., >= 0.4) even when filters exist, or surface the low confidence as a warning alongside results",
+          "file": "scripts/chat/intent_agent.py",
+          "function": "interpret_query",
+          "line": 163
+        },
+        {
+          "changeNeeded": "Hardcoded keyword lists for search criteria detection (languages, places, subjects) are brittle and incomplete. New collection content requires manual list updates.",
+          "enhancement": "Replace with a lightweight LLM classifier or regex pattern matching against FilterField values, or at minimum extract the keyword lists to a config file",
+          "file": "scripts/chat/aggregation.py",
+          "function": "is_overview_query",
+          "line": 706
+        },
+        {
+          "changeNeeded": "Overview detection runs before intent agent, so overview queries never get logged as LLM calls or cached in intent_cache.jsonl. This creates a blind spot in query analytics.",
+          "enhancement": "Log overview detections separately to the interaction logger or intent cache so analytics can track what fraction of queries are overview vs search",
+          "file": "app/api/main.py",
+          "function": "handle_query_definition_phase",
+          "line": 450
+        },
+        {
+          "changeNeeded": "AGENT_NORM uses SQL REPLACE to strip commas at query time on every row scan. For large agent tables this is an unindexable operation — the query planner cannot use indexes on agent_norm.",
+          "enhancement": "Add a pre-computed comma-stripped column (agent_norm_search) to the agents table at indexing time, and query against that column directly for indexable lookups",
+          "file": "scripts/query/db_adapter.py",
+          "function": "build_where_clause",
+          "line": 293
+        },
+        {
+          "changeNeeded": "Subject hint retry (lines 545-574) calls compile_query_with_subject_hints which makes another LLM API call. This is invisible to the caller — no retry metadata is surfaced in the CandidateSet.",
+          "enhancement": "Add retry_attempt and subject_hints_used metadata to the CandidateSet debug/metadata so the UI can display 'Results found after subject term adjustment'",
+          "file": "scripts/query/execute.py",
+          "function": "execute_plan",
+          "line": 545
+        },
+        {
+          "changeNeeded": "AGENT field only supports CONTAINS (LIKE), AGENT_NORM supports EQUALS and CONTAINS, AGENT_ROLE/AGENT_TYPE support only EQUALS. SUBJECT only supports CONTAINS. These asymmetries are not documented and may surprise callers.",
+          "enhancement": "Add EQUALS support for AGENT (deprecated or not), CONTAINS for AGENT_ROLE/AGENT_TYPE, and EQUALS for SUBJECT. Or document the restrictions clearly in the FilterField enum docstrings.",
+          "file": "scripts/query/db_adapter.py",
+          "function": "build_where_clause",
+          "line": 280
+        }
+      ],
+      "normalizeFilterValue": {
+        "limitations": [
+          "No transliteration or Unicode normalization (e.g., Hebrew/Latin script variants pass through unchanged)",
+          "AGENT (deprecated) does only casefold; no comma or punctuation stripping like AGENT_NORM, leading to inconsistent matching if old field is used",
+          "FTS5 quoting for TITLE/SUBJECT only triggers on multi-word CONTAINS; single-word queries get no quoting, and EQUALS queries are compared raw (no FTS5)",
+          "No synonym expansion (e.g., 'Oxford University Press' vs 'oxford' will not match unless the normalized DB value is exactly 'oxford')",
+          "COUNTRY field is not routed through normalize_filter_value at all — build_where_clause handles it inline with simple .lower().strip()",
+          "No diacritic/accent folding (e.g., 'Zürich' vs 'zurich' may not match)"
+        ],
+        "lineRange": [
+          53,
+          113
+        ],
+        "location": "scripts/query/db_adapter.py",
+        "steps": [
+          "PUBLISHER / IMPRINT_PLACE: casefold -> remove brackets [\\[\\]] -> remove punctuation (keep \\w \\s -) -> collapse spaces -> strip",
+          "LANGUAGE: simple lowercase",
+          "TITLE / SUBJECT: lowercase; for CONTAINS ops with spaces, escape internal double-quotes and wrap in double-quotes for FTS5 phrase matching",
+          "AGENT (deprecated): casefold only",
+          "AGENT_NORM / AGENT_ROLE / AGENT_TYPE: casefold -> remove brackets -> remove commas -> strip trailing punctuation (.,;:) -> collapse spaces -> strip"
+        ]
+      },
+      "phase1Routing": {
+        "confidenceThreshold": 0.85,
+        "confidenceThresholdLocation": "scripts/chat/intent_agent.py line 28",
+        "executionFlow": "1. handle_query_definition_phase() (main.py:424) checks is_overview_query() first — if True, returns collection stats with confidence=1.0 and hardcoded followup suggestions, skipping intent agent entirely. 2. If not overview, calls interpret_query() (intent_agent.py:430) which invokes OpenAI gpt-4o with structured output (IntentInterpretationLLM schema). 3. The LLM returns confidence + filters + explanation. 4. IntentInterpretation.__init__ computes proceed_to_execution = (confidence >= 0.85) OR (len(filters) > 0). 5. If proceed_to_execution is False (no filters AND low confidence), returns clarification prompt without executing any SQL. 6. If proceed_to_execution is True, executes query via QueryService.execute_plan(), enriches with narrative agent, generates followups, and transitions session to CORPUS_EXPLORATION phase if results > 0. 7. On zero results, stays in QUERY_DEFINITION phase with broadening suggestions.",
+        "overviewDetection": "is_overview_query() in scripts/chat/aggregation.py (lines 688-779) runs BEFORE the intent agent. It uses a three-tier check: (1) reject if query contains any of ~60 hardcoded search criteria keywords (languages, places, centuries, subjects, entities); (2) match exactly against 10 greeting/generic strings; (3) check for overview patterns ('what can you tell me', 'overview', etc.) combined with either a collection reference keyword OR query length < 40 chars. Returns True only for genuinely generic overview requests."
+      }
+    },
+    "reportAnalysis": {
+      "enhancements": [
+        {
+          "dependencies": [],
+          "effortDays": 3.5,
+          "id": "E1",
+          "implementationTasks": [
+            {
+              "description": "Schema: (alias_id, authority_id, variant_form, script, source, confidence). Populate from existing authority_enrichment table (Wikidata labels, Hebrew labels). Add manual entries for known gaps: Johann Buxtorf, Moses Mendelssohn, Joseph Karo.",
+              "effortDays": 1,
+              "title": "Create agent_aliases table"
+            },
+            {
+              "description": "Modify normalize_filter_value() in scripts/query/db_adapter.py. Split agent name into tokens, sort alphabetically, rejoin for comparison. Apply same normalization to DB values.",
+              "effortDays": 1,
+              "title": "Implement order-insensitive agent matching"
+            },
+            {
+              "description": "In scripts/query/db_adapter.py, AGENT_NORM handler. Add subquery: OR a.authority_uri IN (SELECT authority_id FROM agent_aliases WHERE LOWER(variant_form) LIKE ...). This allows cross-script and cross-form matching.",
+              "effortDays": 1,
+              "title": "Modify build_where_clause() for alias lookup"
+            },
+            {
+              "description": "Script: scripts/metadata/build_agent_aliases.py. Sources: authority_enrichment.label, authority_enrichment.person_info (hebrew_label field). Generate surname-first and given-name-first variants automatically.",
+              "effortDays": 0.5,
+              "title": "Populate alias table from enrichment data"
+            }
+          ],
+          "name": "Agent Name Resolution Layer",
+          "priority": "CRITICAL",
+          "questionsImproved": [
+            "Q3",
+            "Q6",
+            "Q7",
+            "Q8",
+            "Q12",
+            "Q19"
+          ],
+          "rootCausesAddressed": [
+            "NAME_FORM_MISMATCH"
+          ],
+          "scoreImpact": 70
+        },
+        {
+          "dependencies": [],
+          "effortDays": 3,
+          "id": "E2",
+          "implementationTasks": [
+            {
+              "description": "Modify scripts/chat/intent_agent.py. Add new intent type: ANALYTICAL alongside existing QUERY_DEFINITION. Pattern detection keywords: distribution, chronological shape, printing centers, how many by decade, geographic breakdown, most common, overview of.",
+              "effortDays": 1,
+              "title": "Add analytical query detection to intent agent"
+            },
+            {
+              "description": "Modify handle_query_definition_phase() in app/api/main.py. After intent classification, if analytical: execute full-collection aggregation via execute_aggregation() from scripts/chat/aggregation.py. Skip candidate set return for pure analytical queries.",
+              "effortDays": 1,
+              "title": "Route analytical queries to aggregation in Phase 1"
+            },
+            {
+              "description": "Modify scripts/chat/aggregation.py to accept record_ids=None as 'all records'. Currently requires explicit record ID list; add path for full-table aggregation with faster SQL (no IN clause).",
+              "effortDays": 0.5,
+              "title": "Add collection-level aggregation endpoints"
+            },
+            {
+              "description": "In scripts/chat/narrative_agent.py: _MAX_RESULT_SET = 100. For analytical queries, generate a statistical summary instead of per-agent bios. New function: generate_analytical_summary().",
+              "effortDays": 0.5,
+              "title": "Raise or contextualize narrative agent threshold"
+            }
+          ],
+          "name": "Auto-Aggregation for Analytical Questions",
+          "priority": "CRITICAL",
+          "questionsImproved": [
+            "Q14",
+            "Q15",
+            "Q20"
+          ],
+          "rootCausesAddressed": [
+            "NO_AGGREGATION",
+            "LARGE_SET_SILENT"
+          ],
+          "scoreImpact": 33
+        },
+        {
+          "dependencies": [
+            "E1"
+          ],
+          "effortDays": 4.5,
+          "id": "E3",
+          "implementationTasks": [
+            {
+              "description": "New module: scripts/chat/cross_reference.py. Query authority_enrichment.person_info for teacher/student/notable_works relationships. Build in-memory graph of agent relationships within a result set. Function: find_connections(record_ids, db_path) -> List[Connection].",
+              "effortDays": 1.5,
+              "title": "Build relationship extraction from enrichment data"
+            },
+            {
+              "description": "Modify scripts/chat/exploration_agent.py to handle COMPARISON intent. Function: execute_comparison() in scripts/chat/aggregation.py. Input: two sets of filters. Output: side-by-side facet comparison (dates, languages, publishers, agents).",
+              "effortDays": 1.5,
+              "title": "Add comparison query support"
+            },
+            {
+              "description": "Modify generate_agent_narrative() in scripts/chat/narrative_agent.py. After generating individual bios, call find_connections(). Append a Connections section using PersonInfo.teachers and PersonInfo.students fields.",
+              "effortDays": 1,
+              "title": "Integrate cross-references into narrative agent"
+            },
+            {
+              "description": "In scripts/chat/formatter.py, generate_followups(). For place-filtered results, suggest 'Compare with [other major center]'. For agent results, suggest 'Show related authors'.",
+              "effortDays": 0.5,
+              "title": "Add 'compare with' follow-up suggestion"
+            }
+          ],
+          "name": "Entity Cross-Reference and Set Comparison",
+          "priority": "HIGH",
+          "questionsImproved": [
+            "Q1",
+            "Q2",
+            "Q4",
+            "Q5",
+            "Q9",
+            "Q10",
+            "Q13",
+            "Q17"
+          ],
+          "rootCausesAddressed": [
+            "MISSING_CROSS_REF",
+            "NO_COMPARISON"
+          ],
+          "scoreImpact": 24
+        },
+        {
+          "dependencies": [
+            "E3"
+          ],
+          "effortDays": 4,
+          "id": "E4",
+          "implementationTasks": [
+            {
+              "description": "New module: scripts/chat/thematic_context.py. Pre-authored context paragraphs for major themes: Venetian Hebrew printing and censorship, Amsterdam as Dutch Jerusalem, Christian Hebraism, Haskalah, Incunabula, Talmud printing controversies. Each template keyed by (subject, place, date_range) tuples.",
+              "effortDays": 2,
+              "title": "Create thematic context templates"
+            },
+            {
+              "description": "Modify handle_query_definition_phase() in app/api/main.py. After query execution, call get_thematic_context() with query plan filters. Append thematic paragraph after agent narrative, labeled as [Historical Context].",
+              "effortDays": 0.5,
+              "title": "Integrate thematic context into response formatting"
+            },
+            {
+              "description": "New function in scripts/chat/narrative_agent.py. Score records by: agent enrichment richness, date (earlier = more significant), place rarity, edition number (first editions). Surface top-3 notable items in response.",
+              "effortDays": 1,
+              "title": "Add significance scoring for records"
+            },
+            {
+              "description": "In scripts/chat/formatter.py, add pedagogical wrappers. Teaching notes and further reading suggestions triggered when query matches a known teaching topic.",
+              "effortDays": 0.5,
+              "title": "Enhance pedagogical framing"
+            }
+          ],
+          "name": "Contextual Narrative Depth Layer",
+          "priority": "HIGH",
+          "questionsImproved": [
+            "Q1",
+            "Q2",
+            "Q4",
+            "Q5",
+            "Q11",
+            "Q16",
+            "Q18"
+          ],
+          "rootCausesAddressed": [
+            "THIN_NARRATIVE"
+          ],
+          "scoreImpact": 21
+        },
+        {
+          "dependencies": [
+            "E4",
+            "E2"
+          ],
+          "effortDays": 3.5,
+          "id": "E5",
+          "implementationTasks": [
+            {
+              "description": "New module: scripts/chat/curator.py. Multi-factor scoring: date rarity (pre-1500 = high), enrichment data richness, provenance indicators, place rarity, first edition markers, illustration indicators. Function: score_candidates(candidates, db_path) -> List[ScoredCandidate].",
+              "effortDays": 1.5,
+              "title": "Build significance scoring model"
+            },
+            {
+              "description": "Modify scripts/chat/exploration_agent.py. Handle RECOMMENDATION intent type (already stubbed but not implemented). Parse user request: select 10 for exhibit, most important items, representative sample.",
+              "effortDays": 0.5,
+              "title": "Add curation intent to exploration agent"
+            },
+            {
+              "description": "In scripts/chat/curator.py. Select top-N items maximizing both significance and diversity. Diversity dimensions: date spread, place spread, language spread, agent spread. Greedy selection algorithm.",
+              "effortDays": 1,
+              "title": "Implement diverse selection algorithm"
+            },
+            {
+              "description": "In scripts/chat/formatter.py. Format as exhibit narrative with title, numbered items with date/place/title/significance note, and one-sentence curatorial note for each item.",
+              "effortDays": 0.5,
+              "title": "Format curated selection as exhibit narrative"
+            }
+          ],
+          "name": "Intelligent Selection and Exhibit Curation",
+          "priority": "MEDIUM",
+          "questionsImproved": [
+            "Q4",
+            "Q11",
+            "Q14",
+            "Q15",
+            "Q20"
+          ],
+          "rootCausesAddressed": [
+            "NO_CURATION"
+          ],
+          "scoreImpact": 15
+        }
+      ],
+      "evaluationSummary": {
+        "gradeDistribution": {
+          "FAIL": 7,
+          "FAIR": 10,
+          "GOOD": 0,
+          "POOR": 3
+        },
+        "overallScore": 7.55,
+        "passRate": "75%",
+        "totalQuestions": 20
+      },
+      "projectedScores": {
+        "afterAll": 15.7,
+        "afterE1": 11.05,
+        "afterE1E2": 12.7,
+        "baseline": 7.55
+      },
+      "questionDetails": [
+        {
+          "category": "A: Printing History",
+          "filtersApplied": "publisher CONTAINS \"bragadin\", place EQUALS \"venice\"",
+          "id": "Q1",
+          "query": "books printed by Bragadin press in Venice",
+          "resultCount": 16,
+          "rootCauses": [
+            "NO_COMPARISON",
+            "THIN_NARRATIVE"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 1,
+            "narrative": 3,
+            "pedagogical": 2,
+            "richness": 2,
+            "total": 12
+          }
+        },
+        {
+          "category": "A: Printing History",
+          "filtersApplied": "place EQUALS \"amsterdam\", language EQUALS \"heb\", year RANGE 1620-1650",
+          "id": "Q2",
+          "query": "Hebrew books printed in Amsterdam between 1620 and 1650",
+          "resultCount": 13,
+          "rootCauses": [
+            "MISSING_CROSS_REF"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 2,
+            "narrative": 3,
+            "pedagogical": 3,
+            "richness": 3,
+            "total": 15
+          }
+        },
+        {
+          "category": "A: Printing History",
+          "filtersApplied": "publisher CONTAINS \"aldine\"",
+          "id": "Q3",
+          "query": "books published by the Aldine Press",
+          "resultCount": 0,
+          "rootCauses": [
+            "NAME_FORM_MISMATCH"
+          ],
+          "scores": {
+            "accuracy": 0,
+            "crossRef": 0,
+            "narrative": 0,
+            "pedagogical": 0,
+            "richness": 0,
+            "total": 0
+          }
+        },
+        {
+          "category": "A: Printing History",
+          "filtersApplied": "year RANGE 1400-1499",
+          "id": "Q4",
+          "query": "incunabula in the collection (books printed before 1500)",
+          "resultCount": 13,
+          "rootCauses": [
+            "NO_COMPARISON",
+            "THIN_NARRATIVE"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 1,
+            "narrative": 3,
+            "pedagogical": 3,
+            "richness": 3,
+            "total": 14
+          }
+        },
+        {
+          "category": "A: Printing History",
+          "filtersApplied": "place EQUALS \"constantinople\"",
+          "id": "Q5",
+          "query": "books printed in Constantinople",
+          "resultCount": 11,
+          "rootCauses": [
+            "NO_COMPARISON"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 1,
+            "narrative": 3,
+            "pedagogical": 2,
+            "richness": 2,
+            "total": 12
+          }
+        },
+        {
+          "category": "B: Intellectual Networks",
+          "filtersApplied": "agent_norm EQUALS \"johann buxtorf\"",
+          "id": "Q6",
+          "query": "works by Johann Buxtorf",
+          "resultCount": 0,
+          "rootCauses": [
+            "NAME_FORM_MISMATCH"
+          ],
+          "scores": {
+            "accuracy": 0,
+            "crossRef": 0,
+            "narrative": 0,
+            "pedagogical": 0,
+            "richness": 0,
+            "total": 0
+          }
+        },
+        {
+          "category": "B: Intellectual Networks",
+          "filtersApplied": "agent_norm EQUALS \"moses mendelssohn\"",
+          "id": "Q7",
+          "query": "works by Moses Mendelssohn",
+          "resultCount": 0,
+          "rootCauses": [
+            "NAME_FORM_MISMATCH"
+          ],
+          "scores": {
+            "accuracy": 0,
+            "crossRef": 0,
+            "narrative": 0,
+            "pedagogical": 0,
+            "richness": 0,
+            "total": 0
+          }
+        },
+        {
+          "category": "B: Intellectual Networks",
+          "filtersApplied": "agent_norm CONTAINS \"maimonides\"",
+          "id": "Q8",
+          "query": "works by Maimonides",
+          "resultCount": 7,
+          "rootCauses": [
+            "NAME_FORM_MISMATCH"
+          ],
+          "scores": {
+            "accuracy": 2,
+            "crossRef": 1,
+            "narrative": 2,
+            "pedagogical": 2,
+            "richness": 2,
+            "total": 9
+          }
+        },
+        {
+          "category": "B: Intellectual Networks",
+          "filtersApplied": "subject CONTAINS \"josephus\"",
+          "id": "Q9",
+          "query": "works by Josephus Flavius",
+          "resultCount": 30,
+          "rootCauses": [
+            "MISSING_CROSS_REF"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 1,
+            "narrative": 3,
+            "pedagogical": 3,
+            "richness": 3,
+            "total": 14
+          }
+        },
+        {
+          "category": "B: Intellectual Networks",
+          "filtersApplied": "subject CONTAINS \"jewish philosophy\"",
+          "id": "Q10",
+          "query": "books on Jewish philosophy",
+          "resultCount": 21,
+          "rootCauses": [
+            "MISSING_CROSS_REF"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 1,
+            "narrative": 3,
+            "pedagogical": 3,
+            "richness": 3,
+            "total": 14
+          }
+        },
+        {
+          "category": "C: Collection Character",
+          "filtersApplied": "year RANGE 1795-1815",
+          "id": "Q11",
+          "query": "books from the Napoleonic era 1795-1815",
+          "resultCount": 40,
+          "rootCauses": [
+            "NO_AGGREGATION",
+            "THIN_NARRATIVE"
+          ],
+          "scores": {
+            "accuracy": 3,
+            "crossRef": 0,
+            "narrative": 2,
+            "pedagogical": 2,
+            "richness": 2,
+            "total": 9
+          }
+        },
+        {
+          "category": "C: Collection Character",
+          "filtersApplied": "subject CONTAINS \"ethiopia\"",
+          "id": "Q12",
+          "query": "materials about Ethiopia or Ethiopian Jews",
+          "resultCount": 17,
+          "rootCauses": [
+            "NAME_FORM_MISMATCH"
+          ],
+          "scores": {
+            "accuracy": 2,
+            "crossRef": 1,
+            "narrative": 2,
+            "pedagogical": 2,
+            "richness": 2,
+            "total": 9
+          }
+        },
+        {
+          "category": "C: Collection Character",
+          "filtersApplied": "subject CONTAINS \"bibliography\"",
+          "id": "Q13",
+          "query": "books about book collecting or bibliography",
+          "resultCount": 26,
+          "rootCauses": [
+            "MISSING_CROSS_REF"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 1,
+            "narrative": 3,
+            "pedagogical": 2,
+            "richness": 2,
+            "total": 12
+          }
+        },
+        {
+          "category": "C: Collection Character",
+          "filtersApplied": "(none -- entire collection)",
+          "id": "Q14",
+          "query": "chronological distribution of the collection",
+          "resultCount": 2796,
+          "rootCauses": [
+            "NO_AGGREGATION",
+            "LARGE_SET_SILENT"
+          ],
+          "scores": {
+            "accuracy": 1,
+            "crossRef": 0,
+            "narrative": 0,
+            "pedagogical": 0,
+            "richness": 0,
+            "total": 1
+          }
+        },
+        {
+          "category": "C: Collection Character",
+          "filtersApplied": "language EQUALS \"heb\"",
+          "id": "Q15",
+          "query": "major Hebrew printing centers represented",
+          "resultCount": 806,
+          "rootCauses": [
+            "NO_AGGREGATION",
+            "LARGE_SET_SILENT"
+          ],
+          "scores": {
+            "accuracy": 1,
+            "crossRef": 0,
+            "narrative": 0,
+            "pedagogical": 0,
+            "richness": 0,
+            "total": 1
+          }
+        },
+        {
+          "category": "D: Teaching Support",
+          "filtersApplied": "subject CONTAINS \"bible commentaries\"",
+          "id": "Q16",
+          "query": "biblical commentaries",
+          "resultCount": 11,
+          "rootCauses": [
+            "THIN_NARRATIVE"
+          ],
+          "scores": {
+            "accuracy": 3,
+            "crossRef": 1,
+            "narrative": 3,
+            "pedagogical": 2,
+            "richness": 2,
+            "total": 11
+          }
+        },
+        {
+          "category": "D: Teaching Support",
+          "filtersApplied": "subject CONTAINS \"hebrew language grammar\"",
+          "id": "Q17",
+          "query": "Hebrew grammar books",
+          "resultCount": 47,
+          "rootCauses": [
+            "MISSING_CROSS_REF"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 2,
+            "narrative": 3,
+            "pedagogical": 3,
+            "richness": 3,
+            "total": 15
+          }
+        },
+        {
+          "category": "D: Teaching Support",
+          "filtersApplied": "subject CONTAINS \"talmud\"",
+          "id": "Q18",
+          "query": "Talmud editions",
+          "resultCount": 42,
+          "rootCauses": [
+            "THIN_NARRATIVE"
+          ],
+          "scores": {
+            "accuracy": 4,
+            "crossRef": 1,
+            "narrative": 3,
+            "pedagogical": 2,
+            "richness": 2,
+            "total": 12
+          }
+        },
+        {
+          "category": "D: Teaching Support",
+          "filtersApplied": "agent_norm EQUALS \"joseph karo\"",
+          "id": "Q19",
+          "query": "works by Joseph Karo",
+          "resultCount": 0,
+          "rootCauses": [
+            "NAME_FORM_MISMATCH"
+          ],
+          "scores": {
+            "accuracy": 0,
+            "crossRef": 0,
+            "narrative": 0,
+            "pedagogical": 0,
+            "richness": 0,
+            "total": 0
+          }
+        },
+        {
+          "category": "D: Teaching Support",
+          "filtersApplied": "subject CONTAINS \"hebrew printing\" OR \"printing history\"",
+          "id": "Q20",
+          "query": "curated selection for Hebrew printing exhibit",
+          "resultCount": 120,
+          "rootCauses": [
+            "NO_CURATION",
+            "LARGE_SET_SILENT"
+          ],
+          "scores": {
+            "accuracy": 1,
+            "crossRef": 0,
+            "narrative": 0,
+            "pedagogical": 0,
+            "richness": 0,
+            "total": 1
+          }
+        }
+      ],
+      "rootCauses": [
+        {
+          "code": "NAME_FORM_MISMATCH",
+          "count": 6,
+          "description": "Compound problem with three sub-issues: word-order mismatch (MARC stores surname-first, query compiler generates given-name-first), cross-script mismatch (some agents exist only in Hebrew script with no alias bridge), and publisher synonym mismatch (modern English names vs Latin MARC forms with EQUALS instead of CONTAINS).",
+          "impact": "4 total failures + 2 partial",
+          "questionsAffected": [
+            "Q3",
+            "Q6",
+            "Q7",
+            "Q8",
+            "Q12",
+            "Q19"
+          ]
+        },
+        {
+          "code": "MISSING_CROSS_REF",
+          "count": 5,
+          "description": "The narrative agent produces biographical paragraphs from Wikidata enrichment but does not connect agents across records, identify intellectual networks, or explain the significance of a result set in its historical context.",
+          "impact": "Results found but connections unexplored",
+          "questionsAffected": [
+            "Q2",
+            "Q9",
+            "Q10",
+            "Q13",
+            "Q17"
+          ]
+        },
+        {
+          "code": "NO_AGGREGATION",
+          "count": 3,
+          "description": "The aggregation engine in scripts/chat/aggregation.py is fully implemented for Phase 2 but analytical questions arriving during Phase 1 are classified as retrieval queries, returning all records with no aggregation. The capability exists but is not routed correctly.",
+          "impact": "Analytical questions unanswerable",
+          "questionsAffected": [
+            "Q11",
+            "Q14",
+            "Q15"
+          ]
+        },
+        {
+          "code": "THIN_NARRATIVE",
+          "count": 5,
+          "description": "The narrative agent produces template-based biographical paragraphs but lacks thematic context about printing history, intellectual movements, and bibliographic significance needed for scholarly use.",
+          "impact": "Narrative exists but lacks scholarly depth",
+          "questionsAffected": [
+            "Q1",
+            "Q4",
+            "Q11",
+            "Q16",
+            "Q18"
+          ]
+        },
+        {
+          "code": "NO_COMPARISON",
+          "count": 3,
+          "description": "The system cannot compare result sets side-by-side (e.g., Venice vs Amsterdam printing, Bragadin vs rival Venetian presses) to provide contextual analysis.",
+          "impact": "Cannot juxtapose two sets",
+          "questionsAffected": [
+            "Q1",
+            "Q4",
+            "Q5"
+          ]
+        },
+        {
+          "code": "LARGE_SET_SILENT",
+          "count": 3,
+          "description": "The _MAX_RESULT_SET = 100 threshold in narrative_agent.py causes the narrative agent to return None for result sets above 100 records. For Q14 (2796), Q15 (806), and Q20 (120), no narrative is generated at all.",
+          "impact": "Narrative agent threshold (>100) blocks output",
+          "questionsAffected": [
+            "Q14",
+            "Q15",
+            "Q20"
+          ]
+        },
+        {
+          "code": "NO_CURATION",
+          "count": 1,
+          "description": "The system has no selection/recommendation capability. It returns large result sets but cannot identify the most historically significant, visually striking, or narratively compelling items for an exhibit.",
+          "impact": "Cannot select/recommend from results",
+          "questionsAffected": [
+            "Q20"
+          ]
+        }
+      ]
+    }
+  }
+}

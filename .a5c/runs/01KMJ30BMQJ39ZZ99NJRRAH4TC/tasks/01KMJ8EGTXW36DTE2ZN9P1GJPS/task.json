@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ8EGTXW36DTE2ZN9P1GJPS",
+  "taskId": "verify-phase",
+  "invocationKey": "scholar-pipeline:S000013:verify-phase",
+  "stepId": "S000013",
+  "kind": "shell",
+  "title": "Verify: final-all-tests",
+  "io": {
+    "outputJsonPath": "tasks/01KMJ8EGTXW36DTE2ZN9P1GJPS/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/ -v --ignore=tests/app/test_scholar_evidence.py 2>&1 | tail -80",
+    "description": "Final verification: all tests pass after cleanup",
+    "phase": "final-all-tests",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

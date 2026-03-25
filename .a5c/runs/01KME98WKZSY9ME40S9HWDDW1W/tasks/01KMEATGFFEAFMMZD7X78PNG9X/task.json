@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMEATGFFEAFMMZD7X78PNG9X",
+  "taskId": "integrate-chat-flow",
+  "invocationKey": "narrative-agent-prototype:S000002:integrate-chat-flow",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Integrate narrative agent into chat flow",
+  "labels": [
+    "chat",
+    "integration",
+    "narrative"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMEATGFFEAFMMZD7X78PNG9X/input.json",
+    "outputJsonPath": "tasks/01KMEATGFFEAFMMZD7X78PNG9X/result.json"
+  },
+  "inputs": {
+    "narrativeAgent": {
+      "lineCount": 189,
+      "moduleCreated": "scripts/chat/narrative_agent.py",
+      "testOutput": "Working: Maimonides + Josephus narratives generated"
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

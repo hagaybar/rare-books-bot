@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T19:13:01.102Z",
+  "data": {
+    "effectId": "01KMGM7FN0KEA9D0K7V193SNT5",
+    "invocationKey": "implement-historian-enhancements:S000016:e3-engine",
+    "invocationHash": "6af7f6108327f67797f70dce9edca62d208e650060bc6ebcb52e01c689572787",
+    "stepId": "S000016",
+    "taskId": "e3-engine",
+    "kind": "agent",
+    "label": "E3: Implement cross-reference engine",
+    "taskDefRef": "tasks/01KMGM7FN0KEA9D0K7V193SNT5/task.json"
+  },
+  "checksum": "59e2da35ba243ded63356085a89115af863e01e777ce43a2070b7ac3fa52baa9"
+}

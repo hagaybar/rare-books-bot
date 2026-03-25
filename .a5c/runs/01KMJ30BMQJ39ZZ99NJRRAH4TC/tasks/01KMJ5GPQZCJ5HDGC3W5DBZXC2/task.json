@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ5GPQZCJ5HDGC3W5DBZXC2",
+  "taskId": "verify-phase",
+  "invocationKey": "scholar-pipeline:S000008:verify-phase",
+  "stepId": "S000008",
+  "kind": "shell",
+  "title": "Verify: phase3-handlers",
+  "io": {
+    "outputJsonPath": "tasks/01KMJ5GPQZCJ5HDGC3W5DBZXC2/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_plan_models.py tests/scripts/chat/test_interpreter.py tests/scripts/chat/test_executor.py tests/scripts/chat/test_narrator.py -v 2>&1 | tail -60",
+    "description": "Verify all handlers pass tests and no regressions in models/interpreter/narrator",
+    "phase": "phase3-handlers",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

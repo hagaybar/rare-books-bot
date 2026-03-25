@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T12:46:30.272Z",
+  "data": {
+    "effectId": "01KMASAABMB3GQME1TEDKHNDZ9",
+    "invocationKey": "notebooklm-context-builder:S000002:generate-documents",
+    "invocationHash": "f6df1383ef8db1eb9b61fe2c59812c6da224d2c508ce05c52e536f8538b43115",
+    "stepId": "S000002",
+    "taskId": "generate-documents",
+    "kind": "agent",
+    "label": "Generate 7 curated context documents for NotebookLM",
+    "taskDefRef": "tasks/01KMASAABMB3GQME1TEDKHNDZ9/task.json"
+  },
+  "checksum": "247ee2aa6e46962b6dfc79e6f41bcecfd188794677921a5970cf48fcd26f2c8f"
+}

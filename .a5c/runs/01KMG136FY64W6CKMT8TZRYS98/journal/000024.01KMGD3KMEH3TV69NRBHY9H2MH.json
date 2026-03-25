@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T17:08:34.062Z",
+  "data": {
+    "effectId": "01KMGD3KKZZ5GHAJ3A2MS31K10",
+    "invocationKey": "historian-enhancement-plan:S000012:verify-plan-against-codebase",
+    "invocationHash": "a7c4b644debdcf2999d39f10bbb86ae373adde5e4a390a4978be2395d6963be0",
+    "stepId": "S000012",
+    "taskId": "verify-plan-against-codebase",
+    "kind": "agent",
+    "label": "verification",
+    "taskDefRef": "tasks/01KMGD3KKZZ5GHAJ3A2MS31K10/task.json",
+    "labels": [
+      "verification",
+      "qa"
+    ]
+  },
+  "checksum": "e8c0e8f8970f9e4441589c2c865095324848c843c7aad468b734bc0aa97e65ca"
+}

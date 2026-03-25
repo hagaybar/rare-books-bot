@@ -1,0 +1,30 @@
+{
+  "queryResults": [
+    {"query": "books published in Amsterdam", "resultCount": 196, "planFilters": ["imprint_place EQUALS 'amsterdam'"], "evidenceShape": "1 Evidence per candidate: field=place_norm, confidence=0.95", "issues": []},
+    {"query": "books from the 16th century", "resultCount": 217, "planFilters": ["year RANGE 1501-1600"], "evidenceShape": "1 Evidence per candidate: date overlap", "issues": []},
+    {"query": "Hebrew books printed in Venice", "resultCount": 100, "planFilters": ["language='heb'", "place='venice'"], "evidenceShape": "2 Evidence objects", "issues": []},
+    {"query": "books about medicine", "resultCount": 15, "planFilters": ["subject CONTAINS 'Medicine'"], "evidenceShape": "Evidence value field is always null", "issues": ["Subject evidence value is always null"]},
+    {"query": "books published by Elsevier", "resultCount": 1, "planFilters": ["publisher CONTAINS 'elsevier'"], "evidenceShape": "1 Evidence", "issues": ["Only 1 of 16 Elzevir records matched — publisher variant gap"]},
+    {"query": "Hebrew books printed in Amsterdam in the 17th century", "resultCount": 46, "planFilters": ["language+place+date"], "evidenceShape": "3 Evidence objects", "issues": []},
+    {"query": "books by Maimonides", "resultCount": 7, "planFilters": ["agent CONTAINS 'maimonides'"], "evidenceShape": "Agent source shows marc:unknown", "issues": ["Agent evidence source incorrect"]}
+  ],
+  "edgeCases": [
+    {"query": "books about quantum physics", "behavior": "FALSE BROADENING: silently remapped to 'Philosophy', returned 67 irrelevant results"},
+    {"query": "books", "behavior": "Correctly returned all 2796 with EMPTY_FILTERS warning"},
+    {"query": "Venice", "behavior": "Interpreted as place filter, 164 results, no ambiguity warning"}
+  ],
+  "structureFindings": {
+    "candidateSetShape": "CandidateSet{query_text, plan_hash, sql, candidates[], total_count}",
+    "evidenceFormat": "Evidence{field, value(often null), operator, matched_against, source(marc tag), confidence, extraction_error}",
+    "queryPlanFormat": "QueryPlan{version, query_text, filters[Filter{field, op, value/start/end, confidence(always null)}], limit, debug}",
+    "artifactFiles": ["plan.json", "sql.txt", "candidates.json"]
+  },
+  "issues": [
+    "HIGH: Publisher variant matching misses historical name forms (Elsevier/Elzevir: 1/16 found)",
+    "HIGH: Subject retry false broadening — zero results silently remapped to wrong subject",
+    "MEDIUM: Subject evidence value is always null",
+    "MEDIUM: QueryPlan filter confidence always null — LOW_CONFIDENCE warning can never fire",
+    "LOW: Agent evidence source shows marc:unknown instead of 100/700",
+    "LOW: Empty-filter queries return all records with empty evidence"
+  ]
+}

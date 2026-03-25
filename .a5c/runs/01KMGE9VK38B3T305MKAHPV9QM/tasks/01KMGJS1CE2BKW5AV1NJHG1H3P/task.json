@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGJS1CE2BKW5AV1NJHG1H3P",
+  "taskId": "e2-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000007:e2-write-tests",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "E2: Write analytical router detection tests (TDD)",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

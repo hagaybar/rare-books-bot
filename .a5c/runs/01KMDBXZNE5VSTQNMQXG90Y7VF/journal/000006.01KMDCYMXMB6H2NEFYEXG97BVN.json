@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T13:08:08.244Z",
+  "data": {
+    "effectId": "01KMDCYMX7Q5BV5MG0HFE6P09X",
+    "invocationKey": "definitive-implementation-plan:S000003:verify-consistency",
+    "invocationHash": "31bd209523e088af15d7c5cea3d35194cad4d1eb5690a54da5aca7613e35f884",
+    "stepId": "S000003",
+    "taskId": "verify-consistency",
+    "kind": "agent",
+    "label": "verification",
+    "taskDefRef": "tasks/01KMDCYMX7Q5BV5MG0HFE6P09X/task.json",
+    "labels": [
+      "verification",
+      "consistency",
+      "qa"
+    ]
+  },
+  "checksum": "359f324e541b7da5d522ba722e6df7d31411197b255f11f46b71dc39f6d9f7b3"
+}

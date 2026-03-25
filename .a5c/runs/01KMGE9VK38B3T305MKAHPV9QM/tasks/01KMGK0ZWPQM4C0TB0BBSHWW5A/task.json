@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGK0ZWPQM4C0TB0BBSHWW5A",
+  "taskId": "e1-verify",
+  "invocationKey": "implement-historian-enhancements:S000007:e1-verify",
+  "stepId": "S000007",
+  "kind": "shell",
+  "title": "E1: Run all E1 tests to verify completion",
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/metadata/test_agent_authority.py tests/scripts/query/test_db_adapter_agent_alias.py tests/scripts/metadata/test_seed_agent_authorities.py -v --timeout=60 2>&1 | tail -30",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Run E1 tests and verify agent alias resolution works",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

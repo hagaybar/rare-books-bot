@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDGMDQA5F3C8J5FY9CFFY9S",
+  "taskId": "admin-screens",
+  "invocationKey": "implement-unified-ui:S000012:admin-screens",
+  "status": "ok",
+  "result": {
+    "backendEndpoints": [
+      "GET /health/extended",
+      "POST /metadata/publishers",
+      "PUT /metadata/publishers/{id}",
+      "DELETE /metadata/publishers/{id}",
+      "POST /metadata/publishers/{id}/variants",
+      "DELETE /metadata/publishers/{id}/variants/{variant_id}",
+      "GET /metadata/publishers/match-preview"
+    ],
+    "buildStatus": "success",
+    "frontendFiles": [
+      "Health.tsx",
+      "Publishers.tsx",
+      "Sidebar.tsx"
+    ]
+  },
+  "startedAt": "2026-03-23T18:07:49.466Z",
+  "finishedAt": "2026-03-23T18:07:49.466Z",
+  "value": {
+    "backendEndpoints": [
+      "GET /health/extended",
+      "POST /metadata/publishers",
+      "PUT /metadata/publishers/{id}",
+      "DELETE /metadata/publishers/{id}",
+      "POST /metadata/publishers/{id}/variants",
+      "DELETE /metadata/publishers/{id}/variants/{variant_id}",
+      "GET /metadata/publishers/match-preview"
+    ],
+    "buildStatus": "success",
+    "frontendFiles": [
+      "Health.tsx",
+      "Publishers.tsx",
+      "Sidebar.tsx"
+    ]
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMAVATE4E1DPEYETA9VQ8FSB",
+  "taskId": "validate-update-outputs",
+  "invocationKey": "notebooklm-context-builder:S000009:validate-update-outputs",
+  "status": "ok",
+  "result": {
+    "bugsFixed": [
+      "scripts/notebooklm/update_context.py line 270: Changed PROJECT_DESCRIPTION.md path from REPO_ROOT / \"PROJECT_DESCRIPTION.md\" to REPO_ROOT / \"docs\" / \"PROJECT_DESCRIPTION.md\""
+    ],
+    "fileComparisons": [
+      {
+        "file": "01_project_overview.md",
+        "headersMatch": true,
+        "issues": [],
+        "originalWords": 2051,
+        "updateWords": 1719,
+        "wordCountRatio": 0.838
+      },
+      {
+        "file": "02_code_map.md",
+        "headersMatch": true,
+        "issues": [
+          "Update is larger than original (ratio=1.771) - expected for AST-extracted code map"
+        ],
+        "originalWords": 2280,
+        "updateWords": 4038,
+        "wordCountRatio": 1.771
+      },
+      {
+        "file": "03_data_pipeline.md",
+        "headersMatch": true,
+        "issues": [],
+        "originalWords": 2364,
+        "updateWords": 890,
+        "wordCountRatio": 0.376
+      },
+      {
+        "file": "04_query_and_chat.md",
+        "headersMatch": true,
+        "issues": [
+          "Missing h2 sections in update: ['## End-to-End Query Example']"
+        ],
+        "originalWords": 2208,
+        "updateWords": 824,
+        "wordCountRatio": 0.373
+      },
+      {
+        "file": "05_metadata_workbench.md",
+        "headersMatch": true,
+        "issues": [
+          "Missing h2 sections in update: ['## Coverage Audit Example', '## Correction Flow Example']"
+        ],
+        "originalWords": 2093,
+        "updateWords": 742,
+        "wordCountRatio": 0.355
+      },
+      {
+        "file": "06_data_model.md",
+        "headersMatch": false,
+        "issues": [
+          "Missing h2 sections in update: ['## M7: Metadata Workbench Models']"
+        ],
+        "originalWords": 2219,
+        "updateWords": 1017,
+        "wordCountRatio": 0.458
+      },
+      {
+        "file": "07_project_status.md",
+        "headersMatch": true,
+        "issues": [
+          "Missing h2 sections in update: ['## Latest Audit (March 22, 2026)', '## Development History by Theme', '## Known Gaps and Recommendations', '## Previous Audits']",
+          "New h2 sections in update: ['## Recent Git History', '## Audits']"
+        ],
+        "originalWords": 2111,
+        "updateWords": 718,
+        "wordCountRatio": 0.34
+      }
+    ],
+    "valid": false
+  },
+  "startedAt": "2026-03-22T13:23:54.368Z",
+  "finishedAt": "2026-03-22T13:23:54.368Z",
+  "value": {
+    "bugsFixed": [
+      "scripts/notebooklm/update_context.py line 270: Changed PROJECT_DESCRIPTION.md path from REPO_ROOT / \"PROJECT_DESCRIPTION.md\" to REPO_ROOT / \"docs\" / \"PROJECT_DESCRIPTION.md\""
+    ],
+    "fileComparisons": [
+      {
+        "file": "01_project_overview.md",
+        "headersMatch": true,
+        "issues": [],
+        "originalWords": 2051,
+        "updateWords": 1719,
+        "wordCountRatio": 0.838
+      },
+      {
+        "file": "02_code_map.md",
+        "headersMatch": true,
+        "issues": [
+          "Update is larger than original (ratio=1.771) - expected for AST-extracted code map"
+        ],
+        "originalWords": 2280,
+        "updateWords": 4038,
+        "wordCountRatio": 1.771
+      },
+      {
+        "file": "03_data_pipeline.md",
+        "headersMatch": true,
+        "issues": [],
+        "originalWords": 2364,
+        "updateWords": 890,
+        "wordCountRatio": 0.376
+      },
+      {
+        "file": "04_query_and_chat.md",
+        "headersMatch": true,
+        "issues": [
+          "Missing h2 sections in update: ['## End-to-End Query Example']"
+        ],
+        "originalWords": 2208,
+        "updateWords": 824,
+        "wordCountRatio": 0.373
+      },
+      {
+        "file": "05_metadata_workbench.md",
+        "headersMatch": true,
+        "issues": [
+          "Missing h2 sections in update: ['## Coverage Audit Example', '## Correction Flow Example']"
+        ],
+        "originalWords": 2093,
+        "updateWords": 742,
+        "wordCountRatio": 0.355
+      },
+      {
+        "file": "06_data_model.md",
+        "headersMatch": false,
+        "issues": [
+          "Missing h2 sections in update: ['## M7: Metadata Workbench Models']"
+        ],
+        "originalWords": 2219,
+        "updateWords": 1017,
+        "wordCountRatio": 0.458
+      },
+      {
+        "file": "07_project_status.md",
+        "headersMatch": true,
+        "issues": [
+          "Missing h2 sections in update: ['## Latest Audit (March 22, 2026)', '## Development History by Theme', '## Known Gaps and Recommendations', '## Previous Audits']",
+          "New h2 sections in update: ['## Recent Git History', '## Audits']"
+        ],
+        "originalWords": 2111,
+        "updateWords": 718,
+        "wordCountRatio": 0.34
+      }
+    ],
+    "valid": false
+  }
+}

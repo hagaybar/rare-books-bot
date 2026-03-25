@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T13:21:43.888Z",
+  "data": {
+    "effectId": "01KMAVATE4E1DPEYETA9VQ8FSB",
+    "invocationKey": "notebooklm-context-builder:S000009:validate-update-outputs",
+    "invocationHash": "5d8f4c3ef4237d7a6b3b557a40f7ce2af8a385416cca6c7518bd17a47f0bd7bf",
+    "stepId": "S000009",
+    "taskId": "validate-update-outputs",
+    "kind": "agent",
+    "label": "Validate update pipe outputs",
+    "taskDefRef": "tasks/01KMAVATE4E1DPEYETA9VQ8FSB/task.json"
+  },
+  "checksum": "c10a5ce963e8261b0ece65450a6a32bfc62a0e40b46edc53334997325cbf6c4a"
+}

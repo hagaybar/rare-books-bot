@@ -1,0 +1,1 @@
+{"backendEndpoints":["GET /health/extended","POST /metadata/publishers","PUT /metadata/publishers/{id}","DELETE /metadata/publishers/{id}","POST /metadata/publishers/{id}/variants","DELETE /metadata/publishers/{id}/variants/{variant_id}","GET /metadata/publishers/match-preview"],"frontendFiles":["Health.tsx","Publishers.tsx","Sidebar.tsx"],"buildStatus":"success"}

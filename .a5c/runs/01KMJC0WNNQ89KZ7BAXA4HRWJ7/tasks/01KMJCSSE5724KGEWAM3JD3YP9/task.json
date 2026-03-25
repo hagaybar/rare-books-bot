@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJCSSE5724KGEWAM3JD3YP9",
+  "taskId": "commit",
+  "invocationKey": "scholar-pipeline-fixes:S000008:commit",
+  "stepId": "S000008",
+  "kind": "shell",
+  "title": "Commit all fixes",
+  "io": {
+    "outputJsonPath": "tasks/01KMJCSSE5724KGEWAM3JD3YP9/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && git add -A && git commit -m \"fix: resolve 6 scholar pipeline issues (JSON parsing, narrator prompt, grounding UI, link visibility)\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

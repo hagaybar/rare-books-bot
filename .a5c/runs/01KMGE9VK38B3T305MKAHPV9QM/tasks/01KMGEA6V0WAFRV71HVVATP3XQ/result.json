@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGEA6V0WAFRV71HVVATP3XQ",
+  "taskId": "e1-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000001:e1-write-tests",
+  "status": "ok",
+  "result": {
+    "summary": "64 TDD test cases across 13 test classes. All fail with ModuleNotFoundError. Covers: schema creation, CRUD, alias search (case-insensitive, cross-script, word-reorder), unique constraints, FK cascade, script detection, list-all with filters, dynamic alias addition, resolve_agent_norm_to_authority_ids. Fixtures: Maimonides, Buxtorf, Mendelssohn, Karo.",
+    "testFile": "tests/scripts/metadata/test_agent_authority.py",
+    "testsWritten": 64
+  },
+  "startedAt": "2026-03-24T17:33:13.459Z",
+  "finishedAt": "2026-03-24T17:33:13.459Z",
+  "value": {
+    "summary": "64 TDD test cases across 13 test classes. All fail with ModuleNotFoundError. Covers: schema creation, CRUD, alias search (case-insensitive, cross-script, word-reorder), unique constraints, FK cascade, script detection, list-all with filters, dynamic alias addition, resolve_agent_norm_to_authority_ids. Fixtures: Maimonides, Buxtorf, Mendelssohn, Karo.",
+    "testFile": "tests/scripts/metadata/test_agent_authority.py",
+    "testsWritten": 64
+  }
+}

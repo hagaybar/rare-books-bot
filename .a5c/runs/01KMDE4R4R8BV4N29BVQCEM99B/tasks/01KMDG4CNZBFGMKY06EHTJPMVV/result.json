@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDG4CNZBFGMKY06EHTJPMVV",
+  "taskId": "query-debugger",
+  "invocationKey": "implement-unified-ui:S000008:query-debugger",
+  "status": "ok",
+  "result": {
+    "buildStatus": "success",
+    "filesCreated": [
+      "types/diagnostics.ts",
+      "api/diagnostics.ts",
+      "pages/diagnostics/QueryDebugger.tsx"
+    ]
+  },
+  "startedAt": "2026-03-23T14:08:19.833Z",
+  "finishedAt": "2026-03-23T14:08:19.833Z",
+  "value": {
+    "buildStatus": "success",
+    "filesCreated": [
+      "types/diagnostics.ts",
+      "api/diagnostics.ts",
+      "pages/diagnostics/QueryDebugger.tsx"
+    ]
+  }
+}

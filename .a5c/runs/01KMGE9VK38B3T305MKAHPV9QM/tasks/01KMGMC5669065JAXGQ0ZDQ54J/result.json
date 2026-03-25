@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGMC5669065JAXGQ0ZDQ54J",
+  "taskId": "e3-comparison-tests",
+  "invocationKey": "implement-historian-enhancements:S000017:e3-comparison-tests",
+  "status": "ok",
+  "result": {
+    "summary": "14 tests: 8 comparison (facets, shared agents, backward compat, edge cases) + 6 narrative (connections section, performance guard, non-blocking, format). 13 fail as expected, 1 backward-compat passes.",
+    "testFiles": [
+      "tests/scripts/chat/test_comparison_enhanced.py",
+      "tests/scripts/chat/test_narrative_agent_e3.py"
+    ],
+    "testsWritten": 14
+  },
+  "startedAt": "2026-03-24T19:18:39.717Z",
+  "finishedAt": "2026-03-24T19:18:39.717Z",
+  "value": {
+    "summary": "14 tests: 8 comparison (facets, shared agents, backward compat, edge cases) + 6 narrative (connections section, performance guard, non-blocking, format). 13 fail as expected, 1 backward-compat passes.",
+    "testFiles": [
+      "tests/scripts/chat/test_comparison_enhanced.py",
+      "tests/scripts/chat/test_narrative_agent_e3.py"
+    ],
+    "testsWritten": 14
+  }
+}

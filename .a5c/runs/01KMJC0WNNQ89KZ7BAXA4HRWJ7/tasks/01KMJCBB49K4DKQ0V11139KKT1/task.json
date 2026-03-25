@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJCBB49K4DKQ0V11139KKT1",
+  "taskId": "narrator-fix",
+  "invocationKey": "scholar-pipeline-fixes:S000003:narrator-fix",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Fix narrator prompt: no followups/confidence in narrative text",
+  "io": {
+    "inputJsonPath": "tasks/01KMJCBB49K4DKQ0V11139KKT1/input.json",
+    "outputJsonPath": "tasks/01KMJCBB49K4DKQ0V11139KKT1/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

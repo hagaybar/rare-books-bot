@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T18:47:39.129Z",
+  "data": {
+    "effectId": "01KMGJS1B8DW81CJ6A0WCS9W4M",
+    "invocationKey": "implement-historian-enhancements:S000005:e1-seeding",
+    "invocationHash": "fe142e2c8722496ba0697f9156ad4895b4e78e567f9ac927473554b9c35b47fb",
+    "stepId": "S000005",
+    "taskId": "e1-seeding",
+    "kind": "agent",
+    "label": "E1: Implement seeding script and CLI command",
+    "taskDefRef": "tasks/01KMGJS1B8DW81CJ6A0WCS9W4M/task.json"
+  },
+  "checksum": "ea83e4737e4db7a690b9f966b31578c0f92ffee1b6c0ad241975700f55f61c92"
+}

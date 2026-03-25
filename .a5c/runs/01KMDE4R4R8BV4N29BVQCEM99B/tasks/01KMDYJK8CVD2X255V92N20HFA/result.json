@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMDYJK8CVD2X255V92N20HFA",
+  "taskId": "cleanup",
+  "invocationKey": "implement-unified-ui:S000016:cleanup",
+  "status": "ok",
+  "result": {
+    "archived": [
+      "_wizard.py",
+      "wizard_components.py"
+    ],
+    "buildStatus": "success",
+    "deleted": [
+      "app/ui_chat/",
+      "app/ui_qa/",
+      "app/qa.py",
+      "run_chat_ui.sh",
+      "configs/chunk_rules.yaml",
+      "configs/outlook_helper.yaml",
+      "scripts/api_clients/openai/completer.py"
+    ],
+    "testsPass": true,
+    "updated": [
+      "CLAUDE.md",
+      "pyproject.toml",
+      "diagnostics.py",
+      "cli.py"
+    ]
+  },
+  "startedAt": "2026-03-23T18:24:59.294Z",
+  "finishedAt": "2026-03-23T18:24:59.294Z",
+  "value": {
+    "archived": [
+      "_wizard.py",
+      "wizard_components.py"
+    ],
+    "buildStatus": "success",
+    "deleted": [
+      "app/ui_chat/",
+      "app/ui_qa/",
+      "app/qa.py",
+      "run_chat_ui.sh",
+      "configs/chunk_rules.yaml",
+      "configs/outlook_helper.yaml",
+      "scripts/api_clients/openai/completer.py"
+    ],
+    "testsPass": true,
+    "updated": [
+      "CLAUDE.md",
+      "pyproject.toml",
+      "diagnostics.py",
+      "cli.py"
+    ]
+  }
+}

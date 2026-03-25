@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDEQE43KXGX6CJ8BPNTXR09",
+  "taskId": "phase0-verify",
+  "invocationKey": "implement-unified-ui:S000002:phase0-verify",
+  "stepId": "S000002",
+  "kind": "shell",
+  "title": "Phase 0: Verify build succeeds",
+  "labels": [
+    "build",
+    "phase0",
+    "verify"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDEQE43KXGX6CJ8BPNTXR09/input.json",
+    "outputJsonPath": "tasks/01KMDEQE43KXGX6CJ8BPNTXR09/result.json"
+  },
+  "inputs": {
+    "phase0": {
+      "buildStatus": "success",
+      "depsInstalled": [
+        "zustand",
+        "@radix-ui/react-dialog",
+        "@radix-ui/react-popover",
+        "@radix-ui/react-select",
+        "@radix-ui/react-tabs",
+        "sonner",
+        "react-markdown"
+      ],
+      "filesCreated": [
+        "Chat.tsx",
+        "operator/Coverage.tsx",
+        "operator/Workbench.tsx",
+        "operator/AgentChat.tsx",
+        "operator/Review.tsx",
+        "diagnostics/QueryDebugger.tsx",
+        "diagnostics/DatabaseExplorer.tsx",
+        "admin/Publishers.tsx",
+        "admin/Health.tsx",
+        "stores/appStore.ts"
+      ],
+      "filesMoved": [
+        "Dashboard->Coverage",
+        "Workbench->operator/",
+        "AgentChat->operator/",
+        "Review->operator/"
+      ]
+    },
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGN9CZQQ1MVTZ82G33EY7VV",
+  "taskId": "e4-thematic-impl",
+  "invocationKey": "implement-historian-enhancements:S000023:e4-thematic-impl",
+  "stepId": "S000023",
+  "kind": "agent",
+  "title": "E4: Implement thematic context module with 8 scholarly entries",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

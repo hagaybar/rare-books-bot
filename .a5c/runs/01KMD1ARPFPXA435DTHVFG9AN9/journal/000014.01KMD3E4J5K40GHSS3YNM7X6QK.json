@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T10:21:50.021Z",
+  "data": {
+    "effectId": "01KMD3E4HR3C2YRZF3DH731QJF",
+    "invocationKey": "ui-evaluation-and-redesign:S000007:migration-plan",
+    "invocationHash": "51e5be6bc2056276bb0ada6f6a754de278f2d51e184240eda086d20010cf9dfe",
+    "stepId": "S000007",
+    "taskId": "migration-plan",
+    "kind": "agent",
+    "label": "migration",
+    "taskDefRef": "tasks/01KMD3E4HR3C2YRZF3DH731QJF/task.json",
+    "labels": [
+      "migration",
+      "planning",
+      "decommission"
+    ]
+  },
+  "checksum": "40552fc258238487fcd5e301a7ee04d368103a06922f698762b4b2d314afadbb"
+}

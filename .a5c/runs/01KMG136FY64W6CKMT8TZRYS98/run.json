@@ -1,0 +1,14 @@
+{
+  "runId": "01KMG136FY64W6CKMT8TZRYS98",
+  "request": "historian-enhancement-plan",
+  "processId": "historian-enhancement-plan",
+  "entrypoint": {
+    "importPath": "../../processes/historian-enhancement-plan.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/historian-enhancement-plan.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-24T13:38:37.714Z",
+  "prompt": "Turn the Historian Evaluation Report Top 5 Enhancements into a concrete implementation plan with executive summary, per-enhancement plans, task breakdown, validation plan, and open questions.",
+  "completionProof": "bc59c886e696929537d6b4f6d8121dd5"
+}

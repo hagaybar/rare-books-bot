@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDYJ26J7KHFDB2BYB1S7WDE",
+  "taskId": "phase4-verify",
+  "invocationKey": "implement-unified-ui:S000015:phase4-verify",
+  "stepId": "S000015",
+  "kind": "shell",
+  "title": "Phase 4: Verify build succeeds",
+  "labels": [
+    "build",
+    "phase4",
+    "verify"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDYJ26J7KHFDB2BYB1S7WDE/input.json",
+    "outputJsonPath": "tasks/01KMDYJ26J7KHFDB2BYB1S7WDE/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

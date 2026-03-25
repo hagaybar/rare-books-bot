@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T18:52:37.752Z",
+  "data": {
+    "effectId": "01KMGK24ZE5Z67Y3CPYR6K7BNZ",
+    "invocationKey": "implement-historian-enhancements:S000009:e2-router",
+    "invocationHash": "2e2d922233c867002f06cfd2c880c0fc3886a340681b660ec59322e7fc641321",
+    "stepId": "S000009",
+    "taskId": "e2-router",
+    "kind": "agent",
+    "label": "E2: Implement analytical router",
+    "taskDefRef": "tasks/01KMGK24ZE5Z67Y3CPYR6K7BNZ/task.json"
+  },
+  "checksum": "2363c9f1b3a7b8e9b352a96f13f02011ba322e140f955e2502993366191fa4b0"
+}

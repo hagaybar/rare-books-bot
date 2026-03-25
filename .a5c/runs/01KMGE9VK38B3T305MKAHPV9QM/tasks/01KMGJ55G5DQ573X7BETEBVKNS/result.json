@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGJ55G5DQ573X7BETEBVKNS",
+  "taskId": "e2-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000003:e2-write-tests",
+  "status": "ok",
+  "result": {
+    "summary": "Tests already exist from previous iteration. 25 TDD unit tests across 7 test classes covering analytical detection, anti-signals, implied filters, case insensitivity. All fail with ModuleNotFoundError as expected.",
+    "testFile": "tests/scripts/chat/test_analytical_router.py",
+    "testsWritten": 25
+  },
+  "startedAt": "2026-03-24T18:37:15.904Z",
+  "finishedAt": "2026-03-24T18:37:15.904Z",
+  "value": {
+    "summary": "Tests already exist from previous iteration. 25 TDD unit tests across 7 test classes covering analytical detection, anti-signals, implied filters, case insensitivity. All fail with ModuleNotFoundError as expected.",
+    "testFile": "tests/scripts/chat/test_analytical_router.py",
+    "testsWritten": 25
+  }
+}

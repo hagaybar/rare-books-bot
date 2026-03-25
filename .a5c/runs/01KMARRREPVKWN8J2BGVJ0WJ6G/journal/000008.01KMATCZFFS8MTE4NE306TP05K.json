@@ -1,0 +1,18 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T13:05:25.999Z",
+  "data": {
+    "effectId": "01KMATCZF3YVHT33AWVKMZ7J9D",
+    "invocationKey": "notebooklm-context-builder:S000004:__sdk.breakpoint",
+    "invocationHash": "33a707de216023088231fe60a16a000a25d0303dd14f8d699f7efac19b41c6cf",
+    "stepId": "S000004",
+    "taskId": "__sdk.breakpoint",
+    "kind": "breakpoint",
+    "label": "breakpoint",
+    "taskDefRef": "tasks/01KMATCZF3YVHT33AWVKMZ7J9D/task.json",
+    "labels": [
+      "breakpoint"
+    ]
+  },
+  "checksum": "43d3ec00945b09bbf18780620c3c6ecbd0cc33ccf09305430918e98c47165e48"
+}

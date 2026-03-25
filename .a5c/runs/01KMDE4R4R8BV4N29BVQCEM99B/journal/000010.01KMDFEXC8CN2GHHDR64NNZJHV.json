@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T13:51:58.344Z",
+  "data": {
+    "effectId": "01KMDFEXBVWJREZCSPEH5WSW07",
+    "invocationKey": "implement-unified-ui:S000005:publisher-readonly",
+    "invocationHash": "1b24ee87997446235040e800a671a27b869509aa4eaa5f96ee00d35a0286b743",
+    "stepId": "S000005",
+    "taskId": "publisher-readonly",
+    "kind": "agent",
+    "label": "frontend",
+    "taskDefRef": "tasks/01KMDFEXBVWJREZCSPEH5WSW07/task.json",
+    "labels": [
+      "frontend",
+      "admin",
+      "phase3a"
+    ]
+  },
+  "checksum": "2121f0ab114bd6b6ea9ece59ab3688dc2f4f70513caabee6c0e7028cf7d915f9"
+}

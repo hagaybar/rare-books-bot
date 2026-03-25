@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGN5R4BX2DSCY3G8XCYNMSF",
+  "taskId": "e4-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000022:e4-write-tests",
+  "status": "ok",
+  "result": {
+    "summary": "13 TDD tests: theme matching (6), registry validation (3), significance scoring (2), notable items (2). All fail with ModuleNotFoundError.",
+    "testFile": "tests/scripts/chat/test_thematic_context.py",
+    "testsWritten": 13
+  },
+  "startedAt": "2026-03-24T19:31:25.746Z",
+  "finishedAt": "2026-03-24T19:31:25.746Z",
+  "value": {
+    "summary": "13 TDD tests: theme matching (6), registry validation (3), significance scoring (2), notable items (2). All fail with ModuleNotFoundError.",
+    "testFile": "tests/scripts/chat/test_thematic_context.py",
+    "testsWritten": 13
+  }
+}

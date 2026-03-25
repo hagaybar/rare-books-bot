@@ -1,0 +1,22 @@
+{
+  "phases": [
+    {"name": "Phase 0: Foundation & Scaffolding", "description": "Restructure existing React app for 9-screen tiered route layout", "duration": "1 week", "dependsOn": []},
+    {"name": "Phase 1: Chat Screen", "description": "Build primary conversational interface. Replaces Streamlit Chat UI.", "duration": "2 weeks", "dependsOn": ["Phase 0"]},
+    {"name": "Phase 2: Query Debugger & DB Explorer", "description": "Replace QA Tool's core functionality in React.", "duration": "2 weeks", "dependsOn": ["Phase 0"]},
+    {"name": "Phase 3: Admin Screens", "description": "Build Publisher Authorities and System Health pages.", "duration": "1 week", "dependsOn": ["Phase 0"]},
+    {"name": "Phase 4: Polish, Integration & Testing", "description": "Cross-screen integration, shared components, test suite.", "duration": "1-2 weeks", "dependsOn": ["Phase 1", "Phase 2", "Phase 3"]},
+    {"name": "Phase 5: Retirement & Cleanup", "description": "Remove Streamlit code, archive, update docs.", "duration": "1 week", "dependsOn": ["Phase 4"]}
+  ],
+  "earlyRetirements": ["Streamlit Chat UI after Phase 1", "app/qa.py after Phase 2 CLI consolidation", "QA Wizard immediately"],
+  "temporaryCompatibility": ["Both Chat UIs during Phase 1-4", "Both QA tools during Phase 2", "Old React routes redirect"],
+  "archives": ["app/ui_chat/", "app/ui_qa/pages/_wizard.py", "app/qa.py", "data/qa/qa.db"],
+  "deletionCriteria": ["Feature parity verified", "Data continuity confirmed", "No active users", "Tests pass", "Documentation updated", "Code archived"],
+  "risks": [
+    {"risk": "WebSocket React complexity", "mitigation": "Start with HTTP-only, add WebSocket as enhancement"},
+    {"risk": "Query Debugger scope creep", "mitigation": "Strict feature parity checklist"},
+    {"risk": "Diagnostic API blocking frontend", "mitigation": "MSW mocks from day 1"},
+    {"risk": "QA labels inaccessibility", "mitigation": "New API reads existing QA SQLite directly"},
+    {"risk": "Unrecognized Streamlit dependency", "mitigation": "All 6 deletion criteria before removal"},
+    {"risk": "Bundle size growth", "mitigation": "Vite code splitting automatic per route"}
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMD1AXGY52F4AWPK30NR4TBD",
+  "taskId": "ui-inventory",
+  "invocationKey": "ui-evaluation-and-redesign:S000001:ui-inventory",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Phase 1: Discover and inventory all existing UIs",
+  "labels": [
+    "audit",
+    "inventory",
+    "ui"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMD1AXGY52F4AWPK30NR4TBD/input.json",
+    "outputJsonPath": "tasks/01KMD1AXGY52F4AWPK30NR4TBD/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "prompt": "Deep product, UX, architecture, and implementation evaluation of all existing UIs to support design and build of a single new integrated UI for Rare Books Bot - beta version. The bot is the heart of the system. The new UI must include observability and debugging. Preferred direction: React or Angular."
+  }
+}

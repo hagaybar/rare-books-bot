@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGNXD82139KBGY0JWK9AKMF",
+  "taskId": "e4-verify",
+  "invocationKey": "implement-historian-enhancements:S000026:e4-verify",
+  "stepId": "S000026",
+  "kind": "shell",
+  "title": "E4: Run all E4 tests to verify completion",
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_thematic_context.py tests/scripts/chat/test_formatter_pedagogical.py tests/integration/test_thematic_integration.py -v --timeout=60 2>&1 | tail -30",
+    "description": "Run E4 tests including thematic integration",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

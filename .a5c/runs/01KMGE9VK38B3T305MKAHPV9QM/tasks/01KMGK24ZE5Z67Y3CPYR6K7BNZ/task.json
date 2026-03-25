@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGK24ZE5Z67Y3CPYR6K7BNZ",
+  "taskId": "e2-router",
+  "invocationKey": "implement-historian-enhancements:S000009:e2-router",
+  "stepId": "S000009",
+  "kind": "agent",
+  "title": "E2: Implement analytical router",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

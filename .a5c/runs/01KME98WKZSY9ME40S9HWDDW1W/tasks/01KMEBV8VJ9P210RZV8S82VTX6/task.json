@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMEBV8VJ9P210RZV8S82VTX6",
+  "taskId": "verify-narrative",
+  "invocationKey": "narrative-agent-prototype:S000003:verify-narrative",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Verify narrative agent with real queries",
+  "labels": [
+    "narrative",
+    "testing",
+    "verification"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMEBV8VJ9P210RZV8S82VTX6/input.json",
+    "outputJsonPath": "tasks/01KMEBV8VJ9P210RZV8S82VTX6/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMATGBJW9YZM6N1SHSMK4P2J",
+  "taskId": "verify-notebook",
+  "invocationKey": "notebooklm-context-builder:S000006:verify-notebook",
+  "status": "ok",
+  "result": {
+    "gaps": [
+      "Skipped: Chrome disconnected, no sources uploaded yet. Verification will be done after upload."
+    ],
+    "overallScore": 0,
+    "questions": []
+  },
+  "startedAt": "2026-03-22T13:07:24.140Z",
+  "finishedAt": "2026-03-22T13:07:24.140Z",
+  "value": {
+    "gaps": [
+      "Skipped: Chrome disconnected, no sources uploaded yet. Verification will be done after upload."
+    ],
+    "overallScore": 0,
+    "questions": []
+  }
+}

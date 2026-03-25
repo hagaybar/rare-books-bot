@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T13:29:06.226Z",
+  "data": {
+    "effectId": "01KMDE51D41CJFQG54CXP8S6B2",
+    "invocationKey": "implement-unified-ui:S000001:phase0-foundation",
+    "invocationHash": "c2ca751b1f7b1a303f933f0732c0fefd35d0ca38fc05b4f48f6dd635e730d584",
+    "stepId": "S000001",
+    "taskId": "phase0-foundation",
+    "kind": "agent",
+    "label": "frontend",
+    "taskDefRef": "tasks/01KMDE51D41CJFQG54CXP8S6B2/task.json",
+    "labels": [
+      "frontend",
+      "scaffolding",
+      "phase0"
+    ]
+  },
+  "checksum": "64dc06acc5f2cc149658a15ab83eba45c3c1bd386fdd132e2d54082f51080427"
+}

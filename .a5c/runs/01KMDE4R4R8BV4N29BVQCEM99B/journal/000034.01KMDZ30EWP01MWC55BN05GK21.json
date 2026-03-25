@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T18:25:05.500Z",
+  "data": {
+    "effectId": "01KMDZ30EG1WNPJECZ9TY3G2WW",
+    "invocationKey": "implement-unified-ui:S000017:final-verify",
+    "invocationHash": "50a23ae0228f3500d43b37d2de2fcc6888b5b66446691de7d8d53eab241f31b6",
+    "stepId": "S000017",
+    "taskId": "final-verify",
+    "kind": "shell",
+    "label": "verify",
+    "taskDefRef": "tasks/01KMDZ30EG1WNPJECZ9TY3G2WW/task.json",
+    "labels": [
+      "verify",
+      "final"
+    ]
+  },
+  "checksum": "9e72aec571e544541282cc43b96a425a1aff9e3e2d5820789c63cf090ee8315c"
+}

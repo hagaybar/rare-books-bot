@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-25T11:28:05.333Z",
+  "data": {
+    "runId": "01KMJC0WNNQ89KZ7BAXA4HRWJ7",
+    "processId": "scholar-pipeline-fixes",
+    "entrypoint": {
+      "importPath": "../../processes/scholar-pipeline-fixes.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Fix 6 scholar pipeline issues: JSON parsing, index shifting, narrator prompt, link visibility, agent links, grounding UI"
+  },
+  "checksum": "b5692cd6229ee54e763bccadc3eaf7d1bf06cd02543ed12650934426921304d2"
+}

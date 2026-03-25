@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T14:14:50.585Z",
+  "data": {
+    "effectId": "01KMG35GEA3M88TDT9GBAZS4HA",
+    "invocationKey": "historian-enhancement-plan:S000010:generate-task-breakdown",
+    "invocationHash": "e6a30192fea58dc2375403d07a5f03a9650a59f928ca8b7ada6696d45950ae1c",
+    "stepId": "S000010",
+    "taskId": "generate-task-breakdown",
+    "kind": "agent",
+    "label": "planning",
+    "taskDefRef": "tasks/01KMG35GEA3M88TDT9GBAZS4HA/task.json",
+    "labels": [
+      "planning",
+      "task-breakdown"
+    ]
+  },
+  "checksum": "6747c1d98399f8cd50d55419625a497b8d88ae40b4cae1a6b296568c0cf549e9"
+}

@@ -1,0 +1,75 @@
+{
+  "valid": false,
+  "fileComparisons": [
+    {
+      "file": "01_project_overview.md",
+      "headersMatch": true,
+      "originalWords": 2051,
+      "updateWords": 1719,
+      "wordCountRatio": 0.838,
+      "issues": []
+    },
+    {
+      "file": "02_code_map.md",
+      "headersMatch": true,
+      "originalWords": 2280,
+      "updateWords": 4038,
+      "wordCountRatio": 1.771,
+      "issues": [
+        "Update is larger than original (ratio=1.771) - expected for AST-extracted code map"
+      ]
+    },
+    {
+      "file": "03_data_pipeline.md",
+      "headersMatch": true,
+      "originalWords": 2364,
+      "updateWords": 890,
+      "wordCountRatio": 0.376,
+      "issues": []
+    },
+    {
+      "file": "04_query_and_chat.md",
+      "headersMatch": true,
+      "originalWords": 2208,
+      "updateWords": 824,
+      "wordCountRatio": 0.373,
+      "issues": [
+        "Missing h2 sections in update: ['## End-to-End Query Example']"
+      ]
+    },
+    {
+      "file": "05_metadata_workbench.md",
+      "headersMatch": true,
+      "originalWords": 2093,
+      "updateWords": 742,
+      "wordCountRatio": 0.355,
+      "issues": [
+        "Missing h2 sections in update: ['## Coverage Audit Example', '## Correction Flow Example']"
+      ]
+    },
+    {
+      "file": "06_data_model.md",
+      "headersMatch": false,
+      "originalWords": 2219,
+      "updateWords": 1017,
+      "wordCountRatio": 0.458,
+      "issues": [
+        "Missing h2 sections in update: ['## M7: Metadata Workbench Models']"
+      ]
+    },
+    {
+      "file": "07_project_status.md",
+      "headersMatch": true,
+      "originalWords": 2111,
+      "updateWords": 718,
+      "wordCountRatio": 0.34,
+      "issues": [
+        "Missing h2 sections in update: ['## Latest Audit (March 22, 2026)', '## Development History by Theme', '## Known Gaps and Recommendations', '## Previous Audits']",
+        "New h2 sections in update: ['## Recent Git History', '## Audits']"
+      ]
+    }
+  ],
+  "bugsFixed": [
+    "scripts/notebooklm/update_context.py line 270: Changed PROJECT_DESCRIPTION.md path from REPO_ROOT / \"PROJECT_DESCRIPTION.md\" to REPO_ROOT / \"docs\" / \"PROJECT_DESCRIPTION.md\""
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD90HSVGNTF6Y3VKDCBQEFC",
+  "taskId": "cross-reference",
+  "invocationKey": "empirical-verification:S000004:cross-reference",
+  "status": "ok",
+  "result": {
+    "confirmedAssumptions": [
+      "Candidate objects have all fields for result cards",
+      "Evidence structure supports display (field, value, operator, source, confidence)",
+      "Agent chat API well-structured with proposals and clusters",
+      "Corrections API supports single and batch operations",
+      "Two-phase flow works via POST /chat HTTP endpoint",
+      "Place/date/language queries produce correct results"
+    ],
+    "criticalMisalignments": [
+      "WebSocket has NO two-phase support",
+      "ALL /diagnostics/* API endpoints missing — 2 screens blocked",
+      "FacetCounts computed then DISCARDED before reaching ChatResponse",
+      "Per-filter confidence always null — visualization unbuildable",
+      "Binary confidence — four-band visualization misleading for place/publisher"
+    ],
+    "overallVerdict": "5 PARTIALLY_ALIGNED, 2 CONFIRMED, 2 MISALIGNED. Operator tier best supported. Diagnostics tier requires significant backend work. Biggest conceptual issue: 'issues' framing obsolete with only 121 low-conf records — real gaps are Hebrew publishers (553), agents (4366), unresearched authorities (202).",
+    "screenAlignments": [
+      {
+        "gaps": [
+          "WebSocket no two-phase",
+          "FacetCounts discarded",
+          "execution_time not exposed",
+          "filter confidence always null",
+          "Primo URLs not on Candidate"
+        ],
+        "name": "Chat",
+        "path": "/",
+        "rating": "PARTIALLY_ALIGNED"
+      },
+      {
+        "gaps": [
+          "Binary confidence (not four-band)",
+          "Only 121 low-conf records total",
+          "No trend-over-time infrastructure",
+          "Dashboard will look too healthy"
+        ],
+        "name": "Coverage Dashboard",
+        "path": "/operator/coverage",
+        "rating": "PARTIALLY_ALIGNED"
+      },
+      {
+        "gaps": [
+          "Only 121 issues total — nearly empty",
+          "Confidence slider useless in 0.5-0.95",
+          "Real gaps are Hebrew publishers (553) and agents (4366)",
+          "No date corrections via API"
+        ],
+        "name": "Issues Workbench",
+        "path": "/operator/workbench",
+        "rating": "PARTIALLY_ALIGNED"
+      },
+      {
+        "gaps": [
+          "89% publisher authorities are stubs",
+          "authority_enrichment empty"
+        ],
+        "name": "Agent Chat",
+        "path": "/operator/agent",
+        "rating": "CONFIRMED"
+      },
+      {
+        "gaps": [
+          "No revert endpoint",
+          "No search/date filter params"
+        ],
+        "name": "Correction Review",
+        "path": "/operator/review",
+        "rating": "CONFIRMED"
+      },
+      {
+        "gaps": [
+          "ZERO /diagnostics/* endpoints exist",
+          "QA database has no HTTP API",
+          "query_plan not in ChatResponse"
+        ],
+        "name": "Query Debugger",
+        "path": "/diagnostics/query",
+        "rating": "MISALIGNED"
+      },
+      {
+        "gaps": [
+          "ZERO /diagnostics/* endpoints exist",
+          "No schema or statistics endpoints"
+        ],
+        "name": "Database Explorer",
+        "path": "/diagnostics/db",
+        "rating": "MISALIGNED"
+      },
+      {
+        "gaps": [
+          "No CRUD endpoints",
+          "No match preview",
+          "89% are empty stubs",
+          "All enrichment IDs null"
+        ],
+        "name": "Publisher Authorities",
+        "path": "/admin/publishers",
+        "rating": "PARTIALLY_ALIGNED"
+      },
+      {
+        "gaps": [
+          "Only basic health check exists",
+          "No metrics infrastructure",
+          "No log viewing"
+        ],
+        "name": "System Health",
+        "path": "/admin/health",
+        "rating": "PARTIALLY_ALIGNED"
+      }
+    ]
+  },
+  "startedAt": "2026-03-23T12:06:02.003Z",
+  "finishedAt": "2026-03-23T12:06:02.003Z",
+  "value": {
+    "confirmedAssumptions": [
+      "Candidate objects have all fields for result cards",
+      "Evidence structure supports display (field, value, operator, source, confidence)",
+      "Agent chat API well-structured with proposals and clusters",
+      "Corrections API supports single and batch operations",
+      "Two-phase flow works via POST /chat HTTP endpoint",
+      "Place/date/language queries produce correct results"
+    ],
+    "criticalMisalignments": [
+      "WebSocket has NO two-phase support",
+      "ALL /diagnostics/* API endpoints missing — 2 screens blocked",
+      "FacetCounts computed then DISCARDED before reaching ChatResponse",
+      "Per-filter confidence always null — visualization unbuildable",
+      "Binary confidence — four-band visualization misleading for place/publisher"
+    ],
+    "overallVerdict": "5 PARTIALLY_ALIGNED, 2 CONFIRMED, 2 MISALIGNED. Operator tier best supported. Diagnostics tier requires significant backend work. Biggest conceptual issue: 'issues' framing obsolete with only 121 low-conf records — real gaps are Hebrew publishers (553), agents (4366), unresearched authorities (202).",
+    "screenAlignments": [
+      {
+        "gaps": [
+          "WebSocket no two-phase",
+          "FacetCounts discarded",
+          "execution_time not exposed",
+          "filter confidence always null",
+          "Primo URLs not on Candidate"
+        ],
+        "name": "Chat",
+        "path": "/",
+        "rating": "PARTIALLY_ALIGNED"
+      },
+      {
+        "gaps": [
+          "Binary confidence (not four-band)",
+          "Only 121 low-conf records total",
+          "No trend-over-time infrastructure",
+          "Dashboard will look too healthy"
+        ],
+        "name": "Coverage Dashboard",
+        "path": "/operator/coverage",
+        "rating": "PARTIALLY_ALIGNED"
+      },
+      {
+        "gaps": [
+          "Only 121 issues total — nearly empty",
+          "Confidence slider useless in 0.5-0.95",
+          "Real gaps are Hebrew publishers (553) and agents (4366)",
+          "No date corrections via API"
+        ],
+        "name": "Issues Workbench",
+        "path": "/operator/workbench",
+        "rating": "PARTIALLY_ALIGNED"
+      },
+      {
+        "gaps": [
+          "89% publisher authorities are stubs",
+          "authority_enrichment empty"
+        ],
+        "name": "Agent Chat",
+        "path": "/operator/agent",
+        "rating": "CONFIRMED"
+      },
+      {
+        "gaps": [
+          "No revert endpoint",
+          "No search/date filter params"
+        ],
+        "name": "Correction Review",
+        "path": "/operator/review",
+        "rating": "CONFIRMED"
+      },
+      {
+        "gaps": [
+          "ZERO /diagnostics/* endpoints exist",
+          "QA database has no HTTP API",
+          "query_plan not in ChatResponse"
+        ],
+        "name": "Query Debugger",
+        "path": "/diagnostics/query",
+        "rating": "MISALIGNED"
+      },
+      {
+        "gaps": [
+          "ZERO /diagnostics/* endpoints exist",
+          "No schema or statistics endpoints"
+        ],
+        "name": "Database Explorer",
+        "path": "/diagnostics/db",
+        "rating": "MISALIGNED"
+      },
+      {
+        "gaps": [
+          "No CRUD endpoints",
+          "No match preview",
+          "89% are empty stubs",
+          "All enrichment IDs null"
+        ],
+        "name": "Publisher Authorities",
+        "path": "/admin/publishers",
+        "rating": "PARTIALLY_ALIGNED"
+      },
+      {
+        "gaps": [
+          "Only basic health check exists",
+          "No metrics infrastructure",
+          "No log viewing"
+        ],
+        "name": "System Health",
+        "path": "/admin/health",
+        "rating": "PARTIALLY_ALIGNED"
+      }
+    ]
+  }
+}

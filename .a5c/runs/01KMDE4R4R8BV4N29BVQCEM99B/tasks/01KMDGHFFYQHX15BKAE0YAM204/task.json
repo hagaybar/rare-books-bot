@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDGHFFYQHX15BKAE0YAM204",
+  "taskId": "cli-consolidate",
+  "invocationKey": "implement-unified-ui:S000010:cli-consolidate",
+  "stepId": "S000010",
+  "kind": "agent",
+  "title": "Phase 2: CLI Regression Consolidation",
+  "labels": [
+    "backend",
+    "cli",
+    "phase2"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDGHFFYQHX15BKAE0YAM204/input.json",
+    "outputJsonPath": "tasks/01KMDGHFFYQHX15BKAE0YAM204/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T12:07:02.293Z",
+  "data": {
+    "effectId": "01KMD9ERW86VQ5K3A5ZPW13GQS",
+    "invocationKey": "empirical-verification:S000005:report-refinement",
+    "invocationHash": "c3b5083e8ab2fde82041245af5e5c42a1bec9503f69b5aae8ba0dc39cb3ac574",
+    "stepId": "S000005",
+    "taskId": "report-refinement",
+    "kind": "agent",
+    "label": "refinement",
+    "taskDefRef": "tasks/01KMD9ERW86VQ5K3A5ZPW13GQS/task.json",
+    "labels": [
+      "refinement",
+      "report",
+      "verification"
+    ]
+  },
+  "checksum": "4a231d97a706836c47d317befd79a83a1ed5129a244b67bf27088ceaae8e6bbd"
+}

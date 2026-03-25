@@ -1,0 +1,4 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "prompt": "Empirical verification of UI redesign alignment: probe actual database, run real queries, verify API response shapes, cross-reference with proposed UI screens, and refine reports if misalignments found."
+}

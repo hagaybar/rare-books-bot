@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T11:46:29.420Z",
+  "data": {
+    "effectId": "01KMD894WZH6S31EZBBTMQ9DSG",
+    "invocationKey": "empirical-verification:S000002:query-pipeline-test",
+    "invocationHash": "e3eb7ae0ff0afaae7064a906229441dcd0677e51add94812edf673c273def57c",
+    "stepId": "S000002",
+    "taskId": "query-pipeline-test",
+    "kind": "agent",
+    "label": "empirical",
+    "taskDefRef": "tasks/01KMD894WZH6S31EZBBTMQ9DSG/task.json",
+    "labels": [
+      "empirical",
+      "pipeline",
+      "query"
+    ]
+  },
+  "checksum": "9ed502a03e1cae68654c06daac13d1a292e441f1dcd69519b6ccbc6f4a1c2695"
+}

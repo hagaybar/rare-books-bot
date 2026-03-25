@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T11:33:47.797Z",
+  "data": {
+    "effectId": "01KMJCBB49K4DKQ0V11139KKT1",
+    "invocationKey": "scholar-pipeline-fixes:S000003:narrator-fix",
+    "invocationHash": "d14ef23eacba42bfe49d786874c8029ab054c333b09beed1efd7031ad884e50e",
+    "stepId": "S000003",
+    "taskId": "narrator-fix",
+    "kind": "agent",
+    "label": "Fix narrator prompt: no followups/confidence in narrative text",
+    "taskDefRef": "tasks/01KMJCBB49K4DKQ0V11139KKT1/task.json"
+  },
+  "checksum": "f2b18d42432eba16aea91ce537f2c698cf0aaf84db0b87312d1c44db4265855b"
+}

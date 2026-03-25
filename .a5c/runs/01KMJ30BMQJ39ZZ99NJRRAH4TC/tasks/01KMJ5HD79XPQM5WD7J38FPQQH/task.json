@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ5HD79XPQM5WD7J38FPQQH",
+  "taskId": "implement-task",
+  "invocationKey": "scholar-pipeline:S000009:implement-task",
+  "stepId": "S000009",
+  "kind": "agent",
+  "title": "Implement Task 6: API Integration",
+  "io": {
+    "inputJsonPath": "tasks/01KMJ5HD79XPQM5WD7J38FPQQH/input.json",
+    "outputJsonPath": "tasks/01KMJ5HD79XPQM5WD7J38FPQQH/result.json"
+  },
+  "inputs": {
+    "description": "Implement Task 6 from the plan: Wire the three-stage pipeline into app/api/main.py. Create tests/app/test_scholar_pipeline.py. Replace handle_query_definition_phase() body with: interpret -> clarification check -> execute_plan -> narrate. Map ScholarResponse to ChatResponse for API compatibility. Update WebSocket handler similarly with new progress message types (plan, evidence, narrative_chunk). Add health check extension for executor_ready. Keep old imports commented (cleanup in Task 8). Extract test DB fixture to tests/conftest.py or tests/scripts/chat/conftest.py for reuse. Follow TDD steps exactly.",
+    "planPath": "docs/superpowers/plans/2026-03-25-scholar-pipeline.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-scholar-pipeline-design.md",
+    "taskName": "API Integration",
+    "taskNumber": 6,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/app/test_scholar_pipeline.py -v 2>&1 | tail -40"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T09:45:07.371Z",
+  "data": {
+    "effectId": "01KMD1AXGY52F4AWPK30NR4TBD",
+    "invocationKey": "ui-evaluation-and-redesign:S000001:ui-inventory",
+    "invocationHash": "7e46e1a30bbcbb3b669b35f4d31269fbd8236191531aa07192df0590a660aa1a",
+    "stepId": "S000001",
+    "taskId": "ui-inventory",
+    "kind": "agent",
+    "label": "audit",
+    "taskDefRef": "tasks/01KMD1AXGY52F4AWPK30NR4TBD/task.json",
+    "labels": [
+      "audit",
+      "inventory",
+      "ui"
+    ]
+  },
+  "checksum": "02bb7ace7ff250e6a64a486a40d78e9cc69d4ce414b153e3f3d3e2cda7163673"
+}

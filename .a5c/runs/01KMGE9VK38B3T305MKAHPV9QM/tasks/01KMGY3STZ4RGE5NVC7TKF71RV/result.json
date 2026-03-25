@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGY3STZ4RGE5NVC7TKF71RV",
+  "taskId": "e5-api-wiring",
+  "invocationKey": "implement-historian-enhancements:S000031:e5-api-wiring",
+  "status": "ok",
+  "result": {
+    "filesModified": [
+      "app/api/main.py"
+    ],
+    "summary": "RECOMMENDATION stub replaced with working handler using score_candidates + select_diverse + format_exhibit_response. All 1341 tests pass.",
+    "testsPassed": 1341
+  },
+  "startedAt": "2026-03-24T22:08:18.778Z",
+  "finishedAt": "2026-03-24T22:08:18.778Z",
+  "value": {
+    "filesModified": [
+      "app/api/main.py"
+    ],
+    "summary": "RECOMMENDATION stub replaced with working handler using score_candidates + select_diverse + format_exhibit_response. All 1341 tests pass.",
+    "testsPassed": 1341
+  }
+}

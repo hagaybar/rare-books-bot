@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGM7FN0KEA9D0K7V193SNT5",
+  "taskId": "e3-engine",
+  "invocationKey": "implement-historian-enhancements:S000016:e3-engine",
+  "status": "ok",
+  "result": {
+    "filesCreated": [
+      "scripts/chat/cross_reference.py"
+    ],
+    "filesModified": [
+      "scripts/chat/models.py"
+    ],
+    "summary": "Cross-reference engine (~280 lines) with build_agent_graph, find_connections, find_network_neighbors. Models added: Connection, AgentNode, ComparisonFacets, ComparisonResult, CROSS_REFERENCE enum. All 13 tests pass.",
+    "testsPassed": 13
+  },
+  "startedAt": "2026-03-24T19:15:29.380Z",
+  "finishedAt": "2026-03-24T19:15:29.380Z",
+  "value": {
+    "filesCreated": [
+      "scripts/chat/cross_reference.py"
+    ],
+    "filesModified": [
+      "scripts/chat/models.py"
+    ],
+    "summary": "Cross-reference engine (~280 lines) with build_agent_graph, find_connections, find_network_neighbors. Models added: Connection, AgentNode, ComparisonFacets, ComparisonResult, CROSS_REFERENCE enum. All 13 tests pass.",
+    "testsPassed": 13
+  }
+}

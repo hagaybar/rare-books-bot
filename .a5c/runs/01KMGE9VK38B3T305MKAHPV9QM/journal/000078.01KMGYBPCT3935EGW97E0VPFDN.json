@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T22:10:04.826Z",
+  "data": {
+    "effectId": "01KMGYBPCEBBAQVTN8BQ72P0E6",
+    "invocationKey": "implement-historian-enhancements:S000034:final-regression",
+    "invocationHash": "58ba916d070e4e1ed290177431a536368428e04338c7539dcd26dbf10696642e",
+    "stepId": "S000034",
+    "taskId": "final-regression",
+    "kind": "agent",
+    "label": "FINAL: Full regression, lint, and cross-enhancement verification",
+    "taskDefRef": "tasks/01KMGYBPCEBBAQVTN8BQ72P0E6/task.json"
+  },
+  "checksum": "2413578abdaaf46a40328932c52037c4bfd03e189372470960eb08fc4d041420"
+}

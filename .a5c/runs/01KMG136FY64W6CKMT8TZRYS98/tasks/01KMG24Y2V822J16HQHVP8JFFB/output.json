@@ -1,0 +1,668 @@
+{
+  "goal": "Build an Entity Cross-Reference and Set Comparison Engine that discovers and surfaces relationships between agents (authors, printers, translators) across query result sets, and enriches comparison operations with multi-faceted side-by-side analysis. This addresses 8 queries (Q1, Q2, Q4, Q5, Q9, Q10, Q13, Q17) that currently lack cross-referencing and comparison capability, collectively scoring 108/200 (54%) where 160/200 (80%) is achievable.",
+
+  "reportFailuresAddressed": [
+    {
+      "query": "Q1 (Bragadin Venice)",
+      "currentScore": "12/25",
+      "gap": "16 records retrieved for Bragadin but no comparison with rival Venetian printers (di Gara, Bomberg, Giustiniani). User gets a flat list with no network context.",
+      "howE3Fixes": "Cross-reference engine discovers teacher/student and co-publication links between Venetian printers. Enhanced comparison shows side-by-side facets (date ranges, language mix, subject overlap) for Bragadin vs. rival printers. Follow-up suggestions include 'Compare with di Gara' and 'Show related printers in Venice'."
+    },
+    {
+      "query": "Q2 (Amsterdam Hebrew 1620-1650)",
+      "currentScore": "15/25",
+      "gap": "Found Menasseh ben Israel but no network connections to other Amsterdam Hebrew printers/authors of the period.",
+      "howE3Fixes": "Graph lookup reveals Menasseh ben Israel's teacher-student network (e.g., Isaac Uziel), co-publication partners, and contemporaries active in the same place+period. Narrative agent appends 'Connections' section showing intellectual network."
+    },
+    {
+      "query": "Q4 (Incunabula)",
+      "currentScore": "14/25",
+      "gap": "Good incunabula results but no cross-center comparison (Venice vs. Rome vs. Mainz).",
+      "howE3Fixes": "Enhanced comparison produces side-by-side facet breakdown: date distribution, language mix, top agents, and subject overlap across printing centers. Shared agents who operated in multiple centers are highlighted."
+    },
+    {
+      "query": "Q5 (Constantinople)",
+      "currentScore": "12/25",
+      "gap": "Found Ottoman printing but no Venice comparison despite historical connection.",
+      "howE3Fixes": "Cross-reference discovers agents who appear in both Constantinople and Venice records (e.g., Soncino family). Comparison shows facet breakdown with 'shared agents' section. Follow-up: 'Show printers active in both cities'."
+    },
+    {
+      "query": "Q9 (Josephus)",
+      "currentScore": "14/25",
+      "gap": "Good multilingual Josephus coverage but unexplored connections between translators, editors, and publishers across editions.",
+      "howE3Fixes": "Cross-reference surfaces translator networks (who translated which editions), co-publication chains (same publisher issuing multiple editions), and shared agents across language editions."
+    },
+    {
+      "query": "Q10 (Jewish philosophy)",
+      "currentScore": "14/25",
+      "gap": "Good subject match but no intellectual network mapping between philosophers.",
+      "howE3Fixes": "Authority enrichment data contains teacher/student chains for Jewish philosophers (e.g., Nahmanides -> Shlomo ben Aderet -> Bahya ben Asher). Graph visualization data emitted. Narrative shows 'intellectual lineage' section."
+    },
+    {
+      "query": "Q13 (Book collecting)",
+      "currentScore": "12/25",
+      "gap": "Good match but no cross-referencing between collectors, printers, and their networks.",
+      "howE3Fixes": "Cross-reference identifies collector-printer relationships via co-occurrence in records. Enhanced comparison shows collector overlap across time periods and regions."
+    },
+    {
+      "query": "Q17 (Hebrew grammar)",
+      "currentScore": "15/25",
+      "gap": "Found Buxtorf via subject but no author network. Buxtorf has rich enrichment data (teachers: Scultetus, Pareus, Alting; students: Wasmuth) that is completely unused.",
+      "howE3Fixes": "Cross-reference engine discovers Buxtorf's teacher chain and surfaces related grammarians in the result set. Narrative agent appends intellectual lineage connecting Buxtorf to his network."
+    }
+  ],
+
+  "affectedComponents": [
+    {
+      "file": "scripts/chat/cross_reference.py",
+      "status": "NEW",
+      "description": "Core cross-reference engine. Builds in-memory graph from authority_enrichment person_info (teachers, students, notable_works, occupations, birth/death places). Exposes find_connections(record_ids, db_path) -> List[Connection] and build_agent_graph(db_path) -> AgentGraph."
+    },
+    {
+      "file": "scripts/chat/narrative_agent.py",
+      "status": "MODIFY",
+      "description": "Enhance generate_agent_narrative() (line 211) to call find_connections() and append a 'Connections' section after individual bios. Add _format_connections() helper. Currently generates isolated bios with no cross-referencing (lines 244-254)."
+    },
+    {
+      "file": "scripts/chat/aggregation.py",
+      "status": "MODIFY",
+      "description": "Replace execute_comparison() (line 782) which only returns Dict[str, int] count-per-value for 4 fields (place, country, publisher, language). New version returns ComparisonResult with multi-faceted breakdown: counts, date ranges, language distribution, top agents, subject overlap, and shared agents."
+    },
+    {
+      "file": "scripts/chat/exploration_agent.py",
+      "status": "MODIFY",
+      "description": "Add 'cross_reference' as a new intent type in ExplorationRequestLLM (line 45) and ExplorationIntent enum. Add cross_reference_entity field. Update system prompt (line 162) with CROSS_REFERENCE intent examples. Update comparison_field to support 'agent' alongside existing 4 fields (line 94-101)."
+    },
+    {
+      "file": "scripts/chat/models.py",
+      "status": "MODIFY",
+      "description": "Add CROSS_REFERENCE to ExplorationIntent enum (line 39). Add Connection and ComparisonResult Pydantic models. Add cross_reference_data field to ChatResponse metadata."
+    },
+    {
+      "file": "scripts/chat/formatter.py",
+      "status": "MODIFY",
+      "description": "Enhance generate_followups() (line 82) to add cross-reference and comparison suggestions: 'Compare with [other center]', 'Show related authors', 'Show intellectual network'. Currently only suggests unused filter types."
+    },
+    {
+      "file": "app/api/main.py",
+      "status": "MODIFY",
+      "description": "Enhance COMPARISON handler (line 900-929) to use new multi-faceted execute_comparison(). Add CROSS_REFERENCE handler parallel to ENRICHMENT_REQUEST handler (line 931). Wire cross-reference data into narrative generation in Phase 1 response (line 588-604)."
+    },
+    {
+      "file": "tests/scripts/chat/test_cross_reference.py",
+      "status": "NEW",
+      "description": "Unit tests for cross-reference engine: graph construction, connection discovery, edge cases (no enrichment, circular references, name mismatches)."
+    },
+    {
+      "file": "tests/scripts/chat/test_comparison_enhanced.py",
+      "status": "NEW",
+      "description": "Unit tests for enhanced comparison: multi-faceted results, shared agent detection, edge cases."
+    }
+  ],
+
+  "implementationSteps": [
+    {
+      "step": 1,
+      "title": "Define data models for connections and comparisons",
+      "file": "scripts/chat/models.py",
+      "description": "Add Connection, AgentNode, ComparisonResult, and ComparisonFacets Pydantic models. Add CROSS_REFERENCE to ExplorationIntent enum.",
+      "details": [
+        "Connection model: agent_a (str), agent_b (str), relationship_type (enum: teacher_of, student_of, co_publication, same_place_period, shared_occupation, same_teacher), evidence (str with source citation), confidence (float 0-1), wikidata_ids (optional tuple for both agents)",
+        "AgentNode model: label (str), agent_norm (str), authority_uri (optional str), wikidata_id (optional str), birth_year (optional int), death_year (optional int), birth_place (optional str), occupations (List[str]), teachers (List[str]), students (List[str]), notable_works (List[str]), record_count (int)",
+        "ComparisonFacets model: counts (Dict[str, int]), date_ranges (Dict[str, tuple[int,int]]), language_distribution (Dict[str, Dict[str, int]]), top_agents (Dict[str, List[tuple[str,int]]]), subject_overlap (List[str]), shared_agents (List[str])",
+        "ComparisonResult model: field (str), values (List[str]), facets (ComparisonFacets), total_in_subgroup (int)",
+        "Add CROSS_REFERENCE = 'cross_reference' to ExplorationIntent enum at line 48"
+      ],
+      "estimatedLines": 85,
+      "testable": true
+    },
+    {
+      "step": 2,
+      "title": "Build core cross-reference engine",
+      "file": "scripts/chat/cross_reference.py",
+      "description": "New module implementing the relationship graph and connection discovery. Pure functions operating on SQLite data, no LLM calls.",
+      "details": [
+        "build_agent_graph(db_path: Path) -> dict[str, AgentNode]: Loads all authority_enrichment records with non-null person_info, constructs in-memory lookup by label. Currently 2,665 enriched records, 277 with non-empty teachers, 250 with non-empty students.",
+        "find_connections(record_ids: list[str], db_path: Path, max_connections: int = 20) -> list[Connection]: Main entry point. (1) Fetches agent enrichment for record_ids using get_agent_enrichment_for_records() from narrative_agent.py. (2) For each pair of agents in result set, checks: teacher/student links via person_info.teachers and person_info.students lists, co-publication via shared record_ids, same birth_place or nationality, shared occupation. (3) Also checks if any agent's teachers/students match OTHER agents in the full authority_enrichment table (not just result set) -- this discovers 'network neighbors' not in the current result set.",
+        "find_network_neighbors(agent_labels: list[str], db_path: Path, max_hops: int = 1) -> list[Connection]: Given agent labels from result set, find agents 1 hop away in the teacher/student graph who are also in authority_enrichment. Returns Connection objects with relationship_type='network_neighbor'. The 85 cross-referenced teacher-student pairs found in DB confirm this is viable.",
+        "_match_teacher_student(agent_a: dict, agent_b: dict) -> Optional[Connection]: Check if agent_a.students contains agent_b.label or vice versa. Uses fuzzy matching (label substring) since Wikidata student names may not exactly match authority_enrichment labels.",
+        "_match_co_publication(agents_with_records: list[dict]) -> list[Connection]: Find agent pairs sharing >1 record_id. DB shows rich co-publication data (e.g., 38 shared records for Faitlovitch/Wurmbrand pair). Filter to pairs with different roles (author+printer, author+translator) for more meaningful connections.",
+        "_match_same_place_period(agent_a: dict, agent_b: dict, tolerance_years: int = 30) -> Optional[Connection]: Match agents active in same city during overlapping lifetimes. Uses birth_place, death_place from person_info and birth_year/death_year for temporal overlap.",
+        "Graph caching: Build graph once per API startup (lazy singleton pattern). Graph is ~2,665 nodes, fits easily in memory. Invalidation: rebuild on DB change or manual trigger."
+      ],
+      "estimatedLines": 280,
+      "testable": true
+    },
+    {
+      "step": 3,
+      "title": "Write unit tests for cross-reference engine",
+      "file": "tests/scripts/chat/test_cross_reference.py",
+      "description": "Comprehensive tests using in-memory SQLite with fixture data mimicking real authority_enrichment records.",
+      "details": [
+        "test_build_agent_graph_empty_db: Returns empty dict for DB with no enrichment data",
+        "test_build_agent_graph_with_data: Builds graph with correct node count and properties",
+        "test_find_connections_teacher_student: Given Buxtorf (teacher of Wasmuth) and Wasmuth in same result set, discovers teacher_of connection",
+        "test_find_connections_co_publication: Given two agents sharing 3 records, discovers co_publication connection",
+        "test_find_connections_same_place: Given two agents both born in Venice with overlapping lifetimes, discovers same_place_period connection",
+        "test_find_connections_no_enrichment: Returns empty list when agents have no enrichment data",
+        "test_find_connections_self_loop_excluded: Never returns connections where agent_a == agent_b",
+        "test_find_connections_max_limit: Respects max_connections parameter",
+        "test_find_network_neighbors: Given Nahmanides in result set, discovers Shlomo ben Aderet and Aharon HaLevi as network neighbors (students)",
+        "test_find_network_neighbors_max_hops: Stops at 1 hop by default",
+        "test_match_teacher_student_fuzzy: Handles partial name matches (e.g., 'Nahmanides' matching 'Naḥmanides')",
+        "test_connection_confidence_scores: teacher_of = 0.90, co_publication = 0.85, same_place_period = 0.70",
+        "Fixture: Create _setup_test_db() helper that builds authority_enrichment + agents + records tables with 5-10 test agents having known relationships"
+      ],
+      "estimatedLines": 320,
+      "testable": true
+    },
+    {
+      "step": 4,
+      "title": "Integrate cross-references into narrative agent",
+      "file": "scripts/chat/narrative_agent.py",
+      "description": "Enhance generate_agent_narrative() to append a 'Connections' section after individual bios. Currently at lines 211-254, returns markdown with bios only.",
+      "details": [
+        "After line 253 (occ_summary), call find_connections(record_ids, db_path) to get connections list",
+        "Add _format_connections(connections: list[Connection], max_show: int = 5) -> Optional[str]: Formats connections as markdown section. Groups by relationship_type. Example output: '**Connections found:**\\n- **Buxtorf** was a student of **Abraham Scultetus** [Wikidata Q123]\\n- **Buxtorf** and **Wasmuth** share 3 records (teacher-student)'",
+        "Add _format_network_neighbors(connections: list[Connection]) -> Optional[str]: For connections involving agents NOT in the current result set, format as 'Related figures not in results: **Scultetus** (teacher of Buxtorf), **Wasmuth** (student of Buxtorf)'",
+        "Append connections section to narrative string after occ_summary. If connections found: narrative += '\\n\\n' + connections_section",
+        "Non-blocking: wrap find_connections in try/except, log warnings, never fail the narrative",
+        "Performance guard: skip cross-reference if len(agents) > 50 (too many pairs to check efficiently)"
+      ],
+      "estimatedLines": 60,
+      "testable": true
+    },
+    {
+      "step": 5,
+      "title": "Enhance comparison with multi-faceted analysis",
+      "file": "scripts/chat/aggregation.py",
+      "description": "Replace the simple execute_comparison() at line 782 with a rich multi-faceted comparison. Current implementation returns Dict[str, int] (just counts per value) for only 4 fields.",
+      "details": [
+        "New execute_comparison_enhanced(db_path, record_ids, field, values) -> ComparisonResult: For each value, queries: (1) record count, (2) date range (min/max date_start), (3) language distribution (count per language code), (4) top 5 agents with counts, (5) top 5 subjects with counts",
+        "Add _find_shared_agents(db_path, record_ids, field, values) -> list[str]: SQL query to find agent_norm values appearing in records matching BOTH comparison values. E.g., agents publishing in both Venice AND Constantinople.",
+        "Add _find_subject_overlap(db_path, record_ids, field, values) -> list[str]: Subjects appearing in records for all compared values.",
+        "Keep old execute_comparison() as backward-compatible wrapper that calls enhanced version and extracts just the counts Dict[str, int]",
+        "Add format_comparison_enhanced(result: ComparisonResult) -> str: Format as rich markdown with sections for each facet. Include a 'What they share' section for shared_agents and subject_overlap.",
+        "New SQL queries needed: comparison_agents (group by agent_norm within a place/publisher filter), comparison_languages (group by language code), comparison_subjects (group by subject value), comparison_date_range (min/max date_start). All parameterized with placeholders."
+      ],
+      "estimatedLines": 180,
+      "testable": true
+    },
+    {
+      "step": 6,
+      "title": "Write tests for enhanced comparison",
+      "file": "tests/scripts/chat/test_comparison_enhanced.py",
+      "description": "Unit tests for multi-faceted comparison using in-memory SQLite.",
+      "details": [
+        "test_enhanced_comparison_place: Compare Venice vs Amsterdam, verify facets include date_ranges, language_distribution, top_agents for each",
+        "test_enhanced_comparison_shared_agents: Verify shared_agents lists agents appearing in both places",
+        "test_enhanced_comparison_subject_overlap: Verify subject_overlap lists shared subjects",
+        "test_enhanced_comparison_empty_value: One comparison value has 0 records -- still returns valid ComparisonResult with empty facets",
+        "test_enhanced_comparison_single_value: Gracefully handles single-value comparison",
+        "test_format_comparison_enhanced: Verify markdown output includes all sections",
+        "test_backward_compatible_execute_comparison: Old execute_comparison() still returns Dict[str, int]",
+        "Fixture: Build test DB with 20+ records across 3 places, multiple agents and subjects"
+      ],
+      "estimatedLines": 250,
+      "testable": true
+    },
+    {
+      "step": 7,
+      "title": "Add cross-reference intent to exploration agent",
+      "file": "scripts/chat/exploration_agent.py",
+      "description": "Extend the exploration intent classification to recognize cross-reference requests and enhance comparison with agent field support.",
+      "details": [
+        "Add to ExplorationRequestLLM (after line 101): cross_reference_entity (Optional[str]) -- the entity to cross-reference. Also add cross_reference_scope (Optional[str]) with values 'result_set' or 'network' to distinguish 'show connections in these results' from 'show the broader network'.",
+        "Update comparison_field description at line 95 to include 'agent' as a supported field: 'Field to compare: place, publisher, country, language, agent'",
+        "Update EXPLORATION_AGENT_SYSTEM_PROMPT (line 162) to add CROSS_REFERENCE intent (intent type 8) with examples: 'Show connections between these authors', 'What links these printers?', 'Show the intellectual network', 'How are Buxtorf and Wasmuth related?'. Set cross_reference_entity for entity-specific requests.",
+        "Update ExplorationRequest model (line 116) to add cross_reference_entity and cross_reference_scope fields",
+        "Update interpret_exploration_request (line 273) to pass cross_reference fields through from LLM output"
+      ],
+      "estimatedLines": 50,
+      "testable": true
+    },
+    {
+      "step": 8,
+      "title": "Enhance follow-up suggestions with cross-reference and comparison prompts",
+      "file": "scripts/chat/formatter.py",
+      "description": "Currently generate_followups() at line 82 only suggests unused filter types. Add cross-reference and comparison suggestions based on result characteristics.",
+      "details": [
+        "After line 135 (has_subject_filter check), add new section: if candidate_set.count > 1 and candidate_set.count <= 100, add cross-reference suggestions",
+        "Logic for suggestions: (1) If results span multiple places (detected via evidence fields), suggest 'Compare [place_a] vs [place_b] publications'. (2) If results contain multiple agents, suggest 'Show connections between authors in these results'. (3) If results have a prominent single agent, suggest 'Show [agent_name]'s intellectual network'.",
+        "To detect place diversity: scan candidate evidence for distinct place_norm values. If >= 2 distinct places found, generate comparison suggestion with top 2 places.",
+        "To detect agent diversity: count distinct agents in evidence. If >= 2, suggest connection exploration.",
+        "Add helper _extract_distinct_values(candidate_set, field_name) -> list[str]: Extract unique normalized values from candidate evidence for a given field.",
+        "Keep total suggestions at max 5, prioritize: existing filter suggestions first, then cross-reference, then comparison"
+      ],
+      "estimatedLines": 55,
+      "testable": true
+    },
+    {
+      "step": 9,
+      "title": "Wire cross-reference and enhanced comparison into API orchestrator",
+      "file": "app/api/main.py",
+      "description": "Connect the new cross-reference engine and enhanced comparison to the API layer. Two integration points: Phase 1 (query results with narrative) and Phase 2 (exploration intents).",
+      "details": [
+        "Phase 1 integration (line 588-604): After generate_agent_narrative(), add cross-reference data to response metadata. Call find_connections(record_ids, bib_db) and include in response_metadata['connections'] as serialized Connection list. This allows the frontend to render a network visualization later.",
+        "Phase 2 COMPARISON handler (line 900-929): Replace simple count formatting with format_comparison_enhanced(). Call execute_comparison_enhanced() instead of execute_comparison(). Update suggested_followups to include 'Show shared agents' if shared_agents is non-empty.",
+        "Phase 2 CROSS_REFERENCE handler (new, after line 929): When intent is CROSS_REFERENCE, call find_connections() or find_network_neighbors() based on cross_reference_scope. Format results with _format_connections(). Return ChatResponse with connections in metadata for frontend visualization.",
+        "Add cross-reference-aware follow-up suggestions to COMPARISON response: if shared_agents found, suggest 'Tell me about [shared_agent]' and 'Show [shared_agent]'s network'.",
+        "Import additions: from scripts.chat.cross_reference import find_connections, find_network_neighbors; from scripts.chat.aggregation import execute_comparison_enhanced, format_comparison_enhanced"
+      ],
+      "estimatedLines": 80,
+      "testable": true
+    },
+    {
+      "step": 10,
+      "title": "Integration tests with real database",
+      "file": "tests/scripts/chat/test_cross_reference_integration.py",
+      "description": "Integration tests using real bibliographic.db to verify cross-reference discovery on actual data.",
+      "details": [
+        "Mark all tests with @pytest.mark.integration so they can be skipped in CI without DB",
+        "test_buxtorf_network: Query for Hebrew grammar, verify Buxtorf's teacher/student connections are discovered. DB confirms: teachers=[Scultetus, Pareus, Alting], students=[Wasmuth]",
+        "test_venice_printer_connections: Query for Venice printing, verify co-publication links between Venetian printers are found. DB shows 151 Venice records with 215 distinct agents.",
+        "test_cross_center_comparison: Compare Venice vs Constantinople, verify shared agents are found. Both cities have records with overlapping agent networks.",
+        "test_teacher_student_chain: Verify multi-hop chains work: Nahmanides -> Shlomo ben Aderet -> Bahya ben Asher (confirmed in DB: 85 teacher-student pairs).",
+        "test_enhanced_comparison_venice_amsterdam: Run enhanced comparison on real data, verify all facets populated. DB: Venice (151 records, 1486-1897) vs Amsterdam (184 records, 1521-1975).",
+        "test_narrative_with_connections: Call generate_agent_narrative() for a result set containing connected agents, verify 'Connections' section appears in output."
+      ],
+      "estimatedLines": 200,
+      "testable": true
+    }
+  ],
+
+  "schemaChanges": [
+    {
+      "type": "pydantic_model",
+      "location": "scripts/chat/models.py",
+      "description": "New Connection model",
+      "definition": {
+        "agent_a": "str -- display label of first agent",
+        "agent_b": "str -- display label of second agent",
+        "relationship_type": "str enum: teacher_of, student_of, co_publication, same_place_period, shared_occupation, same_teacher, network_neighbor",
+        "evidence": "str -- human-readable evidence with source citation",
+        "confidence": "float 0.0-1.0 -- teacher_of=0.90, co_publication=0.85, same_place_period=0.70, shared_occupation=0.60",
+        "agent_a_wikidata_id": "Optional[str]",
+        "agent_b_wikidata_id": "Optional[str]"
+      }
+    },
+    {
+      "type": "pydantic_model",
+      "location": "scripts/chat/models.py",
+      "description": "New AgentNode model for in-memory graph",
+      "definition": {
+        "label": "str -- display label from authority_enrichment",
+        "agent_norm": "str -- normalized name for matching",
+        "authority_uri": "Optional[str]",
+        "wikidata_id": "Optional[str]",
+        "birth_year": "Optional[int]",
+        "death_year": "Optional[int]",
+        "birth_place": "Optional[str]",
+        "occupations": "List[str]",
+        "teachers": "List[str] -- teacher labels from person_info",
+        "students": "List[str] -- student labels from person_info",
+        "notable_works": "List[str]",
+        "record_count": "int -- number of records this agent appears in"
+      }
+    },
+    {
+      "type": "pydantic_model",
+      "location": "scripts/chat/models.py",
+      "description": "New ComparisonFacets model",
+      "definition": {
+        "counts": "Dict[str, int] -- record count per compared value",
+        "date_ranges": "Dict[str, Tuple[Optional[int], Optional[int]]] -- (min_year, max_year) per value",
+        "language_distribution": "Dict[str, Dict[str, int]] -- {value: {lang_code: count}}",
+        "top_agents": "Dict[str, List[Dict[str, Any]]] -- {value: [{agent_norm, count, role}]}",
+        "top_subjects": "Dict[str, List[Dict[str, Any]]] -- {value: [{subject, count}]}",
+        "shared_agents": "List[str] -- agents appearing in records for ALL compared values",
+        "subject_overlap": "List[str] -- subjects appearing in records for ALL compared values"
+      }
+    },
+    {
+      "type": "pydantic_model",
+      "location": "scripts/chat/models.py",
+      "description": "New ComparisonResult model",
+      "definition": {
+        "field": "str -- comparison field (place, publisher, etc.)",
+        "values": "List[str] -- values being compared",
+        "facets": "ComparisonFacets",
+        "total_in_subgroup": "int"
+      }
+    },
+    {
+      "type": "enum_extension",
+      "location": "scripts/chat/models.py",
+      "description": "Add CROSS_REFERENCE to ExplorationIntent enum at line 48",
+      "definition": "CROSS_REFERENCE = 'cross_reference'"
+    },
+    {
+      "type": "no_db_schema_changes",
+      "description": "No changes to SQLite schema. All data for cross-referencing already exists in authority_enrichment.person_info (teachers, students, occupations, birth/death places) and agents table (co-publication via shared record_id). The 277 records with non-empty teachers and 250 with non-empty students provide sufficient coverage."
+    }
+  ],
+
+  "retrievalChanges": [
+    {
+      "component": "scripts/chat/cross_reference.py (NEW)",
+      "currentBehavior": "Does not exist. No cross-referencing capability.",
+      "newBehavior": "build_agent_graph() loads authority_enrichment into memory graph (~2,665 nodes). find_connections() checks all agent pairs in a result set for: (1) teacher/student via person_info.teachers/students lists, (2) co-publication via shared record_ids in agents table, (3) same_place_period via birth_place + temporal overlap, (4) shared_occupation via occupations list intersection. find_network_neighbors() discovers agents 1 hop away in teacher/student graph.",
+      "sqlQueries": [
+        "SELECT ae.authority_uri, ae.label, ae.wikidata_id, ae.person_info FROM authority_enrichment ae WHERE ae.person_info IS NOT NULL -- for graph building",
+        "SELECT a1.agent_norm, a2.agent_norm, COUNT(DISTINCT r.mms_id) FROM agents a1 JOIN agents a2 ON a1.record_id = a2.record_id AND a1.agent_norm < a2.agent_norm JOIN records r ON a1.record_id = r.id WHERE r.mms_id IN ({placeholders}) AND a1.agent_norm != a2.agent_norm GROUP BY a1.agent_norm, a2.agent_norm HAVING COUNT(DISTINCT r.mms_id) > 1 -- for co-publication"
+      ]
+    },
+    {
+      "component": "scripts/chat/aggregation.py execute_comparison_enhanced()",
+      "currentBehavior": "execute_comparison() at line 782 returns Dict[str, int] -- just count per value for 4 fields (place, country, publisher, language). No date ranges, no language breakdown, no agent lists, no subject overlap, no shared agents.",
+      "newBehavior": "Returns ComparisonResult with multi-faceted data. For each compared value, runs 5 SQL queries: record count, date range (MIN/MAX date_start), language distribution, top 5 agents, top 5 subjects. Plus 2 cross-value queries: shared_agents (agents appearing in ALL compared values) and subject_overlap.",
+      "sqlQueries": [
+        "SELECT MIN(i.date_start), MAX(i.date_start) FROM imprints i JOIN records r ON i.record_id = r.id WHERE r.mms_id IN ({placeholders}) AND LOWER(i.{field}) = LOWER(?) -- date range per value",
+        "SELECT l.code, COUNT(DISTINCT l.record_id) FROM languages l JOIN records r ON l.record_id = r.id WHERE r.mms_id IN ({placeholders}) AND r.id IN (SELECT record_id FROM imprints WHERE LOWER({field}) = LOWER(?)) GROUP BY l.code ORDER BY COUNT(*) DESC LIMIT 5 -- language distribution per value",
+        "SELECT a.agent_norm, COUNT(DISTINCT a.record_id), a.role_norm FROM agents a JOIN records r ON a.record_id = r.id WHERE r.mms_id IN ({placeholders}) AND r.id IN (SELECT record_id FROM imprints WHERE LOWER({field}) = LOWER(?)) GROUP BY a.agent_norm ORDER BY COUNT(*) DESC LIMIT 5 -- top agents per value",
+        "SELECT a.agent_norm FROM agents a JOIN records r ON a.record_id = r.id WHERE r.mms_id IN ({placeholders}) AND r.id IN (SELECT record_id FROM imprints WHERE LOWER(i.place_norm) = LOWER(?)) GROUP BY a.agent_norm INTERSECT ... -- shared agents across all values"
+      ]
+    },
+    {
+      "component": "scripts/chat/narrative_agent.py generate_agent_narrative()",
+      "currentBehavior": "Lines 211-254: Fetches enrichment, ranks agents, generates bios, adds occupation summary. Returns markdown with no connection information. Each agent bio is self-contained.",
+      "newBehavior": "After bio generation, calls find_connections(record_ids, db_path). If connections found, appends '**Connections found:**' section with formatted relationship descriptions. Also calls find_network_neighbors() for featured agents to suggest related figures not in the result set. Total addition: ~30 lines of logic + 30 lines of formatting helpers."
+    },
+    {
+      "component": "scripts/chat/formatter.py generate_followups()",
+      "currentBehavior": "Lines 82-148: Checks for missing filter types (year, place, publisher, subject) and suggests adding them. No cross-reference or comparison suggestions.",
+      "newBehavior": "After existing filter suggestions (line 135), analyzes result set for: (1) multiple distinct places -> suggests 'Compare [place_a] vs [place_b]', (2) multiple agents -> suggests 'Show connections between authors', (3) single prominent agent -> suggests 'Show [agent]'s network'. Extracts place/agent values from candidate evidence."
+    },
+    {
+      "component": "scripts/chat/exploration_agent.py",
+      "currentBehavior": "Classifies 7 intent types. COMPARISON supports 4 fields (place, publisher, country, language). No cross-reference intent. System prompt at line 162 has no cross-reference examples.",
+      "newBehavior": "8 intent types including CROSS_REFERENCE. COMPARISON supports 5 fields (adds 'agent'). System prompt includes cross-reference examples. ExplorationRequestLLM has cross_reference_entity and cross_reference_scope fields."
+    },
+    {
+      "component": "app/api/main.py orchestrator",
+      "currentBehavior": "COMPARISON handler (line 900-929) formats simple count-per-value with hardcoded follow-ups. No CROSS_REFERENCE handler. Phase 1 narrative (line 588-604) generates bios without connections.",
+      "newBehavior": "COMPARISON handler uses format_comparison_enhanced() with multi-faceted output and dynamic follow-ups based on shared agents. New CROSS_REFERENCE handler calls find_connections()/find_network_neighbors() and formats results. Phase 1 includes connection data in response metadata for frontend rendering."
+    }
+  ],
+
+  "risksAndEdgeCases": [
+    {
+      "risk": "Name matching ambiguity in teacher/student cross-referencing",
+      "severity": "MEDIUM",
+      "description": "person_info.teachers/students contain display labels (e.g., 'Nahmanides') while authority_enrichment.label may have fuller forms (e.g., 'Naḥmanides, 1194-1270'). Substring matching may produce false positives (e.g., 'Isaac' matching multiple Isaacs).",
+      "mitigation": "Use a two-pass matching strategy: (1) exact label match first, (2) if no match, try normalized substring match with additional constraints (same century, same geographic region). Track match quality in Connection.confidence (exact=0.95, fuzzy=0.75). Add test cases for known ambiguous names."
+    },
+    {
+      "risk": "Performance of pairwise agent comparison in large result sets",
+      "severity": "MEDIUM",
+      "description": "For a result set with N agents, pairwise comparison is O(N^2). A result set with 50 agents produces 1,225 pairs to check. The _MAX_RESULT_SET guard of 100 records in narrative_agent helps but doesn't limit agent count.",
+      "mitigation": "Set max_agents_for_cross_ref = 30 (435 pairs max). If more agents, take top 30 by record_count. Co-publication query uses a single SQL GROUP BY instead of N^2 individual queries. Teacher/student check is O(N * avg_teachers) using pre-built graph lookup."
+    },
+    {
+      "risk": "Graph staleness after DB updates",
+      "severity": "LOW",
+      "description": "In-memory agent graph is built at startup. If authority_enrichment is updated (new Wikidata enrichment run), the graph becomes stale.",
+      "mitigation": "Lazy singleton with optional rebuild trigger. Since enrichment runs are rare (manual process), staleness is acceptable. Add /admin/rebuild-graph endpoint for manual refresh. Log graph build timestamp in health check."
+    },
+    {
+      "risk": "Sparse enrichment data producing empty connections",
+      "severity": "MEDIUM",
+      "description": "Only 277/5,667 authority records have non-empty teachers lists, 250 have students. Many result sets will produce zero connections.",
+      "mitigation": "Fall back gracefully: if no teacher/student connections found, try co-publication and same_place_period which use the agents table directly (2,434 distinct authority URIs). If still no connections, return empty list and skip Connections section in narrative. Never show an empty 'No connections found' message."
+    },
+    {
+      "risk": "Enhanced comparison SQL performance with large subgroups",
+      "severity": "LOW",
+      "description": "Enhanced comparison runs 5 SQL queries per compared value plus 2 cross-value queries. For a subgroup of 500 records comparing 3 values, that's 17 queries.",
+      "mitigation": "All queries filter by mms_id IN (...) with parameterized placeholders, hitting indexed columns. SQLite handles IN clauses efficiently for < 1000 values. Add timing logs. If latency > 2s, add a fast-path that returns just counts (backward-compatible)."
+    },
+    {
+      "risk": "Circular references in teacher/student graph",
+      "severity": "LOW",
+      "description": "Unlikely in real data but possible: A teaches B who teaches A. find_network_neighbors() with hops > 1 could loop.",
+      "mitigation": "Track visited nodes in a set during graph traversal. Max hops = 1 by default eliminates cycles. Test with synthetic circular data."
+    },
+    {
+      "risk": "LLM misclassification between COMPARISON and CROSS_REFERENCE intents",
+      "severity": "LOW",
+      "description": "User says 'Compare Buxtorf and Wasmuth' -- is this a comparison (side-by-side stats) or cross-reference (relationship discovery)? The LLM may choose wrong intent.",
+      "mitigation": "When COMPARISON is requested with comparison_field='agent', automatically include cross-reference data in the response alongside comparison facets. This way both intents produce useful results regardless of classification. System prompt examples clearly distinguish the two: COMPARISON = 'Compare Venice vs Paris', CROSS_REFERENCE = 'Show connections between these authors'."
+    }
+  ],
+
+  "tddPlan": {
+    "overview": "Test-first development with unit tests using in-memory SQLite fixtures, plus integration tests against real bibliographic.db. Each step has its own test file or test class. Tests run without LLM/API keys (pure functions).",
+    "phases": [
+      {
+        "phase": "Phase 1: Models and data structures (Step 1)",
+        "tests": [
+          "test_connection_model_valid: Connection with all fields validates",
+          "test_connection_confidence_bounds: Confidence outside 0-1 raises ValidationError",
+          "test_agent_node_defaults: AgentNode with minimal fields has empty lists for teachers/students",
+          "test_comparison_facets_empty: ComparisonFacets with empty dicts is valid",
+          "test_exploration_intent_cross_reference: ExplorationIntent('cross_reference') succeeds"
+        ],
+        "location": "tests/scripts/chat/test_models_e3.py"
+      },
+      {
+        "phase": "Phase 2: Cross-reference core engine (Steps 2-3)",
+        "tests": [
+          "13 unit tests in test_cross_reference.py as described in Step 3",
+          "Key fixture: 10 agents with known relationships (3 teacher-student pairs, 2 co-publication pairs, 2 same-place pairs)",
+          "Tests use in-memory SQLite (:memory:) with schema matching production tables"
+        ],
+        "location": "tests/scripts/chat/test_cross_reference.py"
+      },
+      {
+        "phase": "Phase 3: Narrative integration (Step 4)",
+        "tests": [
+          "test_narrative_with_connections: Mock find_connections() to return 2 connections, verify 'Connections found:' section in output",
+          "test_narrative_no_connections: Mock find_connections() returning empty list, verify no Connections section (graceful degradation)",
+          "test_narrative_connection_error: Mock find_connections() raising exception, verify narrative still returns without Connections section",
+          "test_format_connections_teacher_student: Verify markdown format for teacher_of relationship",
+          "test_format_connections_co_publication: Verify markdown format for co_publication relationship",
+          "test_format_network_neighbors: Verify 'Related figures' section for network neighbors"
+        ],
+        "location": "tests/scripts/chat/test_narrative_agent_e3.py"
+      },
+      {
+        "phase": "Phase 4: Enhanced comparison (Steps 5-6)",
+        "tests": [
+          "8 unit tests in test_comparison_enhanced.py as described in Step 6",
+          "Fixture: 20+ records across 3 places with known agent/subject distributions"
+        ],
+        "location": "tests/scripts/chat/test_comparison_enhanced.py"
+      },
+      {
+        "phase": "Phase 5: Follow-up suggestions and exploration agent (Steps 7-8)",
+        "tests": [
+          "test_followups_with_multiple_places: Given results spanning Venice and Paris, verify 'Compare Venice vs Paris' suggestion appears",
+          "test_followups_with_multiple_agents: Given results with 3+ agents, verify 'Show connections' suggestion",
+          "test_followups_single_agent: Given results with prominent single agent, verify 'Show [agent] network' suggestion",
+          "test_followups_no_cross_ref_for_zero_results: No cross-reference suggestions for empty results",
+          "test_followups_max_five: Total suggestions never exceed 5",
+          "test_exploration_cross_reference_fields: ExplorationRequestLLM with cross_reference_entity validates"
+        ],
+        "location": "tests/scripts/chat/test_formatter_e3.py and tests/scripts/chat/test_exploration_e3.py"
+      },
+      {
+        "phase": "Phase 6: Integration tests (Step 10)",
+        "tests": [
+          "6 integration tests against real bibliographic.db as described in Step 10",
+          "All marked @pytest.mark.integration, skipped without --run-integration flag"
+        ],
+        "location": "tests/scripts/chat/test_cross_reference_integration.py"
+      }
+    ],
+    "testInfrastructure": {
+      "fixtureHelper": "tests/scripts/chat/conftest.py: Add _setup_e3_test_db() fixture that creates authority_enrichment, agents, records, imprints, languages, subjects tables in :memory: SQLite with 10-20 test records. Reusable across all E3 test files.",
+      "totalTestCount": "~50 unit tests + 6 integration tests",
+      "ciIntegration": "All unit tests run without OPENAI_API_KEY. Integration tests require --run-integration flag and real DB."
+    }
+  },
+
+  "qualityGates": [
+    {
+      "gate": "G1: Cross-reference discovery for Buxtorf",
+      "criterion": "Given a result set containing Buxtorf (Hebrew grammar query), find_connections() returns at least 1 teacher_of connection (Buxtorf -> Scultetus/Pareus/Alting) and narrative includes 'Connections found:' section.",
+      "verification": "Integration test test_buxtorf_network"
+    },
+    {
+      "gate": "G2: Venice cross-center comparison",
+      "criterion": "execute_comparison_enhanced() for Venice vs Amsterdam returns ComparisonResult with non-empty date_ranges, language_distribution, and top_agents for both values. shared_agents list is non-empty if any agent appears in both cities.",
+      "verification": "Integration test test_enhanced_comparison_venice_amsterdam"
+    },
+    {
+      "gate": "G3: Teacher-student chain discovery",
+      "criterion": "For result set containing Nahmanides (Q10 Jewish philosophy), cross-reference discovers at least Shlomo ben Aderet as student AND Shlomo ben Aderet's students (Bahya ben Asher, etc.) as network neighbors.",
+      "verification": "Integration test test_teacher_student_chain"
+    },
+    {
+      "gate": "G4: Follow-up suggestions include cross-reference options",
+      "criterion": "generate_followups() for a result set with 5+ records spanning Venice and Amsterdam includes at least one comparison suggestion and one 'show connections' suggestion.",
+      "verification": "Unit test test_followups_with_multiple_places"
+    },
+    {
+      "gate": "G5: Graceful degradation when no connections exist",
+      "criterion": "For result sets with no enrichment data or no discoverable connections, generate_agent_narrative() returns a valid narrative without a 'Connections' section (not an error or 'No connections found' message).",
+      "verification": "Unit test test_narrative_no_connections"
+    },
+    {
+      "gate": "G6: Performance under load",
+      "criterion": "find_connections() completes in < 500ms for a result set of 100 records with 30 enriched agents. execute_comparison_enhanced() completes in < 1s for 2 compared values in a 500-record subgroup.",
+      "verification": "Manual timing in integration tests with logging"
+    },
+    {
+      "gate": "G7: No regression in existing functionality",
+      "criterion": "All existing tests pass (test_aggregation.py, test_formatter.py). execute_comparison() backward-compatible wrapper returns same Dict[str, int] format. Narrative generation without cross-reference still works as before.",
+      "verification": "Full test suite: pytest tests/ -v"
+    },
+    {
+      "gate": "G8: All 8 target queries show improvement",
+      "criterion": "Re-run evaluation for Q1, Q2, Q4, Q5, Q9, Q10, Q13, Q17. Each query response now includes either cross-reference connections in narrative, comparison follow-up suggestions, or both. Target: average score increase from 13.5/25 to 18/25.",
+      "verification": "Manual evaluation using the same rubric from the evaluation report"
+    }
+  ],
+
+  "deliverables": [
+    {
+      "deliverable": "scripts/chat/cross_reference.py",
+      "type": "new_module",
+      "description": "Core cross-reference engine with build_agent_graph(), find_connections(), find_network_neighbors(), and relationship matchers. ~280 lines.",
+      "dependencies": ["scripts/chat/models.py (Connection, AgentNode models)"]
+    },
+    {
+      "deliverable": "scripts/chat/models.py (updated)",
+      "type": "modified_module",
+      "description": "Connection, AgentNode, ComparisonFacets, ComparisonResult models. CROSS_REFERENCE added to ExplorationIntent. ~85 new lines."
+    },
+    {
+      "deliverable": "scripts/chat/narrative_agent.py (updated)",
+      "type": "modified_module",
+      "description": "generate_agent_narrative() enhanced with Connections section. ~60 new lines."
+    },
+    {
+      "deliverable": "scripts/chat/aggregation.py (updated)",
+      "type": "modified_module",
+      "description": "execute_comparison_enhanced(), format_comparison_enhanced(), _find_shared_agents(), _find_subject_overlap(). Old execute_comparison() preserved as wrapper. ~180 new lines."
+    },
+    {
+      "deliverable": "scripts/chat/exploration_agent.py (updated)",
+      "type": "modified_module",
+      "description": "CROSS_REFERENCE intent support. cross_reference_entity/scope fields. Updated system prompt. ~50 new lines."
+    },
+    {
+      "deliverable": "scripts/chat/formatter.py (updated)",
+      "type": "modified_module",
+      "description": "Cross-reference and comparison follow-up suggestions. _extract_distinct_values() helper. ~55 new lines."
+    },
+    {
+      "deliverable": "app/api/main.py (updated)",
+      "type": "modified_module",
+      "description": "CROSS_REFERENCE handler, enhanced COMPARISON handler, connection data in Phase 1 metadata. ~80 new lines."
+    },
+    {
+      "deliverable": "tests/scripts/chat/test_cross_reference.py",
+      "type": "new_test",
+      "description": "13 unit tests for cross-reference engine. ~320 lines."
+    },
+    {
+      "deliverable": "tests/scripts/chat/test_comparison_enhanced.py",
+      "type": "new_test",
+      "description": "8 unit tests for enhanced comparison. ~250 lines."
+    },
+    {
+      "deliverable": "tests/scripts/chat/test_cross_reference_integration.py",
+      "type": "new_test",
+      "description": "6 integration tests against real bibliographic.db. ~200 lines."
+    },
+    {
+      "deliverable": "tests/scripts/chat/test_narrative_agent_e3.py",
+      "type": "new_test",
+      "description": "6 unit tests for narrative agent connection integration. ~150 lines."
+    },
+    {
+      "deliverable": "tests/scripts/chat/test_formatter_e3.py",
+      "type": "new_test",
+      "description": "5 unit tests for enhanced follow-up suggestions. ~100 lines."
+    },
+    {
+      "deliverable": "tests/scripts/chat/conftest.py (updated)",
+      "type": "modified_test",
+      "description": "Shared _setup_e3_test_db() fixture for in-memory SQLite with E3 test data."
+    }
+  ],
+
+  "acceptanceCriteria": [
+    {
+      "id": "AC1",
+      "criterion": "find_connections() discovers teacher/student relationships between agents in a result set, with evidence citing Wikidata source.",
+      "measurable": "Given Buxtorf's result set, returns Connection(agent_a='Johannes Buxtorf the Younger', agent_b='Abraham Scultetus', relationship_type='student_of', confidence>=0.85)"
+    },
+    {
+      "id": "AC2",
+      "criterion": "find_connections() discovers co-publication relationships (agents sharing >1 record with different roles).",
+      "measurable": "Given a result set with shared author+printer pairs, returns Connection with relationship_type='co_publication' and evidence showing shared record count"
+    },
+    {
+      "id": "AC3",
+      "criterion": "find_network_neighbors() discovers agents 1 hop away in the teacher/student graph who have authority_enrichment records.",
+      "measurable": "Given Nahmanides in result set, returns at least Shlomo ben Aderet as network_neighbor via students list"
+    },
+    {
+      "id": "AC4",
+      "criterion": "generate_agent_narrative() includes a 'Connections found:' section when connections exist between agents in the result set.",
+      "measurable": "Output contains '**Connections found:**' header followed by at least one formatted connection line"
+    },
+    {
+      "id": "AC5",
+      "criterion": "execute_comparison_enhanced() returns multi-faceted ComparisonResult with counts, date_ranges, language_distribution, top_agents, and shared_agents.",
+      "measurable": "ComparisonResult.facets.date_ranges has entries for each compared value; shared_agents is a list (possibly empty); all facet dicts have keys matching compared values"
+    },
+    {
+      "id": "AC6",
+      "criterion": "generate_followups() suggests cross-reference and comparison actions when result set characteristics warrant them.",
+      "measurable": "For results spanning 2+ places, at least one suggestion matches pattern 'Compare .+ vs .+'. For results with 3+ agents, at least one suggestion contains 'connections' or 'network'."
+    },
+    {
+      "id": "AC7",
+      "criterion": "CROSS_REFERENCE exploration intent is recognized and handled in API orchestrator.",
+      "measurable": "POST /chat with session in CORPUS_EXPLORATION phase and message 'Show connections between these authors' returns response with connection data in metadata"
+    },
+    {
+      "id": "AC8",
+      "criterion": "All existing tests pass with no regressions.",
+      "measurable": "pytest tests/ -v returns 0 exit code with all previously passing tests still passing"
+    },
+    {
+      "id": "AC9",
+      "criterion": "Cross-reference engine gracefully handles edge cases: no enrichment data, single agent, >100 candidates (skip), circular teacher/student refs.",
+      "measurable": "Each edge case has a dedicated unit test that passes"
+    },
+    {
+      "id": "AC10",
+      "criterion": "Performance: find_connections() < 500ms for 100-record result set; execute_comparison_enhanced() < 1s for 500-record subgroup with 2 values.",
+      "measurable": "Integration tests log timing and fail if threshold exceeded"
+    }
+  ]
+}

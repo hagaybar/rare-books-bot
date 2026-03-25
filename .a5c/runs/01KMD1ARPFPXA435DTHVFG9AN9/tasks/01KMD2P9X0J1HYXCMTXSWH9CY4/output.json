@@ -1,0 +1,24 @@
+{
+  "duplicates": [
+    {"feature": "Regression test runner", "locations": ["app/qa.py", "app/ui_qa/pages/4_gold_set.py"], "recommendation": "Extract shared logic to scripts/qa/"},
+    {"feature": "Primo URL generation", "locations": ["app/ui_chat/config.py", "app/api/metadata.py"], "recommendation": "Extract to scripts/utils/primo.py with configurable institution"},
+    {"feature": "QueryService instantiation pattern", "locations": ["app/cli.py", "app/api/main.py (x2)", "app/ui_qa/pages/1_run_review.py"], "recommendation": "Align all to use QueryService or intent agent path"}
+  ],
+  "overlaps": [
+    {"feature": "HTTP /chat vs WebSocket /ws/chat", "difference": "HTTP uses two-phase architecture; WebSocket uses old single-phase. Different conversation engines.", "recommendation": "Deprecate or upgrade WebSocket to two-phase"},
+    {"feature": "QA Dashboard vs Workbench Dashboard", "difference": "Different data sources and questions. Complementary.", "recommendation": "Keep both, cross-link"},
+    {"feature": "Primo URLs TAU vs NLI", "difference": "Chat UI links TAU; Workbench links NLI", "recommendation": "Make configurable via environment variable"},
+    {"feature": "Chat sessions vs QA sessions", "difference": "Same word, different concepts", "recommendation": "Rename QA sessions to workflows"}
+  ],
+  "historical": [
+    {"feature": "WebSocket /ws/chat endpoint", "reason": "Built before two-phase architecture, frozen at earlier stage"},
+    {"feature": "CLI chat commands", "reason": "Built before API existed, now admin/debug utilities"},
+    {"feature": "QA DB Explorer", "reason": "Built as dev aid, superseded by structured Workbench views"}
+  ],
+  "fragmented": [
+    {"feature": "NL query in 4 places", "impact": "Users face multiple entry points with no guidance"},
+    {"feature": "Two Primo URL schemes", "impact": "Records link to different Primo instances per UI"},
+    {"feature": "Two conversation paths", "impact": "WebSocket loses Phase 2 entirely with no warning"},
+    {"feature": "QA-to-correction feedback gap", "impact": "QA testers cannot submit corrections from QA Tool"}
+  ]
+}

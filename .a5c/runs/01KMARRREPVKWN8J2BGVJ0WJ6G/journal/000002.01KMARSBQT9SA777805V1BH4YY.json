@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-22T12:37:14.618Z",
+  "data": {
+    "effectId": "01KMARSBQC5C3B82EVPS96QQKP",
+    "invocationKey": "notebooklm-context-builder:S000001:deep-repo-analysis",
+    "invocationHash": "633d8a63a6f418160f0c9a8727c7cd89967c8085e82d6a57bb33d63341c702ff",
+    "stepId": "S000001",
+    "taskId": "deep-repo-analysis",
+    "kind": "agent",
+    "label": "Deep repository analysis",
+    "taskDefRef": "tasks/01KMARSBQC5C3B82EVPS96QQKP/task.json"
+  },
+  "checksum": "6b1ed3459fdaf720338f7015a8b7c0b5f7409692d62fd240ebe142a58eec4138"
+}

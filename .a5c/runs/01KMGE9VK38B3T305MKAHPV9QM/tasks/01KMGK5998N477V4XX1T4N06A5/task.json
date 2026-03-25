@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGK5998N477V4XX1T4N06A5",
+  "taskId": "e2-curation-tests",
+  "invocationKey": "implement-historian-enhancements:S000010:e2-curation-tests",
+  "stepId": "S000010",
+  "kind": "agent",
+  "title": "E2: Write curation engine tests",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

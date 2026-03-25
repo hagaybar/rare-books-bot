@@ -1,0 +1,14 @@
+{
+  "runId": "01KMGE9VK38B3T305MKAHPV9QM",
+  "request": "implement-historian-enhancements",
+  "processId": "implement-historian-enhancements",
+  "entrypoint": {
+    "importPath": "../../processes/implement-historian-enhancements.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/implement-historian-enhancements.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-24T17:29:27.405Z",
+  "prompt": "Implement all 5 historian evaluation enhancements (E1-E5) from reports/historian-enhancement-plan.md. E1: Agent Name Resolution Layer, E2: Auto-Aggregation, E3: Cross-Reference Engine, E4: Narrative Depth, E5: Curation Engine. TDD approach with quality gates.",
+  "completionProof": "6ce185f457c9779ff40076755764ee5b"
+}

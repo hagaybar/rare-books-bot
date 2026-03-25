@@ -1,0 +1,21 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T10:14:28.800Z",
+  "data": {
+    "effectId": "01KMD30NNM6VSWKZPFB98BWWST",
+    "invocationKey": "ui-evaluation-and-redesign:S000006:new-ui-definition",
+    "invocationHash": "e2331efd9c6066d0f7f4b6f50ded4be049d1e11bd773b105d39012ece438dc39",
+    "stepId": "S000006",
+    "taskId": "new-ui-definition",
+    "kind": "agent",
+    "label": "design",
+    "taskDefRef": "tasks/01KMD30NNM6VSWKZPFB98BWWST/task.json",
+    "labels": [
+      "design",
+      "architecture",
+      "frontend",
+      "product"
+    ]
+  },
+  "checksum": "42990d040048ce325491eabe00f4bd09f44c088f2a7cadfca8bc4645eecdf0bb"
+}

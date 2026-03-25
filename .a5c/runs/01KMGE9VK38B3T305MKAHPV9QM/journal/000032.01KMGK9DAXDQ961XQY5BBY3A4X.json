@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T18:56:35.677Z",
+  "data": {
+    "effectId": "01KMGK9DANJ3HAY3P023WT6PJG",
+    "invocationKey": "implement-historian-enhancements:S000011:e2-curation-impl",
+    "invocationHash": "6bb994c5fdb5d9989fc78f24711088efac1ef10521b3b5e974b97051d8ca598e",
+    "stepId": "S000011",
+    "taskId": "e2-curation-impl",
+    "kind": "agent",
+    "label": "E2: Implement curation engine, aggregation extensions, and narrative analytical path",
+    "taskDefRef": "tasks/01KMGK9DANJ3HAY3P023WT6PJG/task.json"
+  },
+  "checksum": "72cba0250b6988af1fd147c1081e7758b33e2ac381e585db36975a3e2f6ba1e2"
+}

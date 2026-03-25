@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T11:41:41.201Z",
+  "data": {
+    "effectId": "01KMJCSSE5724KGEWAM3JD3YP9",
+    "invocationKey": "scholar-pipeline-fixes:S000008:commit",
+    "invocationHash": "ec5682ed5b404811514de94a1a2f078e377c0f9989273d6f6807b24723eac257",
+    "stepId": "S000008",
+    "taskId": "commit",
+    "kind": "shell",
+    "label": "Commit all fixes",
+    "taskDefRef": "tasks/01KMJCSSE5724KGEWAM3JD3YP9/task.json"
+  },
+  "checksum": "a318d18404628064a82ce36ef77a5cd20cda8ba3e9809246a8252fdb9dcc7617"
+}

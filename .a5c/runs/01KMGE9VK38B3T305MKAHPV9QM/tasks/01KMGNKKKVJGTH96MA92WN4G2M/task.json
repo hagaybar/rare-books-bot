@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMGNKKKVJGTH96MA92WN4G2M",
+  "taskId": "e4-api-wiring",
+  "invocationKey": "implement-historian-enhancements:S000025:e4-api-wiring",
+  "stepId": "S000025",
+  "kind": "agent",
+  "title": "E4: Add pedagogical framing and wire thematic context into API",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

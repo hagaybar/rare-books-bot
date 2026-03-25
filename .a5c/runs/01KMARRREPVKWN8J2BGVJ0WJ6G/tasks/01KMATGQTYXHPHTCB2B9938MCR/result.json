@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMATGQTYXHPHTCB2B9938MCR",
+  "taskId": "create-update-pipe",
+  "invocationKey": "notebooklm-context-builder:S000007:create-update-pipe",
+  "status": "ok",
+  "result": {
+    "scriptPath": "scripts/notebooklm/update_context.py",
+    "supportFiles": [
+      "scripts/notebooklm/__init__.py"
+    ]
+  },
+  "startedAt": "2026-03-22T13:20:59.373Z",
+  "finishedAt": "2026-03-22T13:20:59.373Z",
+  "value": {
+    "scriptPath": "scripts/notebooklm/update_context.py",
+    "supportFiles": [
+      "scripts/notebooklm/__init__.py"
+    ]
+  }
+}

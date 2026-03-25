@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMD3PWMM7SZ3JPWRN43Q999K",
+  "taskId": "final-report",
+  "invocationKey": "ui-evaluation-and-redesign:S000008:final-report",
+  "status": "ok",
+  "result": {
+    "executiveSummary": "The Rare Books Bot has 5 UI surfaces across 3 tech stacks with a critical investment inversion: the production-grade React SPA serves an internal metadata tool while the actual product (conversational discovery chatbot) is a 449-line Streamlit prototype. The recommendation is to consolidate into a single React application with 9 screens in 4 tiers, placing the chatbot at the center, over a 7-week migration.",
+    "featuresToDrop": [
+      "Streamlit Chat UI (entire app)",
+      "Streamlit QA Tool (entire app)",
+      "QA Wizard (experimental)",
+      "Standalone QA regression runner",
+      "Dual Primo URL schemes",
+      "WebSocket old single-phase path",
+      "RAG template remnants"
+    ],
+    "featuresToKeep": [
+      "TanStack Table/Query patterns (from React Workbench)",
+      "Coverage Dashboard with stat cards (from React Workbench)",
+      "Agent Chat with proposal tables (from React Workbench)",
+      "Candidate card layout with smart display (from Chat UI)",
+      "TP/FP/FN labeling with issue tagging (from QA Tool)",
+      "Gold set export and FN search (from QA Tool)",
+      "Two-phase conversation with confidence scoring (from API)",
+      "WebSocket streaming (from API)",
+      "CLI parse_marc and query commands (from CLI)"
+    ],
+    "keyDecisions": [
+      "Build a single React application with the conversational discovery bot as the landing page and centerpiece",
+      "Use React (not Angular) — continuing the existing 3,160 lines of production-grade TypeScript",
+      "Retire both Streamlit applications after rebuilding functionality in React",
+      "Merge QA regression runner into CLI as subcommand",
+      "Consolidate dual Primo URL schemes into single configurable scheme"
+    ],
+    "proposedScreens": [
+      "/ — Chat (Primary)",
+      "/operator/coverage — Coverage Dashboard (Operator)",
+      "/operator/workbench — Issues Workbench (Operator)",
+      "/operator/agent — Agent Chat (Operator)",
+      "/operator/review — Correction Review (Operator)",
+      "/diagnostics/query — Query Debugger (Diagnostics)",
+      "/diagnostics/db — Database Explorer (Diagnostics)",
+      "/admin/publishers — Publisher Authorities (Admin)",
+      "/admin/health — System Health (Admin)"
+    ],
+    "reportPath": "reports/00-executive-report.md",
+    "techStack": "React 19 + TypeScript + Vite 8 + Tailwind CSS 4 + TanStack Query/Table + Zustand + Radix UI + React Router 7"
+  },
+  "startedAt": "2026-03-23T10:31:52.523Z",
+  "finishedAt": "2026-03-23T10:31:52.523Z",
+  "value": {
+    "executiveSummary": "The Rare Books Bot has 5 UI surfaces across 3 tech stacks with a critical investment inversion: the production-grade React SPA serves an internal metadata tool while the actual product (conversational discovery chatbot) is a 449-line Streamlit prototype. The recommendation is to consolidate into a single React application with 9 screens in 4 tiers, placing the chatbot at the center, over a 7-week migration.",
+    "featuresToDrop": [
+      "Streamlit Chat UI (entire app)",
+      "Streamlit QA Tool (entire app)",
+      "QA Wizard (experimental)",
+      "Standalone QA regression runner",
+      "Dual Primo URL schemes",
+      "WebSocket old single-phase path",
+      "RAG template remnants"
+    ],
+    "featuresToKeep": [
+      "TanStack Table/Query patterns (from React Workbench)",
+      "Coverage Dashboard with stat cards (from React Workbench)",
+      "Agent Chat with proposal tables (from React Workbench)",
+      "Candidate card layout with smart display (from Chat UI)",
+      "TP/FP/FN labeling with issue tagging (from QA Tool)",
+      "Gold set export and FN search (from QA Tool)",
+      "Two-phase conversation with confidence scoring (from API)",
+      "WebSocket streaming (from API)",
+      "CLI parse_marc and query commands (from CLI)"
+    ],
+    "keyDecisions": [
+      "Build a single React application with the conversational discovery bot as the landing page and centerpiece",
+      "Use React (not Angular) — continuing the existing 3,160 lines of production-grade TypeScript",
+      "Retire both Streamlit applications after rebuilding functionality in React",
+      "Merge QA regression runner into CLI as subcommand",
+      "Consolidate dual Primo URL schemes into single configurable scheme"
+    ],
+    "proposedScreens": [
+      "/ — Chat (Primary)",
+      "/operator/coverage — Coverage Dashboard (Operator)",
+      "/operator/workbench — Issues Workbench (Operator)",
+      "/operator/agent — Agent Chat (Operator)",
+      "/operator/review — Correction Review (Operator)",
+      "/diagnostics/query — Query Debugger (Diagnostics)",
+      "/diagnostics/db — Database Explorer (Diagnostics)",
+      "/admin/publishers — Publisher Authorities (Admin)",
+      "/admin/health — System Health (Admin)"
+    ],
+    "reportPath": "reports/00-executive-report.md",
+    "techStack": "React 19 + TypeScript + Vite 8 + Tailwind CSS 4 + TanStack Query/Table + Zustand + Radix UI + React Router 7"
+  }
+}

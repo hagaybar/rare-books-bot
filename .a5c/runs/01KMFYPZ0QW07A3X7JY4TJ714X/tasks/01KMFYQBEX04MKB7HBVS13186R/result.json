@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMFYQBEX04MKB7HBVS13186R",
+  "taskId": "design-questions",
+  "invocationKey": "historian-evaluation:S000001:design-questions",
+  "status": "ok",
+  "result": {
+    "questions": "20 questions designed across 4 categories"
+  },
+  "startedAt": "2026-03-24T13:01:14.212Z",
+  "finishedAt": "2026-03-24T13:01:14.212Z",
+  "value": {
+    "questions": "20 questions designed across 4 categories"
+  }
+}

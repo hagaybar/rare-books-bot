@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T13:01:20.689Z",
+  "data": {
+    "effectId": "01KMFYYXX574JQ7PXNKKT9SK0H",
+    "invocationKey": "historian-evaluation:S000002:simulate-queries",
+    "invocationHash": "b0e7823789c675ccd0e090e45a537fb06f18b455a59d1a60ca9c2f1050476776",
+    "stepId": "S000002",
+    "taskId": "simulate-queries",
+    "kind": "agent",
+    "label": "simulation",
+    "taskDefRef": "tasks/01KMFYYXX574JQ7PXNKKT9SK0H/task.json",
+    "labels": [
+      "simulation",
+      "testing",
+      "pipeline"
+    ]
+  },
+  "checksum": "51033a5fb5d59c054ac41169cecad148028c322291c04e85837f7f539a8a3d87"
+}

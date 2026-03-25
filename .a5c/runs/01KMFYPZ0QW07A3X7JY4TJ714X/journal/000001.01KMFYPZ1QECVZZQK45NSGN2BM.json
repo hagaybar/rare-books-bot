@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-24T12:56:59.703Z",
+  "data": {
+    "runId": "01KMFYPZ0QW07A3X7JY4TJ714X",
+    "processId": "historian-evaluation",
+    "entrypoint": {
+      "importPath": "../../processes/historian-evaluation.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Professional historian persona evaluation with 20 questions, simulation, gap analysis, and top 5 enhancements"
+  },
+  "checksum": "f6fc9a52dd6f9cac6cd055fa2f0769b4045663a75896e231a3e54de1c66a6bcb"
+}

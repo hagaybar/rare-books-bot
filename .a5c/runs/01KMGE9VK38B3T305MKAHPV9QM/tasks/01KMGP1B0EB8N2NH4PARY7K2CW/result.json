@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGP1B0EB8N2NH4PARY7K2CW",
+  "taskId": "e5-write-tests",
+  "invocationKey": "implement-historian-enhancements:S000028:e5-write-tests",
+  "status": "ok",
+  "result": {
+    "summary": "27 TDD tests across 7 groups. All fail with ModuleNotFoundError.",
+    "testFile": "tests/scripts/chat/test_curator.py",
+    "testsWritten": 27
+  },
+  "startedAt": "2026-03-24T19:48:05.693Z",
+  "finishedAt": "2026-03-24T19:48:05.693Z",
+  "value": {
+    "summary": "27 TDD tests across 7 groups. All fail with ModuleNotFoundError.",
+    "testFile": "tests/scripts/chat/test_curator.py",
+    "testsWritten": 27
+  }
+}

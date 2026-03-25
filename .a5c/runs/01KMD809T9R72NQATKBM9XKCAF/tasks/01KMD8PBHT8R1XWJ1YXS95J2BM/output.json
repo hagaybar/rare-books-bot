@@ -1,0 +1,40 @@
+{
+  "endpointShapes": {
+    "/chat": {"responseFields": ["success","response","error"], "chatResponseFields": ["message","candidate_set","suggested_followups","clarification_needed","session_id","phase","confidence","metadata"], "candidateFields": ["record_id","match_rationale","evidence","title","author","date_start","date_end","place_norm","place_raw","publisher","subjects","description"], "evidenceFields": ["field","value","operator","matched_against","source","confidence","extraction_error"]},
+    "/ws/chat": {"messageTypes": ["session_created","progress","batch","complete","error"], "notes": "No intent agent, no phase/confidence, no facets"},
+    "/health": {"responseFields": ["status","database_connected","session_store_ok"]},
+    "/metadata/coverage": {"responseFields": ["date_coverage","place_coverage","publisher_coverage","agent_name_coverage","agent_role_coverage","total_imprint_rows","total_agent_rows"]},
+    "/metadata/issues": {"responseFields": ["field","max_confidence","total","limit","offset","items"]},
+    "/metadata/agent/chat": {"responseFields": ["response","proposals","clusters","field","action"], "actionEnum": ["analysis","proposals","answer"]},
+    "/metadata/publishers": {"responseFields": ["total","items"], "itemFields": ["id","canonical_name","type","confidence","variant_count","imprint_count","variants"]}
+  },
+  "gaps": [
+    {"field": "execution_time_ms", "expectedBy": "performance monitoring", "actuallyProvided": "no", "impact": "Computed but not exposed in ChatResponse"},
+    {"field": "facets (FacetCounts)", "expectedBy": "faceted navigation", "actuallyProvided": "no", "impact": "Computed but discarded — never serialized to response"},
+    {"field": "query_plan", "expectedBy": "query transparency", "actuallyProvided": "partial", "impact": "Available via session history but not in ChatResponse"},
+    {"field": "warnings (QueryWarning[])", "expectedBy": "query quality indicators", "actuallyProvided": "no", "impact": "Produced by QueryService but not forwarded"},
+    {"field": "WebSocket phase/confidence", "expectedBy": "parity with HTTP", "actuallyProvided": "no", "impact": "Two-phase impossible over WebSocket"},
+    {"field": "filter.confidence", "expectedBy": "per-filter indicators", "actuallyProvided": "partial", "impact": "Schema allows but LLM always returns null"},
+    {"field": "Primo URL on Candidate", "expectedBy": "direct record links", "actuallyProvided": "no", "impact": "Requires separate API call"}
+  ],
+  "surprises": [
+    {"field": "Candidate.description", "description": "MARC 500/520 notes available for previews"},
+    {"field": "Candidate.subjects", "description": "Up to 3 subject headings as list"},
+    {"field": "Candidate.place_raw + place_norm", "description": "Both raw and normalized available"},
+    {"field": "CandidateSet.sql", "description": "Exact SQL exposed for debug panel"},
+    {"field": "ChatResponse.metadata", "description": "Polymorphic dict varies by context"},
+    {"field": "ExplorationResponse.visualization_hint", "description": "Phase 2 includes bar_chart/pie_chart/table hint"},
+    {"field": "Evidence.extraction_error", "description": "Error field for partial evidence extraction"},
+    {"field": "AgentChatResponse.action", "description": "Action field dictates UI state machine"}
+  ],
+  "recommendations": [
+    "Surface execution_time_ms in ChatResponse",
+    "Pass FacetCounts through to ChatResponse",
+    "Add query_plan or parsed filters to ChatResponse",
+    "Forward QueryWarning[] to ChatResponse.metadata",
+    "Bring WebSocket to parity with POST /chat",
+    "Embed Primo URLs on Candidate objects",
+    "Standardize metadata dict keys",
+    "Add pagination to /unmapped, /methods, /clusters"
+  ]
+}

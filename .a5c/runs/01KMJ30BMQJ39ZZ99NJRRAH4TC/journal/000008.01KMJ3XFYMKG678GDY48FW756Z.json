@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T09:06:25.364Z",
+  "data": {
+    "effectId": "01KMJ3XFYDWA6CZA29ZW8XPKYK",
+    "invocationKey": "scholar-pipeline:S000005:implement-task",
+    "invocationHash": "2a5c7e7f381d6c6355e0c023a550227c8dda995223a6033b278da3c4a8543967",
+    "stepId": "S000005",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Implement Task 5: Narrator",
+    "taskDefRef": "tasks/01KMJ3XFYDWA6CZA29ZW8XPKYK/task.json"
+  },
+  "checksum": "2c8fa97f6d5fdf7bbb64a57a59827a864712fc35a1cca00537457c831056e89a"
+}

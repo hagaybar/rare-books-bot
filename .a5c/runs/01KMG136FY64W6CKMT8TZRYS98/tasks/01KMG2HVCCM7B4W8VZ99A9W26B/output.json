@@ -1,0 +1,590 @@
+{
+  "goal": "Add scholarly narrative depth to 7 queries (Q1, Q2, Q4, Q5, Q11, Q16, Q18) that currently score 9-15/25 on the historian evaluation due to THIN_NARRATIVE and missing pedagogical framing. Introduce a thematic context layer with pre-authored, cited historical paragraphs; a significance scoring function for highlighting notable items; and pedagogical framing for teaching-oriented queries. All thematic content is deterministic, human-authored prose with citations -- never LLM-generated fabrication.",
+
+  "reportFailuresAddressed": {
+    "Q1_Bragadin_Venice": {
+      "currentScore": 12,
+      "rootCauses": ["THIN_NARRATIVE", "NO_COMPARISON"],
+      "whatIsMissing": "No context on the Bragadin family's role in Hebrew censorship, the Council of Trent's 1553 Talmud burning decree, or comparison with rival Venetian printers (Bomberg, di Gara, Giustiniani). The narrative agent produces Wikidata bios only.",
+      "whatE4Adds": "Thematic context paragraph on Venetian Hebrew printing and censorship. Significance scoring highlights earliest/rarest items in the 16 results. Teaching note contextualizes Bragadin within the rivalry of Venetian presses."
+    },
+    "Q2_Amsterdam_Hebrew": {
+      "currentScore": 15,
+      "rootCauses": ["MISSING_CROSS_REF", "THIN_NARRATIVE"],
+      "whatIsMissing": "Found Menasseh ben Israel with a Wikidata bio, but no 'Dutch Jerusalem' framing -- Amsterdam's role as refuge for Sephardic exiles after 1492, the freedom of Hebrew publishing vs Venice's censorship regime.",
+      "whatE4Adds": "Thematic context on Amsterdam as 'Dutch Jerusalem' with Sephardic community context. Significance scoring surfaces Menasseh's earliest works. Pedagogical note on comparing Amsterdam's freedoms with Venetian censorship."
+    },
+    "Q4_Incunabula": {
+      "currentScore": 14,
+      "rootCauses": ["THIN_NARRATIVE", "NO_COMPARISON"],
+      "whatIsMissing": "Good pre-1500 results (13 records) and narrative identified early printers via bios, but no framing of why incunabula are historically significant -- the spread of printing from Gutenberg, the revolutionary impact on Jewish learning, the rarity and survival rates.",
+      "whatE4Adds": "Thematic context on incunabula and the spread of printing to Jewish communities (Reggio di Calabria 1475, Soncino, Guadalajara). Significance scoring ranks by date (earliest = highest). Teaching note frames the transition from manuscript to print."
+    },
+    "Q5_Constantinople": {
+      "currentScore": 12,
+      "rootCauses": ["NO_COMPARISON", "THIN_NARRATIVE"],
+      "whatIsMissing": "Found 11 Ottoman Hebrew printing records but no comparative context with Venice or Salonika. No mention of why Constantinople became a Hebrew printing center (Sephardic refugees after 1492, Ottoman tolerance).",
+      "whatE4Adds": "Thematic context on Ottoman Hebrew printing with Sephardic diaspora framing. Teaching note compares Ottoman centers (Constantinople, Salonika) with Italian centers (Venice, Rome)."
+    },
+    "Q11_Napoleon_era": {
+      "currentScore": 9,
+      "rootCauses": ["THIN_NARRATIVE", "NO_AGGREGATION"],
+      "whatIsMissing": "40 results returned with accurate date filtering but no contextual analysis of the Napoleonic era's impact on Jewish publishing -- emancipation debates, dissolution of ghettos, the Sanhedrin of 1807, shift from rabbinic to secular publishing.",
+      "whatE4Adds": "Thematic context on Napoleonic emancipation and its publishing impact. Significance scoring highlights transitional works (first secular Hebrew publications). Pedagogical framing on before/after emancipation."
+    },
+    "Q16_Biblical_commentaries": {
+      "currentScore": 11,
+      "rootCauses": ["THIN_NARRATIVE"],
+      "whatIsMissing": "Found 11 core biblical commentary texts but limited pedagogical framing -- no explanation of the Mikraot Gedolot tradition, the role of Rashi/Ibn Ezra/Ramban, or the significance of printed commentaries replacing manuscript traditions.",
+      "whatE4Adds": "Thematic context on the biblical commentary tradition and the Mikraot Gedolot. Significance scoring ranks by commentator importance and edition rarity. Teaching note for constructing a course on Jewish exegetical tradition."
+    },
+    "Q18_Talmud_editions": {
+      "currentScore": 12,
+      "rootCauses": ["THIN_NARRATIVE"],
+      "whatIsMissing": "42 Talmud-related records found with good coverage but no print history significance -- no mention of the Bomberg Talmud (1520-23, first complete printed edition), the 1553 papal burning, the Vilna Shas, or the significance of each major edition.",
+      "whatE4Adds": "Thematic context on Talmud printing history from Bomberg to Vilna. Significance scoring highlights landmark editions. Teaching note on using print editions to teach Talmud transmission history."
+    }
+  },
+
+  "affectedComponents": [
+    {
+      "file": "scripts/chat/thematic_context.py",
+      "status": "NEW",
+      "purpose": "Core new module. Contains pre-authored thematic context paragraphs keyed by (subject, place, date_range) tuples. Pure function: get_thematic_context(filters, result_set) -> Optional[str]. Also contains significance_score() for reuse by E5 curation.",
+      "publicApi": [
+        "get_thematic_context(filters: List[Filter], candidates: List[Candidate], db_path: Path) -> Optional[ThematicBlock]",
+        "significance_score(candidate: Candidate, db_path: Path) -> SignificanceResult",
+        "get_notable_items(candidates: List[Candidate], db_path: Path, top_n: int = 3) -> List[NotableItem]"
+      ]
+    },
+    {
+      "file": "app/api/main.py",
+      "status": "MODIFY",
+      "purpose": "Integrate thematic context into handle_query_definition_phase(). Call get_thematic_context() after query execution (line ~588-604), append thematic block after agent_narrative. Add notable items to response metadata.",
+      "changeLocation": "Lines 588-634 (after agent narrative generation, before response construction)"
+    },
+    {
+      "file": "scripts/chat/formatter.py",
+      "status": "MODIFY",
+      "purpose": "Add pedagogical framing wrapper. New function format_teaching_note() called from format_for_chat() when thematic context includes a teaching note. Modify generate_followups() to suggest thematic deep-dives.",
+      "changeLocation": "New function format_teaching_note(); modify generate_followups() around line 82-148"
+    },
+    {
+      "file": "scripts/chat/narrative_agent.py",
+      "status": "MODIFY",
+      "purpose": "Minor: export get_agent_enrichment_for_records() for reuse by significance_score(). No structural changes to the agent bio pipeline.",
+      "changeLocation": "Module-level exports only"
+    },
+    {
+      "file": "scripts/chat/models.py",
+      "status": "MODIFY",
+      "purpose": "Add ThematicBlock and NotableItem to ChatResponse.metadata schema. Add optional thematic_context field to ChatResponse.",
+      "changeLocation": "New models after line 202; optional field on ChatResponse"
+    },
+    {
+      "file": "tests/scripts/chat/test_thematic_context.py",
+      "status": "NEW",
+      "purpose": "Unit tests for thematic matching, significance scoring, and pedagogical framing. No DB or API dependencies."
+    },
+    {
+      "file": "tests/scripts/chat/test_formatter_pedagogical.py",
+      "status": "NEW",
+      "purpose": "Unit tests for pedagogical framing in formatter output."
+    }
+  ],
+
+  "implementationSteps": [
+    {
+      "step": 1,
+      "title": "Define data models for thematic context",
+      "file": "scripts/chat/thematic_context.py",
+      "description": "Create Pydantic models: ThematicBlock (theme_id, title, context_paragraph, citations, teaching_note, matched_by), SignificanceResult (record_id, score, factors), NotableItem (record_id, score, reason, highlight_text). ThematicBlock.context_paragraph is the pre-authored prose. ThematicBlock.citations is a list of scholarly references (author, title, year). ThematicBlock.matched_by records which filter dimensions triggered the match.",
+      "estimatedEffort": "0.25d",
+      "dependencies": []
+    },
+    {
+      "step": 2,
+      "title": "Author thematic context entries",
+      "file": "scripts/chat/thematic_context.py",
+      "description": "Write 8 pre-authored thematic context entries as a Python dict (THEMATIC_REGISTRY). Each entry is a ThematicEntry dataclass with: theme_id (str), match_rules (list of MatchRule with field/value/date_range conditions), context_paragraph (str, 3-5 sentences of scholarly prose), citations (list of Reference), teaching_note (Optional[str]). The 8 themes are: (1) venetian_hebrew_printing -- Bomberg, Bragadin, Council of Trent, censorship; (2) amsterdam_dutch_jerusalem -- Menasseh ben Israel, Sephardic refugees, freedom of press; (3) christian_hebraism -- Buxtorf, Reuchlin, Pfefferkorn controversy; (4) haskalah -- Mendelssohn, Berlin Haskalah, secularization; (5) incunabula_spread -- Gutenberg impact, first Hebrew printed books, Soncino; (6) talmud_printing -- Bomberg 1520-23, 1553 burning, Slavuta/Vilna; (7) napoleonic_emancipation -- Sanhedrin, ghetto dissolution, secular publishing; (8) ottoman_hebrew_printing -- Constantinople, Salonika, Sephardic diaspora. Each paragraph must clearly cite reference works (e.g., Heller 2004, Offenberg 1990, Fuks 1987) and be labeled as historical context.",
+      "estimatedEffort": "1.5d",
+      "dependencies": [1],
+      "designNotes": "These paragraphs are the scholarly heart of E4. They must be authored by hand with domain expertise, not generated by LLM. Each paragraph should be factually verifiable against the cited references. The match_rules use the same FilterField enum from scripts/schemas/query_plan.py to ensure type safety."
+    },
+    {
+      "step": 3,
+      "title": "Implement theme matching logic",
+      "file": "scripts/chat/thematic_context.py",
+      "description": "Function get_thematic_context(filters: List[Filter], candidates: List[Candidate], db_path: Path) -> Optional[ThematicBlock]. Algorithm: (1) Extract filter dimensions from the query plan filters (place values, date ranges, subject keywords, publisher values, language). (2) For each ThematicEntry in THEMATIC_REGISTRY, evaluate match_rules against extracted dimensions. A match_rule specifies required field matches (e.g., place_norm IN ['venice'], date_range OVERLAPS 1500-1600, subject CONTAINS 'talmud'). (3) Score each theme by number of matching dimensions. (4) Return the highest-scoring theme if score >= threshold (at least 1 strong match). (5) If multiple themes tie, prefer the one with more matching dimensions. (6) Return None if no theme matches (fail silent -- never fabricate). The matching must be case-insensitive and handle normalized values.",
+      "estimatedEffort": "0.5d",
+      "dependencies": [1, 2],
+      "designNotes": "Match rules must be generous enough to catch queries like 'Hebrew books in Venice 16th century' but not so broad that every query triggers a thematic block. The place match should use the same normalized place values as the imprints table (e.g., 'venice' not 'Venice'). Date range overlap uses the same logic as the query executor: theme_date_start <= query_date_end AND theme_date_end >= query_date_start."
+    },
+    {
+      "step": 4,
+      "title": "Implement significance scoring",
+      "file": "scripts/chat/thematic_context.py",
+      "description": "Function significance_score(candidate: Candidate, db_path: Path) -> SignificanceResult. Multi-factor scoring: (A) Date rarity -- pre-1500: +5, 1500-1550: +3, 1550-1600: +2, 1600-1700: +1; uses candidate.date_start. (B) Enrichment richness -- query authority_enrichment for this record's agents; count of fields populated (birth_year, occupations, teachers, students, notable_works, wikipedia_url, image_url); each populated field +0.5, max +3.5. (C) Place rarity -- query imprints table for place_norm frequency across entire DB; places with <10 records: +2, <50: +1. (D) First edition indicators -- check MARC 250 (edition statement) in notes table; absence of edition statement on pre-1700 book: +1 (likely first edition). (E) Subject richness -- count of subject headings; >5: +1. Total score is sum of factors, each factor recorded in SignificanceResult.factors list. This function is SHARED with E5 curation module -- design for reuse. The db_path parameter allows DB lookups for enrichment and frequency data.",
+      "estimatedEffort": "0.75d",
+      "dependencies": [1],
+      "designNotes": "significance_score() must be a pure function that takes a Candidate and returns a score. It should NOT modify the candidate. For performance, the function should batch DB lookups when called via get_notable_items(). The factors list provides transparency: each factor is a (name, value, reason) tuple so the response can explain WHY an item is notable. Pre-1500 date weighting reflects the extreme rarity of incunabula in any collection."
+    },
+    {
+      "step": 5,
+      "title": "Implement get_notable_items()",
+      "file": "scripts/chat/thematic_context.py",
+      "description": "Function get_notable_items(candidates: List[Candidate], db_path: Path, top_n: int = 3) -> List[NotableItem]. Calls significance_score() for each candidate (with batched DB lookups for efficiency). Sorts by descending score. Returns top_n items as NotableItem(record_id, title, score, highlight_reasons: List[str]). The highlight_reasons are human-readable strings like 'Printed before 1500 (incunabulum)', 'Author has rich biographical data (Wikidata)', 'Rare printing location (only 5 records from this city)'. Respects the _MAX_RESULT_SET=100 threshold from narrative_agent.py -- returns empty list for sets >100 to avoid expensive bulk scoring.",
+      "estimatedEffort": "0.5d",
+      "dependencies": [4]
+    },
+    {
+      "step": 6,
+      "title": "Add pedagogical framing to formatter",
+      "file": "scripts/chat/formatter.py",
+      "description": "New function format_teaching_note(thematic_block: ThematicBlock) -> str. Formats the teaching_note field from ThematicBlock with a clear label: '**Teaching note**: {note}'. Also formats citations as a 'Further reading' section: '**Further reading**: {author} ({year}), *{title}*'. Modify generate_followups() to add thematic deep-dive suggestions when a thematic block was matched. For example, if the venetian_hebrew_printing theme matched, suggest 'Compare Venetian printing with Amsterdam' and 'Show me the impact of the Council of Trent on Hebrew publishing'. Add 2-3 theme-specific follow-up templates per thematic entry.",
+      "estimatedEffort": "0.5d",
+      "dependencies": [1, 2]
+    },
+    {
+      "step": 7,
+      "title": "Integrate into handle_query_definition_phase()",
+      "file": "app/api/main.py",
+      "description": "In handle_query_definition_phase(), after the existing agent narrative generation block (lines 588-601), add a new block: (1) Import get_thematic_context and get_notable_items from scripts.chat.thematic_context. (2) Call thematic_block = get_thematic_context(query_plan.filters, candidate_set.candidates, bib_db). (3) If thematic_block is not None, format and append to response_message: '\\n\\n---\\n**Historical Context**: {thematic_block.context_paragraph}' followed by format_teaching_note(thematic_block) if teaching_note exists. (4) Call notable_items = get_notable_items(candidate_set.candidates, bib_db) if result_count > 0 and result_count <= 100. (5) If notable_items exist, append '\\n\\n**Notable items in this set**:' followed by formatted list. (6) Add thematic_block and notable_items to response_metadata dict. (7) If thematic_block has theme-specific followups, merge them with existing suggested_followups (theme-specific first, then generic). All of this is wrapped in try/except like the existing agent narrative block (non-blocking, never fails the response).",
+      "estimatedEffort": "0.5d",
+      "dependencies": [3, 5, 6],
+      "designNotes": "The thematic context block is clearly separated from the agent narrative with a horizontal rule and bold 'Historical Context' label. This makes it visually distinct and prevents users from confusing authored context with catalog data. The non-blocking pattern matches the existing agent_narrative try/except pattern at lines 588-601."
+    },
+    {
+      "step": 8,
+      "title": "Add thematic_context field to ChatResponse",
+      "file": "scripts/chat/models.py",
+      "description": "Add optional thematic_context field to ChatResponse model (after line 201): thematic_context: Optional[str] = None. This allows the frontend to render the thematic block in a dedicated UI section rather than just appending to the message string. Also useful for the metadata dict to carry structured thematic data. No breaking change -- field is optional with None default.",
+      "estimatedEffort": "0.25d",
+      "dependencies": []
+    },
+    {
+      "step": 9,
+      "title": "Write comprehensive tests",
+      "file": "tests/scripts/chat/test_thematic_context.py",
+      "description": "Test suite covering: (1) Theme matching: verify venetian_hebrew_printing matches filters=[place=venice, year=1500-1600, language=heb]. (2) Theme non-matching: verify no theme matches filters=[place=london, year=1900-1950]. (3) Significance scoring: verify pre-1500 candidate scores higher than 1700 candidate. (4) Notable items: verify top-3 selection from a set of 10 candidates with varying scores. (5) Pedagogical framing: verify format_teaching_note() output contains 'Teaching note' label. (6) Citation formatting: verify Further reading section format. (7) Edge cases: empty candidates, all candidates identical scores, candidates with missing date_start. (8) Threshold respect: verify get_notable_items returns empty for >100 candidates. All tests use mock Candidate objects (no DB dependency for unit tests). Separate integration test file for DB-dependent significance scoring.",
+      "estimatedEffort": "0.75d",
+      "dependencies": [1, 2, 3, 4, 5, 6]
+    }
+  ],
+
+  "schemaChanges": [
+    {
+      "model": "ThematicBlock",
+      "location": "scripts/chat/thematic_context.py (new)",
+      "fields": {
+        "theme_id": "str -- unique identifier (e.g., 'venetian_hebrew_printing')",
+        "title": "str -- display title (e.g., 'Venetian Hebrew Printing and Censorship')",
+        "context_paragraph": "str -- pre-authored 3-5 sentence scholarly paragraph",
+        "citations": "List[Reference] -- scholarly references (author, title, year)",
+        "teaching_note": "Optional[str] -- pedagogical framing sentence",
+        "matched_by": "List[str] -- which filter dimensions triggered the match (e.g., ['place:venice', 'year:1500-1600'])"
+      }
+    },
+    {
+      "model": "Reference",
+      "location": "scripts/chat/thematic_context.py (new)",
+      "fields": {
+        "author": "str -- e.g., 'Heller, Marvin J.'",
+        "title": "str -- e.g., 'The Sixteenth Century Hebrew Book'",
+        "year": "int -- e.g., 2004",
+        "pages": "Optional[str] -- page range if specific"
+      }
+    },
+    {
+      "model": "MatchRule",
+      "location": "scripts/chat/thematic_context.py (new)",
+      "fields": {
+        "field": "FilterField -- reuses query_plan.FilterField enum",
+        "values": "Optional[List[str]] -- place/publisher/subject values to match (case-insensitive)",
+        "date_start": "Optional[int] -- minimum year for date range overlap",
+        "date_end": "Optional[int] -- maximum year for date range overlap",
+        "require_all": "bool -- if True, all values must appear in filters (AND); if False, any value suffices (OR). Default: False"
+      }
+    },
+    {
+      "model": "ThematicEntry",
+      "location": "scripts/chat/thematic_context.py (new)",
+      "fields": {
+        "theme_id": "str",
+        "match_rules": "List[MatchRule] -- conditions that must be met to trigger this theme",
+        "min_match_score": "int -- minimum number of match_rules that must pass. Default: 1",
+        "block": "ThematicBlock -- the content to return when matched",
+        "followup_suggestions": "List[str] -- theme-specific follow-up questions"
+      }
+    },
+    {
+      "model": "SignificanceResult",
+      "location": "scripts/chat/thematic_context.py (new)",
+      "fields": {
+        "record_id": "str",
+        "score": "float -- total significance score",
+        "factors": "List[SignificanceFactor] -- individual scoring components"
+      }
+    },
+    {
+      "model": "SignificanceFactor",
+      "location": "scripts/chat/thematic_context.py (new)",
+      "fields": {
+        "name": "str -- factor name (e.g., 'date_rarity', 'enrichment_richness')",
+        "value": "float -- points contributed",
+        "reason": "str -- human-readable explanation"
+      }
+    },
+    {
+      "model": "NotableItem",
+      "location": "scripts/chat/thematic_context.py (new)",
+      "fields": {
+        "record_id": "str",
+        "title": "Optional[str]",
+        "score": "float",
+        "highlight_reasons": "List[str] -- human-readable significance reasons"
+      }
+    },
+    {
+      "model": "ChatResponse",
+      "location": "scripts/chat/models.py (modify)",
+      "change": "Add field: thematic_context: Optional[str] = None after line 201. Non-breaking -- optional field with None default."
+    }
+  ],
+
+  "retrievalChanges": {
+    "summary": "E4 does NOT change the query compilation or execution pipeline. All changes are post-retrieval: after CandidateSet is produced, thematic context and significance scoring are applied as enrichment layers. The query_plan.filters are read (not modified) to determine which thematic context to attach.",
+    "queryPipeline": "UNCHANGED -- compile_query(), execute_plan(), build_where_clause() are not modified",
+    "newDbQueries": [
+      {
+        "purpose": "Significance scoring: place frequency lookup",
+        "sql": "SELECT place_norm, COUNT(*) as freq FROM imprints WHERE place_norm IS NOT NULL GROUP BY place_norm",
+        "when": "Called once per get_notable_items() invocation, cached in-memory for the batch",
+        "performance": "Single full-table scan, ~3ms on 2,796 records"
+      },
+      {
+        "purpose": "Significance scoring: enrichment richness for record agents",
+        "sql": "SELECT ae.* FROM agents a JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri WHERE a.record_id IN (SELECT id FROM records WHERE mms_id IN (?,?,...))",
+        "when": "Called once per get_notable_items() invocation with batched record IDs",
+        "performance": "Uses existing index on agents.authority_uri, ~5ms for 100 records"
+      }
+    ]
+  },
+
+  "risksAndEdgeCases": [
+    {
+      "risk": "Thematic paragraphs become stale if collection changes significantly",
+      "mitigation": "Thematic paragraphs are keyed to universal historical facts (Council of Trent happened in 1545-1563, Bomberg printed the first Talmud in 1520-23). They describe the historical context, not the collection contents. The match_rules reference normalized field values that are stable. Annual review recommended but not urgent.",
+      "severity": "LOW"
+    },
+    {
+      "risk": "Users confuse thematic context with catalog data",
+      "mitigation": "All thematic blocks are clearly labeled with '**Historical Context**:' header and separated by horizontal rule. Citations to reference works reinforce that this is scholarly commentary, not catalog metadata. The teaching note uses explicit 'Teaching note:' prefix.",
+      "severity": "MEDIUM"
+    },
+    {
+      "risk": "Multiple themes match the same query (e.g., 'Talmud printed in Venice 16th century' matches both venetian_hebrew_printing and talmud_printing)",
+      "mitigation": "Return only the highest-scoring theme (most matching dimensions). If tied, prefer the more specific theme (more match_rules). In the future, could return multiple blocks, but for E4 scope, single-theme is cleaner and avoids information overload.",
+      "severity": "LOW"
+    },
+    {
+      "risk": "Significance scoring is expensive for large result sets",
+      "mitigation": "Respect _MAX_RESULT_SET=100 threshold. For sets >100, skip significance scoring entirely (return empty notable items list). The batched DB queries ensure at most 2 additional queries per response. Benchmarked: ~8ms for 100 records on SQLite.",
+      "severity": "LOW"
+    },
+    {
+      "risk": "Thematic context adds latency to every query response",
+      "mitigation": "Theme matching is pure Python dict lookup against the filters -- no DB or API calls. ~0.1ms per match evaluation. Significance scoring involves 2 DB queries but only for result sets <=100 and only if a theme matched. Total additional latency: <15ms in worst case.",
+      "severity": "LOW"
+    },
+    {
+      "risk": "Only 8 themes authored initially -- many queries will not match",
+      "mitigation": "This is by design. The 8 themes are chosen to address the specific 7 queries flagged in the historian evaluation. The system gracefully returns None when no theme matches (existing behavior preserved). New themes can be added incrementally as simple dict entries -- no code changes needed.",
+      "severity": "LOW"
+    },
+    {
+      "risk": "Pedagogical framing may feel inappropriate for non-academic users",
+      "mitigation": "Teaching notes only appear when the thematic block includes a teaching_note (not all themes need one). The note is factual and suggestive ('This set illustrates...'), not prescriptive. Future: could be gated by a user preference flag.",
+      "severity": "LOW"
+    },
+    {
+      "risk": "E5 (curation) depends on significance_score() from this module",
+      "mitigation": "significance_score() is designed as a standalone pure function with a clean interface (Candidate + db_path -> SignificanceResult). No internal state, no side effects. E5 can import and extend it. The SignificanceFactor model provides extensibility -- E5 can add new factor types without modifying E4 code.",
+      "severity": "LOW"
+    }
+  ],
+
+  "tddPlan": {
+    "testFirst": true,
+    "testFiles": [
+      {
+        "file": "tests/scripts/chat/test_thematic_context.py",
+        "tests": [
+          {
+            "name": "test_venetian_theme_matches_venice_16c_hebrew",
+            "description": "Given filters [place=venice, year RANGE 1500-1600, language=heb], get_thematic_context() returns ThematicBlock with theme_id='venetian_hebrew_printing'",
+            "type": "unit",
+            "writtenBefore": "step 3"
+          },
+          {
+            "name": "test_amsterdam_theme_matches_amsterdam_1620_1650",
+            "description": "Given filters [place=amsterdam, year RANGE 1620-1650], returns amsterdam_dutch_jerusalem theme",
+            "type": "unit",
+            "writtenBefore": "step 3"
+          },
+          {
+            "name": "test_talmud_theme_matches_subject_talmud",
+            "description": "Given filters [subject CONTAINS 'talmud'], returns talmud_printing theme",
+            "type": "unit",
+            "writtenBefore": "step 3"
+          },
+          {
+            "name": "test_napoleon_theme_matches_1795_1815",
+            "description": "Given filters [year RANGE 1795-1815], returns napoleonic_emancipation theme",
+            "type": "unit",
+            "writtenBefore": "step 3"
+          },
+          {
+            "name": "test_no_theme_matches_unrelated_filters",
+            "description": "Given filters [place=london, year RANGE 1900-1950], returns None",
+            "type": "unit",
+            "writtenBefore": "step 3"
+          },
+          {
+            "name": "test_highest_scoring_theme_wins",
+            "description": "Given filters that match both venetian_hebrew_printing and talmud_printing, the one with more matching dimensions wins",
+            "type": "unit",
+            "writtenBefore": "step 3"
+          },
+          {
+            "name": "test_thematic_block_has_citations",
+            "description": "Every ThematicBlock in THEMATIC_REGISTRY has at least one citation with author, title, and year",
+            "type": "unit",
+            "writtenBefore": "step 2"
+          },
+          {
+            "name": "test_thematic_block_labeled_as_historical_context",
+            "description": "The formatted output contains '**Historical Context**' header",
+            "type": "unit",
+            "writtenBefore": "step 7"
+          },
+          {
+            "name": "test_significance_score_pre1500_higher",
+            "description": "A candidate with date_start=1480 scores higher on date_rarity factor than one with date_start=1720",
+            "type": "unit",
+            "writtenBefore": "step 4"
+          },
+          {
+            "name": "test_significance_score_no_date_does_not_crash",
+            "description": "A candidate with date_start=None returns a valid SignificanceResult with 0 for date_rarity factor",
+            "type": "unit",
+            "writtenBefore": "step 4"
+          },
+          {
+            "name": "test_notable_items_returns_top3",
+            "description": "Given 10 candidates with varied scores, get_notable_items(top_n=3) returns exactly 3 items sorted by score descending",
+            "type": "unit",
+            "writtenBefore": "step 5"
+          },
+          {
+            "name": "test_notable_items_respects_max_result_set",
+            "description": "Given 150 candidates, get_notable_items() returns empty list (skips scoring)",
+            "type": "unit",
+            "writtenBefore": "step 5"
+          },
+          {
+            "name": "test_notable_items_empty_candidates",
+            "description": "Given empty candidates list, returns empty list",
+            "type": "unit",
+            "writtenBefore": "step 5"
+          }
+        ]
+      },
+      {
+        "file": "tests/scripts/chat/test_formatter_pedagogical.py",
+        "tests": [
+          {
+            "name": "test_format_teaching_note_output",
+            "description": "format_teaching_note() wraps teaching note with '**Teaching note**:' prefix",
+            "type": "unit",
+            "writtenBefore": "step 6"
+          },
+          {
+            "name": "test_format_citations_output",
+            "description": "Citation formatting produces 'Author (year), *Title*' format",
+            "type": "unit",
+            "writtenBefore": "step 6"
+          },
+          {
+            "name": "test_followups_include_thematic_suggestions",
+            "description": "When thematic block is present, generate_followups includes theme-specific suggestions before generic ones",
+            "type": "unit",
+            "writtenBefore": "step 6"
+          }
+        ]
+      },
+      {
+        "file": "tests/integration/test_thematic_integration.py",
+        "tests": [
+          {
+            "name": "test_significance_score_with_real_db",
+            "description": "Run significance_score() against real bibliographic.db with a known MMS ID; verify score > 0 and factors populated",
+            "type": "integration",
+            "writtenBefore": "step 7",
+            "marker": "integration"
+          },
+          {
+            "name": "test_thematic_context_in_api_response",
+            "description": "Mock the query pipeline to return Venice 16c results; verify handle_query_definition_phase() includes thematic context in response_message",
+            "type": "integration",
+            "writtenBefore": "step 7"
+          }
+        ]
+      }
+    ]
+  },
+
+  "qualityGates": [
+    {
+      "gate": "G1: All 8 thematic entries have citations",
+      "check": "Automated test: every ThematicEntry in THEMATIC_REGISTRY has block.citations with len >= 1 and each Reference has non-empty author, title, year",
+      "when": "After step 2"
+    },
+    {
+      "gate": "G2: Theme matching is deterministic",
+      "check": "Run get_thematic_context() 100 times with identical filters; verify identical output every time. No randomness, no LLM calls.",
+      "when": "After step 3"
+    },
+    {
+      "gate": "G3: No false matches on unrelated queries",
+      "check": "Test 10 unrelated filter sets (e.g., place=london year=1950, subject=mathematics) and verify all return None",
+      "when": "After step 3"
+    },
+    {
+      "gate": "G4: Significance scoring is stable",
+      "check": "Same candidate always gets same score. No external API calls. Pure function.",
+      "when": "After step 4"
+    },
+    {
+      "gate": "G5: Historical context clearly labeled",
+      "check": "Grep the response output for '**Historical Context**' header. Verify thematic paragraph never appears without the label.",
+      "when": "After step 7"
+    },
+    {
+      "gate": "G6: Performance budget met",
+      "check": "Benchmark: theme matching < 1ms, significance scoring for 100 candidates < 20ms, total E4 overhead < 30ms. Measured via pytest-benchmark or manual timing.",
+      "when": "After step 7"
+    },
+    {
+      "gate": "G7: Target queries improved",
+      "check": "Re-run the 7 target queries (Q1, Q2, Q4, Q5, Q11, Q16, Q18) through the API. Verify each response now includes a thematic context paragraph. Manual review by domain expert that narrative quality score improves from current (2-3) to target (4-5).",
+      "when": "After step 9 (final)"
+    },
+    {
+      "gate": "G8: No regression on existing tests",
+      "check": "Full pytest suite passes. The thematic layer is additive -- no existing response format changes. ChatResponse.thematic_context is Optional with None default.",
+      "when": "After step 9 (final)"
+    }
+  ],
+
+  "deliverables": [
+    {
+      "artifact": "scripts/chat/thematic_context.py",
+      "description": "New module: 8 pre-authored thematic context entries, theme matching engine, significance scoring function, notable items selector. ~400-500 lines.",
+      "type": "code"
+    },
+    {
+      "artifact": "app/api/main.py (modified)",
+      "description": "Integration of thematic context and notable items into handle_query_definition_phase(). ~30 lines added.",
+      "type": "code"
+    },
+    {
+      "artifact": "scripts/chat/formatter.py (modified)",
+      "description": "Pedagogical framing functions and theme-aware followup suggestions. ~60 lines added.",
+      "type": "code"
+    },
+    {
+      "artifact": "scripts/chat/models.py (modified)",
+      "description": "Optional thematic_context field on ChatResponse. ~2 lines added.",
+      "type": "code"
+    },
+    {
+      "artifact": "tests/scripts/chat/test_thematic_context.py",
+      "description": "13 unit tests covering theme matching, significance scoring, and notable items.",
+      "type": "test"
+    },
+    {
+      "artifact": "tests/scripts/chat/test_formatter_pedagogical.py",
+      "description": "3 unit tests covering pedagogical formatting.",
+      "type": "test"
+    },
+    {
+      "artifact": "tests/integration/test_thematic_integration.py",
+      "description": "2 integration tests for DB-dependent scoring and API response integration.",
+      "type": "test"
+    }
+  ],
+
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "criterion": "Q1 (Bragadin Venice) response includes thematic paragraph mentioning Council of Trent, censorship, and at least one citation",
+      "verification": "Run query 'books printed by Bragadin press in Venice' via /chat; verify response contains 'Council of Trent' or 'censorship' and a citation reference"
+    },
+    {
+      "id": "AC-2",
+      "criterion": "Q2 (Amsterdam Hebrew) response includes 'Dutch Jerusalem' context",
+      "verification": "Run query 'Hebrew books printed in Amsterdam between 1620 and 1650'; verify response contains 'Dutch Jerusalem' or 'Sephardic' context"
+    },
+    {
+      "id": "AC-3",
+      "criterion": "Q4 (Incunabula) response explains significance of pre-1500 printing",
+      "verification": "Run query 'incunabula in the collection'; verify response contains thematic context on early printing and significance scoring highlights earliest items"
+    },
+    {
+      "id": "AC-4",
+      "criterion": "Q5 (Constantinople) response contextualizes Ottoman Hebrew printing",
+      "verification": "Run query 'books printed in Constantinople'; verify response mentions Ottoman context and Sephardic diaspora"
+    },
+    {
+      "id": "AC-5",
+      "criterion": "Q11 (Napoleon era) response includes emancipation context",
+      "verification": "Run query 'books from the Napoleonic era 1795-1815'; verify response mentions emancipation, Sanhedrin, or ghetto dissolution"
+    },
+    {
+      "id": "AC-6",
+      "criterion": "Q16 (Biblical commentaries) response includes pedagogical framing",
+      "verification": "Run query 'biblical commentaries'; verify response includes teaching note about exegetical tradition or Mikraot Gedolot"
+    },
+    {
+      "id": "AC-7",
+      "criterion": "Q18 (Talmud editions) response includes Talmud print history",
+      "verification": "Run query 'Talmud editions'; verify response mentions Bomberg 1520-23 or papal censorship"
+    },
+    {
+      "id": "AC-8",
+      "criterion": "Thematic context is clearly labeled and never confused with catalog data",
+      "verification": "All 7 query responses show thematic blocks under '**Historical Context**' header with scholarly citations"
+    },
+    {
+      "id": "AC-9",
+      "criterion": "significance_score() is importable and usable by E5 curation module",
+      "verification": "from scripts.chat.thematic_context import significance_score succeeds; function signature matches E5 requirements"
+    },
+    {
+      "id": "AC-10",
+      "criterion": "No regression on existing test suite",
+      "verification": "pytest passes with 0 failures; existing API responses unchanged for queries that do not match any theme"
+    },
+    {
+      "id": "AC-11",
+      "criterion": "All thematic paragraphs are pre-authored with citations, not LLM-generated",
+      "verification": "Code review: THEMATIC_REGISTRY contains only string literals, no LLM API calls. Each entry has Reference objects with specific author/title/year."
+    },
+    {
+      "id": "AC-12",
+      "criterion": "Performance overhead < 30ms per query",
+      "verification": "Benchmark test: time the E4 additions (theme matching + significance scoring + formatting) on a representative query; total < 30ms"
+    }
+  ]
+}

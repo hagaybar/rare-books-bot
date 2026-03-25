@@ -1,0 +1,19 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-24T13:38:50.431Z",
+  "data": {
+    "effectId": "01KMG13JXJ6838B19J618QRXRW",
+    "invocationKey": "historian-enhancement-plan:S000001:analyze-report",
+    "invocationHash": "47c59a49110545a23610121c878931d35719824b506422cc35ea003927895889",
+    "stepId": "S000001",
+    "taskId": "analyze-report",
+    "kind": "agent",
+    "label": "research",
+    "taskDefRef": "tasks/01KMG13JXJ6838B19J618QRXRW/task.json",
+    "labels": [
+      "research",
+      "report-analysis"
+    ]
+  },
+  "checksum": "821d8736855c6f4cefc1b589407a67b9dae6cb808233ff9468571a25b6a08108"
+}

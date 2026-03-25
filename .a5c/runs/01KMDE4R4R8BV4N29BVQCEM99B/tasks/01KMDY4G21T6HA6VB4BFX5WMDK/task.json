@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMDY4G21T6HA6VB4BFX5WMDK",
+  "taskId": "polish-phase",
+  "invocationKey": "implement-unified-ui:S000014:polish-phase",
+  "stepId": "S000014",
+  "kind": "agent",
+  "title": "Phase 4: Polish, Integration & Cross-Screen Links",
+  "labels": [
+    "frontend",
+    "phase4",
+    "polish"
+  ],
+  "io": {
+    "inputJsonPath": "tasks/01KMDY4G21T6HA6VB4BFX5WMDK/input.json",
+    "outputJsonPath": "tasks/01KMDY4G21T6HA6VB4BFX5WMDK/result.json"
+  },
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

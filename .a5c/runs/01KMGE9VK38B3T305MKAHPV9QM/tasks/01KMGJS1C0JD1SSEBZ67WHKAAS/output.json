@@ -1,0 +1,1 @@
+{"filesModified": ["scripts/query/db_adapter.py", "tests/scripts/query/test_db_adapter_agent_alias.py"], "testsPassed": 42, "testsFailed": 0, "summary": "Added alias resolution to AGENT_NORM with _agent_alias_tables_exist caching, EXISTS subquery for alias resolution, backward-compatible fallback. All 42 tests pass (33 existing + 9 new)."}

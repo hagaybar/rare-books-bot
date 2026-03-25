@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T11:34:45.045Z",
+  "data": {
+    "effectId": "01KMJCD319M6Z51DNC2CPF9XJQ",
+    "invocationKey": "scholar-pipeline-fixes:S000004:verify",
+    "invocationHash": "40bfe95a6090bead641f21fab916eb67c8b5bec6f456b3862ff167bfb7fd9a67",
+    "stepId": "S000004",
+    "taskId": "verify",
+    "kind": "shell",
+    "label": "Verify: narrator-fix",
+    "taskDefRef": "tasks/01KMJCD319M6Z51DNC2CPF9XJQ/task.json"
+  },
+  "checksum": "80fff73bbde245d08fe966ae3690b10d062fc29c633adfde451b520e71fb0a17"
+}

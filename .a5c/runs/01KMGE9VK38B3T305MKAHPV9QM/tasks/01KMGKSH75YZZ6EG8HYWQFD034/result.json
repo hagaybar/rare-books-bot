@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGKSH75YZZ6EG8HYWQFD034",
+  "taskId": "verify-phase",
+  "invocationKey": "implement-historian-enhancements:S000014:verify-phase",
+  "status": "ok",
+  "result": {
+    "fixed": [
+      "rate limiter in test_api_analytical",
+      "physical_descriptions table in test_diagnostics",
+      "Primo URL format in test_metadata_corrections (4 assertions)"
+    ],
+    "phase": "phase1-e1-e2",
+    "summary": "All 1257 tests pass. Fixed 6 pre-existing test issues across 3 root causes.",
+    "testsFailed": 0,
+    "testsPassed": 1257
+  },
+  "startedAt": "2026-03-24T19:09:47.231Z",
+  "finishedAt": "2026-03-24T19:09:47.231Z",
+  "value": {
+    "fixed": [
+      "rate limiter in test_api_analytical",
+      "physical_descriptions table in test_diagnostics",
+      "Primo URL format in test_metadata_corrections (4 assertions)"
+    ],
+    "phase": "phase1-e1-e2",
+    "summary": "All 1257 tests pass. Fixed 6 pre-existing test issues across 3 root causes.",
+    "testsFailed": 0,
+    "testsPassed": 1257
+  }
+}

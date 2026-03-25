@@ -1,0 +1,399 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMGD3KKZZ5GHAJ3A2MS31K10",
+  "taskId": "verify-plan-against-codebase",
+  "invocationKey": "historian-enhancement-plan:S000012:verify-plan-against-codebase",
+  "status": "ok",
+  "result": {
+    "discrepancies": [],
+    "missingFiles": [],
+    "overallAccuracy": "100%",
+    "schemaVerification": {
+      "agents_has_authority_uri": true,
+      "authority_enrichment_has_person_info": true,
+      "core_tables_count": 10,
+      "fts_tables_count": 10,
+      "publisher_variants_exists": true,
+      "tables_sorted": [
+        "agents",
+        "authority_enrichment",
+        "imprints",
+        "languages",
+        "notes",
+        "physical_descriptions",
+        "publisher_authorities",
+        "publisher_variants",
+        "records",
+        "subjects",
+        "subjects_fts",
+        "subjects_fts_config",
+        "subjects_fts_data",
+        "subjects_fts_docsize",
+        "subjects_fts_idx",
+        "titles",
+        "titles_fts",
+        "titles_fts_config",
+        "titles_fts_data",
+        "titles_fts_docsize",
+        "titles_fts_idx"
+      ],
+      "total_tables_count": 21
+    },
+    "summary": "All 27 claims verified successfully with zero discrepancies. All 10 must-exist files are present. All 5 must-not-exist files are correctly absent. All 8 function/constant lookups matched with correct names and expected values. All 4 schema claims (tables list, authority_uri column, publisher_variants table, person_info column) confirmed against the live database.",
+    "verified": [
+      {
+        "claim": "scripts/query/db_adapter.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/query/db_adapter.py",
+        "id": 1,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/intent_agent.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/intent_agent.py",
+        "id": 2,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/narrative_agent.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/narrative_agent.py",
+        "id": 3,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/aggregation.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/aggregation.py",
+        "id": 4,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/exploration_agent.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/exploration_agent.py",
+        "id": 5,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/formatter.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/formatter.py",
+        "id": 6,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/metadata/publisher_authority.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/metadata/publisher_authority.py",
+        "id": 7,
+        "status": "confirmed"
+      },
+      {
+        "claim": "app/api/main.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/app/api/main.py",
+        "id": 8,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/query/execute.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/query/execute.py",
+        "id": 9,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/models.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/models.py",
+        "id": 10,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/cross_reference.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 11,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/curator.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 12,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/thematic_context.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 13,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/metadata/agent_authority.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 14,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/analytical_router.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 15,
+        "status": "confirmed"
+      },
+      {
+        "claim": "normalize_filter_value exists in db_adapter.py",
+        "evidence": "Defined at line 53: def normalize_filter_value(field: FilterField, raw_value: str, op: FilterOp = None) -> str",
+        "id": 16,
+        "status": "confirmed"
+      },
+      {
+        "claim": "build_where_clause exists in db_adapter.py",
+        "evidence": "Defined at line 116: def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]",
+        "id": 17,
+        "status": "confirmed"
+      },
+      {
+        "claim": "_MAX_RESULT_SET in narrative_agent.py is 100",
+        "evidence": "Line 21: _MAX_RESULT_SET = 100",
+        "id": 18,
+        "status": "confirmed"
+      },
+      {
+        "claim": "is_overview_query exists in aggregation.py",
+        "evidence": "Defined at line 688: def is_overview_query(query_text: str) -> bool",
+        "id": 19,
+        "status": "confirmed"
+      },
+      {
+        "claim": "handle_query_definition_phase exists in main.py",
+        "evidence": "Defined at line 424: async def handle_query_definition_phase(...); also called at lines 400, 728, 761",
+        "id": 20,
+        "status": "confirmed"
+      },
+      {
+        "claim": "generate_followups exists in formatter.py",
+        "evidence": "Defined at line 82: def generate_followups(...)",
+        "id": 21,
+        "status": "confirmed"
+      },
+      {
+        "claim": "AGGREGATION_QUERIES exists in aggregation.py",
+        "evidence": "Defined at line 33: AGGREGATION_QUERIES = { ...; referenced at lines 226, 228, 240",
+        "id": 22,
+        "status": "confirmed"
+      },
+      {
+        "claim": "ExplorationRequestLLM exists in exploration_agent.py",
+        "evidence": "Defined at line 45: class ExplorationRequestLLM(BaseModel); used at line 328",
+        "id": 23,
+        "status": "confirmed"
+      },
+      {
+        "claim": "agents table has authority_uri column",
+        "evidence": "PRAGMA table_info(agents) shows column 7: authority_uri TEXT (nullable)",
+        "id": 25,
+        "status": "confirmed"
+      },
+      {
+        "claim": "publisher_variants table exists",
+        "evidence": "Table present in .tables output with 10 columns including authority_id, variant_form, script, language, is_primary, priority",
+        "id": 26,
+        "status": "confirmed"
+      },
+      {
+        "claim": "authority_enrichment table has person_info column",
+        "evidence": "PRAGMA table_info(authority_enrichment) shows column 9: person_info TEXT (nullable)",
+        "id": 27,
+        "status": "confirmed"
+      }
+    ]
+  },
+  "startedAt": "2026-03-24T17:10:13.167Z",
+  "finishedAt": "2026-03-24T17:10:13.167Z",
+  "value": {
+    "discrepancies": [],
+    "missingFiles": [],
+    "overallAccuracy": "100%",
+    "schemaVerification": {
+      "agents_has_authority_uri": true,
+      "authority_enrichment_has_person_info": true,
+      "core_tables_count": 10,
+      "fts_tables_count": 10,
+      "publisher_variants_exists": true,
+      "tables_sorted": [
+        "agents",
+        "authority_enrichment",
+        "imprints",
+        "languages",
+        "notes",
+        "physical_descriptions",
+        "publisher_authorities",
+        "publisher_variants",
+        "records",
+        "subjects",
+        "subjects_fts",
+        "subjects_fts_config",
+        "subjects_fts_data",
+        "subjects_fts_docsize",
+        "subjects_fts_idx",
+        "titles",
+        "titles_fts",
+        "titles_fts_config",
+        "titles_fts_data",
+        "titles_fts_docsize",
+        "titles_fts_idx"
+      ],
+      "total_tables_count": 21
+    },
+    "summary": "All 27 claims verified successfully with zero discrepancies. All 10 must-exist files are present. All 5 must-not-exist files are correctly absent. All 8 function/constant lookups matched with correct names and expected values. All 4 schema claims (tables list, authority_uri column, publisher_variants table, person_info column) confirmed against the live database.",
+    "verified": [
+      {
+        "claim": "scripts/query/db_adapter.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/query/db_adapter.py",
+        "id": 1,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/intent_agent.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/intent_agent.py",
+        "id": 2,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/narrative_agent.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/narrative_agent.py",
+        "id": 3,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/aggregation.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/aggregation.py",
+        "id": 4,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/exploration_agent.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/exploration_agent.py",
+        "id": 5,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/formatter.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/formatter.py",
+        "id": 6,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/metadata/publisher_authority.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/metadata/publisher_authority.py",
+        "id": 7,
+        "status": "confirmed"
+      },
+      {
+        "claim": "app/api/main.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/app/api/main.py",
+        "id": 8,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/query/execute.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/query/execute.py",
+        "id": 9,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/models.py exists",
+        "evidence": "File found at /home/hagaybar/projects/rare-books-bot/scripts/chat/models.py",
+        "id": 10,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/cross_reference.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 11,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/curator.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 12,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/thematic_context.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 13,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/metadata/agent_authority.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 14,
+        "status": "confirmed"
+      },
+      {
+        "claim": "scripts/chat/analytical_router.py does NOT exist yet",
+        "evidence": "Glob returned no files",
+        "id": 15,
+        "status": "confirmed"
+      },
+      {
+        "claim": "normalize_filter_value exists in db_adapter.py",
+        "evidence": "Defined at line 53: def normalize_filter_value(field: FilterField, raw_value: str, op: FilterOp = None) -> str",
+        "id": 16,
+        "status": "confirmed"
+      },
+      {
+        "claim": "build_where_clause exists in db_adapter.py",
+        "evidence": "Defined at line 116: def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]",
+        "id": 17,
+        "status": "confirmed"
+      },
+      {
+        "claim": "_MAX_RESULT_SET in narrative_agent.py is 100",
+        "evidence": "Line 21: _MAX_RESULT_SET = 100",
+        "id": 18,
+        "status": "confirmed"
+      },
+      {
+        "claim": "is_overview_query exists in aggregation.py",
+        "evidence": "Defined at line 688: def is_overview_query(query_text: str) -> bool",
+        "id": 19,
+        "status": "confirmed"
+      },
+      {
+        "claim": "handle_query_definition_phase exists in main.py",
+        "evidence": "Defined at line 424: async def handle_query_definition_phase(...); also called at lines 400, 728, 761",
+        "id": 20,
+        "status": "confirmed"
+      },
+      {
+        "claim": "generate_followups exists in formatter.py",
+        "evidence": "Defined at line 82: def generate_followups(...)",
+        "id": 21,
+        "status": "confirmed"
+      },
+      {
+        "claim": "AGGREGATION_QUERIES exists in aggregation.py",
+        "evidence": "Defined at line 33: AGGREGATION_QUERIES = { ...; referenced at lines 226, 228, 240",
+        "id": 22,
+        "status": "confirmed"
+      },
+      {
+        "claim": "ExplorationRequestLLM exists in exploration_agent.py",
+        "evidence": "Defined at line 45: class ExplorationRequestLLM(BaseModel); used at line 328",
+        "id": 23,
+        "status": "confirmed"
+      },
+      {
+        "claim": "agents table has authority_uri column",
+        "evidence": "PRAGMA table_info(agents) shows column 7: authority_uri TEXT (nullable)",
+        "id": 25,
+        "status": "confirmed"
+      },
+      {
+        "claim": "publisher_variants table exists",
+        "evidence": "Table present in .tables output with 10 columns including authority_id, variant_form, script, language, is_primary, priority",
+        "id": 26,
+        "status": "confirmed"
+      },
+      {
+        "claim": "authority_enrichment table has person_info column",
+        "evidence": "PRAGMA table_info(authority_enrichment) shows column 9: person_info TEXT (nullable)",
+        "id": 27,
+        "status": "confirmed"
+      }
+    ]
+  }
+}

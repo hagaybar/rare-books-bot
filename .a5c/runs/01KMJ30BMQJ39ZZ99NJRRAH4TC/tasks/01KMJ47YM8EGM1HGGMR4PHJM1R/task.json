@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJ47YM8EGM1HGGMR4PHJM1R",
+  "taskId": "verify-phase",
+  "invocationKey": "scholar-pipeline:S000006:verify-phase",
+  "stepId": "S000006",
+  "kind": "shell",
+  "title": "Verify: phase2-core-stages",
+  "io": {
+    "outputJsonPath": "tasks/01KMJ47YM8EGM1HGGMR4PHJM1R/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_interpreter.py tests/scripts/chat/test_executor.py tests/scripts/chat/test_narrator.py -v 2>&1 | tail -60",
+    "description": "Verify interpreter, executor core, and narrator all pass tests",
+    "phase": "phase2-core-stages",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

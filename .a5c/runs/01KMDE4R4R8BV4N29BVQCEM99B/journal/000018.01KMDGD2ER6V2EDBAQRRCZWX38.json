@@ -1,0 +1,20 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-23T14:08:26.584Z",
+  "data": {
+    "effectId": "01KMDGD2EDH79AXP7WH0NZQP7W",
+    "invocationKey": "implement-unified-ui:S000009:db-explorer",
+    "invocationHash": "0fad4b4e58f2bbafbe429368e880e0020c97d733693b09126a9662fb66ef732f",
+    "stepId": "S000009",
+    "taskId": "db-explorer",
+    "kind": "agent",
+    "label": "frontend",
+    "taskDefRef": "tasks/01KMDGD2EDH79AXP7WH0NZQP7W/task.json",
+    "labels": [
+      "frontend",
+      "diagnostics",
+      "phase2"
+    ]
+  },
+  "checksum": "1fc0e5c2fc95504c5dc8dd78b337a8c6c1443407a43ef5ea671434c58bdb53dd"
+}

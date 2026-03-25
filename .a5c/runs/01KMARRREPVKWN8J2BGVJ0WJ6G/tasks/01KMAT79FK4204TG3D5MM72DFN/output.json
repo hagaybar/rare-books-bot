@@ -1,0 +1,114 @@
+{
+  "reviews": [
+    {
+      "file": "01_project_overview.md",
+      "scores": {
+        "completeness": 24,
+        "clarity": 25,
+        "accuracy": 24,
+        "signalToNoise": 24
+      },
+      "total": 97,
+      "issues": [
+        "Minor: plan.mf says '7 tables' for M3 but doc correctly says '9 tables + 2 FTS5' -- good, no issue",
+        "Slight redundancy between 'How All the Pieces Fit Together' section and the architecture diagram, but acceptable for a context document targeting an LLM"
+      ],
+      "fixed": false
+    },
+    {
+      "file": "02_code_map.md",
+      "scores": {
+        "completeness": 24,
+        "clarity": 24,
+        "accuracy": 23,
+        "signalToNoise": 24
+      },
+      "total": 95,
+      "issues": [
+        "Fixed: QueryResult model showed 'params' without type annotation; actual code has 'params: List[Any]', not Dict. Clarified in the description.",
+        "main.py listed as ~1,300 lines; actual is exactly 1,300 -- acceptable rounding",
+        "Missing: scripts/metadata/review_log.py (218 lines) and scripts/metadata/interaction_logger.py (100 lines) not listed in the metadata subsystem section (they appear in 05_metadata_workbench.md instead)"
+      ],
+      "fixed": true
+    },
+    {
+      "file": "03_data_pipeline.md",
+      "scores": {
+        "completeness": 25,
+        "clarity": 25,
+        "accuracy": 24,
+        "signalToNoise": 24
+      },
+      "total": 98,
+      "issues": [
+        "Excellent coverage with concrete examples at each stage",
+        "agents table described as '14 columns' in the header but the column listing shows 16 entries (including provenance_json). The '14+' notation in doc 06 is more accurate."
+      ],
+      "fixed": false
+    },
+    {
+      "file": "04_query_and_chat.md",
+      "scores": {
+        "completeness": 25,
+        "clarity": 25,
+        "accuracy": 24,
+        "signalToNoise": 24
+      },
+      "total": 98,
+      "issues": [
+        "End-to-end example is very strong and aids comprehension",
+        "Minor: FilterField lists 'agent' as a field value, which is deprecated in code (should use agent_norm). The doc doesn't flag the deprecation, but the code does via a comment."
+      ],
+      "fixed": false
+    },
+    {
+      "file": "05_metadata_workbench.md",
+      "scores": {
+        "completeness": 25,
+        "clarity": 25,
+        "accuracy": 24,
+        "signalToNoise": 24
+      },
+      "total": 98,
+      "issues": [
+        "Includes review_log.py and interaction_logger.py coverage that 02_code_map.md lacks -- good cross-reference",
+        "Correction flow example is excellent for understanding the feedback loop"
+      ],
+      "fixed": false
+    },
+    {
+      "file": "06_data_model.md",
+      "scores": {
+        "completeness": 25,
+        "clarity": 25,
+        "accuracy": 23,
+        "signalToNoise": 24
+      },
+      "total": 97,
+      "issues": [
+        "Fixed: QueryResult.params was listed as 'Dict' but actual code uses 'List[Any]'. Corrected.",
+        "Comprehensive normalization rules reference table is very valuable",
+        "Confidence score interpretation table is excellent for cross-referencing"
+      ],
+      "fixed": true
+    },
+    {
+      "file": "07_project_status.md",
+      "scores": {
+        "completeness": 24,
+        "clarity": 25,
+        "accuracy": 23,
+        "signalToNoise": 24
+      },
+      "total": 96,
+      "issues": [
+        "Fixed: app/api/main.py was listed as 1,288 lines; actual count is 1,300. Corrected to 1,300.",
+        "Development commands reference is thorough and practical",
+        "Known gaps section aligns well with audit report findings"
+      ],
+      "fixed": true
+    }
+  ],
+  "overallScore": 97,
+  "allPassing": true
+}

@@ -1,0 +1,1 @@
+{"deleted":["app/ui_chat/","app/ui_qa/","app/qa.py","run_chat_ui.sh","configs/chunk_rules.yaml","configs/outlook_helper.yaml","scripts/api_clients/openai/completer.py"],"archived":["_wizard.py","wizard_components.py"],"updated":["CLAUDE.md","pyproject.toml","diagnostics.py","cli.py"],"buildStatus":"success","testsPass":true}
