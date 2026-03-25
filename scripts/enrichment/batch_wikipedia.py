@@ -21,12 +21,14 @@ Usage:
 import argparse
 import asyncio
 import json
+import re
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from scripts.enrichment.wikipedia_client import (
     fetch_links_batch,
+    fetch_summary,
     resolve_titles_batch,
 )
 
@@ -120,6 +122,117 @@ def run_pass_1(db_path: Path, limit: int | None = None) -> dict:
     return {"resolved": len(resolved), "cached": updated}
 
 
+def _extract_name_variants(extract: str) -> list[str]:
+    """Extract alternate names from Wikipedia first paragraph.
+
+    Looks for parenthetical names containing Hebrew/Arabic text
+    or "known as" patterns.
+
+    Args:
+        extract: Wikipedia summary extract text.
+
+    Returns:
+        List of extracted name variant strings.
+    """
+    variants: list[str] = []
+    # In REST API extract, bold is not preserved, but parenthetical names are
+    paren_matches = re.findall(r"\(([^)]+)\)", extract[:500])
+    for match in paren_matches:
+        # Look for Hebrew/Arabic text
+        if re.search(r"[\u0590-\u05FF\u0600-\u06FF]", match):
+            variants.append(match.strip())
+        # Look for "also known as X" or "commonly known as X"
+        elif "known as" in match.lower():
+            name = re.sub(
+                r"(?:also |commonly )?known as\s+",
+                "",
+                match,
+                flags=re.IGNORECASE,
+            )
+            variants.append(name.strip())
+    return variants
+
+
+def run_pass_2(db_path: Path, limit: int | None = None) -> dict:
+    """Pass 2: Fetch Wikipedia summaries ordered by connectivity.
+
+    Fetches summary extracts for all agents that have a Wikipedia title
+    but no summary yet. Orders by connectivity (most wikipedia_connections
+    first) so the most important agents are enriched first.
+
+    Args:
+        db_path: Path to the bibliographic SQLite database.
+        limit: Optional limit on number of agents to process (for testing).
+
+    Returns:
+        Dict with stats: {"fetched": int, "failed": int, "skipped": int}
+    """
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    # Order by connectivity: agents with more wikipedia_connections first
+    rows = conn.execute(
+        """
+        SELECT wc.wikidata_id, wc.wikipedia_title
+        FROM wikipedia_cache wc
+        WHERE wc.wikipedia_title IS NOT NULL
+          AND (wc.summary_extract IS NULL OR wc.summary_extract = '')
+        ORDER BY (
+            SELECT COUNT(*) FROM wikipedia_connections wconn
+            WHERE wconn.source_agent_norm IN (
+                SELECT a.agent_norm FROM agents a
+                JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
+                WHERE ae.wikidata_id = wc.wikidata_id
+            )
+        ) DESC
+        """
+    ).fetchall()
+    if limit:
+        rows = rows[:limit]
+
+    total = len(rows)
+    print(f"Pass 2: Fetching summaries for {total} agents")
+
+    fetched = 0
+    failed = 0
+    for i, row in enumerate(rows):
+        title = row["wikipedia_title"]
+        summary = asyncio.run(fetch_summary(title))
+        if summary and summary.extract:
+            variants = _extract_name_variants(summary.extract)
+            conn.execute(
+                """UPDATE wikipedia_cache
+                   SET summary_extract = ?, name_variants = ?,
+                       page_id = ?, revision_id = ?
+                   WHERE wikidata_id = ? AND language = 'en'""",
+                (
+                    summary.extract,
+                    json.dumps(variants, ensure_ascii=False),
+                    summary.page_id,
+                    summary.revision_id,
+                    row["wikidata_id"],
+                ),
+            )
+            fetched += 1
+        else:
+            failed += 1
+
+        # Commit every 50 agents
+        if (i + 1) % 50 == 0:
+            conn.commit()
+        # Print progress every 100
+        if (i + 1) % 100 == 0 or (i + 1) == total:
+            print(
+                f"  Progress: {i + 1}/{total} "
+                f"(fetched={fetched}, failed={failed})"
+            )
+
+    conn.commit()
+    print(f"  Pass 2 complete. {fetched} summaries fetched, {failed} failed.")
+    conn.close()
+    return {"fetched": fetched, "failed": failed, "skipped": 0}
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Batch Wikipedia enrichment")
     parser.add_argument(
@@ -150,4 +263,8 @@ if __name__ == "__main__":
     if args.pass_num in ("1", "all"):
         stats = run_pass_1(db, args.limit)
         print(f"\nPass 1 stats: {json.dumps(stats)}")
-    # Pass 2 and 3 added in Tasks 5 and 7
+
+    if args.pass_num in ("2", "all"):
+        stats = run_pass_2(db, args.limit)
+        print(f"\nPass 2 stats: {json.dumps(stats)}")
+    # Pass 3 added in Task 7
