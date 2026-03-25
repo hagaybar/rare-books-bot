@@ -388,6 +388,87 @@ def _find_same_place_period_connections(
     return connections
 
 
+def _find_wikipedia_connections(
+    agent_norms: List[str],
+    conn: sqlite3.Connection,
+    visited_pairs: Set[Tuple[str, str]],
+) -> List[Connection]:
+    """Find Wikipedia-derived connections between agents.
+
+    Queries wikipedia_connections table for pairs where both agents
+    are in the current agent_norms list.
+
+    Args:
+        agent_norms: List of agent_norm values to check.
+        conn: SQLite database connection.
+        visited_pairs: Set of already-visited (sorted) pairs.
+
+    Returns:
+        List of Connection objects for wikipedia_mention relationships.
+    """
+    if len(agent_norms) < 2:
+        return []
+
+    connections: List[Connection] = []
+
+    # Check if wikipedia_connections table exists
+    try:
+        table_check = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='wikipedia_connections'"
+        ).fetchone()
+        if not table_check:
+            return connections
+    except sqlite3.OperationalError:
+        return connections
+
+    placeholders = ",".join("?" for _ in agent_norms)
+
+    try:
+        sql = f"""
+            SELECT
+                source_agent_norm,
+                target_agent_norm,
+                source_wikidata_id,
+                target_wikidata_id,
+                relationship,
+                confidence,
+                evidence
+            FROM wikipedia_connections
+            WHERE source_agent_norm IN ({placeholders})
+              AND target_agent_norm IN ({placeholders})
+        """
+        rows = conn.execute(sql, agent_norms + agent_norms).fetchall()
+    except sqlite3.OperationalError:
+        logger.warning("Could not query wikipedia_connections table")
+        return connections
+
+    for row in rows:
+        source_norm = row[0]
+        target_norm = row[1]
+        source_wikidata_id = row[2]
+        target_wikidata_id = row[3]
+        relationship = row[4]
+        confidence = row[5]
+        evidence_text = row[6]
+
+        pair = tuple(sorted([source_norm, target_norm]))
+        if pair in visited_pairs:
+            continue
+        visited_pairs.add(pair)
+
+        connections.append(Connection(
+            agent_a=source_norm,
+            agent_b=target_norm,
+            relationship_type="wikipedia_mention",
+            evidence=evidence_text or relationship or "Wikipedia connection",
+            confidence=confidence,
+            agent_a_wikidata_id=source_wikidata_id,
+            agent_b_wikidata_id=target_wikidata_id,
+        ))
+
+    return connections
+
+
 def find_connections(
     db: sqlite3.Connection | Path,
     agent_norms: List[str],
@@ -395,10 +476,11 @@ def find_connections(
 ) -> List[Connection]:
     """Discover connections between agents in a result set.
 
-    Checks three relationship types:
+    Checks four relationship types:
     1. teacher/student (from graph person_info)
     2. co-publication (shared records with different roles)
     3. same_place_period (same birth_place, overlapping dates)
+    4. wikipedia_mention (from wikipedia_connections table)
 
     Performance guard: skips if >50 agents.
 
@@ -449,6 +531,13 @@ def find_connections(
     all_connections.extend(
         _find_same_place_period_connections(agent_norms, graph, visited_pairs)
     )
+
+    # 4. Wikipedia-derived connections
+    try:
+        wiki_conns = _find_wikipedia_connections(agent_norms, conn, visited_pairs)
+        all_connections.extend(wiki_conns)
+    except Exception:
+        pass  # Table may not exist
 
     # Sort by confidence descending, cap at max_results
     all_connections.sort(key=lambda c: c.confidence, reverse=True)
