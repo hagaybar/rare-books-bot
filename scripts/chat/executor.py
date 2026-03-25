@@ -381,6 +381,19 @@ def _count_records(data: StepOutputData) -> Optional[int]:
 # =============================================================================
 
 
+def _fix_wikipedia_url(url: str, wikidata_id: Optional[str] = None) -> str:
+    """Fix broken Wikipedia URLs stored in authority_enrichment.
+
+    The enrichment pipeline stores URLs like:
+      https://en.wikipedia.org/wiki/Special:GoToLinkedPage/enwiki/Q467148
+    These 404 on en.wikipedia.org. The correct redirect host is wikidata.org:
+      https://www.wikidata.org/wiki/Special:GoToLinkedPage/enwiki/Q467148
+    """
+    if "Special:GoToLinkedPage" in url and "en.wikipedia.org" in url:
+        return url.replace("https://en.wikipedia.org", "https://www.wikidata.org")
+    return url
+
+
 def _get_conn(db_path: Path) -> sqlite3.Connection:
     """Open a SQLite connection with row_factory."""
     conn = sqlite3.connect(str(db_path))
@@ -956,7 +969,7 @@ def _handle_enrich(
                     entity_type="agent",
                     entity_id=agent_name,
                     label=f"Wikipedia: {enrich_row['label'] or agent_name}",
-                    url=enrich_row["wikipedia_url"],
+                    url=_fix_wikipedia_url(enrich_row["wikipedia_url"], enrich_row["wikidata_id"] if "wikidata_id" in enrich_row.keys() else None),
                     source="wikipedia",
                 ))
             if enrich_row["wikidata_id"]:
@@ -972,7 +985,7 @@ def _handle_enrich(
                     entity_type="agent",
                     entity_id=agent_name,
                     label=f"VIAF: {enrich_row['viaf_id']}",
-                    url=f"https://viaf.org/viaf/{enrich_row['viaf_id']}",
+                    url=f"https://viaf.org/en/viaf/{enrich_row['viaf_id']}",
                     source="viaf",
                 ))
             if enrich_row["nli_id"]:
@@ -1311,7 +1324,7 @@ def _collect_grounding(
                     entity_type="agent",
                     entity_id=display_name,
                     label=f"Wikipedia: {enrich_row['label'] or display_name}",
-                    url=enrich_row["wikipedia_url"],
+                    url=_fix_wikipedia_url(enrich_row["wikipedia_url"], enrich_row["wikidata_id"] if "wikidata_id" in enrich_row.keys() else None),
                     source="wikipedia",
                 ))
             if enrich_row["wikidata_id"]:
@@ -1327,7 +1340,7 @@ def _collect_grounding(
                     entity_type="agent",
                     entity_id=display_name,
                     label=f"VIAF: {enrich_row['viaf_id']}",
-                    url=f"https://viaf.org/viaf/{enrich_row['viaf_id']}",
+                    url=f"https://viaf.org/en/viaf/{enrich_row['viaf_id']}",
                     source="viaf",
                 ))
             if enrich_row["nli_id"]:
