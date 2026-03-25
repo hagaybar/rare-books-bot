@@ -233,6 +233,157 @@ def run_pass_2(db_path: Path, limit: int | None = None) -> dict:
     return {"fetched": fetched, "failed": failed, "skipped": 0}
 
 
+def run_pass_3(db_path: Path, limit: int = 500) -> dict:
+    """Pass 3: LLM-assisted relationship extraction for top N agents.
+
+    Uses gpt-4.1-nano to extract structured relationships from Wikipedia
+    summaries. Processes agents ordered by connection count (most connected
+    first). Requires OPENAI_API_KEY environment variable.
+
+    Args:
+        db_path: Path to the bibliographic SQLite database.
+        limit: Maximum number of agents to process (default: 500).
+
+    Returns:
+        Dict with stats: {"processed": int, "extracted": int, "stored": int, "skipped": int}
+    """
+    from scripts.enrichment.wikipedia_connections import (
+        extract_relationships_llm,
+        resolve_and_store_llm_connections,
+    )
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+
+    # Get top N agents by connection count, requiring a summary
+    rows = conn.execute(
+        """
+        SELECT wc.wikidata_id, wc.wikipedia_title, wc.summary_extract,
+               ae.label as agent_label
+        FROM wikipedia_cache wc
+        JOIN authority_enrichment ae ON ae.wikidata_id = wc.wikidata_id
+        WHERE wc.summary_extract IS NOT NULL
+          AND wc.summary_extract != ''
+        ORDER BY (
+            SELECT COUNT(*) FROM wikipedia_connections wconn
+            WHERE wconn.source_wikidata_id = wc.wikidata_id
+               OR wconn.target_wikidata_id = wc.wikidata_id
+        ) DESC
+        LIMIT ?
+        """,
+        (limit,),
+    ).fetchall()
+
+    total = len(rows)
+    if total == 0:
+        print(
+            "Pass 3: No agents with summaries found. "
+            "Run Pass 2 first to fetch Wikipedia summaries."
+        )
+        conn.close()
+        return {"processed": 0, "extracted": 0, "stored": 0, "skipped": 0}
+
+    print(f"Pass 3: LLM extraction for {total} agents (limit={limit})")
+
+    # Also resolve agent_norms for the source agents
+    qid_to_agent_norm: dict[str, str] = {}
+    agent_norm_rows = conn.execute(
+        """
+        SELECT ae.wikidata_id, MIN(a.agent_norm) as agent_norm
+        FROM authority_enrichment ae
+        JOIN agents a ON a.authority_uri = ae.authority_uri
+        WHERE ae.wikidata_id IS NOT NULL AND a.agent_norm IS NOT NULL
+        GROUP BY ae.wikidata_id
+        """
+    ).fetchall()
+    for r in agent_norm_rows:
+        qid_to_agent_norm[r["wikidata_id"]] = r["agent_norm"]
+
+    processed = 0
+    total_extracted = 0
+    total_stored = 0
+    skipped = 0
+
+    for i, row in enumerate(rows):
+        source_qid = row["wikidata_id"]
+        source_agent_norm = qid_to_agent_norm.get(source_qid)
+        if not source_agent_norm:
+            skipped += 1
+            continue
+
+        agent_name = row["agent_label"] or row["wikipedia_title"]
+        summary = row["summary_extract"]
+
+        # Get known linked agents for this agent (from Pass 1/2 connections)
+        known_rows = conn.execute(
+            """
+            SELECT DISTINCT wc2.wikipedia_title, wc2.wikidata_id
+            FROM wikipedia_connections wconn
+            JOIN wikipedia_cache wc2 ON wc2.wikidata_id IN (
+                wconn.source_wikidata_id, wconn.target_wikidata_id
+            )
+            WHERE (wconn.source_wikidata_id = ? OR wconn.target_wikidata_id = ?)
+              AND wc2.wikidata_id != ?
+            """,
+            (source_qid, source_qid, source_qid),
+        ).fetchall()
+
+        known_agents = [
+            {"name": k["wikipedia_title"], "qid": k["wikidata_id"]}
+            for k in known_rows
+            if k["wikipedia_title"]
+        ]
+
+        # Call LLM extraction
+        try:
+            raw_connections = asyncio.run(
+                extract_relationships_llm(
+                    agent_name=agent_name,
+                    summary_text=summary,
+                    known_linked_agents=known_agents,
+                )
+            )
+        except Exception as exc:
+            print(f"  Error extracting for {agent_name}: {exc}")
+            skipped += 1
+            continue
+
+        total_extracted += len(raw_connections)
+
+        # Resolve and store connections
+        stored = resolve_and_store_llm_connections(
+            db_path=db_path,
+            source_qid=source_qid,
+            source_agent_norm=source_agent_norm,
+            raw_connections=raw_connections,
+        )
+        total_stored += stored
+        processed += 1
+
+        # Progress reporting
+        if (i + 1) % 50 == 0 or (i + 1) == total:
+            print(
+                f"  Progress: {i + 1}/{total} "
+                f"(processed={processed}, extracted={total_extracted}, "
+                f"stored={total_stored}, skipped={skipped})"
+            )
+
+    conn.close()
+
+    print(
+        f"  Pass 3 complete. {processed} agents processed, "
+        f"{total_extracted} relationships extracted, "
+        f"{total_stored} stored, {skipped} skipped."
+    )
+
+    return {
+        "processed": processed,
+        "extracted": total_extracted,
+        "stored": total_stored,
+        "skipped": skipped,
+    }
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Batch Wikipedia enrichment")
     parser.add_argument(
@@ -267,4 +418,8 @@ if __name__ == "__main__":
     if args.pass_num in ("2", "all"):
         stats = run_pass_2(db, args.limit)
         print(f"\nPass 2 stats: {json.dumps(stats)}")
-    # Pass 3 added in Task 7
+
+    if args.pass_num in ("3", "all"):
+        p3_limit = args.limit or 500
+        stats = run_pass_3(db, limit=p3_limit)
+        print(f"\nPass 3 stats: {json.dumps(stats)}")

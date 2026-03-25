@@ -11,22 +11,35 @@ Algorithm
 4. Canonical ordering: source_agent_norm < target_agent_norm (alphabetically)
 5. Detect bidirectional mentions and boost confidence
 6. Optionally store to wikipedia_connections table
+7. LLM-assisted relationship extraction (Pass 3): use gpt-4.1-nano to
+   extract structured relationships from Wikipedia summaries
 
 Usage
 -----
     from scripts.enrichment.wikipedia_connections import discover_connections
     conns = discover_connections(Path("data/index/bibliographic.db"), store=True)
+
+    # Pass 3: LLM extraction
+    from scripts.enrichment.wikipedia_connections import extract_relationships_llm
+    import asyncio
+    conns = asyncio.run(extract_relationships_llm(
+        agent_name="Joseph Karo",
+        summary_text="Joseph ben Ephraim Karo was...",
+        known_linked_agents=[{"name": "Moses Isserles", "qid": "Q440285"}],
+    ))
 """
 
 import csv
 import difflib
 import json
 import logging
+import os
 import re
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -605,3 +618,461 @@ def _normalize_forms_for_fuzzy(title: str) -> list[str]:
         # Also try "Last, First" -> "first last" (reverse)
         forms.append(f"{parts[0]}, {parts[1]} {parts[2]}")
     return forms
+
+
+# =============================================================================
+# LLM-assisted relationship extraction (Pass 3)
+# =============================================================================
+
+# Tag vocabulary for the LLM prompt
+_TAG_VOCABULARY = [
+    "teacher_of",
+    "student_of",
+    "collaborator",
+    "commentator",
+    "co_publication",
+    "patron",
+    "rival",
+    "translator",
+    "publisher_of",
+    "same_school",
+    "family",
+    "influenced_by",
+]
+
+
+class ExtractedRelationship(BaseModel):
+    """A single relationship extracted by the LLM from a Wikipedia summary."""
+
+    target_name: str = Field(description="Name of the related person")
+    target_wikidata_id: str | None = Field(
+        default=None,
+        description="Wikidata QID if known from provided list, e.g. Q440285",
+    )
+    relationship: str = Field(description="Free-text description of the relationship")
+    tags: list[str] = Field(
+        default_factory=list,
+        description="Relationship tags from the vocabulary, or new tags if none fit",
+    )
+    confidence: float = Field(
+        ge=0.0, le=1.0, description="Confidence score for this relationship"
+    )
+
+
+class _LLMExtractionResponse(BaseModel):
+    """Schema for the complete LLM response."""
+
+    relationships: list[ExtractedRelationship] = Field(default_factory=list)
+
+
+_EXTRACTION_SYSTEM_PROMPT = """\
+You are a bibliographic relationship extraction expert specializing in early \
+modern print culture, Jewish intellectual history, and rare book networks.
+
+Your task: Given a person's Wikipedia summary and a list of known linked \
+persons (with their Wikidata QIDs), extract structured relationships between \
+the subject and other people mentioned.
+
+RULES:
+1. Extract ONLY relationships explicitly stated or clearly implied in the text.
+2. For each relationship, provide a free-text description AND one or more tags.
+3. Tag vocabulary: {tags}
+   If none of the above tags fit, create a new descriptive tag (e.g. "successor", "opponent").
+4. If a target person appears in the known_linked_agents list, use their exact \
+   Wikidata QID in target_wikidata_id. Otherwise, set target_wikidata_id to null.
+5. Confidence scoring:
+   - 0.9-1.0: Explicitly stated relationship ("X was the teacher of Y")
+   - 0.7-0.89: Strongly implied ("studied under X", "worked in X's workshop")
+   - 0.5-0.69: Plausibly implied from context
+   - Below 0.5: Do not include
+6. Only include people, not places, institutions, or works.
+
+Return EXACTLY this JSON structure:
+{{
+  "relationships": [
+    {{
+      "target_name": "Name of the related person",
+      "target_wikidata_id": "Q12345 or null if unknown",
+      "relationship": "Free-text description of the relationship",
+      "tags": ["tag1", "tag2"],
+      "confidence": 0.85
+    }}
+  ]
+}}
+
+IMPORTANT: Each relationship object MUST have these exact keys: \
+target_name, target_wikidata_id, relationship, tags, confidence. \
+Do NOT use "source", "target", or any other key names.
+"""
+
+
+def _build_extraction_user_prompt(
+    agent_name: str,
+    summary_text: str,
+    known_linked_agents: list[dict],
+) -> str:
+    """Build the user prompt for LLM relationship extraction."""
+    known_section = ""
+    if known_linked_agents:
+        lines = []
+        for a in known_linked_agents[:100]:  # Cap at 100 to stay within context
+            qid = a.get("qid", "unknown")
+            name = a.get("name", "unknown")
+            lines.append(f"  - {name} ({qid})")
+        known_section = (
+            "Known linked persons (use their QIDs if they appear in relationships):\n"
+            + "\n".join(lines)
+        )
+    else:
+        known_section = "No known linked persons from previous passes."
+
+    return (
+        f"Subject: {agent_name}\n\n"
+        f"Wikipedia summary:\n{summary_text}\n\n"
+        f"{known_section}\n\n"
+        "Extract all interpersonal relationships from this summary."
+    )
+
+
+# Field-name remapping for common LLM output variations
+_FIELD_ALIASES = {
+    # target_name aliases
+    "target": "target_name",
+    "name": "target_name",
+    "person": "target_name",
+    "person_name": "target_name",
+    # target_wikidata_id aliases
+    "wikidata_id": "target_wikidata_id",
+    "qid": "target_wikidata_id",
+    "wikidata_qid": "target_wikidata_id",
+    # relationship aliases
+    "description": "relationship",
+    "relation": "relationship",
+    "relation_type": "relationship",
+    "relationship_description": "relationship",
+    # tags aliases
+    "tag": "tags",
+    "labels": "tags",
+    "relationship_tags": "tags",
+    "relationship_type": "tags",
+}
+
+# Keys the LLM might include that should be ignored (not mapped)
+_IGNORED_KEYS = {"source", "source_name", "source_wikidata_id"}
+
+
+def _normalize_relationship_dict(raw: dict) -> dict:
+    """Remap common LLM field-name variants to the expected schema.
+
+    The LLM sometimes uses alternative key names like "target" instead of
+    "target_name" or "source" + "target" instead of just "target_name".
+    This function normalizes the dict to match ExtractedRelationship fields.
+    """
+    normalized: dict = {}
+
+    for key, value in raw.items():
+        if key in _IGNORED_KEYS:
+            continue
+
+        canonical = _FIELD_ALIASES.get(key, key)
+
+        # Don't overwrite if canonical key already set from a more specific alias
+        if canonical not in normalized:
+            normalized[canonical] = value
+        # Special case: if "tags" was set as a string, wrap in a list
+        if canonical == "tags" and isinstance(value, str):
+            normalized[canonical] = [value]
+
+    return normalized
+
+
+async def extract_relationships_llm(
+    agent_name: str,
+    summary_text: str,
+    known_linked_agents: list[dict],
+    model: str = "gpt-4.1-nano",
+    api_key: str | None = None,
+) -> list[DiscoveredConnection]:
+    """Use LLM to extract structured relationships from a Wikipedia summary.
+
+    The LLM receives the agent's summary text and a list of known linked
+    agents with their Wikidata QIDs (from Pass 1 connections). It returns
+    structured relationships with free-text descriptions and pre-tagged labels.
+
+    Matching strategy:
+    - If target_wikidata_id is provided: match directly via authority_enrichment
+    - If not: look up target_name in wikipedia_cache.wikipedia_title
+    - Fallback: skip (no fuzzy matching to avoid false positives)
+
+    Parameters
+    ----------
+    agent_name : str
+        Display name of the source agent.
+    summary_text : str
+        Wikipedia summary extract for the agent.
+    known_linked_agents : list[dict]
+        Known linked agents from Pass 1, each with "name" and "qid" keys.
+    model : str
+        OpenAI model to use (default: gpt-4.1-nano).
+    api_key : str or None
+        OpenAI API key override (falls back to OPENAI_API_KEY env var).
+
+    Returns
+    -------
+    list[DiscoveredConnection]
+        Extracted connections with source_type="llm_extraction".
+
+    Raises
+    ------
+    ValueError
+        If no API key is available.
+    """
+    from openai import OpenAI
+
+    resolved_key = api_key or os.getenv("OPENAI_API_KEY")
+    if not resolved_key:
+        raise ValueError("OPENAI_API_KEY not set and no api_key provided")
+
+    client = OpenAI(api_key=resolved_key)
+
+    system_prompt = _EXTRACTION_SYSTEM_PROMPT.format(
+        tags=", ".join(_TAG_VOCABULARY)
+    )
+    user_prompt = _build_extraction_user_prompt(
+        agent_name, summary_text, known_linked_agents
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"},
+        )
+
+        content = response.choices[0].message.content
+        if not content:
+            logger.warning("Empty LLM response for agent %s", agent_name)
+            return []
+
+        parsed = json.loads(content)
+
+        # Normalize LLM output: remap common field-name variants to our schema
+        if "relationships" in parsed and isinstance(parsed["relationships"], list):
+            parsed["relationships"] = [
+                _normalize_relationship_dict(r)
+                for r in parsed["relationships"]
+            ]
+
+        llm_result = _LLMExtractionResponse.model_validate(parsed)
+
+    except json.JSONDecodeError as exc:
+        logger.error("JSON parse error for agent %s: %s", agent_name, exc)
+        return []
+    except Exception as exc:
+        logger.error("LLM extraction failed for agent %s: %s", agent_name, exc)
+        return []
+
+    # Log the LLM call (best-effort, don't fail if logger unavailable)
+    try:
+        from scripts.utils.llm_logger import log_llm_call
+
+        log_llm_call(
+            call_type="wikipedia_relationship_extraction",
+            model=model,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            response=response,
+            extra_metadata={"agent_name": agent_name},
+        )
+    except Exception:
+        pass  # Logging is optional
+
+    # Build known-agent lookup for QID resolution
+    qid_lookup: dict[str, dict] = {}
+    for a in known_linked_agents:
+        qid = a.get("qid")
+        if qid:
+            qid_lookup[qid] = a
+
+    connections: list[DiscoveredConnection] = []
+    for rel in llm_result.relationships:
+        if rel.confidence < 0.5:
+            continue
+
+        # We don't resolve to agent_norm here -- that's done at storage time
+        # by the batch script, which has access to the DB. Here we just
+        # validate that the target has a resolvable identifier.
+        target_qid = rel.target_wikidata_id
+        target_name = rel.target_name
+
+        # Build a placeholder connection -- the batch script resolves
+        # agent_norms and applies canonical ordering before storing.
+        conn_obj = DiscoveredConnection(
+            source_agent_norm=agent_name,  # Placeholder; batch resolves
+            target_agent_norm=target_name,  # Placeholder; batch resolves
+            source_wikidata_id=None,  # Filled by batch
+            target_wikidata_id=target_qid,
+            relationship=rel.relationship,
+            tags=rel.tags,
+            confidence=rel.confidence,
+            source_type="llm_extraction",
+            evidence=f"LLM-extracted from Wikipedia summary: {rel.relationship}",
+            bidirectional=False,
+        )
+        connections.append(conn_obj)
+
+    logger.info(
+        "LLM extracted %d relationships for %s (from %d raw)",
+        len(connections),
+        agent_name,
+        len(llm_result.relationships),
+    )
+
+    return connections
+
+
+def resolve_and_store_llm_connections(
+    db_path: Path,
+    source_qid: str,
+    source_agent_norm: str,
+    raw_connections: list[DiscoveredConnection],
+) -> int:
+    """Resolve LLM-extracted connections to agent_norms and store them.
+
+    Matching strategy:
+    1. If target_wikidata_id is set: look up via authority_enrichment -> agents
+    2. Else: look up target_agent_norm (as wikipedia_title) in wikipedia_cache
+    3. Fallback: skip the connection
+
+    Uses canonical ordering (source < target alphabetically) and INSERT OR
+    REPLACE to avoid duplicates.
+
+    Parameters
+    ----------
+    db_path : Path
+        Path to bibliographic.db.
+    source_qid : str
+        Wikidata QID of the source agent.
+    source_agent_norm : str
+        Normalized name of the source agent.
+    raw_connections : list[DiscoveredConnection]
+        Connections from extract_relationships_llm() with placeholder names.
+
+    Returns
+    -------
+    int
+        Number of connections successfully stored.
+    """
+    if not raw_connections:
+        return 0
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    now = datetime.now(timezone.utc).isoformat()
+
+    stored = 0
+    for rc in raw_connections:
+        target_agent_norm: str | None = None
+        target_qid = rc.target_wikidata_id
+
+        # Strategy 1: Resolve via QID -> authority_enrichment -> agents
+        if target_qid:
+            row = conn.execute(
+                """
+                SELECT MIN(a.agent_norm) as agent_norm
+                FROM authority_enrichment ae
+                JOIN agents a ON a.authority_uri = ae.authority_uri
+                WHERE ae.wikidata_id = ? AND a.agent_norm IS NOT NULL
+                """,
+                (target_qid,),
+            ).fetchone()
+            if row and row["agent_norm"]:
+                target_agent_norm = row["agent_norm"]
+
+        # Strategy 2: Look up target name as wikipedia_title
+        if not target_agent_norm:
+            target_title = rc.target_agent_norm  # This is the placeholder name
+            row = conn.execute(
+                """
+                SELECT wc.wikidata_id
+                FROM wikipedia_cache wc
+                WHERE LOWER(wc.wikipedia_title) = LOWER(?)
+                """,
+                (target_title,),
+            ).fetchone()
+            if row and row["wikidata_id"]:
+                target_qid = row["wikidata_id"]
+                # Now resolve QID -> agent_norm
+                row2 = conn.execute(
+                    """
+                    SELECT MIN(a.agent_norm) as agent_norm
+                    FROM authority_enrichment ae
+                    JOIN agents a ON a.authority_uri = ae.authority_uri
+                    WHERE ae.wikidata_id = ? AND a.agent_norm IS NOT NULL
+                    """,
+                    (target_qid,),
+                ).fetchone()
+                if row2 and row2["agent_norm"]:
+                    target_agent_norm = row2["agent_norm"]
+
+        # Fallback: skip if we can't resolve to an agent in our collection
+        if not target_agent_norm:
+            logger.debug(
+                "Skipping LLM connection: could not resolve target '%s' (QID=%s)",
+                rc.target_agent_norm,
+                target_qid,
+            )
+            continue
+
+        # Skip self-references
+        if target_agent_norm == source_agent_norm:
+            continue
+
+        # Canonical ordering
+        src, tgt = _canonical_pair(source_agent_norm, target_agent_norm)
+        src_qid = source_qid if src == source_agent_norm else target_qid
+        tgt_qid = target_qid if tgt == target_agent_norm else source_qid
+
+        try:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO wikipedia_connections
+                    (source_agent_norm, target_agent_norm, source_wikidata_id,
+                     target_wikidata_id, relationship, tags, confidence,
+                     source_type, evidence, bidirectional, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    src,
+                    tgt,
+                    src_qid,
+                    tgt_qid,
+                    rc.relationship,
+                    json.dumps(rc.tags, ensure_ascii=False),
+                    rc.confidence,
+                    "llm_extraction",
+                    rc.evidence,
+                    0,
+                    now,
+                ),
+            )
+            stored += 1
+        except sqlite3.IntegrityError:
+            logger.warning(
+                "Duplicate LLM connection: %s -> %s", src, tgt
+            )
+
+    conn.commit()
+    conn.close()
+
+    logger.info(
+        "Stored %d/%d LLM-extracted connections for %s",
+        stored,
+        len(raw_connections),
+        source_agent_norm,
+    )
+    return stored
