@@ -101,7 +101,7 @@ class NarratorResponseLLM(BaseModel):
 async def narrate(
     query: str,
     execution_result: ExecutionResult,
-    model: str = "gpt-4o",
+    model: str = "gpt-4.1",
     api_key: Optional[str] = None,
 ) -> ScholarResponse:
     """Compose a scholarly response from verified execution results.
@@ -140,7 +140,7 @@ async def narrate(
 async def _call_llm(
     query: str,
     execution_result: ExecutionResult,
-    model: str = "gpt-4o",
+    model: str = "gpt-4.1",
     api_key: Optional[str] = None,
 ) -> ScholarResponse:
     """Call OpenAI with the narrator persona and verified data.

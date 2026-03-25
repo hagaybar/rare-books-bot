@@ -832,7 +832,7 @@ def _validate_step_refs(plan: InterpretationPlan) -> None:
 async def interpret(
     query: str,
     session_context: Optional[SessionContext] = None,
-    model: str = "gpt-4o",
+    model: str = "gpt-4.1",
     api_key: Optional[str] = None,
 ) -> InterpretationPlan:
     """Interpret a user query into an execution plan.
