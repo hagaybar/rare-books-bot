@@ -358,7 +358,7 @@ class TestPostPrimoUrls:
         entry = body["urls"][0]
         assert entry["mms_id"] == "990009748710204146"
         assert "990009748710204146" in entry["primo_url"]
-        assert "alma990009748710204146" in entry["primo_url"]
+        assert "query=990009748710204146" in entry["primo_url"]
         assert "primo.exlibrisgroup.com" in entry["primo_url"]
 
     def test_multiple_mms_ids(self, client):
@@ -400,7 +400,7 @@ class TestPostPrimoUrls:
         assert "tab=TAU" in url
         assert "search_scope=TAU" in url
         assert "vid=" in url
-        assert "docid=alma990009748710204146" in url
+        assert "query=990009748710204146" in url
 
     @patch.dict("os.environ", {"PRIMO_BASE_URL": "https://env.primo.example.com/view"})
     def test_env_var_override(self, client):
@@ -436,7 +436,7 @@ class TestGetPrimoUrl:
         assert resp.status_code == 200
         body = resp.json()
         assert body["mms_id"] == "990009748710204146"
-        assert "alma990009748710204146" in body["primo_url"]
+        assert "query=990009748710204146" in body["primo_url"]
         assert "primo.exlibrisgroup.com" in body["primo_url"]
 
     def test_url_structure(self, client):
@@ -444,5 +444,5 @@ class TestGetPrimoUrl:
         url = resp.json()["primo_url"]
         assert "tab=TAU" in url
         assert "search_scope=TAU" in url
-        assert "docid=alma990001234560204146" in url
+        assert "query=990001234560204146" in url
         assert "vid=" in url

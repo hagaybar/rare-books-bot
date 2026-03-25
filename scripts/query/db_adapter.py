@@ -18,6 +18,52 @@ logger = logging.getLogger(__name__)
 # Module-level flag so schema validation runs at most once per process.
 _schema_validated = False
 
+# Module-level cache for agent alias table existence check.
+# None = not yet checked; True/False = cached result.
+_agent_alias_tables_present: bool | None = None
+
+
+def _agent_alias_tables_exist(conn: sqlite3.Connection) -> bool:
+    """Check whether the agent_aliases and agent_authorities tables exist.
+
+    The result is cached at module level so the check runs at most once
+    per process.
+
+    Args:
+        conn: Active database connection
+
+    Returns:
+        True if both agent_aliases and agent_authorities tables exist
+    """
+    global _agent_alias_tables_present
+    if _agent_alias_tables_present is not None:
+        return _agent_alias_tables_present
+
+    try:
+        row = conn.execute(
+            """
+            SELECT COUNT(*) AS cnt
+            FROM sqlite_master
+            WHERE type = 'table'
+              AND name IN ('agent_aliases', 'agent_authorities')
+            """
+        ).fetchone()
+        _agent_alias_tables_present = (row[0] == 2)
+    except Exception:
+        _agent_alias_tables_present = False
+
+    return _agent_alias_tables_present
+
+
+def reset_agent_alias_cache() -> None:
+    """Reset the module-level alias table cache.
+
+    Useful in tests where multiple in-memory databases are used
+    with different schemas.
+    """
+    global _agent_alias_tables_present
+    _agent_alias_tables_present = None
+
 
 def get_connection(db_path: Path) -> sqlite3.Connection:
     """Get database connection with row_factory for dict-like access.
@@ -113,13 +159,21 @@ def normalize_filter_value(field: FilterField, raw_value: str, op: FilterOp = No
         return raw_value
 
 
-def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]:
+def build_where_clause(
+    plan: QueryPlan,
+    conn: sqlite3.Connection | None = None,
+) -> Tuple[str, Dict[str, any], List[str]]:
     """Build SQL WHERE clause from QueryPlan.
 
     Maps each filter to SQL condition and determines necessary JOINs.
 
     Args:
         plan: Validated QueryPlan
+        conn: Optional database connection. When provided, the
+            AGENT_NORM handler checks whether the agent_aliases /
+            agent_authorities tables exist and adds an alias-resolution
+            EXISTS sub-query.  When ``None`` the alias branch is
+            included unconditionally (optimistic).
 
     Returns:
         Tuple of (WHERE clause, parameters dict, needed JOIN tables)
@@ -294,16 +348,58 @@ def build_where_clause(plan: QueryPlan) -> Tuple[str, Dict[str, any], List[str]]
             # Stage 5: Query by normalized agent name (comma-insensitive)
             # Use REPLACE to remove commas from both database and search string
             needed_joins.add(M3Tables.AGENTS)
+
+            # Decide whether to include alias resolution sub-query.
+            # When conn is None (e.g. unit tests inspecting SQL structure)
+            # we optimistically include the alias branch.
+            include_alias = (
+                conn is None or _agent_alias_tables_exist(conn)
+            )
+
             if filter.op == FilterOp.EQUALS:
                 param_name = f"{param_prefix}_agent_norm"
                 agent_col = f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}"
-                condition = f"LOWER(REPLACE({agent_col}, ',', '')) = LOWER(:{param_name})"
+                direct_cond = f"LOWER(REPLACE({agent_col}, ',', '')) = LOWER(:{param_name})"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
+
+                if include_alias:
+                    alias_param = f"{param_prefix}_agent_norm_alias"
+                    params[alias_param] = normalize_filter_value(filter.field, filter.value)
+                    alias_cond = (
+                        f"EXISTS ("
+                        f"SELECT 1 FROM agent_aliases al "
+                        f"JOIN agent_authorities aa ON al.authority_id = aa.id "
+                        f"JOIN {M3Tables.AGENTS} a2 ON a2.{M3Columns.Agents.AUTHORITY_URI} = aa.authority_uri "
+                        f"WHERE LOWER(REPLACE(al.alias_form_lower, ',', '')) = LOWER(:{alias_param}) "
+                        f"AND a2.{M3Columns.Agents.RECORD_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.ID}"
+                        f")"
+                    )
+                    condition = f"({direct_cond} OR {alias_cond})"
+                else:
+                    condition = direct_cond
+
             elif filter.op == FilterOp.CONTAINS:
                 param_name = f"{param_prefix}_agent_norm"
                 agent_col = f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}"
-                condition = f"LOWER(REPLACE({agent_col}, ',', '')) LIKE LOWER(:{param_name})"
+                direct_cond = f"LOWER(REPLACE({agent_col}, ',', '')) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
+
+                if include_alias:
+                    alias_param = f"{param_prefix}_agent_norm_alias"
+                    params[alias_param] = f"%{normalize_filter_value(filter.field, filter.value)}%"
+                    alias_cond = (
+                        f"EXISTS ("
+                        f"SELECT 1 FROM agent_aliases al "
+                        f"JOIN agent_authorities aa ON al.authority_id = aa.id "
+                        f"JOIN {M3Tables.AGENTS} a2 ON a2.{M3Columns.Agents.AUTHORITY_URI} = aa.authority_uri "
+                        f"WHERE LOWER(REPLACE(al.alias_form_lower, ',', '')) LIKE LOWER(:{alias_param}) "
+                        f"AND a2.{M3Columns.Agents.RECORD_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.ID}"
+                        f")"
+                    )
+                    condition = f"({direct_cond} OR {alias_cond})"
+                else:
+                    condition = direct_cond
+
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent_norm")
 
@@ -451,16 +547,21 @@ def build_join_clauses(needed_joins: List[str]) -> str:
     return "\n".join(joins)
 
 
-def build_full_query(plan: QueryPlan) -> Tuple[str, Dict[str, any]]:
+def build_full_query(
+    plan: QueryPlan,
+    conn: sqlite3.Connection | None = None,
+) -> Tuple[str, Dict[str, any]]:
     """Build complete SQL query from QueryPlan.
 
     Args:
         plan: Validated QueryPlan
+        conn: Optional database connection, forwarded to
+            :func:`build_where_clause` for alias table detection.
 
     Returns:
         Tuple of (SQL query, parameters dict)
     """
-    where_clause, params, needed_joins = build_where_clause(plan)
+    where_clause, params, needed_joins = build_where_clause(plan, conn=conn)
     select_columns = build_select_columns(needed_joins)
     join_clauses = build_join_clauses(needed_joins)
 

@@ -29,6 +29,14 @@ class M3Tables:
     PHYSICAL_DESCRIPTIONS = "physical_descriptions"
     AUTHORITY_ENRICHMENT = "authority_enrichment"
 
+    # Publisher authority tables
+    PUBLISHER_AUTHORITIES = "publisher_authorities"
+    PUBLISHER_VARIANTS = "publisher_variants"
+
+    # Agent authority tables
+    AGENT_AUTHORITIES = "agent_authorities"
+    AGENT_ALIASES = "agent_aliases"
+
     # FTS5 virtual tables
     TITLES_FTS = "titles_fts"
     SUBJECTS_FTS = "subjects_fts"
@@ -178,6 +186,78 @@ class M3Columns:
         FETCHED_AT = "fetched_at"
         EXPIRES_AT = "expires_at"
 
+    # publisher_authorities table
+    class PublisherAuthorities:
+        """Columns in publisher_authorities table."""
+        ID = "id"
+        CANONICAL_NAME = "canonical_name"
+        CANONICAL_NAME_LOWER = "canonical_name_lower"
+        TYPE = "type"
+        DATES_ACTIVE = "dates_active"
+        DATE_START = "date_start"
+        DATE_END = "date_end"
+        LOCATION = "location"
+        NOTES = "notes"
+        SOURCES = "sources"
+        CONFIDENCE = "confidence"
+        IS_MISSING_MARKER = "is_missing_marker"
+        VIAF_ID = "viaf_id"
+        WIKIDATA_ID = "wikidata_id"
+        CERL_ID = "cerl_id"
+        BRANCH = "branch"
+        PRIMARY_LANGUAGE = "primary_language"
+        CREATED_AT = "created_at"
+        UPDATED_AT = "updated_at"
+
+    # publisher_variants table
+    class PublisherVariants:
+        """Columns in publisher_variants table."""
+        ID = "id"
+        AUTHORITY_ID = "authority_id"
+        VARIANT_FORM = "variant_form"
+        VARIANT_FORM_LOWER = "variant_form_lower"
+        SCRIPT = "script"
+        LANGUAGE = "language"
+        IS_PRIMARY = "is_primary"
+        PRIORITY = "priority"
+        NOTES = "notes"
+        CREATED_AT = "created_at"
+
+    # agent_authorities table
+    class AgentAuthorities:
+        """Columns in agent_authorities table."""
+        ID = "id"
+        CANONICAL_NAME = "canonical_name"
+        CANONICAL_NAME_LOWER = "canonical_name_lower"
+        AGENT_TYPE = "agent_type"
+        DATES_ACTIVE = "dates_active"
+        DATE_START = "date_start"
+        DATE_END = "date_end"
+        NOTES = "notes"
+        SOURCES = "sources"
+        CONFIDENCE = "confidence"
+        AUTHORITY_URI = "authority_uri"
+        WIKIDATA_ID = "wikidata_id"
+        VIAF_ID = "viaf_id"
+        NLI_ID = "nli_id"
+        CREATED_AT = "created_at"
+        UPDATED_AT = "updated_at"
+
+    # agent_aliases table
+    class AgentAliases:
+        """Columns in agent_aliases table."""
+        ID = "id"
+        AUTHORITY_ID = "authority_id"
+        ALIAS_FORM = "alias_form"
+        ALIAS_FORM_LOWER = "alias_form_lower"
+        ALIAS_TYPE = "alias_type"
+        SCRIPT = "script"
+        LANGUAGE = "language"
+        IS_PRIMARY = "is_primary"
+        PRIORITY = "priority"
+        NOTES = "notes"
+        CREATED_AT = "created_at"
+
 
 # Commonly used table aliases in SQL queries
 class M3Aliases:
@@ -189,6 +269,10 @@ class M3Aliases:
     SUBJECTS = "s"
     AGENTS = "a"
     AUTHORITY_ENRICHMENT = "ae"
+    PUBLISHER_AUTHORITIES = "pa"
+    PUBLISHER_VARIANTS = "pv"
+    AGENT_AUTHORITIES = "aa"
+    AGENT_ALIASES = "aal"
 
 
 def _get_class_string_attrs(cls) -> List[str]:
@@ -218,6 +302,10 @@ EXPECTED_SCHEMA = {
     M3Tables.NOTES: _get_class_string_attrs(M3Columns.Notes),
     M3Tables.PHYSICAL_DESCRIPTIONS: _get_class_string_attrs(M3Columns.PhysicalDescriptions),
     M3Tables.AUTHORITY_ENRICHMENT: _get_class_string_attrs(M3Columns.AuthorityEnrichment),
+    M3Tables.PUBLISHER_AUTHORITIES: _get_class_string_attrs(M3Columns.PublisherAuthorities),
+    M3Tables.PUBLISHER_VARIANTS: _get_class_string_attrs(M3Columns.PublisherVariants),
+    M3Tables.AGENT_AUTHORITIES: _get_class_string_attrs(M3Columns.AgentAuthorities),
+    M3Tables.AGENT_ALIASES: _get_class_string_attrs(M3Columns.AgentAliases),
 }
 
 

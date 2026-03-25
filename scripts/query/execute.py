@@ -10,13 +10,13 @@ import sqlite3
 from pathlib import Path
 from typing import List, Dict, Any
 
-logger = logging.getLogger(__name__)
-
 from scripts.schemas import QueryPlan, CandidateSet, Candidate, Evidence, FilterField, FilterOp
 from scripts.query.db_adapter import build_full_query, get_connection, fetch_candidates
 from scripts.query.compile import compute_plan_hash
 from scripts.query.subject_hints import get_top_subjects
 from scripts.query.llm_compiler import compile_query_with_subject_hints
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_display_info(
@@ -306,23 +306,45 @@ def extract_evidence_for_filter(
         )
 
     elif filter_obj.field == FilterField.SUBJECT:
+        # Subject queries use EXISTS subquery so subject_value may not be in
+        # the result row columns. Fall back to the matched search term.
+        subject_val = None
+        if "subject_value" in row.keys():
+            subject_val = row["subject_value"]
+        subject_source = "db.subjects (FTS5)"
+        if "subject_source" in row.keys() and row["subject_source"]:
+            subject_source = f"db.subjects.value (marc:{row['subject_source']})"
         return Evidence(
             field="subject_value",
-            value=row["subject_value"] if "subject_value" in row.keys() else None,
+            value=subject_val if subject_val else str(filter_obj.value),
             operator="MATCH",
             matched_against=filter_obj.value,
-            source="db.subjects.value (FTS5)",
+            source=subject_source,
             confidence=None
         )
 
     elif filter_obj.field == FilterField.AGENT:
+        # Derive MARC source tag from agent provenance (100=main entry, 700=added entry)
+        agent_marc_source = "100|700"
+        if "agent_provenance" in row.keys() and row["agent_provenance"]:
+            try:
+                provenance = json.loads(row["agent_provenance"])
+                if provenance and len(provenance) > 0:
+                    first_source = provenance[0].get("source", {})
+                    tag = first_source.get("tag", "100|700")
+                    occ = first_source.get("occurrence", 0)
+                    agent_marc_source = f"{tag}[{occ}]"
+            except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
+                agent_marc_source = "100|700"
+        # agent_raw is the aliased column name from the query
+        agent_val = row["agent_raw"] if "agent_raw" in row.keys() else None
         return Evidence(
             field="agent_value",
-            value=row["agent_value"] if "agent_value" in row.keys() else None,
+            value=agent_val,
             operator="LIKE",
             matched_against=filter_obj.value,
-            source="db.agents.value",
-            confidence=None
+            source=f"db.agents.agent_raw (marc:{agent_marc_source})",
+            confidence=row["agent_confidence"] if "agent_confidence" in row.keys() else None
         )
 
     elif filter_obj.field == FilterField.AGENT_NORM:
@@ -443,7 +465,7 @@ def build_match_rationale(plan: QueryPlan, row: sqlite3.Row) -> str:
             parts.append(f"subject matches '{filter_obj.value}'")
 
         elif filter_obj.field == FilterField.AGENT:
-            agent = row["agent_value"] if "agent_value" in row.keys() else "unknown"
+            agent = row["agent_raw"] if "agent_raw" in row.keys() else "unknown"
             parts.append(f"agent='{agent}'")
 
         elif filter_obj.field == FilterField.AGENT_NORM:

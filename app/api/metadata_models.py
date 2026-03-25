@@ -336,6 +336,7 @@ class AgentChatResponse(BaseModel):
 class PublisherVariantResponse(BaseModel):
     """A single name variant for a publisher authority."""
 
+    id: Optional[int] = Field(None, description="Variant record ID")
     variant_form: str = Field(..., description="The name form as it appears in records")
     script: str = Field(..., description="Script type: latin, hebrew, arabic, other")
     language: Optional[str] = Field(None, description="ISO 639 language code")
@@ -375,3 +376,56 @@ class PublisherAuthorityListResponse(BaseModel):
     items: List[PublisherAuthorityResponse] = Field(
         ..., description="Publisher authority records"
     )
+
+
+# ---------------------------------------------------------------------------
+# Publisher CRUD request/response models
+# ---------------------------------------------------------------------------
+
+
+class CreatePublisherRequest(BaseModel):
+    """Request body for creating a new publisher authority."""
+
+    canonical_name: str = Field(..., min_length=1, description="Canonical name")
+    type: str = Field(
+        "unresearched",
+        description="Publisher type: printing_house, private_press, "
+        "modern_publisher, bibliophile_society, unknown_marker, unresearched",
+    )
+    confidence: float = Field(0.5, ge=0.0, le=1.0, description="Confidence score")
+    location: Optional[str] = Field(None, description="Primary location")
+    dates_active: Optional[str] = Field(None, description="Active date range string")
+    notes: Optional[str] = Field(None, description="Notes")
+
+
+class UpdatePublisherRequest(BaseModel):
+    """Request body for updating a publisher authority."""
+
+    canonical_name: Optional[str] = Field(None, min_length=1, description="Canonical name")
+    type: Optional[str] = Field(None, description="Publisher type")
+    confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="Confidence score")
+    location: Optional[str] = Field(None, description="Primary location")
+    dates_active: Optional[str] = Field(None, description="Active date range string")
+    notes: Optional[str] = Field(None, description="Notes")
+
+
+class CreateVariantRequest(BaseModel):
+    """Request body for adding a variant to a publisher authority."""
+
+    variant_form: str = Field(..., min_length=1, description="Variant name form")
+    script: str = Field("latin", description="Script type: latin, hebrew, arabic, other")
+    language: Optional[str] = Field(None, description="ISO 639 language code")
+
+
+class MatchPreviewResponse(BaseModel):
+    """Response for match preview endpoint."""
+
+    variant_form: str = Field(..., description="The variant form queried")
+    matching_imprints: int = Field(..., description="Number of matching imprint rows")
+
+
+class DeleteResponse(BaseModel):
+    """Generic deletion confirmation."""
+
+    success: bool = Field(..., description="Whether the deletion succeeded")
+    message: str = Field(..., description="Human-readable result message")

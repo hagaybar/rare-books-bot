@@ -330,5 +330,237 @@ def query(
             typer.echo(f"\n⚠ Warning: Unexpected error saving to session: {e}", err=True)
 
 
+@app.command()
+def regression(
+    gold: Path = typer.Option(
+        ...,
+        "--gold",
+        help="Path to gold.json"
+    ),
+    db: Path = typer.Option(
+        ...,
+        "--db",
+        help="Path to bibliographic.db"
+    ),
+    verbose: bool = typer.Option(
+        False,
+        "--verbose", "-v",
+        help="Show detailed output"
+    ),
+    log_file: Path = typer.Option(
+        None,
+        "--log-file",
+        help="Write detailed results to log file"
+    ),
+):
+    """
+    Run regression tests from QA gold set.
+
+    Executes all queries in the gold set and validates that:
+    - All expected_includes are present in results
+    - None of expected_excludes are present in results
+
+    Exit code 0 = all tests passed, exit code 1 = one or more tests failed.
+    """
+    import json as json_mod
+    from datetime import datetime
+    from scripts.query.compile import compile_query
+    from scripts.query.execute import execute_plan
+
+    # Validate inputs
+    if not gold.exists():
+        typer.echo(f"Error: Gold set not found: {gold}", err=True)
+        raise typer.Exit(code=1)
+    if not db.exists():
+        typer.echo(f"Error: Database not found: {db}", err=True)
+        raise typer.Exit(code=1)
+
+    # Load gold set
+    try:
+        gold_data = json_mod.loads(gold.read_text())
+        queries = gold_data['queries']
+    except Exception as e:
+        typer.echo(f"Error loading gold set: {e}", err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo(f"Running regression on {len(queries)} queries...")
+    typer.echo(f"Gold set: {gold}")
+    typer.echo(f"Database: {db}")
+    typer.echo()
+
+    passed = 0
+    failed = 0
+    errors = 0
+    results = []
+
+    for idx, query_spec in enumerate(queries, 1):
+        query_text = query_spec['query_text']
+        expected_includes = set(query_spec['expected_includes'])
+        expected_excludes = set(query_spec['expected_excludes'])
+
+        if verbose:
+            typer.echo(f"[{idx}/{len(queries)}] Running: {query_text}")
+
+        try:
+            plan = compile_query(query_text)
+            result = execute_plan(plan, db)
+            actual_ids = {c.record_id for c in result.candidates}
+
+            missing = expected_includes - actual_ids
+            unexpected = expected_excludes & actual_ids
+
+            if missing or unexpected:
+                failed += 1
+                status_str = "FAIL"
+                typer.echo(f"FAIL: {query_text}")
+                if missing:
+                    typer.echo(f"   Missing {len(missing)} expected records:")
+                    for record_id in list(missing)[:5]:
+                        typer.echo(f"     - {record_id}")
+                    if len(missing) > 5:
+                        typer.echo(f"     ... and {len(missing) - 5} more")
+                if unexpected:
+                    typer.echo(f"   Found {len(unexpected)} unexpected records:")
+                    for record_id in list(unexpected)[:5]:
+                        typer.echo(f"     - {record_id}")
+                    if len(unexpected) > 5:
+                        typer.echo(f"     ... and {len(unexpected) - 5} more")
+            else:
+                passed += 1
+                status_str = "PASS"
+                if verbose:
+                    typer.echo(f"PASS: {query_text}")
+
+            results.append({
+                'query': query_text,
+                'status': status_str,
+                'expected_includes': list(expected_includes),
+                'expected_excludes': list(expected_excludes),
+                'actual_results': list(actual_ids),
+                'missing': list(missing),
+                'unexpected': list(unexpected)
+            })
+
+        except Exception as e:
+            errors += 1
+            typer.echo(f"ERROR: {query_text}")
+            typer.echo(f"   {e}")
+            results.append({
+                'query': query_text,
+                'status': "ERROR",
+                'error': str(e)
+            })
+
+    typer.echo()
+    typer.echo("=" * 60)
+    typer.echo("Regression Test Results")
+    typer.echo("=" * 60)
+    typer.echo(f"Total queries: {len(queries)}")
+    typer.echo(f"Passed: {passed}")
+    typer.echo(f"Failed: {failed}")
+    typer.echo(f"Errors: {errors}")
+    typer.echo("=" * 60)
+
+    if log_file:
+        log_data = {
+            'timestamp': datetime.now().isoformat(),
+            'gold_set': str(gold),
+            'database': str(db),
+            'total': len(queries),
+            'passed': passed,
+            'failed': failed,
+            'errors': errors,
+            'results': results
+        }
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        log_file.write_text(json_mod.dumps(log_data, indent=2))
+        typer.echo(f"\nDetailed results written to: {log_file}")
+
+    if failed > 0 or errors > 0:
+        typer.echo(f"\nRegression failed: {failed + errors} queries did not pass", err=True)
+        raise typer.Exit(code=1)
+    else:
+        typer.echo(f"\nAll {passed} queries passed!")
+        raise typer.Exit(code=0)
+
+
+@app.command()
+def seed_agent_authorities(
+    db: Path = typer.Option(
+        Path("data/index/bibliographic.db"),
+        "--db",
+        help="Path to bibliographic SQLite database",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Preview what would be seeded without writing to the database",
+    ),
+    verbose: bool = typer.Option(
+        False,
+        "--verbose", "-v",
+        help="Show detailed output",
+    ),
+):
+    """
+    Seed agent authority records from enrichment data.
+
+    Groups agents by authority_uri, creates authorities with primary aliases,
+    adds enrichment labels and Hebrew labels, and generates word-reorder variants.
+    Idempotent (safe to run multiple times).
+    """
+    from scripts.metadata.agent_authority import AgentAuthorityStore
+    from scripts.metadata.seed_agent_authorities import seed_all
+    import sqlite3
+
+    if not db.exists():
+        typer.echo(f"Error: Database not found: {db}", err=True)
+        raise typer.Exit(code=1)
+
+    if verbose:
+        typer.echo(f"Database: {db}")
+        typer.echo(f"Dry run: {dry_run}")
+        typer.echo()
+
+    # Open connection
+    conn = sqlite3.connect(str(db))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+
+    # Ensure schema exists
+    store = AgentAuthorityStore(db)
+    store.init_schema(conn=conn)
+
+    if dry_run:
+        # Use a savepoint so we can roll back
+        conn.execute("SAVEPOINT dry_run")
+        try:
+            stats = seed_all(conn)
+            typer.echo("Dry run results (no changes written):")
+            for key, value in stats.items():
+                if key != "aliases_by_type":
+                    typer.echo(f"  {key}: {value}")
+            if "aliases_by_type" in stats:
+                typer.echo("  Alias breakdown:")
+                for alias_type, count in stats["aliases_by_type"].items():
+                    typer.echo(f"    {alias_type}: {count}")
+        finally:
+            conn.execute("ROLLBACK TO dry_run")
+            conn.close()
+    else:
+        stats = seed_all(conn)
+        conn.close()
+
+        typer.echo("Agent authority seeding complete!")
+        typer.echo()
+        for key, value in stats.items():
+            if key != "aliases_by_type":
+                typer.echo(f"  {key}: {value}")
+        if "aliases_by_type" in stats:
+            typer.echo("  Alias breakdown:")
+            for alias_type, count in stats["aliases_by_type"].items():
+                typer.echo(f"    {alias_type}: {count}")
+
+
 if __name__ == "__main__":
     app()

@@ -51,9 +51,10 @@ The M2 normalization layer enriches M1 canonical records with normalized fields 
 ### Place Normalization
 - **Input:** Raw place strings from M1 imprints (e.g., "Paris :", "אמשטרדם", "[Berlin]")
 - **Mapping:** `data/normalization/place_aliases/place_alias_map.json` (production, version-controlled)
-- **Process:** Basic cleaning (casefold, strip punctuation, remove brackets) + optional alias map lookup
+- **Process:** Alias map lookup; unmatched values are tagged as `missing`
 - **Output:** Canonical English keys (e.g., "paris", "amsterdam", "berlin") with confidence scores
-- **Confidence:** 0.80 (base cleaning) or 0.95 (with alias map)
+- **Confidence:** 0.95 (place_alias_map match) or tagged `missing` (no match)
+- **Methods in production:** `place_alias_map`, `missing` (no base_clean method for places)
 - **Documentation:** `docs/pipelines/place_normalization.md`
 
 ### Publisher Normalization
@@ -184,83 +185,59 @@ Output must include CandidateSet + evidence fields used.
 
 ## QA Tool Architecture
 
-**Status**: Development tool maintained as part of core repository
+**Status**: Integrated into unified React UI and diagnostics API
 
 **Purpose**: Quality assurance infrastructure for M4 query pipeline development, providing systematic labeling, issue tracking, and regression testing capabilities.
 
 ### Components
 
-**Streamlit UI** (`app/ui_qa/`):
-- 5-page interactive application for query testing and labeling
+**React Query Debugger** (`/diagnostics/query`):
+- Interactive query testing and labeling via the unified React UI
 - Session management for organizing QA work
-- Visual query builder and result inspection
+- Visual result inspection with evidence and confidence scores
 - Issue tagging with predefined categories (parser errors, normalization issues, etc.)
+
+**Diagnostics API** (`app/api/diagnostics.py`):
+- REST endpoints for query execution, run storage, labeling, gold set export, and regression testing
+- Endpoints: `POST /diagnostics/query-run`, `GET /diagnostics/query-runs`, `POST /diagnostics/labels`, `GET /diagnostics/labels/{run_id}`, `GET /diagnostics/gold-set/export`, `POST /diagnostics/gold-set/regression`, `GET /diagnostics/tables`, `GET /diagnostics/tables/{table_name}/rows`
+
+**Database Explorer** (`/diagnostics/db`):
+- Interactive table browser for inspecting bibliographic.db tables
 
 **QA Database** (`data/qa/qa.db`):
 - Separate SQLite database (isolated from production `bibliographic.db`)
 - Tables: `qa_queries`, `qa_candidate_labels`, `qa_query_gold`
 - Stores query runs, candidate labels (TP/FP/FN/UNK), and gold set metadata
+- Database operations: `scripts/qa/db.py`
 
 **Regression Framework**:
 - Gold set export to `data/qa/gold.json` (expected includes/excludes per query)
-- CLI regression runner: `python -m app.qa regress --gold data/qa/gold.json --db data/index/bibliographic.db`
+- CLI regression runner: `python -m app.cli regression --gold data/qa/gold.json --db data/index/bibliographic.db`
 - Exit codes for CI integration (0 = pass, 1 = fail)
-
-### Scope and Boundaries
-
-**In Scope**:
-- Query labeling and issue tracking for M4 development
-- Gold set creation and management
-- Regression testing for query pipeline
-- Statistical analysis of query quality (precision, recall, issue patterns)
-
-**Out of Scope**:
-- Production query execution (use `app/cli.py query` for production)
-- M1-M3 pipeline testing (covered by unit tests in `tests/`)
-- General-purpose data exploration (not a database browser)
 
 ### Usage
 
-**Launch QA UI**:
-```bash
-poetry run streamlit run app/ui_qa/main.py
-```
-
 **Run regression tests** (for CI or manual validation):
 ```bash
-poetry run python -m app.qa regress \
+poetry run python -m app.cli regression \
   --gold data/qa/gold.json \
   --db data/index/bibliographic.db
 ```
 
 **Workflow**:
-1. Run query in UI → review results
-2. Label candidates as TP/FP/FN → tag issues
-3. Find missing records (FN) via database search
+1. Run query in React Query Debugger (`/diagnostics/query`) -> review results
+2. Label candidates as TP/FP/FN -> tag issues
+3. Find missing records (FN) via Database Explorer (`/diagnostics/db`)
 4. Export gold set when queries are validated
 5. Run regression tests to prevent quality regressions
 
-**Documentation**: See `app/ui_qa/README.md` for detailed usage guide
+## Project Structure
 
-**Decision rationale**: QA tool is maintained in-repo (not extracted) because:
-- Tightly coupled to M4 query pipeline evolution
-- Uses same dependencies (Pydantic models, query compiler, evidence extraction)
-- Facilitates rapid iteration during M4 development
-- Small codebase (~1000 lines) doesn't justify separate package overhead
-
-## Project Structure (Inherited Shell)
-
-This project started from a multi-source RAG platform template. The core structure includes:
-
-- **`app/`**: CLI interface (using Typer)
-- **`scripts/`**: Core library organized by function (ingestion, chunking, embeddings, retrieval, etc.)
-- **`configs/`**: YAML configurations (currently chunk_rules.yaml from template)
+- **`app/`**: CLI interface (using Typer) and FastAPI backend (`app/api/`)
+- **`scripts/`**: Core library organized by function (MARC parsing, normalization, query compilation, metadata agents, QA)
+- **`frontend/`**: Unified React SPA with 9 screens across 4 tiers (Primary, Operator, Diagnostics, Admin)
 - **`tests/`**: Pytest suite
-- **`archive/`**: Reference materials and documentation from the RAG template (kept for reference only, not active code)
-
-**Current state**: The repo is largely a shell template. Development will focus on MARC-specific components while leveraging the modular architecture (e.g., using the utils, logging, and project management patterns).
-
-**Transformation status**: Actively removing RAG-specific components and building MARC XML functionality. See `plan.mf` for milestone roadmap.
+- **`archive/`**: Reference materials (retired Streamlit UIs, RAG template docs)
 
 ## Session Management
 
@@ -607,7 +584,7 @@ React Frontend ──REST API──> FastAPI Backend ──> Grounding Layer + S
 
 - **Backend**: `app/api/metadata.py` - 12 REST endpoints for coverage, issues, corrections, agent chat, publisher authorities
 - **Agents**: `scripts/metadata/agents/` - 4 specialist agents (Place, Date, Publisher, Name)
-- **Frontend**: `frontend/` - React SPA with Dashboard, Workbench, Agent Chat, Review pages
+- **Frontend**: `frontend/` - Unified React SPA with 9 screens: Chat, Coverage, Workbench, Agent Chat, Review, Query Debugger, DB Explorer, Publishers, Health
 - **Feedback Loop**: `scripts/metadata/feedback_loop.py` - approve → alias map → re-normalize → coverage update
 
 ### API Endpoints
@@ -661,8 +638,8 @@ poetry run python -m scripts.metadata.feedback_loop --field place --raw "Lugduni
 Internal publisher identification system for the rare books collection.
 
 ### Tables
-- `publisher_authorities` -- canonical publisher identities (228 records: 203 unresearched, 18 printing houses, 3 bibliophile societies, 2 unknown markers, 1 modern publisher, 1 private press)
-- `publisher_variants` -- name forms linking to authorities (266 variants across Latin, Hebrew, and other scripts)
+- `publisher_authorities` -- canonical publisher identities (227 records: 202 unresearched, 18 printing houses, 3 bibliophile societies, 2 unknown markers, 1 modern publisher, 1 private press)
+- `publisher_variants` -- name forms linking to authorities (265 variants across Latin, Hebrew, and other scripts)
 
 ### Key Properties
 - Every authority has at least one variant; every variant references a valid authority
@@ -716,9 +693,16 @@ python -m app.cli parse <marc_xml_path>      # parse MARC XML to JSONL
 python -m app.cli index <canonical_dir>      # build SQLite index
 python -m app.cli query "<nl_query>"         # execute query (requires OPENAI_API_KEY)
 
-# API server commands (M6 Chatbot API):
+# API server commands:
 uvicorn app.api.main:app --reload           # start development server (http://localhost:8000)
 uvicorn app.api.main:app --host 0.0.0.0 --port 8000  # production server
+
+# React frontend:
+cd frontend && npm run dev                  # start development server (http://localhost:5173)
+cd frontend && npm run build                # production build
+
+# QA regression:
+python -m app.cli regression --gold data/qa/gold.json --db data/index/bibliographic.db
 
 # Test API endpoints:
 curl http://localhost:8000/health           # health check

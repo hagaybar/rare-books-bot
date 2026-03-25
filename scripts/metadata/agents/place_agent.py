@@ -317,7 +317,7 @@ class PlaceAgent:
 
 
 # ---------------------------------------------------------------------------
-# Primo URL builder (standalone, no external dependency on app.ui_chat)
+# Primo URL builder (standalone)
 # ---------------------------------------------------------------------------
 
 _PRIMO_BASE_URL = "https://tau.primo.exlibrisgroup.com/nde/fulldisplay"
@@ -329,8 +329,7 @@ _PRIMO_SEARCH_SCOPE = "TAU"
 def _build_primo_url(mms_id: str) -> str:
     """Generate a Primo URL for a given MMS ID.
 
-    Uses the same URL pattern as app.ui_chat.config.generate_primo_url
-    but without importing from the UI layer.
+    Uses the standard TAU Primo URL pattern.
 
     Args:
         mms_id: The MMS ID (e.g., "990009748710204146").

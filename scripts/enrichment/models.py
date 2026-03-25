@@ -85,7 +85,7 @@ class EnrichmentRequest(BaseModel):
 
 class PersonInfo(BaseModel):
     """Biographical information for a person."""
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra='allow')
 
     birth_year: Optional[int] = None
     death_year: Optional[int] = None
@@ -94,6 +94,13 @@ class PersonInfo(BaseModel):
     nationality: Optional[str] = None
     occupations: List[str] = Field(default_factory=list)
     description: Optional[str] = None
+    # Relationship fields (from extended Wikidata enrichment)
+    teachers: List[str] = Field(default_factory=list)  # P1066 student of
+    students: List[str] = Field(default_factory=list)  # P802 students
+    notable_works: List[str] = Field(default_factory=list)  # P800 notable works
+    languages_spoken: List[str] = Field(default_factory=list)  # P1412 languages
+    hebrew_label: Optional[str] = None  # Hebrew name/acronym from Wikidata
+    described_by: List[str] = Field(default_factory=list)  # P1343 described by source
 
 
 class PlaceInfo(BaseModel):

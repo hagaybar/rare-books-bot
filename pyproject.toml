@@ -35,7 +35,6 @@ dependencies = [
     # Code quality (in main deps for convenience)
     "pylint>=3.3.7,<4.0.0",
     "black>=25.1.0,<26.0.0",
-    "streamlit (>=1.52.2,<2.0.0)",
 ]
 
 [tool.ruff]
@@ -50,12 +49,8 @@ select = ["E", "F"]
 ignore = []
 
 [tool.ruff.lint.per-file-ignores]
-# These files use sys.path manipulation before imports (Streamlit pages, CLI entry points)
+# These files use sys.path manipulation before imports (CLI entry points)
 "app/cli.py" = ["E402"]
-"app/qa.py" = ["E402"]
-"app/ui_chat/main.py" = ["E402"]
-"app/ui_qa/main.py" = ["E402"]
-"app/ui_qa/pages/*.py" = ["E402"]
 "scripts/metadata/populate_publisher_authority.py" = ["E402"]
 # LLM prompt strings and agent system prompts are intentionally long
 "scripts/query/llm_compiler.py" = ["E501"]

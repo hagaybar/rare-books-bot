@@ -344,3 +344,55 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_pub_var_form_lower
     ON publisher_variants(variant_form_lower);
 CREATE INDEX IF NOT EXISTS idx_pub_var_script
     ON publisher_variants(script);
+
+-- ==============================================================================
+-- AGENT AUTHORITY TABLES
+-- ==============================================================================
+
+-- Agent authorities (one row per canonical agent identity)
+CREATE TABLE IF NOT EXISTS agent_authorities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    canonical_name TEXT NOT NULL,
+    canonical_name_lower TEXT NOT NULL,
+    agent_type TEXT NOT NULL CHECK(agent_type IN ('personal', 'corporate', 'meeting')),
+    dates_active TEXT,
+    date_start INTEGER,
+    date_end INTEGER,
+    notes TEXT,
+    sources TEXT,
+    confidence REAL NOT NULL DEFAULT 0.5,
+    authority_uri TEXT,
+    wikidata_id TEXT,
+    viaf_id TEXT,
+    nli_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_auth_canonical_lower ON agent_authorities(canonical_name_lower);
+CREATE INDEX IF NOT EXISTS idx_agent_auth_type ON agent_authorities(agent_type);
+CREATE INDEX IF NOT EXISTS idx_agent_auth_authority_uri ON agent_authorities(authority_uri);
+CREATE INDEX IF NOT EXISTS idx_agent_auth_wikidata ON agent_authorities(wikidata_id);
+
+-- Agent aliases (one row per name variant, FK to agent_authorities)
+CREATE TABLE IF NOT EXISTS agent_aliases (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    authority_id INTEGER NOT NULL REFERENCES agent_authorities(id) ON DELETE CASCADE,
+    alias_form TEXT NOT NULL,
+    alias_form_lower TEXT NOT NULL,
+    alias_type TEXT NOT NULL CHECK(alias_type IN (
+        'primary', 'variant_spelling', 'cross_script',
+        'patronymic', 'acronym', 'word_reorder', 'historical'
+    )),
+    script TEXT DEFAULT 'latin',
+    language TEXT,
+    is_primary INTEGER NOT NULL DEFAULT 0,
+    priority INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_alias_authority ON agent_aliases(authority_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_alias_form_lower ON agent_aliases(alias_form_lower);
+CREATE INDEX IF NOT EXISTS idx_agent_alias_type ON agent_aliases(alias_type);
+CREATE INDEX IF NOT EXISTS idx_agent_alias_script ON agent_aliases(script);

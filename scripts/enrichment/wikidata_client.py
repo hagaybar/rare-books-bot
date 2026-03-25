@@ -53,11 +53,16 @@ REQUEST_DELAY_SECONDS = 1.0
 # =============================================================================
 
 AGENT_SPARQL_BY_ID = """
-SELECT ?item ?itemLabel ?itemDescription
+SELECT ?item ?itemLabel ?itemDescription ?heLabel
        ?birthDate ?deathDate ?birthPlace ?birthPlaceLabel
        ?deathPlace ?deathPlaceLabel
        ?nationality ?nationalityLabel
        ?occupation ?occupationLabel
+       ?teacher ?teacherLabel
+       ?student ?studentLabel
+       ?notableWork ?notableWorkLabel
+       ?langSpoken ?langSpokenLabel
+       ?describedBy ?describedByLabel
        ?viafId ?isniId ?locId ?image
 WHERE {{
   BIND(wd:{qid} AS ?item)
@@ -69,14 +74,22 @@ WHERE {{
   OPTIONAL {{ ?item wdt:P27 ?nationality . }}
   OPTIONAL {{ ?item wdt:P106 ?occupation . }}
 
+  OPTIONAL {{ ?item wdt:P1066 ?teacher . }}
+  OPTIONAL {{ ?item wdt:P802 ?student . }}
+  OPTIONAL {{ ?item wdt:P800 ?notableWork . }}
+  OPTIONAL {{ ?item wdt:P1412 ?langSpoken . }}
+  OPTIONAL {{ ?item wdt:P1343 ?describedBy . }}
+
   OPTIONAL {{ ?item wdt:P214 ?viafId . }}
   OPTIONAL {{ ?item wdt:P213 ?isniId . }}
   OPTIONAL {{ ?item wdt:P244 ?locId . }}
   OPTIONAL {{ ?item wdt:P18 ?image . }}
 
+  OPTIONAL {{ ?item rdfs:label ?heLabel . FILTER(LANG(?heLabel) = "he") }}
+
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en,he". }}
 }}
-LIMIT 50
+LIMIT 200
 """
 
 AGENT_SEARCH_SPARQL = """
@@ -349,6 +362,39 @@ async def enrich_agent_by_id(
         if b.get("nationalityLabel", {}).get("value")
     ))
 
+    # Collect relationships (may have multiple results from SPARQL joins)
+    teachers = list(set(
+        b.get("teacherLabel", {}).get("value")
+        for b in bindings
+        if b.get("teacherLabel", {}).get("value")
+        and not b.get("teacherLabel", {}).get("value", "").startswith("Q")
+    ))
+    students = list(set(
+        b.get("studentLabel", {}).get("value")
+        for b in bindings
+        if b.get("studentLabel", {}).get("value")
+        and not b.get("studentLabel", {}).get("value", "").startswith("Q")
+    ))
+    notable_works = list(set(
+        b.get("notableWorkLabel", {}).get("value")
+        for b in bindings
+        if b.get("notableWorkLabel", {}).get("value")
+        and not b.get("notableWorkLabel", {}).get("value", "").startswith("Q")
+    ))
+    languages_spoken = list(set(
+        b.get("langSpokenLabel", {}).get("value")
+        for b in bindings
+        if b.get("langSpokenLabel", {}).get("value")
+        and not b.get("langSpokenLabel", {}).get("value", "").startswith("Q")
+    ))
+    described_by = list(set(
+        b.get("describedByLabel", {}).get("value")
+        for b in bindings
+        if b.get("describedByLabel", {}).get("value")
+        and not b.get("describedByLabel", {}).get("value", "").startswith("Q")
+    ))
+    hebrew_label = first.get("heLabel", {}).get("value")
+
     person_info = PersonInfo(
         birth_year=birth_year,
         death_year=death_year,
@@ -357,6 +403,12 @@ async def enrich_agent_by_id(
         nationality=nationalities[0] if nationalities else None,
         occupations=occupations[:5],  # Limit to 5
         description=first.get("itemDescription", {}).get("value"),
+        teachers=teachers[:5],
+        students=students[:10],
+        notable_works=notable_works[:10],
+        languages_spoken=languages_spoken[:5],
+        hebrew_label=hebrew_label,
+        described_by=described_by[:5],
     )
 
     # External identifiers
