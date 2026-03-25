@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJMFCJW9Y36BSHPM618RHYC",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000002:implement-task",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Task 2: Wikipedia Client Module",
+  "io": {
+    "inputJsonPath": "tasks/01KMJMFCJW9Y36BSHPM618RHYC/input.json",
+    "outputJsonPath": "tasks/01KMJMFCJW9Y36BSHPM618RHYC/result.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Create scripts/enrichment/wikipedia_client.py — async Wikipedia/MediaWiki API client using httpx. Follow the pattern from scripts/enrichment/wikidata_client.py. Functions: resolve_titles_batch(qids) using Wikidata wbgetentities API, fetch_links_batch(titles) using MediaWiki prop=links|categories (50 per request), fetch_summary(title) using REST API /page/summary. Filter broad categories with regex. Create tests/scripts/enrichment/test_wikipedia_client.py with mocked httpx. TDD. Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-25-wikipedia-enrichment.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-wikipedia-enrichment-design.md",
+    "taskName": "Wikipedia Client Module",
+    "taskNumber": 2,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/enrichment/test_wikipedia_client.py -v 2>&1 | tail -20"
+  }
+}

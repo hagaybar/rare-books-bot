@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJS6ZYV64KYP0HZ631XV4P7",
+  "taskId": "verify",
+  "invocationKey": "wikipedia-enrichment:S000013:verify",
+  "stepId": "S000013",
+  "kind": "shell",
+  "title": "Verify: final-commit",
+  "io": {
+    "outputJsonPath": "tasks/01KMJS6ZYV64KYP0HZ631XV4P7/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && git add -A && git status --short | head -20",
+    "phase": "final-commit",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

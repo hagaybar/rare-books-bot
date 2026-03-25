@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJMPPMV8Z5CWD7PH165TR6W",
+  "taskId": "verify",
+  "invocationKey": "wikipedia-enrichment:S000003:verify",
+  "stepId": "S000003",
+  "kind": "shell",
+  "title": "Verify: phase1-foundation",
+  "io": {
+    "outputJsonPath": "tasks/01KMJMPPMV8Z5CWD7PH165TR6W/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/enrichment/test_wikipedia_client.py -v 2>&1 | tail -10",
+    "phase": "phase1-foundation",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJS6ZHY5HH763V8Z54Y7B44",
+  "taskId": "verify",
+  "invocationKey": "wikipedia-enrichment:S000012:verify",
+  "stepId": "S000012",
+  "kind": "shell",
+  "title": "Verify: final-all-tests",
+  "io": {
+    "outputJsonPath": "tasks/01KMJS6ZHY5HH763V8Z54Y7B44/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/ -v --ignore=tests/app/test_scholar_evidence.py -x 2>&1 | tail -20",
+    "phase": "final-all-tests",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

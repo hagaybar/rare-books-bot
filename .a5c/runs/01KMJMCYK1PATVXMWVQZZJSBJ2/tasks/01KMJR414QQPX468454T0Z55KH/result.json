@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJR414QQPX468454T0Z55KH",
+  "taskId": "verify",
+  "invocationKey": "wikipedia-enrichment:S000006:verify",
+  "status": "ok",
+  "result": {
+    "by_type": {
+      "category": 26140,
+      "wikilink": 7011
+    },
+    "connections": 33151
+  },
+  "startedAt": "2026-03-25T14:59:40.341Z",
+  "finishedAt": "2026-03-25T14:59:40.341Z",
+  "value": {
+    "by_type": {
+      "category": 26140,
+      "wikilink": 7011
+    },
+    "connections": 33151
+  }
+}

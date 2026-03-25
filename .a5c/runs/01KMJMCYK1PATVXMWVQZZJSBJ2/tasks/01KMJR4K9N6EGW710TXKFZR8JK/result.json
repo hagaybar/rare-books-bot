@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJR4K9N6EGW710TXKFZR8JK",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000008:implement-task",
+  "status": "ok",
+  "result": {
+    "commitHash": "bdd639c",
+    "filesModified": [
+      "scripts/chat/plan_models.py",
+      "scripts/chat/executor.py",
+      "scripts/chat/narrator.py"
+    ],
+    "success": true,
+    "testsPassing": true
+  },
+  "startedAt": "2026-03-25T15:02:35.116Z",
+  "finishedAt": "2026-03-25T15:02:35.116Z",
+  "value": {
+    "commitHash": "bdd639c",
+    "filesModified": [
+      "scripts/chat/plan_models.py",
+      "scripts/chat/executor.py",
+      "scripts/chat/narrator.py"
+    ],
+    "success": true,
+    "testsPassing": true
+  }
+}

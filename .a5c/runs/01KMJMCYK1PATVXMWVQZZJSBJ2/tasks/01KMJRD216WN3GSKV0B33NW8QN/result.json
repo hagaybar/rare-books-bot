@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJRD216WN3GSKV0B33NW8QN",
+  "taskId": "verify",
+  "invocationKey": "wikipedia-enrichment:S000009:verify",
+  "status": "ok",
+  "result": {
+    "summaries": 10,
+    "tests_pass": true
+  },
+  "startedAt": "2026-03-25T15:04:42.761Z",
+  "finishedAt": "2026-03-25T15:04:42.761Z",
+  "value": {
+    "summaries": 10,
+    "tests_pass": true
+  }
+}

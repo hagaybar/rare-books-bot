@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T14:59:49.692Z",
+  "data": {
+    "effectId": "01KMJR4K9N6EGW710TXKFZR8JK",
+    "invocationKey": "wikipedia-enrichment:S000008:implement-task",
+    "invocationHash": "7352cc75a956c07c72be0809709f51a678826ea298e0857bba79b6bcf7ed58ce",
+    "stepId": "S000008",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Task 6: Narrator Integration",
+    "taskDefRef": "tasks/01KMJR4K9N6EGW710TXKFZR8JK/task.json"
+  },
+  "checksum": "f4d9f099cf71ec4e1e535059114c75b3be8513dec0334d1b8ecf1345c8de8656"
+}

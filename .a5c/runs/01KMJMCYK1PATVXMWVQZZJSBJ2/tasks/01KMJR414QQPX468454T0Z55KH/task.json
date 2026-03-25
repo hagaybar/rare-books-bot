@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJR414QQPX468454T0Z55KH",
+  "taskId": "verify",
+  "invocationKey": "wikipedia-enrichment:S000006:verify",
+  "stepId": "S000006",
+  "kind": "shell",
+  "title": "Verify: phase2-connections",
+  "io": {
+    "outputJsonPath": "tasks/01KMJR414QQPX468454T0Z55KH/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && sqlite3 data/index/bibliographic.db \"SELECT COUNT(*) as connections FROM wikipedia_connections;\" && sqlite3 data/index/bibliographic.db \"SELECT source_type, COUNT(*) FROM wikipedia_connections GROUP BY source_type;\"",
+    "phase": "phase2-connections",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

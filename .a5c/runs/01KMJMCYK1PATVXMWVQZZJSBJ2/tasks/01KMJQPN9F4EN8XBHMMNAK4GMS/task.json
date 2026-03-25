@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJQPN9F4EN8XBHMMNAK4GMS",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000005:implement-task",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Task 4: Connection Discovery Engine",
+  "io": {
+    "inputJsonPath": "tasks/01KMJQPN9F4EN8XBHMMNAK4GMS/input.json",
+    "outputJsonPath": "tasks/01KMJQPN9F4EN8XBHMMNAK4GMS/result.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Create scripts/enrichment/wikipedia_connections.py with: build_agent_lookup() builds title->QID->agent_norm maps from wikipedia_cache + authority_enrichment + agents tables. discover_connections() cross-references each agent's wikilinks against the lookup (match by QID not name). Score: see_also=0.85, body_link=0.75, shared_categories=0.65, bidirectional=0.90. Canonical rows: source < target alphabetically. Store to wikipedia_connections table. generate_candidate_linkage_report() fuzzy-matches unmatched wikilinks against un-enriched agents, outputs CSV. Create tests. Run on real data. Also install thefuzz if needed: poetry add thefuzz. Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-25-wikipedia-enrichment.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-wikipedia-enrichment-design.md",
+    "taskName": "Connection Discovery Engine",
+    "taskNumber": 4,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/enrichment/test_wikipedia_connections.py -v 2>&1 | tail -20"
+  }
+}

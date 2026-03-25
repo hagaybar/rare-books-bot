@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T14:59:31.107Z",
+  "data": {
+    "effectId": "01KMJR414QQPX468454T0Z55KH",
+    "invocationKey": "wikipedia-enrichment:S000006:verify",
+    "invocationHash": "a7ac1d9817a0fe60a55ca8dd8ddacec5622529f01802a61f9716aaaad67beb21",
+    "stepId": "S000006",
+    "taskId": "verify",
+    "kind": "shell",
+    "label": "Verify: phase2-connections",
+    "taskDefRef": "tasks/01KMJR414QQPX468454T0Z55KH/task.json"
+  },
+  "checksum": "de3c694d2696e230318f1495f7a46bdb7dbe35169734b3db9c28900ec685999d"
+}

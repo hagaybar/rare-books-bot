@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T14:00:05.260Z",
+  "data": {
+    "effectId": "01KMJMQ6VZKHV0H7SEAEFQKPV4",
+    "invocationKey": "wikipedia-enrichment:S000004:implement-task",
+    "invocationHash": "6b040b41cdcfa4cbc8946ff7c52042692d5a943588f29a20a240af5011c552a3",
+    "stepId": "S000004",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Task 3: Batch Script Pass 1 (Links)",
+    "taskDefRef": "tasks/01KMJMQ6VZKHV0H7SEAEFQKPV4/task.json"
+  },
+  "checksum": "0d24ceecc4b38d2a4934e3dd90ede3a68d9cf8033b8ee20dcc79cf6905d06020"
+}

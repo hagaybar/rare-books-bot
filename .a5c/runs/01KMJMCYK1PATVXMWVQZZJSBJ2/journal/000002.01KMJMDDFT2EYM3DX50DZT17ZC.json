@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T13:54:44.346Z",
+  "data": {
+    "effectId": "01KMJMDDFAX9JTFT64N2D0EATT",
+    "invocationKey": "wikipedia-enrichment:S000001:implement-task",
+    "invocationHash": "73d0262f31a9f72150062926ec63cc621ebd25ea4685318e815c1a3759d7eef2",
+    "stepId": "S000001",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Task 1: Database Schema",
+    "taskDefRef": "tasks/01KMJMDDFAX9JTFT64N2D0EATT/task.json"
+  },
+  "checksum": "278b94f4eac359f830ae6629b5e0f61540f4a1e6cd6f73fe318c17b24dc90cfe"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T14:52:12.987Z",
+  "data": {
+    "effectId": "01KMJQPN9F4EN8XBHMMNAK4GMS",
+    "invocationKey": "wikipedia-enrichment:S000005:implement-task",
+    "invocationHash": "0cbeae8c8efb08c9c1d6b0814408d315b398a48b4f8b8f322b82ff669493a60c",
+    "stepId": "S000005",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Task 4: Connection Discovery Engine",
+    "taskDefRef": "tasks/01KMJQPN9F4EN8XBHMMNAK4GMS/task.json"
+  },
+  "checksum": "37751f093b259f2b3bbbba3b8d71a4da62085db4ec4a481bf132679084ffe6ce"
+}

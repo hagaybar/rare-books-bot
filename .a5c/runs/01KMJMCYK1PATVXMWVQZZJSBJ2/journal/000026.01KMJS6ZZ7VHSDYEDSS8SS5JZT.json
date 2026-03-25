@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T15:18:36.775Z",
+  "data": {
+    "effectId": "01KMJS6ZYV64KYP0HZ631XV4P7",
+    "invocationKey": "wikipedia-enrichment:S000013:verify",
+    "invocationHash": "42e0825fc2c6f74b8c852e9d9af8003a165740b08e62b8229e09356764316715",
+    "stepId": "S000013",
+    "taskId": "verify",
+    "kind": "shell",
+    "label": "Verify: final-commit",
+    "taskDefRef": "tasks/01KMJS6ZYV64KYP0HZ631XV4P7/task.json"
+  },
+  "checksum": "2ad91e6b18038f986deb97fc2e9fc9a6b3ce36f698b5c7a8142fe1bf40538030"
+}

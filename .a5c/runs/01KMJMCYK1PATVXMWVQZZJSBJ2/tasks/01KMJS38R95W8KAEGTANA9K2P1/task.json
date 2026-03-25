@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJS38R95W8KAEGTANA9K2P1",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000011:implement-task",
+  "stepId": "S000011",
+  "kind": "agent",
+  "title": "Task 8: Cross-Reference Integration",
+  "io": {
+    "inputJsonPath": "tasks/01KMJS38R95W8KAEGTANA9K2P1/input.json",
+    "outputJsonPath": "tasks/01KMJS38R95W8KAEGTANA9K2P1/result.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "In scripts/chat/cross_reference.py, add _find_wikipedia_connections(agent_norms, conn, visited_pairs) that queries wikipedia_connections table for pairs where both agents are in agent_norms. Returns Connection objects with relationship_type=\"wikipedia_mention\". Handle gracefully if table doesn't exist (try/except). Wire into find_connections() as 4th connection type after same_place_period. Run tests. Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-25-wikipedia-enrichment.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-wikipedia-enrichment-design.md",
+    "taskName": "Cross-Reference Integration",
+    "taskNumber": 8,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/chat/test_cross_reference.py -v 2>&1 | tail -10"
+  }
+}

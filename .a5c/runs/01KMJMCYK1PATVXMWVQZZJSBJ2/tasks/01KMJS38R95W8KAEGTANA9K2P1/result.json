@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJS38R95W8KAEGTANA9K2P1",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000011:implement-task",
+  "status": "ok",
+  "result": {
+    "commitHash": "491293c",
+    "filesModified": [
+      "scripts/chat/cross_reference.py"
+    ],
+    "success": true,
+    "testsPassing": true
+  },
+  "startedAt": "2026-03-25T15:18:23.564Z",
+  "finishedAt": "2026-03-25T15:18:23.564Z",
+  "value": {
+    "commitHash": "491293c",
+    "filesModified": [
+      "scripts/chat/cross_reference.py"
+    ],
+    "success": true,
+    "testsPassing": true
+  }
+}

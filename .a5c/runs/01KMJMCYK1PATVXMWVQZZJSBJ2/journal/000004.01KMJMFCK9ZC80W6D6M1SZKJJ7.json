@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T13:55:48.969Z",
+  "data": {
+    "effectId": "01KMJMFCJW9Y36BSHPM618RHYC",
+    "invocationKey": "wikipedia-enrichment:S000002:implement-task",
+    "invocationHash": "fd881a9241ebd8331596a48739f292d3942f6bf038859e8078d41c29bf67d75a",
+    "stepId": "S000002",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Task 2: Wikipedia Client Module",
+    "taskDefRef": "tasks/01KMJMFCJW9Y36BSHPM618RHYC/task.json"
+  },
+  "checksum": "00428dc57de28d08e0cc88a166dbbaaa648e2bc5c3530f3978e4d612413a2c59"
+}

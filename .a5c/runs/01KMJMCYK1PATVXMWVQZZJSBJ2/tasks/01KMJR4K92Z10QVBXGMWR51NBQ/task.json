@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJR4K92Z10QVBXGMWR51NBQ",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000007:implement-task",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Task 5: Batch Script Pass 2 (Summaries)",
+  "io": {
+    "inputJsonPath": "tasks/01KMJR4K92Z10QVBXGMWR51NBQ/input.json",
+    "outputJsonPath": "tasks/01KMJR4K92Z10QVBXGMWR51NBQ/result.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Add run_pass_2() to scripts/enrichment/batch_wikipedia.py. Fetch Wikipedia summaries for all agents in wikipedia_cache, ordered by connectivity (most connections first). Use fetch_summary() for each. Extract name variants from first paragraph using regex (parenthetical names, Hebrew text). Store summary_extract and name_variants in wikipedia_cache. Add _extract_name_variants() helper. Test with --limit 10 first, then run full pass. Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-25-wikipedia-enrichment.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-wikipedia-enrichment-design.md",
+    "taskName": "Batch Script Pass 2 (Summaries)",
+    "taskNumber": 5,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.enrichment.batch_wikipedia --pass 2 --db data/index/bibliographic.db --limit 10 2>&1 | tail -10"
+  }
+}

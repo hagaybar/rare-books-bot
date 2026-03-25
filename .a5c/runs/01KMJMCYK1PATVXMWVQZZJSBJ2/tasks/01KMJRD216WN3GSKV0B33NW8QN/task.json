@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJRD216WN3GSKV0B33NW8QN",
+  "taskId": "verify",
+  "invocationKey": "wikipedia-enrichment:S000009:verify",
+  "stepId": "S000009",
+  "kind": "shell",
+  "title": "Verify: phase3-summaries-narrator",
+  "io": {
+    "outputJsonPath": "tasks/01KMJRD216WN3GSKV0B33NW8QN/result.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && sqlite3 data/index/bibliographic.db \"SELECT COUNT(*) as with_summary FROM wikipedia_cache WHERE summary_extract IS NOT NULL;\" && poetry run pytest tests/scripts/chat/test_executor.py tests/scripts/chat/test_narrator.py -v 2>&1 | tail -5",
+    "phase": "phase3-summaries-narrator",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T14:59:49.678Z",
+  "data": {
+    "effectId": "01KMJR4K92Z10QVBXGMWR51NBQ",
+    "invocationKey": "wikipedia-enrichment:S000007:implement-task",
+    "invocationHash": "f598126ed8b0fa8d7f35718c16454211ed139d370cc38d3cab2831a73b2b3534",
+    "stepId": "S000007",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Task 5: Batch Script Pass 2 (Summaries)",
+    "taskDefRef": "tasks/01KMJR4K92Z10QVBXGMWR51NBQ/task.json"
+  },
+  "checksum": "feb8f22bc55c78cf94820314a99d925ca5f64ac32e5fb26393a69c7cdcf3f19f"
+}

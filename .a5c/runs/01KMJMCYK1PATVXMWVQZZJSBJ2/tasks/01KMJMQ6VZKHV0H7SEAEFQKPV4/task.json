@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJMQ6VZKHV0H7SEAEFQKPV4",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000004:implement-task",
+  "stepId": "S000004",
+  "kind": "agent",
+  "title": "Task 3: Batch Script Pass 1 (Links)",
+  "io": {
+    "inputJsonPath": "tasks/01KMJMQ6VZKHV0H7SEAEFQKPV4/input.json",
+    "outputJsonPath": "tasks/01KMJMQ6VZKHV0H7SEAEFQKPV4/result.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Create scripts/enrichment/batch_wikipedia.py — CLI script with --pass and --limit flags. Implement run_pass_1(): query authority_enrichment for all wikidata_ids, resolve QIDs to Wikipedia titles via resolve_titles_batch, fetch links+categories via fetch_links_batch, cache all in wikipedia_cache table. Test with --limit 5 first, then run full Pass 1 (all agents). Report stats. Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-25-wikipedia-enrichment.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-wikipedia-enrichment-design.md",
+    "taskName": "Batch Script Pass 1 (Links)",
+    "taskNumber": 3,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.enrichment.batch_wikipedia --pass 1 --db data/index/bibliographic.db --limit 5 2>&1 | tail -10"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-25T13:54:29.123Z",
+  "data": {
+    "runId": "01KMJMCYK1PATVXMWVQZZJSBJ2",
+    "processId": "wikipedia-enrichment",
+    "entrypoint": {
+      "importPath": "../../processes/wikipedia-enrichment.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Execute Wikipedia enrichment: 3-pass pipeline for connection discovery, summaries, LLM extraction"
+  },
+  "checksum": "a859047e071b9ce94fb24d9c21c9fe0401477d4637298d3682f3b1b2286a3f8a"
+}

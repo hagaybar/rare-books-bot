@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJRDTZPPD5BSKNG0CQ6A36J",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000010:implement-task",
+  "status": "ok",
+  "result": {
+    "commitHash": "1c2c31b",
+    "filesModified": [
+      "scripts/enrichment/wikipedia_connections.py",
+      "scripts/enrichment/batch_wikipedia.py"
+    ],
+    "llmExtractions": 130,
+    "success": true
+  },
+  "startedAt": "2026-03-25T15:16:24.165Z",
+  "finishedAt": "2026-03-25T15:16:24.165Z",
+  "value": {
+    "commitHash": "1c2c31b",
+    "filesModified": [
+      "scripts/enrichment/wikipedia_connections.py",
+      "scripts/enrichment/batch_wikipedia.py"
+    ],
+    "llmExtractions": 130,
+    "success": true
+  }
+}

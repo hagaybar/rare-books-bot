@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T15:04:26.930Z",
+  "data": {
+    "effectId": "01KMJRD216WN3GSKV0B33NW8QN",
+    "invocationKey": "wikipedia-enrichment:S000009:verify",
+    "invocationHash": "a1b248cc29af5771929e9d699f1494b8e6665667205a20fc1166de19514ba270",
+    "stepId": "S000009",
+    "taskId": "verify",
+    "kind": "shell",
+    "label": "Verify: phase3-summaries-narrator",
+    "taskDefRef": "tasks/01KMJRD216WN3GSKV0B33NW8QN/task.json"
+  },
+  "checksum": "dd3e35e931e1df9b561d0507f230e0c4753ce9e2c020659d8a2fc029f80fba83"
+}

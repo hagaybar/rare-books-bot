@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMJRDTZPPD5BSKNG0CQ6A36J",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000010:implement-task",
+  "stepId": "S000010",
+  "kind": "agent",
+  "title": "Task 7: Batch Script Pass 3 (LLM Extraction)",
+  "io": {
+    "inputJsonPath": "tasks/01KMJRDTZPPD5BSKNG0CQ6A36J/input.json",
+    "outputJsonPath": "tasks/01KMJRDTZPPD5BSKNG0CQ6A36J/result.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Add extract_relationships_llm() to scripts/enrichment/wikipedia_connections.py — uses gpt-4.1-nano to extract structured relationships from Wikipedia text. Input: agent name + summary text + list of known linked agents with QIDs (from Pass 1). Output: list of {target_name, target_wikidata_id, relationship (free-text), tags (from vocab + open-ended), confidence}. Tag vocab in prompt: [teacher_of, student_of, collaborator, commentator, co_publication, patron, rival, translator, publisher_of, same_school, family, influenced_by] + \"Add new tags if none fit.\" Match by QID (identifier-first). Add run_pass_3() to batch_wikipedia.py — runs LLM extraction on top N most-connected agents. Test with --limit 5. Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-25-wikipedia-enrichment.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-25-wikipedia-enrichment-design.md",
+    "taskName": "Batch Script Pass 3 (LLM Extraction)",
+    "taskNumber": 7,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.enrichment.batch_wikipedia --pass 3 --db data/index/bibliographic.db --limit 5 2>&1 | tail -10"
+  }
+}

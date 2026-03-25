@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-25T15:04:52.483Z",
+  "data": {
+    "effectId": "01KMJRDTZPPD5BSKNG0CQ6A36J",
+    "invocationKey": "wikipedia-enrichment:S000010:implement-task",
+    "invocationHash": "bad51271a8fba6425c1161d268169a1faddf0c812e387606af7e0ba62b13d545",
+    "stepId": "S000010",
+    "taskId": "implement-task",
+    "kind": "agent",
+    "label": "Task 7: Batch Script Pass 3 (LLM Extraction)",
+    "taskDefRef": "tasks/01KMJRDTZPPD5BSKNG0CQ6A36J/task.json"
+  },
+  "checksum": "a3825b93741f10e929980a64995e8e38ef28e7a0f6cf3f884308a70785568cd6"
+}

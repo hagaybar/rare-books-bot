@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMJMFCJW9Y36BSHPM618RHYC",
+  "taskId": "implement-task",
+  "invocationKey": "wikipedia-enrichment:S000002:implement-task",
+  "status": "ok",
+  "result": {
+    "commitHash": "712fbeb",
+    "filesCreated": [
+      "scripts/enrichment/wikipedia_client.py",
+      "tests/scripts/enrichment/test_wikipedia_client.py"
+    ],
+    "success": true,
+    "testsPassing": true
+  },
+  "startedAt": "2026-03-25T13:59:41.627Z",
+  "finishedAt": "2026-03-25T13:59:41.627Z",
+  "value": {
+    "commitHash": "712fbeb",
+    "filesCreated": [
+      "scripts/enrichment/wikipedia_client.py",
+      "tests/scripts/enrichment/test_wikipedia_client.py"
+    ],
+    "success": true,
+    "testsPassing": true
+  }
+}
