@@ -11,8 +11,13 @@ import sqlite3
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
-from urllib.parse import quote
+from typing import TYPE_CHECKING, List, Optional
+
+if TYPE_CHECKING:
+    from scripts.metadata.publisher_authority import (
+        PublisherAuthority,
+        PublisherAuthorityStore,
+    )
 
 from fastapi import APIRouter, HTTPException, Query, status
 
@@ -32,10 +37,14 @@ from app.api.metadata_models import (
     CorrectionResponse,
     CoverageResponse,
     ConfidenceBandResponse,
+    CreatePublisherRequest,
+    CreateVariantRequest,
+    DeleteResponse,
     FieldCoverageResponse,
     FlaggedItemResponse,
     IssueRecord,
     IssuesResponse,
+    MatchPreviewResponse,
     MethodBreakdownResponse,
     MethodDistribution,
     PrimoUrlEntry,
@@ -45,6 +54,7 @@ from app.api.metadata_models import (
     PublisherAuthorityResponse,
     PublisherVariantResponse,
     UnmappedValue,
+    UpdatePublisherRequest,
 )
 from scripts.metadata.audit import (
     CoverageReport,
@@ -886,54 +896,10 @@ async def post_batch_corrections(
 
 
 # ---------------------------------------------------------------------------
-# Primo URL helpers
+# Primo URL helpers — delegated to scripts/utils/primo.py
 # ---------------------------------------------------------------------------
 
-# Default Primo configuration (matches app/ui_chat/config.py)
-_PRIMO_DEFAULT_BASE_URL = "https://tau.primo.exlibrisgroup.com/nde/fulldisplay"
-_PRIMO_VID = "972TAU_INST:NDE"
-_PRIMO_TAB = "TAU"
-_PRIMO_SEARCH_SCOPE = "TAU"
-
-
-def _generate_primo_url(mms_id: str, base_url: Optional[str] = None) -> str:
-    """Generate a Primo discovery URL for the given MMS ID.
-
-    Uses the same URL pattern as app/ui_chat/config.py.
-
-    Args:
-        mms_id: The MMS ID (e.g. "990009748710204146").
-        base_url: Optional override for the Primo base URL. Falls back to
-                  the PRIMO_BASE_URL env var, then the built-in default.
-
-    Returns:
-        Full Primo URL to the record.
-    """
-    resolved_base = (
-        base_url
-        or os.environ.get("PRIMO_BASE_URL", "")
-        or _PRIMO_DEFAULT_BASE_URL
-    )
-
-    params = {
-        "query": f"{mms_id} ",  # trailing space is intentional (matches UI)
-        "tab": _PRIMO_TAB,
-        "search_scope": _PRIMO_SEARCH_SCOPE,
-        "searchInFulltext": "true",
-        "vid": _PRIMO_VID,
-        "docid": f"alma{mms_id}",
-        "adaptor": "Local Search Engine",
-        "context": "L",
-        "isFrbr": "false",
-        "isHighlightedRecord": "false",
-        "state": "",
-    }
-
-    query_parts = []
-    for key, value in params.items():
-        query_parts.append(f"{key}={quote(str(value), safe='')}")
-
-    return f"{resolved_base}?{'&'.join(query_parts)}"
+from scripts.utils.primo import generate_primo_url as _generate_primo_url  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -1451,34 +1417,641 @@ def list_publisher_authorities(
 
     items = []
     for auth in authorities:
-        imprint_count = store.link_to_imprints(auth.id)
-        items.append(
-            PublisherAuthorityResponse(
-                id=auth.id,
-                canonical_name=auth.canonical_name,
-                type=auth.type,
-                confidence=auth.confidence,
-                dates_active=auth.dates_active,
-                location=auth.location,
-                is_missing_marker=auth.is_missing_marker,
-                variant_count=len(auth.variants),
-                imprint_count=imprint_count,
-                variants=[
-                    PublisherVariantResponse(
-                        variant_form=v.variant_form,
-                        script=v.script,
-                        language=v.language,
-                        is_primary=v.is_primary,
-                    )
-                    for v in auth.variants
-                ],
-                viaf_id=auth.viaf_id,
-                wikidata_id=auth.wikidata_id,
-                cerl_id=auth.cerl_id,
-            )
-        )
+        items.append(_authority_to_response(store, auth))
 
     return PublisherAuthorityListResponse(total=len(items), items=items)
 
 
-# TODO: Add WebSocket endpoint /ws/metadata/agent for streaming responses
+# ---------------------------------------------------------------------------
+# B13: Publisher CRUD endpoints
+# ---------------------------------------------------------------------------
+
+
+def _authority_to_response(
+    store: "PublisherAuthorityStore", auth: "PublisherAuthority"
+) -> PublisherAuthorityResponse:
+    """Convert a PublisherAuthority to its API response model."""
+    imprint_count = store.link_to_imprints(auth.id)
+    return PublisherAuthorityResponse(
+        id=auth.id,
+        canonical_name=auth.canonical_name,
+        type=auth.type,
+        confidence=auth.confidence,
+        dates_active=auth.dates_active,
+        location=auth.location,
+        is_missing_marker=auth.is_missing_marker,
+        variant_count=len(auth.variants),
+        imprint_count=imprint_count,
+        variants=[
+            PublisherVariantResponse(
+                id=v.id,
+                variant_form=v.variant_form,
+                script=v.script,
+                language=v.language,
+                is_primary=v.is_primary,
+            )
+            for v in auth.variants
+        ],
+        viaf_id=auth.viaf_id,
+        wikidata_id=auth.wikidata_id,
+        cerl_id=auth.cerl_id,
+    )
+
+
+_VALID_PUB_TYPES = {
+    "printing_house",
+    "private_press",
+    "modern_publisher",
+    "bibliophile_society",
+    "unknown_marker",
+    "unresearched",
+}
+
+
+@router.post(
+    "/publishers",
+    response_model=PublisherAuthorityResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a publisher authority",
+)
+def create_publisher_authority(req: CreatePublisherRequest):
+    """Create a new publisher authority record."""
+    from scripts.metadata.publisher_authority import (
+        PublisherAuthority,
+        PublisherAuthorityStore,
+    )
+
+    if req.type not in _VALID_PUB_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid type '{req.type}'. Must be one of: {sorted(_VALID_PUB_TYPES)}",
+        )
+
+    db = _get_db_path()
+    if not db.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Bibliographic database not available",
+        )
+
+    store = PublisherAuthorityStore(db)
+    authority = PublisherAuthority(
+        canonical_name=req.canonical_name,
+        type=req.type,
+        confidence=req.confidence,
+        location=req.location,
+        dates_active=req.dates_active,
+        notes=req.notes,
+    )
+
+    try:
+        auth_id = store.create(authority)
+    except Exception as exc:
+        if "UNIQUE constraint" in str(exc):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Publisher '{req.canonical_name}' already exists",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create publisher: {exc}",
+        )
+
+    created = store.get_by_id(auth_id)
+    return _authority_to_response(store, created)
+
+
+@router.put(
+    "/publishers/{publisher_id}",
+    response_model=PublisherAuthorityResponse,
+    summary="Update a publisher authority",
+)
+def update_publisher_authority(publisher_id: int, req: UpdatePublisherRequest):
+    """Update fields of an existing publisher authority."""
+    from scripts.metadata.publisher_authority import PublisherAuthorityStore
+
+    if req.type is not None and req.type not in _VALID_PUB_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid type '{req.type}'. Must be one of: {sorted(_VALID_PUB_TYPES)}",
+        )
+
+    db = _get_db_path()
+    if not db.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Bibliographic database not available",
+        )
+
+    store = PublisherAuthorityStore(db)
+    existing = store.get_by_id(publisher_id)
+    if existing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Publisher authority {publisher_id} not found",
+        )
+
+    # Apply only the fields that were provided
+    if req.canonical_name is not None:
+        existing.canonical_name = req.canonical_name
+    if req.type is not None:
+        existing.type = req.type
+    if req.confidence is not None:
+        existing.confidence = req.confidence
+    if req.location is not None:
+        existing.location = req.location
+    if req.dates_active is not None:
+        existing.dates_active = req.dates_active
+    if req.notes is not None:
+        existing.notes = req.notes
+
+    try:
+        store.update(existing)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update publisher: {exc}",
+        )
+
+    updated = store.get_by_id(publisher_id)
+    return _authority_to_response(store, updated)
+
+
+@router.delete(
+    "/publishers/{publisher_id}",
+    response_model=DeleteResponse,
+    summary="Delete a publisher authority",
+)
+def delete_publisher_authority(publisher_id: int):
+    """Delete a publisher authority and cascade-delete its variants."""
+    from scripts.metadata.publisher_authority import PublisherAuthorityStore
+
+    db = _get_db_path()
+    if not db.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Bibliographic database not available",
+        )
+
+    store = PublisherAuthorityStore(db)
+    existing = store.get_by_id(publisher_id)
+    if existing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Publisher authority {publisher_id} not found",
+        )
+
+    try:
+        store.delete(publisher_id)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete publisher: {exc}",
+        )
+
+    return DeleteResponse(
+        success=True,
+        message=f"Publisher authority {publisher_id} ('{existing.canonical_name}') deleted",
+    )
+
+
+@router.post(
+    "/publishers/{publisher_id}/variants",
+    response_model=PublisherAuthorityResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Add a variant to a publisher authority",
+)
+def add_publisher_variant(publisher_id: int, req: CreateVariantRequest):
+    """Add a name variant to an existing publisher authority."""
+    from scripts.metadata.publisher_authority import (
+        PublisherAuthorityStore,
+        PublisherVariant,
+    )
+
+    db = _get_db_path()
+    if not db.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Bibliographic database not available",
+        )
+
+    store = PublisherAuthorityStore(db)
+    existing = store.get_by_id(publisher_id)
+    if existing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Publisher authority {publisher_id} not found",
+        )
+
+    variant = PublisherVariant(
+        variant_form=req.variant_form,
+        script=req.script,
+        language=req.language,
+    )
+
+    try:
+        store.add_variant(publisher_id, variant)
+    except Exception as exc:
+        if "UNIQUE constraint" in str(exc):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Variant '{req.variant_form}' already exists",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to add variant: {exc}",
+        )
+
+    updated = store.get_by_id(publisher_id)
+    return _authority_to_response(store, updated)
+
+
+@router.delete(
+    "/publishers/{publisher_id}/variants/{variant_id}",
+    response_model=DeleteResponse,
+    summary="Remove a variant from a publisher authority",
+)
+def delete_publisher_variant(publisher_id: int, variant_id: int):
+    """Remove a specific variant from a publisher authority."""
+    from scripts.metadata.publisher_authority import PublisherAuthorityStore
+
+    db = _get_db_path()
+    if not db.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Bibliographic database not available",
+        )
+
+    store = PublisherAuthorityStore(db)
+    existing = store.get_by_id(publisher_id)
+    if existing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Publisher authority {publisher_id} not found",
+        )
+
+    # Find the variant to delete
+    variant_found = any(v.id == variant_id for v in existing.variants)
+    if not variant_found:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Variant {variant_id} not found on authority {publisher_id}",
+        )
+
+    try:
+        conn = sqlite3.connect(str(db))
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("DELETE FROM publisher_variants WHERE id = ? AND authority_id = ?", (variant_id, publisher_id))
+        conn.commit()
+        conn.close()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete variant: {exc}",
+        )
+
+    return DeleteResponse(
+        success=True,
+        message=f"Variant {variant_id} removed from authority {publisher_id}",
+    )
+
+
+# ---------------------------------------------------------------------------
+# B14: Match preview endpoint
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/publishers/match-preview",
+    response_model=MatchPreviewResponse,
+    summary="Preview imprint matches for a variant form",
+)
+def match_preview(
+    variant_form: str = Query(..., min_length=1, description="Variant form to match against imprints"),
+):
+    """Count imprints where publisher_norm matches the given variant form."""
+    db = _get_db_path()
+    if not db.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Bibliographic database not available",
+        )
+
+    try:
+        conn = sqlite3.connect(str(db))
+        # Check if imprints table exists
+        table_check = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='imprints'"
+        ).fetchone()
+        if not table_check:
+            conn.close()
+            return MatchPreviewResponse(variant_form=variant_form, matching_imprints=0)
+
+        # Use LIKE for flexible matching (case-insensitive by default in SQLite)
+        row = conn.execute(
+            "SELECT COUNT(*) FROM imprints WHERE publisher_norm LIKE ?",
+            (f"%{variant_form.lower()}%",),
+        ).fetchone()
+        count = row[0] if row else 0
+        conn.close()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to query imprints: {exc}",
+        )
+
+    return MatchPreviewResponse(variant_form=variant_form, matching_imprints=count)
+
+
+# ---------------------------------------------------------------------------
+# Entity Enrichment endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get("/enrichment/stats", summary="Enrichment statistics")
+async def get_enrichment_stats():
+    """Return summary statistics about entity enrichment coverage."""
+    db_path = _get_db_path()
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    try:
+        stats = {}
+        stats["total"] = conn.execute(
+            "SELECT count(*) FROM authority_enrichment"
+        ).fetchone()[0]
+        stats["with_wikidata"] = conn.execute(
+            "SELECT count(*) FROM authority_enrichment WHERE wikidata_id IS NOT NULL"
+        ).fetchone()[0]
+        stats["with_viaf"] = conn.execute(
+            "SELECT count(*) FROM authority_enrichment WHERE viaf_id IS NOT NULL"
+        ).fetchone()[0]
+        stats["with_person_info"] = conn.execute(
+            "SELECT count(*) FROM authority_enrichment WHERE person_info IS NOT NULL"
+        ).fetchone()[0]
+        stats["with_image"] = conn.execute(
+            "SELECT count(*) FROM authority_enrichment WHERE image_url IS NOT NULL"
+        ).fetchone()[0]
+        stats["with_wikipedia"] = conn.execute(
+            "SELECT count(*) FROM authority_enrichment WHERE wikipedia_url IS NOT NULL"
+        ).fetchone()[0]
+        stats["agents_linked"] = conn.execute(
+            "SELECT count(DISTINCT a.agent_norm) FROM agents a "
+            "JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri"
+        ).fetchone()[0]
+        stats["total_agents"] = conn.execute(
+            "SELECT count(DISTINCT agent_norm) FROM agents"
+        ).fetchone()[0]
+        return stats
+    finally:
+        conn.close()
+
+
+@router.get("/enrichment/facets", summary="Enrichment facets for filtering")
+async def get_enrichment_facets():
+    """Return facet values (roles, occupations, centuries) for the enrichment browser."""
+    db_path = _get_db_path()
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    try:
+        # Roles
+        roles = [
+            {"value": r[0] or "(none)", "count": r[1]}
+            for r in conn.execute(
+                "SELECT role_raw, count(DISTINCT agent_norm) FROM agents a "
+                "JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri "
+                "WHERE ae.person_info IS NOT NULL "
+                "GROUP BY role_raw ORDER BY count(DISTINCT agent_norm) DESC LIMIT 15"
+            ).fetchall()
+        ]
+
+        # Occupations (from Wikidata person_info JSON)
+        occupations = [
+            {"value": r[0], "count": r[1]}
+            for r in conn.execute(
+                "SELECT value, count(*) as cnt FROM ("
+                "  SELECT json_each.value as value "
+                "  FROM authority_enrichment ae, json_each(json_extract(ae.person_info, '$.occupations')) "
+                "  WHERE ae.person_info IS NOT NULL"
+                ") GROUP BY value ORDER BY cnt DESC LIMIT 25"
+            ).fetchall()
+        ]
+
+        # Centuries (birth year buckets)
+        centuries = [
+            {"value": r[0], "count": r[1]}
+            for r in conn.execute(
+                "SELECT "
+                "  CASE "
+                "    WHEN json_extract(person_info, '$.birth_year') < 1400 THEN 'before 1400' "
+                "    WHEN json_extract(person_info, '$.birth_year') < 1500 THEN '15th century' "
+                "    WHEN json_extract(person_info, '$.birth_year') < 1600 THEN '16th century' "
+                "    WHEN json_extract(person_info, '$.birth_year') < 1700 THEN '17th century' "
+                "    WHEN json_extract(person_info, '$.birth_year') < 1800 THEN '18th century' "
+                "    WHEN json_extract(person_info, '$.birth_year') < 1900 THEN '19th century' "
+                "    ELSE '20th century+' "
+                "  END as century, "
+                "  count(*) as cnt "
+                "FROM authority_enrichment "
+                "WHERE person_info IS NOT NULL AND json_extract(person_info, '$.birth_year') IS NOT NULL "
+                "GROUP BY century ORDER BY century"
+            ).fetchall()
+        ]
+
+        return {"roles": roles, "occupations": occupations, "centuries": centuries}
+    finally:
+        conn.close()
+
+
+@router.get("/enrichment/agents", summary="Enriched agents list")
+async def get_enriched_agents(
+    limit: int = 50,
+    offset: int = 0,
+    search: str = "",
+    has_bio: bool = False,
+    role: str = "",
+    occupation: str = "",
+    century: str = "",
+    has_image: bool = False,
+):
+    """List agents with their enrichment data from Wikidata.
+
+    Args:
+        limit: Max results (default 50)
+        offset: Pagination offset
+        search: Search in agent name or enrichment label
+        has_bio: If true, only return agents with person_info
+        role: Filter by agent role (e.g. 'author', 'printer')
+        occupation: Filter by Wikidata occupation (e.g. 'rabbi', 'theologian')
+        century: Filter by birth century (e.g. '16th century')
+        has_image: If true, only return agents with an image
+    """
+    db_path = _get_db_path()
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    try:
+        where_clauses = ["ae.authority_uri IS NOT NULL"]
+        params: list = []
+
+        if has_bio:
+            where_clauses.append("ae.person_info IS NOT NULL")
+
+        if has_image:
+            where_clauses.append("ae.image_url IS NOT NULL")
+
+        if search:
+            where_clauses.append(
+                "(a.agent_raw LIKE ? OR a.agent_norm LIKE ? OR ae.label LIKE ? OR ae.description LIKE ?)"
+            )
+            term = f"%{search}%"
+            params.extend([term, term, term, term])
+
+        if role:
+            if role == "(none)":
+                where_clauses.append("(a.role_raw IS NULL OR a.role_raw = '')")
+            else:
+                where_clauses.append("a.role_raw = ?")
+                params.append(role)
+
+        if occupation:
+            where_clauses.append(
+                "ae.authority_uri IN ("
+                "  SELECT ae2.authority_uri FROM authority_enrichment ae2, "
+                "  json_each(json_extract(ae2.person_info, '$.occupations')) "
+                "  WHERE json_each.value = ?)"
+            )
+            params.append(occupation)
+
+        if century:
+            century_ranges = {
+                "before 1400": (None, 1400),
+                "15th century": (1400, 1500),
+                "16th century": (1500, 1600),
+                "17th century": (1600, 1700),
+                "18th century": (1700, 1800),
+                "19th century": (1800, 1900),
+                "20th century+": (1900, 2100),
+            }
+            rng = century_ranges.get(century)
+            if rng:
+                lo, hi = rng
+                if lo is None:
+                    where_clauses.append(
+                        "json_extract(ae.person_info, '$.birth_year') < ?"
+                    )
+                    params.append(hi)
+                else:
+                    where_clauses.append(
+                        "json_extract(ae.person_info, '$.birth_year') >= ? AND "
+                        "json_extract(ae.person_info, '$.birth_year') < ?"
+                    )
+                    params.extend([lo, hi])
+
+        where_sql = " AND ".join(where_clauses)
+
+        # Count total
+        total = conn.execute(
+            f"SELECT count(DISTINCT a.agent_norm) FROM agents a "
+            f"JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri "
+            f"WHERE {where_sql}",
+            params,
+        ).fetchone()[0]
+
+        # Fetch agents with enrichment (deduplicated by agent_norm)
+        rows = conn.execute(
+            f"""
+            SELECT
+                a.agent_norm,
+                a.agent_raw,
+                a.agent_type,
+                a.role_raw,
+                a.authority_uri,
+                ae.nli_id,
+                ae.wikidata_id,
+                ae.viaf_id,
+                ae.isni_id,
+                ae.loc_id,
+                ae.label,
+                ae.description,
+                ae.person_info,
+                ae.image_url,
+                ae.wikipedia_url,
+                ae.confidence,
+                count(DISTINCT a.record_id) as record_count
+            FROM agents a
+            JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
+            WHERE {where_sql}
+            GROUP BY a.agent_norm
+            ORDER BY record_count DESC
+            LIMIT ? OFFSET ?
+            """,
+            params + [limit, offset],
+        ).fetchall()
+
+        items = []
+        for row in rows:
+            item = dict(row)
+            # Parse person_info JSON
+            if item.get("person_info"):
+                try:
+                    item["person_info"] = json.loads(item["person_info"])
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            items.append(item)
+
+        return {"total": total, "limit": limit, "offset": offset, "items": items}
+    finally:
+        conn.close()
+
+
+@router.get(
+    "/enrichment/agent/{agent_norm}",
+    summary="Get enrichment for a specific agent",
+)
+async def get_agent_enrichment(agent_norm: str):
+    """Get full enrichment data for a specific agent by normalized name."""
+    db_path = _get_db_path()
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    try:
+        row = conn.execute(
+            """
+            SELECT
+                a.agent_norm, a.agent_raw, a.agent_type, a.role_raw, a.authority_uri,
+                ae.nli_id, ae.wikidata_id, ae.viaf_id, ae.isni_id, ae.loc_id,
+                ae.label, ae.description, ae.person_info,
+                ae.image_url, ae.wikipedia_url, ae.confidence
+            FROM agents a
+            JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
+            WHERE a.agent_norm = ?
+            LIMIT 1
+            """,
+            (agent_norm,),
+        ).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail=f"Agent '{agent_norm}' not found or not enriched")
+
+        item = dict(row)
+        if item.get("person_info"):
+            try:
+                item["person_info"] = json.loads(item["person_info"])
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        # Also get all records this agent appears in
+        records = conn.execute(
+            """
+            SELECT DISTINCT r.mms_id, t.value as title, a.role_raw
+            FROM agents a
+            JOIN records r ON a.record_id = r.id
+            LEFT JOIN titles t ON r.id = t.record_id AND t.title_type = 'main'
+            WHERE a.agent_norm = ?
+            ORDER BY t.value
+            """,
+            (agent_norm,),
+        ).fetchall()
+
+        item["records"] = [dict(r) for r in records]
+        return item
+    finally:
+        conn.close()
