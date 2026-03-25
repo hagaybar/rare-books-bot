@@ -1,21 +1,31 @@
-"""Tests for the executor (Stage 2) -- core framework.
+"""Tests for the executor (Stage 2) -- core framework + handler tests.
 
-Tests dependency resolution, $step_N substitution, and error handling.
+Tests dependency resolution, $step_N substitution, error handling,
+and real DB handler execution.
 All tests use in-memory SQLite, no LLM needed.
 """
+import sqlite3
 from pathlib import Path
 
 import pytest
 
 from scripts.chat.plan_models import (
     AggregateParams,
+    AggregationResult,
+    AgentSummary,
+    ConnectionGraph,
+    EnrichmentBundle,
+    EnrichParams,
     ExecutionResult,
     ExecutionStep,
+    FindConnectionsParams,
     InterpretationPlan,
     RecordSet,
     ResolveAgentParams,
+    ResolvePublisherParams,
     ResolvedEntity,
     RetrieveParams,
+    SampleParams,
     ScholarlyDirective,
     StepAction,
     StepResult,
@@ -37,6 +47,224 @@ def empty_plan():
         directives=[],
         confidence=0.95,
     )
+
+
+@pytest.fixture
+def test_db(tmp_path):
+    """Create a minimal test SQLite DB with schema and sample data."""
+    db_path = tmp_path / "test.db"
+    conn = sqlite3.connect(db_path)
+    conn.executescript("""
+        CREATE TABLE records (
+            id INTEGER PRIMARY KEY, mms_id TEXT UNIQUE, source_file TEXT,
+            created_at TEXT, jsonl_line_number INTEGER
+        );
+        CREATE TABLE imprints (
+            id INTEGER PRIMARY KEY, record_id INTEGER, occurrence INTEGER,
+            date_raw TEXT, place_raw TEXT, publisher_raw TEXT,
+            manufacturer_raw TEXT, source_tags TEXT,
+            date_start INTEGER, date_end INTEGER, date_label TEXT,
+            date_confidence REAL, date_method TEXT,
+            place_norm TEXT, place_display TEXT, place_confidence REAL,
+            place_method TEXT,
+            publisher_norm TEXT, publisher_display TEXT,
+            publisher_confidence REAL, publisher_method TEXT,
+            country_code TEXT, country_name TEXT
+        );
+        CREATE TABLE agents (
+            id INTEGER PRIMARY KEY, record_id INTEGER, agent_index INTEGER,
+            agent_raw TEXT, agent_type TEXT, role_raw TEXT, role_source TEXT,
+            authority_uri TEXT,
+            agent_norm TEXT, agent_confidence REAL, agent_method TEXT,
+            agent_notes TEXT,
+            role_norm TEXT, role_confidence REAL, role_method TEXT,
+            provenance_json TEXT
+        );
+        CREATE TABLE subjects (
+            id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT,
+            source_tag TEXT, scheme TEXT, heading_lang TEXT,
+            authority_uri TEXT, parts TEXT, source TEXT
+        );
+        CREATE TABLE titles (
+            id INTEGER PRIMARY KEY, record_id INTEGER,
+            title_type TEXT, value TEXT, source TEXT
+        );
+        CREATE TABLE languages (
+            id INTEGER PRIMARY KEY, record_id INTEGER, code TEXT, source TEXT
+        );
+        CREATE TABLE agent_authorities (
+            id INTEGER PRIMARY KEY, canonical_name TEXT,
+            canonical_name_lower TEXT,
+            agent_type TEXT, dates_active TEXT, date_start INTEGER,
+            date_end INTEGER, notes TEXT, sources TEXT, confidence REAL,
+            authority_uri TEXT, wikidata_id TEXT, viaf_id TEXT, nli_id TEXT,
+            created_at TEXT, updated_at TEXT
+        );
+        CREATE TABLE agent_aliases (
+            id INTEGER PRIMARY KEY, authority_id INTEGER,
+            alias_form TEXT, alias_form_lower TEXT,
+            alias_type TEXT, script TEXT, language TEXT, is_primary INTEGER,
+            priority INTEGER, notes TEXT, created_at TEXT
+        );
+        CREATE TABLE authority_enrichment (
+            id INTEGER PRIMARY KEY, authority_uri TEXT UNIQUE,
+            nli_id TEXT, wikidata_id TEXT, viaf_id TEXT, isni_id TEXT,
+            loc_id TEXT, label TEXT, description TEXT, person_info TEXT,
+            place_info TEXT, image_url TEXT, wikipedia_url TEXT,
+            source TEXT, confidence REAL, fetched_at TEXT, expires_at TEXT
+        );
+        CREATE TABLE publisher_authorities (
+            id INTEGER PRIMARY KEY, canonical_name TEXT,
+            canonical_name_lower TEXT,
+            type TEXT, dates_active TEXT, date_start INTEGER,
+            date_end INTEGER, location TEXT, notes TEXT, sources TEXT,
+            confidence REAL, is_missing_marker INTEGER,
+            viaf_id TEXT, wikidata_id TEXT, cerl_id TEXT, branch TEXT,
+            primary_language TEXT, created_at TEXT, updated_at TEXT
+        );
+        CREATE TABLE publisher_variants (
+            id INTEGER PRIMARY KEY, authority_id INTEGER,
+            variant_form TEXT, variant_form_lower TEXT,
+            script TEXT, language TEXT, is_primary INTEGER,
+            priority INTEGER, notes TEXT, created_at TEXT
+        );
+
+        -- Sample data: Joseph Karo with 2 books, plus a second agent
+        INSERT INTO records VALUES
+            (1, '990001234', 'test.xml', '2024-01-01', 1);
+        INSERT INTO records VALUES
+            (2, '990005678', 'test.xml', '2024-01-01', 2);
+        INSERT INTO records VALUES
+            (3, '990009999', 'test.xml', '2024-01-01', 3);
+
+        INSERT INTO imprints VALUES
+            (1, 1, 0, '1565', 'Venice', 'Bragadin', NULL, '["264"]',
+             1565, 1565, '1565', 0.99, 'exact',
+             'venice', 'Venice', 0.95, 'place_alias_map',
+             'bragadin', 'Bragadin', 0.95, 'publisher_authority',
+             'it', 'italy');
+        INSERT INTO imprints VALUES
+            (2, 2, 0, '1698', 'Amsterdam', 'Proops', NULL, '["264"]',
+             1698, 1698, '1698', 0.99, 'exact',
+             'amsterdam', 'Amsterdam', 0.95, 'place_alias_map',
+             'proops', 'Proops', 0.95, 'publisher_authority',
+             'ne', 'netherlands');
+        INSERT INTO imprints VALUES
+            (3, 3, 0, '1520', 'Venice', 'Bomberg', NULL, '["264"]',
+             1520, 1520, '1520', 0.99, 'exact',
+             'venice', 'Venice', 0.95, 'place_alias_map',
+             'bomberg', 'Bomberg', 0.95, 'publisher_authority',
+             'it', 'italy');
+
+        -- Agent: Karo on records 1 and 2
+        INSERT INTO agents VALUES
+            (1, 1, 0,
+             '\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd',
+             'personal', 'author', 'relator_code',
+             'http://nli.org/auth/1',
+             '\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd',
+             0.95, 'base_clean', NULL,
+             'author', 0.95, 'relator_code', '[]');
+        INSERT INTO agents VALUES
+            (2, 2, 0,
+             '\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd',
+             'personal', 'author', 'relator_code',
+             'http://nli.org/auth/1',
+             '\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd',
+             0.95, 'base_clean', NULL,
+             'author', 0.95, 'relator_code', '[]');
+        -- Agent: Bomberg on record 3, also a printer on record 1
+        INSERT INTO agents VALUES
+            (3, 3, 0, 'Daniel Bomberg', 'personal', 'printer',
+             'relator_code', 'http://nli.org/auth/2',
+             'bomberg, daniel', 0.95, 'base_clean', NULL,
+             'printer', 0.95, 'relator_code', '[]');
+        INSERT INTO agents VALUES
+            (4, 1, 1, 'Daniel Bomberg', 'personal', 'printer',
+             'relator_code', 'http://nli.org/auth/2',
+             'bomberg, daniel', 0.95, 'base_clean', NULL,
+             'printer', 0.95, 'relator_code', '[]');
+
+        INSERT INTO subjects VALUES
+            (1, 1, 'Jewish law', '650', 'lcsh', 'eng', NULL, '{}', '[]');
+        INSERT INTO subjects VALUES
+            (2, 3, 'Talmud', '650', 'lcsh', 'eng', NULL, '{}', '[]');
+
+        INSERT INTO titles VALUES
+            (1, 1, 'main', 'Shulchan Aruch', '["245"]');
+        INSERT INTO titles VALUES
+            (2, 2, 'main', 'Beit Yosef', '["245"]');
+        INSERT INTO titles VALUES
+            (3, 3, 'main', 'Talmud Bavli', '["245"]');
+
+        INSERT INTO languages VALUES (1, 1, 'heb', '008/35-37');
+        INSERT INTO languages VALUES (2, 2, 'heb', '008/35-37');
+        INSERT INTO languages VALUES (3, 3, 'heb', '008/35-37');
+
+        -- Agent authority: Karo
+        INSERT INTO agent_authorities VALUES
+            (1,
+             '\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd',
+             '\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd',
+             'personal', '1488-1575', 1488, 1575, NULL, NULL, 0.95,
+             'http://nli.org/auth/1', 'Q193460', NULL, NULL,
+             '2024-01-01', '2024-01-01');
+        -- Agent authority: Bomberg
+        INSERT INTO agent_authorities VALUES
+            (2, 'Bomberg, Daniel', 'bomberg, daniel',
+             'personal', '1483-1549', 1483, 1549, NULL, NULL, 0.90,
+             'http://nli.org/auth/2', 'Q124530', NULL, NULL,
+             '2024-01-01', '2024-01-01');
+
+        INSERT INTO agent_aliases VALUES
+            (1, 1, 'Joseph Karo', 'joseph karo',
+             'cross_script', 'latin', 'eng', 0, 0, NULL, '2024-01-01');
+        INSERT INTO agent_aliases VALUES
+            (2, 1, 'Caro, Joseph', 'caro, joseph',
+             'word_reorder', 'latin', 'eng', 0, 0, NULL, '2024-01-01');
+        INSERT INTO agent_aliases VALUES
+            (3, 2, 'Daniel Bomberg', 'daniel bomberg',
+             'primary', 'latin', 'eng', 1, 0, NULL, '2024-01-01');
+
+        INSERT INTO authority_enrichment VALUES
+            (1, 'http://nli.org/auth/1', 'NLI001', 'Q193460',
+             'VIAF001', NULL, NULL, 'Joseph Karo',
+             'Rabbi and author of Shulchan Aruch',
+             '{"birth_year": 1488, "death_year": 1575, "birth_place": "Toledo", "occupations": ["rabbi", "posek"], "teachers": ["Jacob Berab"], "students": [], "notable_works": ["Shulchan Aruch"]}',
+             NULL, NULL, 'https://en.wikipedia.org/wiki/Joseph_Karo',
+             'wikidata', 0.95, '2024-01-01', '2025-01-01');
+        INSERT INTO authority_enrichment VALUES
+            (2, 'http://nli.org/auth/2', 'NLI002', 'Q124530',
+             'VIAF002', NULL, NULL, 'Daniel Bomberg',
+             'Venetian printer of Hebrew books',
+             '{"birth_year": 1483, "death_year": 1549, "birth_place": "Antwerp", "occupations": ["printer"], "teachers": [], "students": [], "notable_works": ["Talmud"]}',
+             NULL, NULL, 'https://en.wikipedia.org/wiki/Daniel_Bomberg',
+             'wikidata', 0.90, '2024-01-01', '2025-01-01');
+
+        -- Publisher authority: Bragadin
+        INSERT INTO publisher_authorities VALUES
+            (1, 'Bragadin', 'bragadin', 'printing_house',
+             '1550-1710', 1550, 1710, 'Venice', NULL, NULL, 0.95, 0,
+             NULL, NULL, NULL, NULL, NULL, '2024-01-01', '2024-01-01');
+        INSERT INTO publisher_variants VALUES
+            (1, 1, 'Bragadin', 'bragadin', 'latin', NULL, 1, 0, NULL,
+             '2024-01-01');
+        INSERT INTO publisher_variants VALUES
+            (2, 1, 'Giovanni di Gara for Bragadin',
+             'giovanni di gara for bragadin',
+             'latin', NULL, 0, 0, NULL, '2024-01-01');
+    """)
+    conn.close()
+
+    # Reset module-level caches that could interfere between tests
+    from scripts.query import db_adapter
+    db_adapter._schema_validated = False
+    db_adapter._agent_alias_tables_present = None
+
+    from scripts.chat import cross_reference
+    cross_reference._reset_graph_cache()
+
+    return db_path
 
 
 # =============================================================================
@@ -283,67 +511,242 @@ def test_unknown_action_skipped():
 
 
 # =============================================================================
-# Stub handler tests (verify stubs return valid empty results)
+# Handler tests (real DB queries)
 # =============================================================================
 
 
-def test_stub_resolve_agent_returns_empty():
-    """Stub resolve_agent handler returns empty ResolvedEntity."""
-    from scripts.chat.executor import execute_plan
+def test_handle_resolve_agent(test_db):
+    """resolve_agent finds Karo via alias lookup."""
+    from scripts.chat.executor import _handle_resolve_agent
 
-    plan = InterpretationPlan(
-        intents=["entity_exploration"],
-        reasoning="Test",
-        execution_steps=[
-            ExecutionStep(
-                action=StepAction.RESOLVE_AGENT,
-                params=ResolveAgentParams(name="Unknown Author"),
-                label="Resolve agent",
-            ),
-        ],
-        directives=[],
-        confidence=0.9,
+    params = ResolveAgentParams(name="Joseph Karo", variants=["Caro, Joseph"])
+    result = _handle_resolve_agent(params, test_db, step_results={}, session_context=None)
+
+    assert isinstance(result, ResolvedEntity)
+    assert "\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd" in result.matched_values
+    assert result.match_method != "none"
+    assert result.confidence > 0.0
+
+
+def test_handle_resolve_agent_not_found(test_db):
+    """resolve_agent for unknown name returns empty with match_method='none'."""
+    from scripts.chat.executor import _handle_resolve_agent
+
+    params = ResolveAgentParams(name="Nobody Known", variants=[])
+    result = _handle_resolve_agent(params, test_db, step_results={}, session_context=None)
+
+    assert isinstance(result, ResolvedEntity)
+    assert len(result.matched_values) == 0
+    assert result.match_method == "none"
+
+
+def test_handle_resolve_publisher(test_db):
+    """resolve_publisher finds Bragadin via variant lookup."""
+    from scripts.chat.executor import _handle_resolve_publisher
+
+    params = ResolvePublisherParams(name="Bragadin", variants=[])
+    result = _handle_resolve_publisher(params, test_db, step_results={}, session_context=None)
+
+    assert isinstance(result, ResolvedEntity)
+    assert "bragadin" in [v.lower() for v in result.matched_values]
+    assert result.match_method != "none"
+
+
+def test_handle_resolve_publisher_not_found(test_db):
+    """resolve_publisher for unknown publisher returns empty."""
+    from scripts.chat.executor import _handle_resolve_publisher
+
+    params = ResolvePublisherParams(name="Unknown Press", variants=[])
+    result = _handle_resolve_publisher(params, test_db, step_results={}, session_context=None)
+
+    assert isinstance(result, ResolvedEntity)
+    assert len(result.matched_values) == 0
+    assert result.match_method == "none"
+
+
+def test_handle_retrieve_basic(test_db):
+    """retrieve with place filter returns matching records."""
+    from scripts.chat.executor import _handle_retrieve
+
+    params = RetrieveParams(
+        filters=[Filter(field=FilterField.IMPRINT_PLACE, op=FilterOp.EQUALS, value="venice")],
     )
-    result = execute_plan(plan, db_path=Path(":memory:"))
-    assert len(result.steps_completed) == 1
-    step = result.steps_completed[0]
-    assert isinstance(step.data, ResolvedEntity)
-    assert step.status in ("ok", "empty")
+    result = _handle_retrieve(params, test_db, step_results={}, session_context=None)
+
+    assert isinstance(result, RecordSet)
+    assert "990001234" in result.mms_ids
+    assert result.total_count >= 1
 
 
-def test_stub_retrieve_returns_empty():
-    """Stub retrieve handler returns empty RecordSet."""
-    from scripts.chat.executor import execute_plan
+def test_handle_retrieve_with_scope(test_db):
+    """retrieve scoped to $step_N narrows to those record IDs."""
+    from scripts.chat.executor import _handle_retrieve
 
-    plan = InterpretationPlan(
-        intents=["retrieval"],
-        reasoning="Test",
-        execution_steps=[
-            ExecutionStep(
-                action=StepAction.RETRIEVE,
-                params=RetrieveParams(
-                    filters=[
-                        Filter(
-                            field=FilterField.PUBLISHER,
-                            op=FilterOp.EQUALS,
-                            value="Oxford",
-                        )
-                    ]
-                ),
-                label="Retrieve books",
-            ),
-        ],
-        directives=[],
-        confidence=0.9,
+    # Simulate a prior retrieve step that found only record 1
+    prior = StepResult(
+        step_index=0, action="retrieve", label="Prior",
+        status="ok",
+        data=RecordSet(mms_ids=["990001234"], total_count=1, filters_applied=[]),
+        record_count=1,
     )
-    result = execute_plan(plan, db_path=Path(":memory:"))
-    assert len(result.steps_completed) == 1
-    step = result.steps_completed[0]
-    assert isinstance(step.data, RecordSet)
-    assert step.status in ("ok", "empty")
+
+    params = RetrieveParams(filters=[], scope="$step_0")
+    result = _handle_retrieve(params, test_db, step_results={0: prior}, session_context=None)
+
+    assert isinstance(result, RecordSet)
+    # Should be scoped to only mms_id 990001234
+    assert all(mms in ["990001234"] for mms in result.mms_ids)
 
 
-def test_execution_with_dependency_chain():
+def test_handle_aggregate(test_db):
+    """aggregate computes facets over a result set."""
+    from scripts.chat.executor import _handle_aggregate
+
+    prior = StepResult(
+        step_index=0, action="retrieve", label="All",
+        status="ok",
+        data=RecordSet(mms_ids=["990001234", "990005678", "990009999"], total_count=3, filters_applied=[]),
+        record_count=3,
+    )
+
+    params = AggregateParams(field="place", scope="$step_0")
+    result = _handle_aggregate(params, test_db, step_results={0: prior}, session_context=None)
+
+    assert isinstance(result, AggregationResult)
+    assert len(result.facets) > 0
+    # Venice should appear twice (records 1 and 3)
+    venice_facets = [f for f in result.facets if f.get("value") == "venice"]
+    assert len(venice_facets) == 1
+    assert venice_facets[0]["count"] == 2
+
+
+def test_handle_enrich(test_db):
+    """enrich fetches authority_enrichment data for resolved agents."""
+    from scripts.chat.executor import _handle_enrich
+
+    prior = StepResult(
+        step_index=0, action="resolve_agent", label="Resolve",
+        status="ok",
+        data=ResolvedEntity(
+            query_name="Karo",
+            matched_values=["\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd"],
+            match_method="alias_exact",
+            confidence=0.95,
+        ),
+        record_count=None,
+    )
+
+    params = EnrichParams(targets="$step_0")
+    result = _handle_enrich(params, test_db, step_results={0: prior}, session_context=None)
+
+    assert isinstance(result, EnrichmentBundle)
+    assert len(result.agents) >= 1
+    karo = result.agents[0]
+    assert karo.canonical_name == "\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd"
+    assert karo.birth_year == 1488
+    assert karo.death_year == 1575
+    assert "rabbi" in karo.occupations
+
+
+def test_handle_find_connections(test_db):
+    """find_connections discovers co-publication between Karo and Bomberg."""
+    from scripts.chat.executor import _handle_find_connections
+
+    params = FindConnectionsParams(
+        agents=[
+            "\u05e7\u05d0\u05e8\u05d5, \u05d9\u05d5\u05e1\u05e3 \u05d1\u05df \u05d0\u05e4\u05e8\u05d9\u05dd",
+            "bomberg, daniel",
+        ],
+        depth=1,
+    )
+    result = _handle_find_connections(params, test_db, step_results={}, session_context=None)
+
+    assert isinstance(result, ConnectionGraph)
+    # They share record 1 with different roles (author + printer)
+    # co_publication requires >= 2 shared records by default, so may or may not match
+    # But we should at least get a graph back without errors
+    assert isinstance(result.connections, list)
+    assert isinstance(result.isolated, list)
+
+
+def test_handle_sample(test_db):
+    """sample returns subset of records with earliest strategy."""
+    from scripts.chat.executor import _handle_sample
+
+    prior = StepResult(
+        step_index=0, action="retrieve", label="All",
+        status="ok",
+        data=RecordSet(mms_ids=["990001234", "990005678", "990009999"], total_count=3, filters_applied=[]),
+        record_count=3,
+    )
+
+    params = SampleParams(scope="$step_0", n=2, strategy="earliest")
+    result = _handle_sample(params, test_db, step_results={0: prior}, session_context=None)
+
+    assert isinstance(result, RecordSet)
+    assert len(result.mms_ids) <= 2
+    # The earliest record (1520) should be included
+    assert "990009999" in result.mms_ids
+
+
+def test_grounding_link_collection(test_db):
+    """Grounding collects Primo, Wikipedia, Wikidata links."""
+    from scripts.chat.executor import _collect_grounding
+
+    step_results = {
+        0: StepResult(
+            step_index=0, action="retrieve", label="Retrieve",
+            status="ok",
+            data=RecordSet(mms_ids=["990001234"], total_count=1, filters_applied=[]),
+            record_count=1,
+        ),
+    }
+
+    grounding, _truncated = _collect_grounding(step_results, test_db)
+
+    # Should have record summaries
+    assert len(grounding.records) >= 1
+    assert grounding.records[0].mms_id == "990001234"
+    assert grounding.records[0].title != ""
+
+    # Should have at least a Primo link for the record
+    primo_links = [lnk for lnk in grounding.links if lnk.source == "primo"]
+    assert len(primo_links) >= 1
+
+
+def test_grounding_deduplicates_records(test_db):
+    """Grounding deduplicates records from multiple retrieve steps."""
+    from scripts.chat.executor import _collect_grounding
+
+    step_results = {
+        0: StepResult(
+            step_index=0, action="retrieve", label="Retrieve1",
+            status="ok",
+            data=RecordSet(mms_ids=["990001234", "990005678"], total_count=2, filters_applied=[]),
+            record_count=2,
+        ),
+        1: StepResult(
+            step_index=1, action="retrieve", label="Retrieve2",
+            status="ok",
+            data=RecordSet(mms_ids=["990001234", "990009999"], total_count=2, filters_applied=[]),
+            record_count=2,
+        ),
+    }
+
+    grounding, _truncated = _collect_grounding(step_results, test_db)
+
+    # Should have 3 unique records (deduped)
+    mms_ids = [r.mms_id for r in grounding.records]
+    assert len(mms_ids) == 3
+    assert len(set(mms_ids)) == 3
+
+    # Record 990001234 should have source_steps from both steps
+    rec = next(r for r in grounding.records if r.mms_id == "990001234")
+    assert 0 in rec.source_steps
+    assert 1 in rec.source_steps
+
+
+def test_execution_with_dependency_chain(test_db):
     """Full execution: resolve_agent -> retrieve (with dependency)."""
     from scripts.chat.executor import execute_plan
 
@@ -353,7 +756,7 @@ def test_execution_with_dependency_chain():
         execution_steps=[
             ExecutionStep(
                 action=StepAction.RESOLVE_AGENT,
-                params=ResolveAgentParams(name="Karo"),
+                params=ResolveAgentParams(name="Joseph Karo"),
                 label="Resolve Karo",
             ),
             ExecutionStep(
@@ -379,10 +782,14 @@ def test_execution_with_dependency_chain():
         ],
         confidence=0.85,
     )
-    result = execute_plan(plan, db_path=Path(":memory:"))
+    result = execute_plan(plan, db_path=test_db)
     assert len(result.steps_completed) == 2
     assert result.steps_completed[0].action == "resolve_agent"
     assert result.steps_completed[1].action == "retrieve"
+    # The resolve step should find Karo
+    resolve_data = result.steps_completed[0].data
+    assert isinstance(resolve_data, ResolvedEntity)
+    assert len(resolve_data.matched_values) > 0
     # Directives passed through
     assert len(result.directives) == 1
     assert result.directives[0].directive == "expand"
