@@ -107,6 +107,7 @@ data/
 !data/normalization/place_aliases/
 !data/normalization/place_aliases/place_alias_map.json
 !data/normalization/marc_country_codes.json
+!data/normalization/place_geocodes.json
 outputs/
 archived/
 
