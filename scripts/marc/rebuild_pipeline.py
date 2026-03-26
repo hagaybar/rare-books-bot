@@ -146,6 +146,17 @@ def run_m3_index(
         print("Enrichment: ENABLED (Wikidata)")
     print()
 
+    # Auto-backup existing database before overwriting
+    if db_path.exists():
+        try:
+            from scripts.utils.db_backup import backup_db
+            backup_db(db_path)
+        except ImportError:
+            import shutil
+            bak = db_path.with_suffix(".db.bak")
+            shutil.copy2(db_path, bak)
+            print(f"  Backed up existing database to {bak}")
+
     # Ensure output directory exists
     db_path.parent.mkdir(parents=True, exist_ok=True)
 

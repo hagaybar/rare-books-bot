@@ -11,6 +11,7 @@ Usage:
 import argparse
 import json
 import sqlite3
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -553,6 +554,15 @@ def main():
     args = parser.parse_args()
 
     args.db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Safety: refuse to overwrite production database
+    PRODUCTION_DB = Path("data/index/bibliographic.db")
+    if args.db_path.resolve() == (Path.cwd() / PRODUCTION_DB).resolve() or \
+       args.db_path.name == "bibliographic.db" and "index" in str(args.db_path):
+        print("ERROR: Cannot seed the production database path.")
+        print(f"  Refused: {args.db_path}")
+        print("  Use a different path, e.g.: data/index/test_seed.db")
+        sys.exit(1)
 
     # Remove existing if present
     if args.db_path.exists():
