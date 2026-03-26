@@ -742,6 +742,33 @@ pytest tests/app/test_api.py -v
 pytest tests/app/test_api.py -v --run-integration
 ```
 
+## Full Ingestion Pipeline
+
+**Purpose**: Rebuild `bibliographic.db` from MARC XML through all stages — parsing, normalization, QA audit, authorities, Wikidata/Wikipedia enrichment, and network tables.
+
+**When to use**: After re-exporting MARC XML from Alma, after data corruption, or when alias maps have been updated.
+
+**Source file**: `data/marc_source/rare_book_bibs.xml` (tracked in git — public bibliographic data from NLI catalog). For LOD (Linked Open Data) export with `$0` authority URIs, use `rare_books_with_lod.xml`.
+
+**Run via slash command**:
+```
+/ingest                              # Interactive — with QA review breakpoints
+/ingest --yolo                       # Non-interactive — auto-approve everything
+/ingest --skip-enrichment            # Fast core-only rebuild (~2 min)
+```
+
+**Or run directly via babysitter**:
+```
+/babysitter:call Execute .a5c/processes/full-ingestion-pipeline.js with inputs from .a5c/processes/full-ingestion-pipeline-inputs.json
+```
+
+**7 phases**: (1) Backup + M1→M2→M3 core rebuild, (2) QA audit & normalization corrections, (3) Agent/publisher authorities, (4) Wikidata enrichment, (5) Wikipedia 3 passes, (6) Network tables, (7) Final verification.
+
+**Process docs**: `.a5c/processes/full-ingestion-pipeline.process.md`
+**Flow diagram**: `.a5c/processes/full-ingestion-pipeline.diagram.md`
+
+**Safety**: Auto-backup before destructive ops. `seed_test_db.py` refuses production DB path. MARC XML is in git.
+
 ## Key Architecture Notes
 
 - **ProjectManager** (`scripts/core/project_manager.py`): Central class for managing project config, paths, and logging
