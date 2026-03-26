@@ -102,12 +102,15 @@ $RECYCLE.BIN/
 # Exception: Track production place alias map (curated, reviewed mapping)
 data/
 
-# Exceptions: Track normalization mapping files (curated, reviewed)
+# Exceptions: Track MARC source and normalization mapping files
+!data/marc_source/
+!data/marc_source/rare_book_bibs.xml
 !data/normalization/
 !data/normalization/place_aliases/
 !data/normalization/place_aliases/place_alias_map.json
 !data/normalization/marc_country_codes.json
 !data/normalization/place_geocodes.json
+
 outputs/
 archived/
 
