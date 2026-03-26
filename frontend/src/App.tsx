@@ -11,6 +11,7 @@ import DatabaseExplorer from './pages/diagnostics/DatabaseExplorer';
 import Publishers from './pages/admin/Publishers';
 import Health from './pages/admin/Health';
 import Enrichment from './pages/admin/Enrichment';
+import Network from './pages/Network';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +31,7 @@ function App() {
             {/* Primary: / and /chat both serve the Chat screen */}
             <Route path="/" element={<Chat />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path="/network" element={<Network />} />
             <Route path="/operator/coverage" element={<Coverage />} />
             <Route path="/operator/workbench" element={<Workbench />} />
             <Route path="/operator/agent" element={<AgentChat />} />
