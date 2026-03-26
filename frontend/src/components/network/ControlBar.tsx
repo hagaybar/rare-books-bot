@@ -4,7 +4,7 @@ import { CONNECTION_TYPE_CONFIG } from '../../types/network';
 import type { ConnectionType } from '../../types/network';
 
 function useDebouncedCallback(callback: (val: number) => void, delay: number) {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   return (val: number) => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => callback(val), delay);
@@ -38,8 +38,6 @@ export default function ControlBar() {
     setCentury,
     role,
     setRole,
-    agentLimit,
-    setAgentLimit,
   } = useNetworkStore();
 
   return (
