@@ -20,6 +20,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.api.diagnostics import router as diagnostics_router
 from app.api.metadata import router as metadata_router
+from app.api.network import router as network_router
 from app.api.models import ChatRequest, ChatResponseAPI, HealthExtendedResponse, HealthResponse
 from scripts.chat.models import (
     ChatResponse,
@@ -182,6 +183,9 @@ app.include_router(metadata_router)
 
 # Register diagnostics router
 app.include_router(diagnostics_router)
+
+# Register network map explorer router
+app.include_router(network_router)
 
 
 def get_session_store() -> SessionStore:
