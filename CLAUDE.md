@@ -752,9 +752,9 @@ pytest tests/app/test_api.py -v --run-integration
 
 **Run via slash command**:
 ```
-/ingest                              # Interactive — with QA review breakpoints
-/ingest --yolo                       # Non-interactive — auto-approve everything
-/ingest --skip-enrichment            # Fast core-only rebuild (~2 min)
+/marc-ingest                              # Interactive — with QA review breakpoints
+/marc-ingest --yolo                       # Non-interactive — auto-approve everything
+/marc-ingest --skip-enrichment            # Fast core-only rebuild (~2 min)
 ```
 
 **Or run directly via babysitter**:
