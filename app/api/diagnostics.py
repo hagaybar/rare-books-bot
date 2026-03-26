@@ -54,6 +54,12 @@ ALLOWED_TABLES = [
     "publisher_authorities",
     "publisher_variants",
     "authority_enrichment",
+    "agent_authorities",
+    "agent_aliases",
+    "wikipedia_cache",
+    "wikipedia_connections",
+    "network_edges",
+    "network_agents",
 ]
 
 
