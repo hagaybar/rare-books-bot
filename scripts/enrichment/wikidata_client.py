@@ -445,7 +445,7 @@ async def enrich_agent_by_id(
         label=first.get("itemLabel", {}).get("value"),
         description=first.get("itemDescription", {}).get("value"),
         image_url=first.get("image", {}).get("value"),
-        wikipedia_url=f"https://en.wikipedia.org/wiki/Special:GoToLinkedPage/enwiki/{qid}",
+        wikipedia_url=f"https://www.wikidata.org/wiki/{qid}",  # Wikidata page; replaced with real Wikipedia URL during populate step if available
         sources_used=[EnrichmentSource.WIKIDATA],
         confidence=0.95,
         fetched_at=datetime.now(timezone.utc),
@@ -540,7 +540,7 @@ async def enrich_place_by_id(
         label=first.get("itemLabel", {}).get("value"),
         description=first.get("itemDescription", {}).get("value"),
         image_url=first.get("image", {}).get("value"),
-        wikipedia_url=f"https://en.wikipedia.org/wiki/Special:GoToLinkedPage/enwiki/{qid}",
+        wikipedia_url=f"https://www.wikidata.org/wiki/{qid}",  # Wikidata page; replaced with real Wikipedia URL during populate step if available
         sources_used=[EnrichmentSource.WIKIDATA],
         confidence=0.95,
         fetched_at=datetime.now(timezone.utc),
