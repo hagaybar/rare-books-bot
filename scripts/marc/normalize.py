@@ -17,6 +17,63 @@ from scripts.normalization.normalize_agent import (
 )
 
 
+# Direct date fixes: one-off corrections for values that cannot be handled by
+# general-purpose patterns (Hebrew chronograms, Roman numerals with embedded
+# text, Arabic-Indic numerals, OCR errors, etc.).
+# Each key is the exact raw string; value is (start, end, confidence, method).
+DIRECT_DATE_FIXES: Dict[str, Tuple[Optional[int], Optional[int], float, str]] = {
+    # Hebrew chronograms / abbreviations
+    'לא ח\'ס\'ר\'ת\' דבר [תרס"ח-תרע"א]': (1908, 1911, 0.90, "hebrew_chronogram"),
+    '[והוא י\'ש\'פ\'ו\'ט\' תבל\' בצדק? תל"ה?]': (1675, 1675, 0.85, "hebrew_chronogram"),
+    '[הסכ\' שע"ה]': (1615, 1615, 0.85, "hebrew_date_abbrev"),
+    # Embedded Roman numerals with surrounding text
+    'an. d[omi]ni M.D. XXVJ. Die. j. me[n]sis octobris.': (1526, 1526, 0.90, "roman_numeral_embedded"),
+    'AC. M D C LXXX.[-M D C LXXXIII.]': (1680, 1683, 0.90, "roman_numeral_range"),
+    # Open-start ranges (unknown start, decade end)
+    '[?-192]': (None, 1929, 0.80, "open_start_range"),
+    '[?-189]': (None, 1899, 0.80, "open_start_range"),
+    # Arabic-Indic numeral
+    '[-- \u0661\u0667]': (1700, 1799, 0.75, "arabic_numerals"),
+}
+
+
+def _parse_roman_numeral(text: str) -> Optional[int]:
+    """Parse a Roman numeral string to an integer.
+
+    Handles standard Roman numerals with optional dots and spaces between
+    groups (e.g., "MDLXI", "M.DCCXXXI", "M DC LXXIX").
+
+    Args:
+        text: Roman numeral string (possibly with dots/spaces)
+
+    Returns:
+        Integer value, or None if not a valid Roman numeral
+    """
+    # Remove dots, spaces, and surrounding punctuation
+    cleaned = re.sub(r'[.\s]', '', text.strip().rstrip('.'))
+    cleaned = cleaned.upper()
+
+    if not cleaned or not re.match(r'^[MDCLXVI]+$', cleaned):
+        return None
+
+    roman_values = {
+        'M': 1000, 'D': 500, 'C': 100, 'L': 50,
+        'X': 10, 'V': 5, 'I': 1
+    }
+
+    total = 0
+    prev_value = 0
+    for char in reversed(cleaned):
+        value = roman_values.get(char, 0)
+        if value < prev_value:
+            total -= value
+        else:
+            total += value
+        prev_value = value
+
+    return total if 1000 <= total <= 2100 else None
+
+
 # Hebrew letter values for Gematria parsing
 HEBREW_GEMATRIA = {
     'א': 1, 'ב': 2, 'ג': 3, 'ד': 4, 'ה': 5, 'ו': 6, 'ז': 7, 'ח': 8, 'ט': 9,
@@ -78,7 +135,13 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
         6. Embedded year: first \d{4} anywhere → confidence=0.85 + warning
         6b. Hebrew calendar numeric: 5000+ year auto-converted → confidence=0.75
         6c. Hebrew Gematria: letter-based year (תשל"ט) → confidence=0.80
-        7. Unparsed: null values, confidence=0.0 + warning
+        7. Direct fixes: one-off corrections lookup table → confidence varies
+        7a. Century partial: [17--?], [19--], 17 ? → confidence=0.80
+        7b. Decade partial: [192-?], 163-?, 198- → confidence=0.85
+        7c. Truncated range: 183 -183, 182 -190 → confidence=0.85
+        7d. Roman numeral: MDLXI., Anno MDCLXXXIII. → confidence=0.95
+        7e. OCR typo fix: 18O7 → 1807 → confidence=0.95
+        8. Unparsed: null values, confidence=0.0 + warning
     """
     if not raw:
         return DateNormalization(
@@ -305,7 +368,112 @@ def normalize_date(raw: Optional[str], evidence_path: str) -> DateNormalization:
                     warnings=["hebrew_letter_year_converted"]
                 )
 
-    # Rule 7: Unparsed
+    # Rule 7: Direct date fixes lookup (one-off corrections)
+    if raw_stripped in DIRECT_DATE_FIXES:
+        start, end, conf, method = DIRECT_DATE_FIXES[raw_stripped]
+        return DateNormalization(
+            start=start,
+            end=end,
+            label=f"{start or '?'}-{end}" if start != end else str(start or '?'),
+            confidence=conf,
+            method=method,
+            evidence_paths=[evidence_path],
+            warnings=["direct_fix_applied"]
+        )
+
+    # Rule 7a: Century partial — e.g., "[17--?]", "[19--]", "[16  ?]", "17 ?", "17 -"
+    # Matches patterns where only the century digits are known.
+    century_match = re.match(
+        r'^[\[{]?(\d{2})\s*[-–_ ]{1,2}\s*[-–_?  ]{0,2}\s*[\]}\)]?\s*[-–]?$',
+        raw_stripped
+    )
+    if century_match:
+        century = int(century_match.group(1))
+        if 10 <= century <= 21:
+            return DateNormalization(
+                start=century * 100,
+                end=century * 100 + 99,
+                label=f"{century}xx",
+                confidence=0.80,
+                method="century_partial",
+                evidence_paths=[evidence_path],
+                warnings=["century_level_date"]
+            )
+
+    # Rule 7b: Decade partial — e.g., "[192-?]", "163-?", "[178-]", "198-",
+    # "{193-?]", "[196-]-", "[176?]-", "[177?]", "178 -", "176 -"
+    decade_match = re.match(
+        r'^[\[{]?(\d{3})\s*[-–_? ]*\s*[\]}\)]?\s*[-–]?$',
+        raw_stripped
+    )
+    if decade_match:
+        decade = int(decade_match.group(1))
+        if 100 <= decade <= 210:
+            return DateNormalization(
+                start=decade * 10,
+                end=decade * 10 + 9,
+                label=f"{decade}x",
+                confidence=0.85,
+                method="decade_partial",
+                evidence_paths=[evidence_path],
+                warnings=["decade_level_date"]
+            )
+
+    # Rule 7c: Truncated range — e.g., "183 -183", "182 -190", "181 -183"
+    # Two 3-digit decade prefixes separated by a hyphen.
+    trunc_match = re.match(
+        r'^(\d{3})\s*[-–]\s*(\d{3})$',
+        raw_stripped
+    )
+    if trunc_match:
+        d1 = int(trunc_match.group(1))
+        d2 = int(trunc_match.group(2))
+        if 100 <= d1 <= 210 and 100 <= d2 <= 210:
+            return DateNormalization(
+                start=d1 * 10,
+                end=d2 * 10 + 9,
+                label=f"{d1}x-{d2}x",
+                confidence=0.85,
+                method="truncated_range",
+                evidence_paths=[evidence_path],
+                warnings=["truncated_range_date"]
+            )
+
+    # Rule 7d: Roman numeral dates — e.g., "MDLXI.", "MDCCXLVIII.",
+    # "M. DCCXXXI.", "Anno MDCLXXXIII.", "A. MDCCXIV."
+    # Strip common prefixes (Anno, A., AC.) and try to parse remainder.
+    roman_text = re.sub(r'^(?:Anno|A\.?|AC\.?)\s*', '', raw_stripped, flags=re.IGNORECASE)
+    roman_text = roman_text.strip().rstrip('.')
+    if re.search(r'[MDCLXVI]{3,}', roman_text.upper()):
+        roman_year = _parse_roman_numeral(roman_text)
+        if roman_year:
+            return DateNormalization(
+                start=roman_year,
+                end=roman_year,
+                label=str(roman_year),
+                confidence=0.95,
+                method="roman_numeral",
+                evidence_paths=[evidence_path],
+                warnings=["roman_numeral_date"]
+            )
+
+    # Rule 7e: OCR typo fix — e.g., "18O7" (letter O instead of digit 0)
+    ocr_candidate = raw_stripped.replace('O', '0').replace('o', '0')
+    ocr_match = re.match(r'^(\d{4})$', ocr_candidate)
+    if ocr_match and ocr_candidate != raw_stripped:
+        year = int(ocr_match.group(1))
+        if 1000 <= year <= 2100:
+            return DateNormalization(
+                start=year,
+                end=year,
+                label=str(year),
+                confidence=0.95,
+                method="ocr_typo_fix",
+                evidence_paths=[evidence_path],
+                warnings=["ocr_typo_corrected"]
+            )
+
+    # Rule 8: Unparsed
     return DateNormalization(
         start=None,
         end=None,

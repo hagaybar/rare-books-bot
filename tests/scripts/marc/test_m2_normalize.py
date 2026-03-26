@@ -420,5 +420,274 @@ class TestM2Enrichment:
         assert m2_first.model_dump() == m2_second.model_dump(), "Normalization should be deterministic"
 
 
+class TestCenturyPartialDates:
+    """Test century-level partial date patterns from QA audit."""
+
+    def test_century_partial_bracketed_dashes(self):
+        """[17--?] → 1700-1799."""
+        result = normalize_date("[17--?]", "test_path")
+        assert result.start == 1700
+        assert result.end == 1799
+        assert result.method == "century_partial"
+        assert result.confidence == 0.80
+
+    def test_century_partial_bracketed_no_question(self):
+        """[19--] → 1900-1999."""
+        result = normalize_date("[19--]", "test_path")
+        assert result.start == 1900
+        assert result.end == 1999
+        assert result.method == "century_partial"
+
+    def test_century_partial_space_variant(self):
+        """[19 ?] → 1900-1999."""
+        result = normalize_date("[19 ?]", "test_path")
+        assert result.start == 1900
+        assert result.end == 1999
+        assert result.method == "century_partial"
+
+    def test_century_partial_double_space(self):
+        """[16  ?] → 1600-1699."""
+        result = normalize_date("[16  ?]", "test_path")
+        assert result.start == 1600
+        assert result.end == 1699
+        assert result.method == "century_partial"
+
+    def test_century_partial_unbracketed_question(self):
+        """17 ? → 1700-1799."""
+        result = normalize_date("17 ?", "test_path")
+        assert result.start == 1700
+        assert result.end == 1799
+        assert result.method == "century_partial"
+
+    def test_century_partial_unbracketed_dash(self):
+        """17 - → 1700-1799."""
+        result = normalize_date("17 -", "test_path")
+        assert result.start == 1700
+        assert result.end == 1799
+        assert result.method == "century_partial"
+
+    def test_century_partial_18xx(self):
+        """[18--?] → 1800-1899."""
+        result = normalize_date("[18--?]", "test_path")
+        assert result.start == 1800
+        assert result.end == 1899
+        assert result.method == "century_partial"
+
+
+class TestDecadePartialDates:
+    """Test decade-level partial date patterns from QA audit."""
+
+    def test_decade_partial_unbracketed(self):
+        """163-? → 1630-1639."""
+        result = normalize_date("163-?", "test_path")
+        assert result.start == 1630
+        assert result.end == 1639
+        assert result.method == "decade_partial"
+        assert result.confidence == 0.85
+
+    def test_decade_partial_bracketed(self):
+        """[192-?] → 1920-1929."""
+        result = normalize_date("[192-?]", "test_path")
+        assert result.start == 1920
+        assert result.end == 1929
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_no_question(self):
+        """[178-] → 1780-1789."""
+        result = normalize_date("[178-]", "test_path")
+        assert result.start == 1780
+        assert result.end == 1789
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_question_only(self):
+        """[177?] → 1770-1779."""
+        result = normalize_date("[177?]", "test_path")
+        assert result.start == 1770
+        assert result.end == 1779
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_plain(self):
+        """198- → 1980-1989."""
+        result = normalize_date("198-", "test_path")
+        assert result.start == 1980
+        assert result.end == 1989
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_193(self):
+        """193- → 1930-1939."""
+        result = normalize_date("193-", "test_path")
+        assert result.start == 1930
+        assert result.end == 1939
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_179(self):
+        """179- → 1790-1799."""
+        result = normalize_date("179-", "test_path")
+        assert result.start == 1790
+        assert result.end == 1799
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_open_ended(self):
+        """[196-]- → 1960-1969."""
+        result = normalize_date("[196-]-", "test_path")
+        assert result.start == 1960
+        assert result.end == 1969
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_curly_brace(self):
+        """{193-?] → 1930-1939 (typo: curly brace)."""
+        result = normalize_date("{193-?]", "test_path")
+        assert result.start == 1930
+        assert result.end == 1939
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_space_dash(self):
+        """178 - → 1780-1789."""
+        result = normalize_date("178 -", "test_path")
+        assert result.start == 1780
+        assert result.end == 1789
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_open_question(self):
+        """[176?]- → 1760-1769."""
+        result = normalize_date("[176?]-", "test_path")
+        assert result.start == 1760
+        assert result.end == 1769
+        assert result.method == "decade_partial"
+
+    def test_decade_partial_186(self):
+        """[186-?] → 1860-1869."""
+        result = normalize_date("[186-?]", "test_path")
+        assert result.start == 1860
+        assert result.end == 1869
+        assert result.method == "decade_partial"
+
+
+class TestTruncatedRangeDates:
+    """Test truncated range date patterns from QA audit."""
+
+    def test_truncated_range_same_decade(self):
+        """183 -183 → 1830-1839."""
+        result = normalize_date("183 -183", "test_path")
+        assert result.start == 1830
+        assert result.end == 1839
+        assert result.method == "truncated_range"
+        assert result.confidence == 0.85
+
+    def test_truncated_range_wide(self):
+        """182 -190 → 1820-1909."""
+        result = normalize_date("182 -190", "test_path")
+        assert result.start == 1820
+        assert result.end == 1909
+        assert result.method == "truncated_range"
+
+    def test_truncated_range_cross_decade(self):
+        """181 -183 → 1810-1839."""
+        result = normalize_date("181 -183", "test_path")
+        assert result.start == 1810
+        assert result.end == 1839
+        assert result.method == "truncated_range"
+
+    def test_truncated_range_century_boundary(self):
+        """179 -181 → 1790-1819."""
+        result = normalize_date("179 -181", "test_path")
+        assert result.start == 1790
+        assert result.end == 1819
+        assert result.method == "truncated_range"
+
+    def test_truncated_range_180_181(self):
+        """180 -181 → 1800-1819."""
+        result = normalize_date("180 -181", "test_path")
+        assert result.start == 1800
+        assert result.end == 1819
+        assert result.method == "truncated_range"
+
+
+class TestRomanNumeralDates:
+    """Test Roman numeral date patterns from QA audit."""
+
+    def test_roman_simple(self):
+        """MDLXI. → 1561."""
+        result = normalize_date("MDLXI.", "test_path")
+        assert result.start == 1561
+        assert result.end == 1561
+        assert result.method == "roman_numeral"
+        assert result.confidence == 0.95
+
+    def test_roman_long(self):
+        """MDCCXLVIII. → 1748."""
+        result = normalize_date("MDCCXLVIII.", "test_path")
+        assert result.start == 1748
+        assert result.end == 1748
+        assert result.method == "roman_numeral"
+
+    def test_roman_with_dots(self):
+        """M. DCCXXXI. → 1731."""
+        result = normalize_date("M. DCCXXXI.", "test_path")
+        assert result.start == 1731
+        assert result.end == 1731
+        assert result.method == "roman_numeral"
+
+    def test_roman_anno_prefix(self):
+        """Anno MDCLXXXIII. → 1683."""
+        result = normalize_date("Anno MDCLXXXIII.", "test_path")
+        assert result.start == 1683
+        assert result.end == 1683
+        assert result.method == "roman_numeral"
+
+    def test_roman_anno_with_dots(self):
+        """Anno M. DC. LXXIX. → 1679."""
+        result = normalize_date("Anno M. DC. LXXIX.", "test_path")
+        assert result.start == 1679
+        assert result.end == 1679
+        assert result.method == "roman_numeral"
+
+    def test_roman_a_prefix(self):
+        """A. MDCCXIV. → 1714."""
+        result = normalize_date("A. MDCCXIV.", "test_path")
+        assert result.start == 1714
+        assert result.end == 1714
+        assert result.method == "roman_numeral"
+
+
+class TestOcrTypoFix:
+    """Test OCR typo fix patterns from QA audit."""
+
+    def test_ocr_letter_o_for_zero(self):
+        """18O7 → 1807 (letter O instead of digit 0)."""
+        result = normalize_date("18O7", "test_path")
+        assert result.start == 1807
+        assert result.end == 1807
+        assert result.method == "ocr_typo_fix"
+        assert result.confidence == 0.95
+        assert "ocr_typo_corrected" in result.warnings
+
+
+class TestDirectDateFixes:
+    """Test direct date fixes from QA audit (lookup table)."""
+
+    def test_hebrew_chronogram_range(self):
+        """Hebrew chronogram with date range."""
+        result = normalize_date('לא ח\'ס\'ר\'ת\' דבר [תרס"ח-תרע"א]', "test_path")
+        assert result.start == 1908
+        assert result.end == 1911
+        assert result.method == "hebrew_chronogram"
+        assert result.confidence == 0.90
+
+    def test_open_start_range(self):
+        """[?-192] → unknown start, end 1929."""
+        result = normalize_date("[?-192]", "test_path")
+        assert result.start is None
+        assert result.end == 1929
+        assert result.method == "open_start_range"
+
+    def test_open_start_range_189(self):
+        """[?-189] → unknown start, end 1899."""
+        result = normalize_date("[?-189]", "test_path")
+        assert result.start is None
+        assert result.end == 1899
+        assert result.method == "open_start_range"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
