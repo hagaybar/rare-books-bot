@@ -116,11 +116,275 @@ print(f'Publisher coverage (>=0.8): {high_pub}/{i} ({100*high_pub/i:.1f}%)')
   });
 
   // ============================================================================
-  // PHASE 2: AUTHORITY SYSTEMS
+  // PHASE 2: NORMALIZATION QA AUDIT & CORRECTION LOOP
+  // Methodical review of normalization gaps — dates, places, publishers
+  // Each field: audit → categorize → propose fixes → user approves → apply → re-verify
+  // ============================================================================
+
+  ctx.log('info', 'Phase 2: Normalization QA — audit, propose fixes, apply corrections');
+
+  // --- 2a: Audit all normalization gaps ---
+  const qaAudit = await ctx.task(agentTask, {
+    projectRoot, dbPath,
+    taskName: 'QA Audit: scan all normalization gaps',
+    description: `Run a comprehensive audit of normalization quality across all three fields.
+
+Query the database and produce a structured JSON report at data/qa/norm_audit.json:
+
+mkdir -p data/qa
+
+python3 << 'PYEOF'
+import sqlite3, json
+c = sqlite3.connect('${dbPath}')
+audit = {"date": {}, "place": {}, "publisher": {}}
+total = c.execute('SELECT count(*) FROM imprints').fetchone()[0]
+
+# === DATE AUDIT ===
+# Group by method and confidence
+date_methods = c.execute(
+    "SELECT date_method, date_confidence, count(*) as cnt FROM imprints WHERE date_raw IS NOT NULL GROUP BY date_method, date_confidence ORDER BY cnt DESC"
+).fetchall()
+audit["date"]["by_method"] = [{"method": m, "confidence": conf, "count": cnt} for m, conf, cnt in date_methods]
+
+# Low confidence / unparsed dates with raw values
+low_dates = c.execute(
+    "SELECT date_raw, date_start, date_end, date_method, date_confidence, count(*) as cnt FROM imprints WHERE (date_confidence < 0.9 OR date_confidence IS NULL) AND date_raw IS NOT NULL GROUP BY date_raw ORDER BY cnt DESC LIMIT 50"
+).fetchall()
+audit["date"]["low_confidence"] = [{"raw": r[0], "start": r[1], "end": r[2], "method": r[3], "confidence": r[4], "count": r[5]} for r in low_dates]
+audit["date"]["low_count"] = c.execute("SELECT count(*) FROM imprints WHERE (date_confidence < 0.9 OR date_confidence IS NULL) AND date_raw IS NOT NULL").fetchone()[0]
+audit["date"]["high_count"] = c.execute("SELECT count(*) FROM imprints WHERE date_confidence >= 0.9").fetchone()[0]
+
+# === PLACE AUDIT ===
+low_places = c.execute(
+    "SELECT place_raw, place_norm, place_method, place_confidence, count(*) as cnt FROM imprints WHERE (place_confidence < 0.9 OR place_confidence IS NULL) AND place_raw IS NOT NULL GROUP BY place_raw ORDER BY cnt DESC LIMIT 50"
+).fetchall()
+audit["place"]["low_confidence"] = [{"raw": r[0], "norm": r[1], "method": r[2], "confidence": r[3], "count": r[4]} for r in low_places]
+audit["place"]["low_count"] = c.execute("SELECT count(*) FROM imprints WHERE (place_confidence < 0.9 OR place_confidence IS NULL) AND place_raw IS NOT NULL").fetchone()[0]
+audit["place"]["high_count"] = c.execute("SELECT count(*) FROM imprints WHERE place_confidence >= 0.9").fetchone()[0]
+
+# Missing / unmapped places (have raw but no norm)
+unmapped_places = c.execute(
+    "SELECT place_raw, count(*) as cnt FROM imprints WHERE place_norm IS NULL AND place_raw IS NOT NULL AND place_raw != '' GROUP BY place_raw ORDER BY cnt DESC LIMIT 30"
+).fetchall()
+audit["place"]["unmapped"] = [{"raw": r[0], "count": r[1]} for r in unmapped_places]
+
+# === PUBLISHER AUDIT ===
+low_pubs = c.execute(
+    "SELECT publisher_raw, publisher_norm, publisher_method, publisher_confidence, count(*) as cnt FROM imprints WHERE (publisher_confidence < 0.8 OR publisher_confidence IS NULL) AND publisher_raw IS NOT NULL GROUP BY publisher_raw ORDER BY cnt DESC LIMIT 50"
+).fetchall()
+audit["publisher"]["low_confidence"] = [{"raw": r[0], "norm": r[1], "method": r[2], "confidence": r[3], "count": r[4]} for r in low_pubs]
+audit["publisher"]["low_count"] = c.execute("SELECT count(*) FROM imprints WHERE (publisher_confidence < 0.8 OR publisher_confidence IS NULL) AND publisher_raw IS NOT NULL").fetchone()[0]
+audit["publisher"]["high_count"] = c.execute("SELECT count(*) FROM imprints WHERE publisher_confidence >= 0.8").fetchone()[0]
+
+audit["total_imprints"] = total
+audit["summary"] = {
+    "date_coverage_pct": round(100 * audit["date"]["high_count"] / total, 1),
+    "place_coverage_pct": round(100 * audit["place"]["high_count"] / total, 1),
+    "publisher_coverage_pct": round(100 * audit["publisher"]["high_count"] / total, 1),
+}
+
+with open('data/qa/norm_audit.json', 'w') as f:
+    json.dump(audit, f, indent=2, ensure_ascii=False)
+
+print(json.dumps(audit["summary"], indent=2))
+print(f"Date gaps: {audit['date']['low_count']}")
+print(f"Place gaps: {audit['place']['low_count']}")
+print(f"Publisher gaps: {audit['publisher']['low_count']}")
+print("Full audit written to data/qa/norm_audit.json")
+PYEOF`,
+    testCommand: `cd ${projectRoot} && python3 -c "import json; a=json.load(open('data/qa/norm_audit.json')); print(a['summary'])"`,
+  });
+
+  // --- 2b: Date fixes ---
+  const dateFixTask = await ctx.task(agentTask, {
+    projectRoot, dbPath,
+    taskName: 'QA Fix: Date normalization gaps',
+    description: `Review and fix date normalization gaps.
+
+Read the audit report: data/qa/norm_audit.json — look at the "date" section.
+
+For each low-confidence or unparsed date in audit["date"]["low_confidence"]:
+
+1. CATEGORIZE the issue:
+   - "hebrew_unparsed": Hebrew calendar date not recognized (e.g., תק"ג, שנת ה'שע"ח)
+   - "complex_range": Multiple dates or ranges not captured (e.g., "1758-1765")
+   - "circa_variant": Circa notation variant not recognized (e.g., "ca.", "um", "environ")
+   - "embedded_noise": Date buried in other text
+   - "no_date": Genuinely has no date (e.g., "n.d.", "[s.a.]")
+   - "already_correct": The normalization is actually correct but confidence is low
+
+2. For fixable issues, determine if the fix should be:
+   a) A NEW PATTERN in scripts/marc/normalize.py (for recurring patterns)
+   b) A DIRECT DB UPDATE for one-off values (using the feedback_loop.py pattern)
+
+3. For new patterns: add them to normalize_date() in scripts/marc/normalize.py. Run tests.
+4. For direct fixes: prepare SQL UPDATE statements but DO NOT execute them yet.
+
+Write proposed fixes to data/qa/date_fixes_proposed.json:
+{
+  "new_patterns": [{"pattern": "...", "example_raw": "...", "expected_start": N, "expected_end": N, "confidence": 0.X}],
+  "direct_fixes": [{"raw": "...", "current_start": N, "proposed_start": N, "proposed_end": N, "proposed_confidence": 0.X, "reason": "..."}],
+  "already_correct": [{"raw": "...", "count": N, "reason": "confidence is actually appropriate"}],
+  "unfixable": [{"raw": "...", "count": N, "reason": "genuinely no date"}],
+  "summary": {"total_gaps": N, "fixable": N, "new_patterns": N, "direct_fixes": N, "already_correct": N, "unfixable": N}
+}
+
+If new patterns were added to normalize.py, run: poetry run pytest tests/ -k "date" -v
+Commit code changes (new patterns) but NOT the proposed fixes JSON (that's for review).`,
+    testCommand: `cd ${projectRoot} && python3 -c "import json; f=json.load(open('data/qa/date_fixes_proposed.json')); print(f['summary'])"`,
+  });
+
+  // --- 2c: Place fixes ---
+  const placeFixTask = await ctx.task(agentTask, {
+    projectRoot, dbPath,
+    taskName: 'QA Fix: Place normalization gaps',
+    description: `Review and fix place normalization gaps.
+
+Read the audit report: data/qa/norm_audit.json — look at the "place" section.
+
+For each low-confidence or unmapped place:
+
+1. CATEGORIZE:
+   - "latin_toponym": Latin place name (e.g., "Lugduni Batavorum" → "leiden")
+   - "hebrew_place": Hebrew script place name not in alias map
+   - "historical_rename": Historical name no longer used (e.g., "Pressburg" → "bratislava")
+   - "bracket_variant": Bracketed form not stripped (e.g., "[Paris]")
+   - "sine_loco_variant": An "unknown place" marker in another language
+   - "already_mapped": Actually in the alias map but not matching (debug why)
+
+2. For each fixable place, propose an alias map entry:
+   {"raw_variant": "Lugduni Batavorum", "canonical": "leiden", "confidence": 0.95}
+
+3. Write proposed fixes to data/qa/place_fixes_proposed.json:
+{
+  "new_aliases": [{"raw": "...", "canonical": "...", "category": "latin_toponym|hebrew_place|...", "affected_records": N}],
+  "unfixable": [{"raw": "...", "count": N, "reason": "..."}],
+  "summary": {"total_gaps": N, "fixable": N, "new_aliases": N, "unfixable": N}
+}
+
+Do NOT modify the alias map yet — just propose.`,
+    testCommand: `cd ${projectRoot} && python3 -c "import json; f=json.load(open('data/qa/place_fixes_proposed.json')); print(f['summary'])"`,
+  });
+
+  // --- 2d: Publisher fixes ---
+  const pubFixTask = await ctx.task(agentTask, {
+    projectRoot, dbPath,
+    taskName: 'QA Fix: Publisher normalization gaps',
+    description: `Review and fix publisher normalization gaps.
+
+Read the audit report: data/qa/norm_audit.json — look at the "publisher" section.
+
+For each low-confidence or unmapped publisher:
+
+1. CATEGORIZE:
+   - "sine_nomine_variant": A "publisher unknown" marker (e.g., "s.n.", "[publisher not identified]")
+   - "latin_form": Latin publisher name (e.g., "apud Elzevirios")
+   - "punctuation_issue": Trailing punctuation/brackets causing mismatch
+   - "already_mapped": Should be in alias map but not matching (debug why)
+
+2. Propose alias map entries for fixable publishers.
+
+3. Write proposed fixes to data/qa/publisher_fixes_proposed.json (same structure as place fixes).
+
+Do NOT modify the alias map yet — just propose.`,
+    testCommand: `cd ${projectRoot} && python3 -c "import json; f=json.load(open('data/qa/publisher_fixes_proposed.json')); print(f['summary'])"`,
+  });
+
+  // --- 2e: User reviews and approves fixes ---
+  const reviewBreakpoint = await ctx.task(breakpointTask, {
+    question: 'Normalization QA complete. Proposed fixes are in data/qa/*_fixes_proposed.json. Review them and approve applying the fixes.',
+    options: [
+      'Approve all fixes — apply to alias maps and re-normalize',
+      'Skip fixes — proceed with current normalization as-is',
+    ],
+  });
+
+  if (reviewBreakpoint?.approved) {
+    // --- 2f: Apply approved fixes ---
+    const applyFixes = await ctx.task(agentTask, {
+      projectRoot, dbPath,
+      taskName: 'Apply approved normalization fixes',
+      description: `Apply the proposed normalization fixes.
+
+1. PLACE FIXES: Read data/qa/place_fixes_proposed.json.
+   For each entry in "new_aliases", add to data/normalization/place_aliases/place_alias_map.json.
+   Use the feedback loop pattern:
+     python3 -c "
+import json
+# Load existing map
+with open('data/normalization/place_aliases/place_alias_map.json') as f:
+    alias_map = json.load(f)
+# Load proposed fixes
+with open('data/qa/place_fixes_proposed.json') as f:
+    fixes = json.load(f)
+# Add new aliases
+added = 0
+for fix in fixes['new_aliases']:
+    key = fix['raw'].lower().strip()
+    if key not in alias_map:
+        alias_map[key] = fix['canonical']
+        added += 1
+# Save
+with open('data/normalization/place_aliases/place_alias_map.json', 'w') as f:
+    json.dump(alias_map, f, indent=2, ensure_ascii=False, sort_keys=True)
+print(f'Added {added} place aliases')
+"
+
+2. PUBLISHER FIXES: Same pattern for data/normalization/publisher_aliases/publisher_alias_map.json.
+
+3. RE-RUN M2+M3 to apply the new alias maps:
+   cd ${projectRoot} && poetry run python -m scripts.marc.rebuild_pipeline
+
+   This re-normalizes with the updated maps and rebuilds the SQLite index.
+
+4. VERIFY improvement:
+   python3 -c "
+import sqlite3
+c = sqlite3.connect('${dbPath}')
+i = c.execute('SELECT count(*) FROM imprints').fetchone()[0]
+hd = c.execute('SELECT count(*) FROM imprints WHERE date_confidence >= 0.9').fetchone()[0]
+hp = c.execute('SELECT count(*) FROM imprints WHERE place_confidence >= 0.9').fetchone()[0]
+hpub = c.execute('SELECT count(*) FROM imprints WHERE publisher_confidence >= 0.8').fetchone()[0]
+print(f'AFTER FIXES:')
+print(f'  Date coverage:      {hd}/{i} ({100*hd/i:.1f}%)')
+print(f'  Place coverage:     {hp}/{i} ({100*hp/i:.1f}%)')
+print(f'  Publisher coverage: {hpub}/{i} ({100*hpub/i:.1f}%)')
+"
+
+5. Commit alias map changes:
+   git add data/normalization/place_aliases/place_alias_map.json data/normalization/publisher_aliases/publisher_alias_map.json scripts/marc/normalize.py
+   git commit -m "fix: apply normalization corrections from QA audit"`,
+      testCommand: `cd ${projectRoot} && python3 -c "import sqlite3; c=sqlite3.connect('${dbPath}'); i=c.execute('SELECT count(*) FROM imprints').fetchone()[0]; hp=c.execute('SELECT count(*) FROM imprints WHERE place_confidence >= 0.9').fetchone()[0]; print(f'Place coverage: {100*hp/i:.1f}%')"`,
+    });
+
+    // --- 2g: Post-fix verification ---
+    const postFixVerify = await ctx.task(shellTask, {
+      projectRoot,
+      phase: 'post-fix-verify',
+      command: `cd ${projectRoot} && python3 -c "
+import sqlite3, json
+c = sqlite3.connect('${dbPath}')
+i = c.execute('SELECT count(*) FROM imprints').fetchone()[0]
+hd = c.execute('SELECT count(*) FROM imprints WHERE date_confidence >= 0.9').fetchone()[0]
+hp = c.execute('SELECT count(*) FROM imprints WHERE place_confidence >= 0.9').fetchone()[0]
+hpub = c.execute('SELECT count(*) FROM imprints WHERE publisher_confidence >= 0.8').fetchone()[0]
+remaining_date = c.execute('SELECT count(*) FROM imprints WHERE (date_confidence < 0.9 OR date_confidence IS NULL) AND date_raw IS NOT NULL').fetchone()[0]
+remaining_place = c.execute('SELECT count(*) FROM imprints WHERE (place_confidence < 0.9 OR place_confidence IS NULL) AND place_raw IS NOT NULL').fetchone()[0]
+remaining_pub = c.execute('SELECT count(*) FROM imprints WHERE (publisher_confidence < 0.8 OR publisher_confidence IS NULL) AND publisher_raw IS NOT NULL').fetchone()[0]
+print('POST-FIX NORMALIZATION COVERAGE:')
+print(f'  Date:      {hd}/{i} ({100*hd/i:.1f}%) — {remaining_date} gaps remaining')
+print(f'  Place:     {hp}/{i} ({100*hp/i:.1f}%) — {remaining_place} gaps remaining')
+print(f'  Publisher: {hpub}/{i} ({100*hpub/i:.1f}%) — {remaining_pub} gaps remaining')
+"`,
+    });
+  }
+
+  // ============================================================================
+  // PHASE 3: AUTHORITY SYSTEMS
   // Seed agent authorities + aliases, populate publisher authorities
   // ============================================================================
 
-  ctx.log('info', 'Phase 2: Seed agent & publisher authorities');
+  ctx.log('info', 'Phase 3: Seed agent & publisher authorities');
 
   const seedAuthorities = await ctx.task(agentTask, {
     projectRoot, dbPath,
@@ -159,12 +423,12 @@ except: print('No publisher authority tables')
   });
 
   // ============================================================================
-  // PHASE 3: WIKIDATA ENRICHMENT
+  // PHASE 4: WIKIDATA ENRICHMENT
   // Enrich agents via authority URIs (preferred) or name-based search (fallback)
   // ============================================================================
 
   if (!skipEnrichment) {
-    ctx.log('info', 'Phase 3: Wikidata enrichment');
+    ctx.log('info', 'Phase 4: Wikidata enrichment');
 
     const enrichBreakpoint = await ctx.task(breakpointTask, {
       question: 'Core DB is ready. About to start Wikidata + Wikipedia enrichment. This takes ~1-4 hours depending on data. Continue?',
@@ -213,7 +477,7 @@ print(f'Authority enrichment: {ae} total ({wd} with Wikidata)')
       // PHASE 4: WIKIPEDIA ENRICHMENT (3 PASSES)
       // ============================================================================
 
-      ctx.log('info', 'Phase 4: Wikipedia enrichment (3 passes)');
+      ctx.log('info', 'Phase 5: Wikipedia enrichment (3 passes)');
 
       const wikiP1 = await ctx.task(agentTask, {
         projectRoot, dbPath,
@@ -266,11 +530,11 @@ for t, n in types: print(f'  {t}: {n}')
   } // end !skipEnrichment
 
   // ============================================================================
-  // PHASE 5: NETWORK TABLES
+  // PHASE 6: NETWORK TABLES
   // Materialize network_edges and network_agents for the Network Map Explorer
   // ============================================================================
 
-  ctx.log('info', 'Phase 5: Build network tables');
+  ctx.log('info', 'Phase 6: Build network tables');
 
   const networkBuild = await ctx.task(agentTask, {
     projectRoot, dbPath,
@@ -296,11 +560,11 @@ for t, n in types: print(f'  {t}: {n}')
   });
 
   // ============================================================================
-  // PHASE 6: FINAL VERIFICATION
+  // PHASE 7: FINAL VERIFICATION
   // Comprehensive check of all tables and coverage metrics
   // ============================================================================
 
-  ctx.log('info', 'Phase 6: Final verification');
+  ctx.log('info', 'Phase 7: Final verification');
 
   const finalVerify = await ctx.task(shellTask, {
     projectRoot,
