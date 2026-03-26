@@ -1,0 +1,6 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "marcXml": "data/marc_source/rare_book_bibs.xml",
+  "dbPath": "data/index/bibliographic.db",
+  "skipEnrichment": false
+}
