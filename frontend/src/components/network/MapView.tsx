@@ -1,9 +1,9 @@
 import { useMemo, useCallback, useRef } from 'react';
 import MapGL, { NavigationControl } from 'react-map-gl/maplibre';
 import { DeckGL } from '@deck.gl/react';
-import { ArcLayer, ScatterplotLayer } from '@deck.gl/layers';
-import type { MapNode, MapEdge } from '../../types/network';
-import { CONNECTION_TYPE_CONFIG } from '../../types/network';
+import { ArcLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
+import type { MapNode, MapEdge, ColorByMode } from '../../types/network';
+import { CONNECTION_TYPE_CONFIG, getAgentColor } from '../../types/network';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
   onAgentClick: (node: MapNode) => void;
   onBackgroundClick: () => void;
   isLoading: boolean;
+  colorBy: ColorByMode;
 }
 
 const INITIAL_VIEW_STATE = {
@@ -32,6 +33,7 @@ export default function MapView({
   onAgentClick,
   onBackgroundClick,
   isLoading,
+  colorBy,
 }: Props) {
   // Track whether a deck.gl object was picked on this click
   const pickedRef = useRef(false);
@@ -54,24 +56,63 @@ export default function MapView({
     return connected;
   }, [edges, selectedAgent]);
 
+  // Deterministic jitter for agents sharing the same city
+  const jitteredPositions = useMemo(() => {
+    const cityGroups = new globalThis.Map<string, MapNode[]>();
+    for (const n of nodes) {
+      const key = `${n.lat},${n.lon}`;
+      if (!cityGroups.has(key)) cityGroups.set(key, []);
+      cityGroups.get(key)!.push(n);
+    }
+    const positions = new globalThis.Map<string, [number, number]>();
+    for (const [, group] of cityGroups) {
+      if (group.length === 1) {
+        positions.set(group[0].agent_norm, [group[0].lon ?? 0, group[0].lat ?? 0]);
+      } else {
+        const cx = group[0].lon ?? 0;
+        const cy = group[0].lat ?? 0;
+        const radius = Math.min(0.03 * Math.sqrt(group.length), 0.3);
+        group.forEach((n, i) => {
+          const angle = (2 * Math.PI * i) / group.length;
+          positions.set(n.agent_norm, [
+            cx + radius * Math.cos(angle),
+            cy + radius * Math.sin(angle),
+          ]);
+        });
+      }
+    }
+    return positions;
+  }, [nodes]);
+
   const scatterLayer = useMemo(
     () =>
       new ScatterplotLayer<MapNode>({
         id: 'agents',
         data: nodes,
-        getPosition: (d) => [d.lon ?? 0, d.lat ?? 0],
+        getPosition: (d) => jitteredPositions.get(d.agent_norm) ?? [d.lon ?? 0, d.lat ?? 0],
         getRadius: (d) => {
-          if (d.agent_norm === selectedAgent) return 12;
-          if (selectedAgent && connectedAgents.has(d.agent_norm)) return 8;
-          return 6;
+          const base = 4 + Math.min(d.connection_count / 10, 10);
+          return base;
         },
         getFillColor: (d) => {
-          if (d.agent_norm === selectedAgent) return [59, 130, 246, 255];
-          if (selectedAgent && connectedAgents.has(d.agent_norm))
-            return [59, 130, 246, 200];
-          if (selectedAgent) return [156, 163, 175, 60];
-          return [59, 130, 246, 180];
+          const color = getAgentColor(d, colorBy);
+          if (d.agent_norm === selectedAgent) return [...color, 255];
+          if (selectedAgent && connectedAgents.has(d.agent_norm)) return [...color, 220];
+          if (selectedAgent) return [156, 163, 175, 50];
+          return [...color, 200];
         },
+        getLineColor: (d) => {
+          if (d.agent_norm === selectedAgent) return [255, 255, 255, 255];
+          if (selectedAgent && connectedAgents.has(d.agent_norm)) return [255, 255, 255, 180];
+          return [0, 0, 0, 0];
+        },
+        getLineWidth: (d) => {
+          if (d.agent_norm === selectedAgent) return 2;
+          if (selectedAgent && connectedAgents.has(d.agent_norm)) return 1;
+          return 0;
+        },
+        stroked: true,
+        lineWidthUnits: 'pixels',
         radiusUnits: 'pixels',
         pickable: true,
         onClick: (info) => {
@@ -81,11 +122,13 @@ export default function MapView({
           }
         },
         updateTriggers: {
-          getRadius: selectedAgent,
-          getFillColor: selectedAgent,
+          getRadius: [selectedAgent],
+          getFillColor: [selectedAgent, colorBy],
+          getLineColor: [selectedAgent],
+          getLineWidth: [selectedAgent],
         },
       }),
-    [nodes, selectedAgent, connectedAgents, onAgentClick]
+    [nodes, selectedAgent, connectedAgents, onAgentClick, colorBy, jitteredPositions]
   );
 
   const arcLayer = useMemo(
@@ -147,6 +190,35 @@ export default function MapView({
     [edges, nodeMap, selectedAgent]
   );
 
+  const labelNodes = useMemo(() => {
+    return [...nodes]
+      .sort((a, b) => b.connection_count - a.connection_count)
+      .slice(0, 15);
+  }, [nodes]);
+
+  const labelLayer = useMemo(
+    () =>
+      new TextLayer<MapNode>({
+        id: 'labels',
+        data: labelNodes,
+        getPosition: (d) => jitteredPositions.get(d.agent_norm) ?? [d.lon ?? 0, d.lat ?? 0],
+        getText: (d) => d.display_name,
+        getSize: 12,
+        getColor: [50, 50, 50, 220],
+        getAngle: 0,
+        getTextAnchor: 'start',
+        getAlignmentBaseline: 'center',
+        getPixelOffset: [10, 0],
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontWeight: 600,
+        outlineWidth: 3,
+        outlineColor: [255, 255, 255, 200],
+        billboard: false,
+        sizeUnits: 'pixels',
+      }),
+    [labelNodes, jitteredPositions]
+  );
+
   // Handle background clicks via the MapGL onClick (fires for all map clicks).
   // We use pickedRef to distinguish: if deck.gl picked an object, skip the background handler.
   const handleMapClick = useCallback(() => {
@@ -167,7 +239,7 @@ export default function MapView({
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
-        layers={[arcLayer, scatterLayer]}
+        layers={[arcLayer, scatterLayer, labelLayer]}
         getTooltip={({ object }: any) => {
           if (!object) return null;
           if ('agent_norm' in object) {
