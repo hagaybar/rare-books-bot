@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ConfidenceBadge from '../../components/shared/ConfidenceBadge';
+import EnrichmentRecordPanel from '../../components/enrichment/EnrichmentRecordPanel';
 
 interface PersonInfo {
   birth_year: number | null;
@@ -119,7 +120,7 @@ function StatCard({
   );
 }
 
-function AgentCard({ agent }: { agent: EnrichedAgent }) {
+function AgentCard({ agent, onSelectAgent }: { agent: EnrichedAgent; onSelectAgent: (agent: EnrichedAgent) => void }) {
   const [expanded, setExpanded] = useState(false);
   const pi = agent.person_info;
 
@@ -172,9 +173,12 @@ function AgentCard({ agent }: { agent: EnrichedAgent }) {
                 </div>
               )}
             </div>
-            <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full shrink-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelectAgent(agent); }}
+              className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full shrink-0 hover:bg-blue-100 cursor-pointer transition-colors"
+            >
               {agent.record_count} records
-            </span>
+            </button>
           </div>
 
           {(lifespan || agent.description) && (
@@ -336,6 +340,7 @@ export default function Enrichment() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
+  const [selectedAgent, setSelectedAgent] = useState<EnrichedAgent | null>(null);
   const [filters, setFilters] = useState<AgentFilters>({
     search: '',
     hasBio: false,
@@ -404,8 +409,14 @@ export default function Enrichment() {
   const agents = agentsQuery.data;
   const totalPages = agents ? Math.ceil(agents.total / PAGE_SIZE) : 0;
 
+  const selectedLifespan =
+    selectedAgent?.person_info?.birth_year || selectedAgent?.person_info?.death_year
+      ? `${selectedAgent.person_info.birth_year ?? '?'}\u2013${selectedAgent.person_info.death_year ?? '?'}`
+      : '';
+
   return (
-    <div className="space-y-6">
+    <div className="flex gap-0 h-full">
+      <div className="flex-1 min-w-0 space-y-6 overflow-y-auto">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
           Entity Enrichment
@@ -546,7 +557,7 @@ export default function Enrichment() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {agents.items.map((agent) => (
-              <AgentCard key={agent.agent_norm} agent={agent} />
+              <AgentCard key={agent.agent_norm} agent={agent} onSelectAgent={setSelectedAgent} />
             ))}
           </div>
 
@@ -573,6 +584,17 @@ export default function Enrichment() {
             </div>
           )}
         </>
+      )}
+      </div>
+
+      {selectedAgent && (
+        <EnrichmentRecordPanel
+          wikidataId={selectedAgent.wikidata_id}
+          agentNorm={selectedAgent.agent_norm}
+          displayName={selectedAgent.label || selectedAgent.agent_norm}
+          lifespan={selectedLifespan}
+          onClose={() => setSelectedAgent(null)}
+        />
       )}
     </div>
   );

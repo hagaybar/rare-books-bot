@@ -107,6 +107,34 @@ export async function agentChat(
   return handleResponse<AgentChatResponse>(res);
 }
 
+export interface AgentRecord {
+  mms_id: string;
+  title: string | null;
+  date_raw: string | null;
+  date_start: number | null;
+  place_norm: string | null;
+  publisher_norm: string | null;
+  role: string | null;
+  primo_url: string | null;
+}
+
+export interface AgentRecordsResponse {
+  display_name: string;
+  record_count: number;
+  records: AgentRecord[];
+}
+
+export async function fetchAgentRecords(
+  wikidataId?: string,
+  agentNorm?: string
+): Promise<AgentRecordsResponse> {
+  const params = new URLSearchParams();
+  if (wikidataId) params.set('wikidata_id', wikidataId);
+  else if (agentNorm) params.set('agent_norm', agentNorm);
+  const res = await fetch(`${BASE}/enrichment/agent-records?${params}`);
+  return handleResponse<AgentRecordsResponse>(res);
+}
+
 export async function fetchCorrectionHistory(
   field?: string,
   source?: string,
