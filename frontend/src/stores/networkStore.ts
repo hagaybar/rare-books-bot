@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ConnectionType } from '../types/network';
+import type { ConnectionType, ColorByMode } from '../types/network';
 
 interface NetworkState {
   connectionTypes: ConnectionType[];
@@ -16,6 +16,8 @@ interface NetworkState {
   setPlace: (val: string | null) => void;
   setRole: (val: string | null) => void;
   setAgentLimit: (val: number) => void;
+  colorBy: ColorByMode;
+  setColorBy: (mode: ColorByMode) => void;
   resetFilters: () => void;
 }
 
@@ -26,6 +28,7 @@ const DEFAULT_STATE = {
   place: null as string | null,
   role: null as string | null,
   agentLimit: 150,
+  colorBy: 'century' as ColorByMode,
 };
 
 export const useNetworkStore = create<NetworkState>((set) => ({
@@ -47,5 +50,6 @@ export const useNetworkStore = create<NetworkState>((set) => ({
   setPlace: (val) => set({ place: val }),
   setRole: (val) => set({ role: val }),
   setAgentLimit: (val) => set({ agentLimit: val }),
+  setColorBy: (mode) => set({ colorBy: mode }),
   resetFilters: () => set(DEFAULT_STATE),
 }));
