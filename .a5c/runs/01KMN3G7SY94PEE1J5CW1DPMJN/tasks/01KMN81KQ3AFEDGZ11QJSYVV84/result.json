@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN81KQ3AFEDGZ11QJSYVV84",
+  "taskId": "shell-verify",
+  "invocationKey": "db-rebuild:S000011:shell-verify",
+  "status": "ok",
+  "result": {
+    "agents": 3102,
+    "dbSizeMB": 11.4,
+    "enriched": 242,
+    "networkAgents": 1746,
+    "networkEdges": 740,
+    "phase": "final-verification",
+    "records": 2798,
+    "verified": true,
+    "wikiCache": 79,
+    "wikiConns": 626
+  },
+  "startedAt": "2026-03-26T14:16:35.733Z",
+  "finishedAt": "2026-03-26T14:16:35.733Z",
+  "value": {
+    "agents": 3102,
+    "dbSizeMB": 11.4,
+    "enriched": 242,
+    "networkAgents": 1746,
+    "networkEdges": 740,
+    "phase": "final-verification",
+    "records": 2798,
+    "verified": true,
+    "wikiCache": 79,
+    "wikiConns": 626
+  }
+}

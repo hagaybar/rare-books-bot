@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMPSGXQTNN75B96PZ4GWMTKE",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000002:qa-agent",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Test Chat flow end-to-end",
+  "io": {
+    "inputJsonPath": "tasks/01KMPSGXQTNN75B96PZ4GWMTKE/input.json",
+    "outputJsonPath": "tasks/01KMPSGXQTNN75B96PZ4GWMTKE/output.json"
+  },
+  "inputs": {
+    "backendUrl": "http://localhost:8000",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Test the Chat screen (http://localhost:5173/chat) thoroughly using Playwright:\n\n1. Navigate to chat, verify welcome screen renders\n2. Type \"books published in Amsterdam\" and submit\n3. Wait for response — verify:\n   - Loading state shows\n   - Response renders with results\n   - Results have record IDs, titles, evidence\n   - Follow-up suggestions appear\n4. Test a follow-up query in same session\n5. Test empty/vague query: \"books\" — should trigger clarification\n6. Test edge cases: very long query, special characters, Hebrew text \"ספרים בירושלים\"\n7. Check console for errors\n8. Check network requests for failed API calls\n9. Verify session persists across queries (same session_id)\n10. Take screenshots of each state\n\nAlso verify DB effects:\n- Check sessions.db for new session: sqlite3 data/chat/sessions.db \"SELECT * FROM sessions ORDER BY created_at DESC LIMIT 1\"\n\nReport all findings.",
+    "frontendUrl": "http://localhost:5173",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Test Chat flow end-to-end"
+  }
+}

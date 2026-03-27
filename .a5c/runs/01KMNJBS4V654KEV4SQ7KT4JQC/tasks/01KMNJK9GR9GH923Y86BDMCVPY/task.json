@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJK9GR9GH923Y86BDMCVPY",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000009:pipeline-agent",
+  "stepId": "S000009",
+  "kind": "agent",
+  "title": "Apply approved normalization fixes",
+  "io": {
+    "inputJsonPath": "tasks/01KMNJK9GR9GH923Y86BDMCVPY/input.json",
+    "outputJsonPath": "tasks/01KMNJK9GR9GH923Y86BDMCVPY/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Apply the proposed normalization fixes.\n\n1. PLACE FIXES: Read data/qa/place_fixes_proposed.json.\n   For each entry in \"new_aliases\", add to data/normalization/place_aliases/place_alias_map.json.\n   Use the feedback loop pattern:\n     python3 -c \"\nimport json\n# Load existing map\nwith open('data/normalization/place_aliases/place_alias_map.json') as f:\n    alias_map = json.load(f)\n# Load proposed fixes\nwith open('data/qa/place_fixes_proposed.json') as f:\n    fixes = json.load(f)\n# Add new aliases\nadded = 0\nfor fix in fixes['new_aliases']:\n    key = fix['raw'].lower().strip()\n    if key not in alias_map:\n        alias_map[key] = fix['canonical']\n        added += 1\n# Save\nwith open('data/normalization/place_aliases/place_alias_map.json', 'w') as f:\n    json.dump(alias_map, f, indent=2, ensure_ascii=False, sort_keys=True)\nprint(f'Added {added} place aliases')\n\"\n\n2. PUBLISHER FIXES: Same pattern for data/normalization/publisher_aliases/publisher_alias_map.json.\n\n3. RE-RUN M2+M3 to apply the new alias maps:\n   cd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.marc.rebuild_pipeline\n\n   This re-normalizes with the updated maps and rebuilds the SQLite index.\n\n4. VERIFY improvement:\n   python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\ni = c.execute('SELECT count(*) FROM imprints').fetchone()[0]\nhd = c.execute('SELECT count(*) FROM imprints WHERE date_confidence >= 0.9').fetchone()[0]\nhp = c.execute('SELECT count(*) FROM imprints WHERE place_confidence >= 0.9').fetchone()[0]\nhpub = c.execute('SELECT count(*) FROM imprints WHERE publisher_confidence >= 0.8').fetchone()[0]\nprint(f'AFTER FIXES:')\nprint(f'  Date coverage:      {hd}/{i} ({100*hd/i:.1f}%)')\nprint(f'  Place coverage:     {hp}/{i} ({100*hp/i:.1f}%)')\nprint(f'  Publisher coverage: {hpub}/{i} ({100*hpub/i:.1f}%)')\n\"\n\n5. Commit alias map changes:\n   git add data/normalization/place_aliases/place_alias_map.json data/normalization/publisher_aliases/publisher_alias_map.json scripts/marc/normalize.py\n   git commit -m \"fix: apply normalization corrections from QA audit\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Apply approved normalization fixes",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); i=c.execute('SELECT count(*) FROM imprints').fetchone()[0]; hp=c.execute('SELECT count(*) FROM imprints WHERE place_confidence >= 0.9').fetchone()[0]; print(f'Place coverage: {100*hp/i:.1f}%')\""
+  }
+}

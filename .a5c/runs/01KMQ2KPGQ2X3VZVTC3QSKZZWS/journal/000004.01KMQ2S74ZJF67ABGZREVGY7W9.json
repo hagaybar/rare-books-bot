@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T07:22:48.863Z",
+  "data": {
+    "effectId": "01KMQ2S74KS5GW78KZYYJ9BWKR",
+    "invocationKey": "fix-qa-bugs:S000002:bugfix-agent",
+    "invocationHash": "daab504c041f446da9ac0b29dd288e25b37edafc5b15e076ec6f7a2ad7c09cdd",
+    "stepId": "S000002",
+    "taskId": "bugfix-agent",
+    "kind": "agent",
+    "label": "Fix 7 frontend bugs (BUG-002 through BUG-009)",
+    "taskDefRef": "tasks/01KMQ2S74KS5GW78KZYYJ9BWKR/task.json"
+  },
+  "checksum": "5df5db7d3d865cee47e9b41ba0eb159c7cd1ba23e5ee6a00bd6e7404f9346d0c"
+}

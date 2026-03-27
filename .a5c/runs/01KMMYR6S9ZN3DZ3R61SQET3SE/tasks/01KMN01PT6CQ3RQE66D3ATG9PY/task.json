@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN01PT6CQ3RQE66D3ATG9PY",
+  "taskId": "implementation-task",
+  "invocationKey": "network-map-explorer:S000006:implementation-task",
+  "stepId": "S000006",
+  "kind": "agent",
+  "title": "Task 5: API Router",
+  "io": {
+    "inputJsonPath": "tasks/01KMN01PT6CQ3RQE66D3ATG9PY/input.json",
+    "outputJsonPath": "tasks/01KMN01PT6CQ3RQE66D3ATG9PY/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Follow Task 5 in the plan exactly. Create app/api/network.py with FastAPI router: GET /network/map (filtered nodes+edges) and GET /network/agent/{agent_norm:path} (agent detail with Wikipedia summary, connections, external links, primo_url). Use the EXACT code from the plan. Verify: poetry run python -c \"from app.api.network import router; print(f'Routes: {len(router.routes)}')\". Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-26-network-map-explorer.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-26-network-map-explorer-design.md",
+    "taskName": "API Router",
+    "taskNumber": 5,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -c \"from app.api.network import router; print(f'Routes: {len(router.routes)}')\""
+  }
+}

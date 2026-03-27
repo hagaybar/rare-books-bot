@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T13:58:39.198Z",
+  "data": {
+    "effectId": "01KMN719TJH825W2447469DQQM",
+    "invocationKey": "db-rebuild:S000007:agent-impl",
+    "invocationHash": "fcb607b3bc06e3ed5558d386e91dadef993c60edd0b72e22a0ade9dceba3a21a",
+    "stepId": "S000007",
+    "taskId": "agent-impl",
+    "kind": "agent",
+    "label": "Wikipedia Pass 1: Links and categories",
+    "taskDefRef": "tasks/01KMN719TJH825W2447469DQQM/task.json"
+  },
+  "checksum": "6a2445e29feb2c97c503e9eb248d6fbfa7623d42c77eda59ccad3f6ba88c2ed6"
+}

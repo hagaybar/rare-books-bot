@@ -1,0 +1,14 @@
+{
+  "runId": "01KMQ2KPGQ2X3VZVTC3QSKZZWS",
+  "request": "fix-qa-bugs",
+  "processId": "fix-qa-bugs",
+  "entrypoint": {
+    "importPath": "../../processes/fix-qa-bugs.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/fix-qa-bugs.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-27T07:19:48.001Z",
+  "prompt": "Fix 8 QA bugs from reports/qa-e2e-report.md. YOLO mode.",
+  "completionProof": "f3e124d01c761d5f1ad66b3fb88c62dd"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T05:05:16.736Z",
+  "data": {
+    "effectId": "01KMPTXCDKASTAMFXGMY8TZ4MV",
+    "invocationKey": "qa-e2e-testing:S000007:qa-agent",
+    "invocationHash": "0ff94c8ef8f5942bc9dd78cc346ec784f24251f374a9b6d485be606960efd46f",
+    "stepId": "S000007",
+    "taskId": "qa-agent",
+    "kind": "agent",
+    "label": "Compile QA report",
+    "taskDefRef": "tasks/01KMPTXCDKASTAMFXGMY8TZ4MV/task.json"
+  },
+  "checksum": "69a3b39ced35e926c55548301a81837840d580bd77ee5ff1a8c33747a733e890"
+}

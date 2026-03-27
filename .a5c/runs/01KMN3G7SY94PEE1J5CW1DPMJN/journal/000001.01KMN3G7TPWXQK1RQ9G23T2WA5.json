@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-26T12:56:54.358Z",
+  "data": {
+    "runId": "01KMN3G7SY94PEE1J5CW1DPMJN",
+    "processId": "db-rebuild",
+    "entrypoint": {
+      "importPath": "../../processes/db-rebuild.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Rebuild bibliographic.db from MARC XML + enrichment + backup mechanism"
+  },
+  "checksum": "1c35176cf8f0bca929e600170884e944f7b3abe1d14274455b431fe2978f50ba"
+}

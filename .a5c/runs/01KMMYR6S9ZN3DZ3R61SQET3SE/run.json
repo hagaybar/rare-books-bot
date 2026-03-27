@@ -1,0 +1,14 @@
+{
+  "runId": "01KMMYR6S9ZN3DZ3R61SQET3SE",
+  "request": "network-map-explorer",
+  "processId": "network-map-explorer",
+  "entrypoint": {
+    "importPath": "../../processes/network-map-explorer.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/network-map-explorer.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-26T11:33:52.563Z",
+  "prompt": "Execute the implementation plan at docs/superpowers/plans/2026-03-26-network-map-explorer.md — 13 tasks for building a Network Map Explorer feature. Work on branch feature/network-map-explorer. Spec is at docs/superpowers/specs/2026-03-26-network-map-explorer-design.md. Run in YOLO mode - no user interaction or breakpoints.",
+  "completionProof": "44e951942d7cb2c25210b62687716df2"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:27:00.294Z",
+  "data": {
+    "effectId": "01KMNJYSXSS8NSR71H9FACYE48",
+    "invocationKey": "full-ingestion-pipeline:S000011:pipeline-agent",
+    "invocationHash": "8d5dff827cf832526f5a3325d95c6038cb5993206888c624ee50c360ae4b71d9",
+    "stepId": "S000011",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "Seed agent authorities and publisher authorities",
+    "taskDefRef": "tasks/01KMNJYSXSS8NSR71H9FACYE48/task.json"
+  },
+  "checksum": "59501859e54e07761297b6ceeec66bed619516f3219fe6b1a85a24fe18bc86e5"
+}

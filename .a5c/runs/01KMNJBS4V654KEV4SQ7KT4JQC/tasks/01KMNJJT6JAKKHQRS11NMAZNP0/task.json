@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJJT6JAKKHQRS11NMAZNP0",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000006:pipeline-agent",
+  "stepId": "S000006",
+  "kind": "agent",
+  "title": "QA Fix: Place normalization gaps",
+  "io": {
+    "inputJsonPath": "tasks/01KMNJJT6JAKKHQRS11NMAZNP0/input.json",
+    "outputJsonPath": "tasks/01KMNJJT6JAKKHQRS11NMAZNP0/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Review and fix place normalization gaps.\n\nRead the audit report: data/qa/norm_audit.json — look at the \"place\" section.\n\nFor each low-confidence or unmapped place:\n\n1. CATEGORIZE:\n   - \"latin_toponym\": Latin place name (e.g., \"Lugduni Batavorum\" → \"leiden\")\n   - \"hebrew_place\": Hebrew script place name not in alias map\n   - \"historical_rename\": Historical name no longer used (e.g., \"Pressburg\" → \"bratislava\")\n   - \"bracket_variant\": Bracketed form not stripped (e.g., \"[Paris]\")\n   - \"sine_loco_variant\": An \"unknown place\" marker in another language\n   - \"already_mapped\": Actually in the alias map but not matching (debug why)\n\n2. For each fixable place, propose an alias map entry:\n   {\"raw_variant\": \"Lugduni Batavorum\", \"canonical\": \"leiden\", \"confidence\": 0.95}\n\n3. Write proposed fixes to data/qa/place_fixes_proposed.json:\n{\n  \"new_aliases\": [{\"raw\": \"...\", \"canonical\": \"...\", \"category\": \"latin_toponym|hebrew_place|...\", \"affected_records\": N}],\n  \"unfixable\": [{\"raw\": \"...\", \"count\": N, \"reason\": \"...\"}],\n  \"summary\": {\"total_gaps\": N, \"fixable\": N, \"new_aliases\": N, \"unfixable\": N}\n}\n\nDo NOT modify the alias map yet — just propose.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "QA Fix: Place normalization gaps",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import json; f=json.load(open('data/qa/place_fixes_proposed.json')); print(f['summary'])\""
+  }
+}

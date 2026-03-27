@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMPTXCDKASTAMFXGMY8TZ4MV",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000007:qa-agent",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Compile QA report",
+  "io": {
+    "inputJsonPath": "tasks/01KMPTXCDKASTAMFXGMY8TZ4MV/input.json",
+    "outputJsonPath": "tasks/01KMPTXCDKASTAMFXGMY8TZ4MV/output.json"
+  },
+  "inputs": {
+    "backendUrl": "http://localhost:8000",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Compile all findings from the previous test phases into a structured QA report.\n\nWrite the report to: reports/qa-e2e-report.md\n\nThe report should follow this structure:\n1. Application areas tested\n2. Test flows executed\n3. Bugs found (with severity, repro steps, expected/actual, evidence, root cause)\n4. DB/data consistency findings\n5. LLM interaction findings\n6. Flaky/suspicious behaviors\n7. Coverage gaps / what still needs testing\n8. Recommended fixes in priority order\n\nRead the babysitter journal at .a5c/runs/ to find the results from previous tasks.\nAlso check screenshots in .playwright-mcp/ directory.\n\nCommit the report: git add reports/qa-e2e-report.md && git commit -m \"docs: add E2E QA test report\"",
+    "frontendUrl": "http://localhost:5173",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Compile QA report"
+  }
+}

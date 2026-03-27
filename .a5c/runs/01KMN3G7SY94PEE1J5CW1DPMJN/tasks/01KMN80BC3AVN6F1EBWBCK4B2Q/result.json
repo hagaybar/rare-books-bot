@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN80BC3AVN6F1EBWBCK4B2Q",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000010:agent-impl",
+  "status": "ok",
+  "result": {
+    "agentCount": 1746,
+    "edgeCount": 740,
+    "status": "completed",
+    "taskName": "Rebuild network tables"
+  },
+  "startedAt": "2026-03-26T14:16:10.838Z",
+  "finishedAt": "2026-03-26T14:16:10.838Z",
+  "value": {
+    "agentCount": 1746,
+    "edgeCount": 740,
+    "status": "completed",
+    "taskName": "Rebuild network tables"
+  }
+}

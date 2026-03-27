@@ -1,0 +1,6 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "frontendUrl": "http://localhost:5173",
+  "backendUrl": "http://localhost:8000",
+  "dbPath": "data/index/bibliographic.db"
+}

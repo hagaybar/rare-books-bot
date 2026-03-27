@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:20:27.358Z",
+  "data": {
+    "effectId": "01KMNJJT6JAKKHQRS11NMAZNP0",
+    "invocationKey": "full-ingestion-pipeline:S000006:pipeline-agent",
+    "invocationHash": "f1a01e71178a8733f9880ae86e440dd37ef99872fc8b3e82c22e9307fb81c26e",
+    "stepId": "S000006",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "QA Fix: Place normalization gaps",
+    "taskDefRef": "tasks/01KMNJJT6JAKKHQRS11NMAZNP0/task.json"
+  },
+  "checksum": "6cc625f24b6d84498cd3fc1b5d2340a5c1e93d7a794183ca84b2e45cd27ce5fc"
+}

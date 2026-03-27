@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:16:51.638Z",
+  "data": {
+    "effectId": "01KMNJC7H76RZ7PVC00EZTCS88",
+    "invocationKey": "full-ingestion-pipeline:S000001:pipeline-shell",
+    "invocationHash": "e8d09be0961b5b809b9c684910acf4560ba1e936bb0be403f654786259945750",
+    "stepId": "S000001",
+    "taskId": "pipeline-shell",
+    "kind": "shell",
+    "label": "Verify backup",
+    "taskDefRef": "tasks/01KMNJC7H76RZ7PVC00EZTCS88/task.json"
+  },
+  "checksum": "b0314bfbaa62eae304cc25d17655c943591b188720c9d6d4eea2028083bd167d"
+}

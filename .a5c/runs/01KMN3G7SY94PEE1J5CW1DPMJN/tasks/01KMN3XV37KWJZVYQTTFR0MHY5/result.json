@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN3XV37KWJZVYQTTFR0MHY5",
+  "taskId": "breakpoint-gate",
+  "invocationKey": "db-rebuild:S000005:breakpoint-gate",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Yes, start enrichment now"
+  },
+  "startedAt": "2026-03-26T13:04:54.215Z",
+  "finishedAt": "2026-03-26T13:04:54.215Z",
+  "value": {
+    "approved": true,
+    "response": "Yes, start enrichment now"
+  }
+}

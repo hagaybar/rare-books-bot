@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMQ349RBR1YBHNEPC77M1QJF",
+  "taskId": "verify-shell",
+  "invocationKey": "fix-qa-bugs:S000003:verify-shell",
+  "status": "ok",
+  "result": {
+    "build": "pass",
+    "phase": "verification",
+    "tsc": "pass"
+  },
+  "startedAt": "2026-03-27T07:29:46.535Z",
+  "finishedAt": "2026-03-27T07:29:46.535Z",
+  "value": {
+    "build": "pass",
+    "phase": "verification",
+    "tsc": "pass"
+  }
+}

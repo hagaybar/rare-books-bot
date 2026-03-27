@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJJTJA3Y9PJPP20SHPXVZW",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000007:pipeline-agent",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "QA Fix: Publisher normalization gaps",
+  "io": {
+    "inputJsonPath": "tasks/01KMNJJTJA3Y9PJPP20SHPXVZW/input.json",
+    "outputJsonPath": "tasks/01KMNJJTJA3Y9PJPP20SHPXVZW/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Review and fix publisher normalization gaps.\n\nRead the audit report: data/qa/norm_audit.json — look at the \"publisher\" section.\n\nFor each low-confidence or unmapped publisher:\n\n1. CATEGORIZE:\n   - \"sine_nomine_variant\": A \"publisher unknown\" marker (e.g., \"s.n.\", \"[publisher not identified]\")\n   - \"latin_form\": Latin publisher name (e.g., \"apud Elzevirios\")\n   - \"punctuation_issue\": Trailing punctuation/brackets causing mismatch\n   - \"already_mapped\": Should be in alias map but not matching (debug why)\n\n2. Propose alias map entries for fixable publishers.\n\n3. Write proposed fixes to data/qa/publisher_fixes_proposed.json (same structure as place fixes).\n\nDo NOT modify the alias map yet — just propose.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "QA Fix: Publisher normalization gaps",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import json; f=json.load(open('data/qa/publisher_fixes_proposed.json')); print(f['summary'])\""
+  }
+}

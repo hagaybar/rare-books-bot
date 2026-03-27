@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQ2S74KS5GW78KZYYJ9BWKR",
+  "taskId": "bugfix-agent",
+  "invocationKey": "fix-qa-bugs:S000002:bugfix-agent",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Fix 7 frontend bugs (BUG-002 through BUG-009)",
+  "io": {
+    "inputJsonPath": "tasks/01KMQ2S74KS5GW78KZYYJ9BWKR/input.json",
+    "outputJsonPath": "tasks/01KMQ2S74KS5GW78KZYYJ9BWKR/output.json"
+  },
+  "inputs": {
+    "description": "Fix 7 frontend bugs. Read the QA report at reports/qa-e2e-report.md for details.\n\nFor EACH bug, read the relevant component, understand the issue, fix it, and note what you changed.\n\n**BUG-002 + BUG-003: Coverage Dashboard shows wrong percentages**\nFile: frontend/src/pages/operator/Coverage.tsx\nIssue: Place/Publisher show \"0% resolved\" and Data Quality Score shows 0% despite >99% coverage.\nDebug: The component receives data from the /metadata/coverage API. Check how it maps confidence bands to \"resolved/unresolved\". The API likely returns confidence distributions that the component incorrectly interprets. Check the API response shape vs what the component expects.\n\n**BUG-004: Agent Chat coverage sidebar shows zeros**\nFile: frontend/src/pages/operator/AgentChat.tsx\nIssue: Coverage sidebar shows 0 for all categories (High/Medium/Low/Unmapped).\nDebug: Check how coverage data is fetched and mapped. May be same root cause as BUG-002.\n\n**BUG-006: Duplicate clarification message**\nFile: frontend/src/components/chat/MessageBubble.tsx (or similar)\nIssue: When clarification_needed is set, both the clarification box AND the regular message show the same text.\nFix: Skip rendering the regular message content when clarification_needed is set.\n\n**BUG-007: Textarea height not reset after send**\nFile: frontend/src/pages/Chat.tsx\nIssue: After sending a long message, textarea stays expanded.\nFix: In handleSend, after setInput(''), reset the textarea height:\n  const el = textareaRef.current;\n  if (el) { el.style.height = 'auto'; }\n\n**BUG-008: Coverage bar labels show \"undefined\"**\nFile: frontend/src/pages/operator/Coverage.tsx (CoverageBarFull component)\nIssue: Bar segment labels render as \"undefined: 11 (0.4%)\" instead of proper band names.\nFix: Check where the band.label is set — likely a missing property name mapping.\n\n**BUG-009: React key warning in CoverageBarFull**\nFile: Same component as BUG-008\nIssue: Missing key prop on mapped list items.\nFix: Add unique key to each mapped element (use band name or index).\n\nAfter all fixes, verify:\n  cd frontend && npx tsc --noEmit && npm run build\n\nCommit all fixes:\n  git add frontend/src/ && git commit -m \"fix: 7 frontend bugs from QA report (BUG-002 through BUG-009)\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Fix 7 frontend bugs (BUG-002 through BUG-009)"
+  }
+}

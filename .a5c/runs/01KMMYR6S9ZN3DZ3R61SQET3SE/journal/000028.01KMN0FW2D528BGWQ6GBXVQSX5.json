@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:04:16.590Z",
+  "data": {
+    "effectId": "01KMN0FW211XYGCC49CX2CDV02",
+    "invocationKey": "network-map-explorer:S000014:implementation-task",
+    "invocationHash": "bbb59d3d308f4bd77bf9adba39b551ce1be1794f0dd2114629ea5ccb6feee938",
+    "stepId": "S000014",
+    "taskId": "implementation-task",
+    "kind": "agent",
+    "label": "Task 12: AgentPanel Component",
+    "taskDefRef": "tasks/01KMN0FW211XYGCC49CX2CDV02/task.json"
+  },
+  "checksum": "2f94fb9d51d16660e60e5e4e0647b1259a8119024e054c0647ac238091def969"
+}

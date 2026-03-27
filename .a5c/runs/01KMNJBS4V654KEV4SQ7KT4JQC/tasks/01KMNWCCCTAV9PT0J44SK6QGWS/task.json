@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNWCCCTAV9PT0J44SK6QGWS",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000016:pipeline-agent",
+  "stepId": "S000016",
+  "kind": "agent",
+  "title": "Wikipedia Pass 3: LLM relationship extraction",
+  "io": {
+    "inputJsonPath": "tasks/01KMNWCCCTAV9PT0J44SK6QGWS/input.json",
+    "outputJsonPath": "tasks/01KMNWCCCTAV9PT0J44SK6QGWS/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Extract structured relationships using gpt-4.1-nano.\n\ncd /home/hagaybar/projects/rare-books-bot\npoetry run python -m scripts.enrichment.batch_wikipedia --pass 3 --db data/index/bibliographic.db --limit 2000\n\nVerify:\n  python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\nwconn = c.execute('SELECT count(*) FROM wikipedia_connections').fetchone()[0]\ntypes = c.execute('SELECT source_type, count(*) FROM wikipedia_connections GROUP BY source_type').fetchall()\nprint(f'Connections: {wconn}')\nfor t, n in types: print(f'  {t}: {n}')\n\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Wikipedia Pass 3: LLM relationship extraction",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); wconn=c.execute('SELECT count(*) FROM wikipedia_connections').fetchone()[0]; print(f'Connections: {wconn}')\""
+  }
+}

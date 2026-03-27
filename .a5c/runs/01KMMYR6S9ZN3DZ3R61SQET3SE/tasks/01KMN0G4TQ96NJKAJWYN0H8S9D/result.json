@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN0G4TQ96NJKAJWYN0H8S9D",
+  "taskId": "implementation-task",
+  "invocationKey": "network-map-explorer:S000015:implementation-task",
+  "status": "ok",
+  "result": {
+    "apiSmokeTest": "passed",
+    "backendTests": "passed",
+    "frontendBuild": "passed",
+    "status": "completed",
+    "taskNumber": 13,
+    "tscCheck": "passed"
+  },
+  "startedAt": "2026-03-26T12:05:26.769Z",
+  "finishedAt": "2026-03-26T12:05:26.769Z",
+  "value": {
+    "apiSmokeTest": "passed",
+    "backendTests": "passed",
+    "frontendBuild": "passed",
+    "status": "completed",
+    "taskNumber": 13,
+    "tscCheck": "passed"
+  }
+}

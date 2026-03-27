@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN0FW211XYGCC49CX2CDV02",
+  "taskId": "implementation-task",
+  "invocationKey": "network-map-explorer:S000014:implementation-task",
+  "status": "ok",
+  "result": {
+    "status": "completed",
+    "taskNumber": 12
+  },
+  "startedAt": "2026-03-26T12:04:16.716Z",
+  "finishedAt": "2026-03-26T12:04:16.716Z",
+  "value": {
+    "status": "completed",
+    "taskNumber": 12
+  }
+}

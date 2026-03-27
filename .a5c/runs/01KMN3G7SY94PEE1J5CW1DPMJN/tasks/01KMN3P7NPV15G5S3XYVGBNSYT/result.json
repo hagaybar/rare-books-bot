@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN3P7NPV15G5S3XYVGBNSYT",
+  "taskId": "shell-verify",
+  "invocationKey": "db-rebuild:S000003:shell-verify",
+  "status": "ok",
+  "result": {
+    "agents": 3102,
+    "phase": "core-rebuild",
+    "records": 2798,
+    "tables": 24,
+    "verified": true
+  },
+  "startedAt": "2026-03-26T13:00:25.334Z",
+  "finishedAt": "2026-03-26T13:00:25.334Z",
+  "value": {
+    "agents": 3102,
+    "phase": "core-rebuild",
+    "records": 2798,
+    "tables": 24,
+    "verified": true
+  }
+}

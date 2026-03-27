@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:03:59.232Z",
+  "data": {
+    "effectId": "01KMN0FB3MCAQTJGRADD89M63Y",
+    "invocationKey": "network-map-explorer:S000010:implementation-task",
+    "invocationHash": "b3e01f7bdb82d3be97d66fdc9b22c697036d35fec91f8bbc9ccfbfc08713b5b1",
+    "stepId": "S000010",
+    "taskId": "implementation-task",
+    "kind": "agent",
+    "label": "Task 8: Frontend Types, API Client, and Store",
+    "taskDefRef": "tasks/01KMN0FB3MCAQTJGRADD89M63Y/task.json"
+  },
+  "checksum": "9ad0bbeda24c7236cdfc3cc9cdfc9a98a60109ce29760e7a02bce68723217b68"
+}

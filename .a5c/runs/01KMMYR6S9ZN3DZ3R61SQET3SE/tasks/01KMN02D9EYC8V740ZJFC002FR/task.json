@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN02D9EYC8V740ZJFC002FR",
+  "taskId": "shell-verify",
+  "invocationKey": "network-map-explorer:S000008:shell-verify",
+  "stepId": "S000008",
+  "kind": "shell",
+  "title": "Verify phase2-api-layer",
+  "io": {
+    "outputJsonPath": "tasks/01KMN02D9EYC8V740ZJFC002FR/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/app/test_network_api.py -v 2>&1 | tail -20",
+    "phase": "phase2-api-layer",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

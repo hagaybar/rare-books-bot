@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T20:11:42.375Z",
+  "data": {
+    "effectId": "01KMNWCCCTAV9PT0J44SK6QGWS",
+    "invocationKey": "full-ingestion-pipeline:S000016:pipeline-agent",
+    "invocationHash": "02420e96d2ea85085d1dfbfe72aedd2eb556ede548b47307508d0c9fb5b82447",
+    "stepId": "S000016",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "Wikipedia Pass 3: LLM relationship extraction",
+    "taskDefRef": "tasks/01KMNWCCCTAV9PT0J44SK6QGWS/task.json"
+  },
+  "checksum": "e050d0c42a9cd0531130244b29cda958e50a20e537b8549427735fa62a1a99fe"
+}

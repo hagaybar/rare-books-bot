@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T11:52:57.568Z",
+  "data": {
+    "effectId": "01KMMZV4YMZZ56J8J75YTVG4PZ",
+    "invocationKey": "network-map-explorer:S000004:shell-verify",
+    "invocationHash": "546bcc6607b02f12022a4be067ddace7244fdccae0a77f694478e4678d88bf6f",
+    "stepId": "S000004",
+    "taskId": "shell-verify",
+    "kind": "shell",
+    "label": "Verify phase1-data-foundation",
+    "taskDefRef": "tasks/01KMMZV4YMZZ56J8J75YTVG4PZ/task.json"
+  },
+  "checksum": "ba948d49a42f36fd7341df5d8f1a02344db2f94b5c5d91242f1ca7c6ab3c7731"
+}

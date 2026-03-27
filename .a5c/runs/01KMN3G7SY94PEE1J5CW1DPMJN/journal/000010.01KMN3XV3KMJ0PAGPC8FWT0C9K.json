@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T13:04:20.083Z",
+  "data": {
+    "effectId": "01KMN3XV37KWJZVYQTTFR0MHY5",
+    "invocationKey": "db-rebuild:S000005:breakpoint-gate",
+    "invocationHash": "dc3d60da52866b95db5259ed2716123b61ae80d8f78dbdc32a90f910d6042047",
+    "stepId": "S000005",
+    "taskId": "breakpoint-gate",
+    "kind": "breakpoint",
+    "label": "About to start enrichment (Wikidata + Wikipedia 3 passes). This takes ~3.5 hours and costs ~$0.50 in API calls. The core DB is already rebuilt. Continue with enrichment?",
+    "taskDefRef": "tasks/01KMN3XV37KWJZVYQTTFR0MHY5/task.json"
+  },
+  "checksum": "d441fc32ae62cb3a96711fe772edf464d0566ff4f3a778854a1d7652c541b683"
+}

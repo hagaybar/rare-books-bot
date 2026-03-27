@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMPSGXQTNN75B96PZ4GWMTKE",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000002:qa-agent",
+  "status": "ok",
+  "result": {
+    "bugs": 2,
+    "passed": 8,
+    "phase": "chat",
+    "tests": 8
+  },
+  "startedAt": "2026-03-27T04:49:15.288Z",
+  "finishedAt": "2026-03-27T04:49:15.288Z",
+  "value": {
+    "bugs": 2,
+    "passed": 8,
+    "phase": "chat",
+    "tests": 8
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN3MP21DPFJNY5WD695Z7P2",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000002:agent-impl",
+  "status": "ok",
+  "result": {
+    "agentCount": 3102,
+    "imprintCount": 2812,
+    "recordCount": 2798,
+    "status": "completed",
+    "taskName": "Core rebuild"
+  },
+  "startedAt": "2026-03-26T13:00:04.790Z",
+  "finishedAt": "2026-03-26T13:00:04.790Z",
+  "value": {
+    "agentCount": 3102,
+    "imprintCount": 2812,
+    "recordCount": 2798,
+    "status": "completed",
+    "taskName": "Core rebuild"
+  }
+}

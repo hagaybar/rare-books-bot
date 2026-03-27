@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:57:10.150Z",
+  "data": {
+    "effectId": "01KMN3GQ7R89D4SKG7BGZ0S3J5",
+    "invocationKey": "db-rebuild:S000001:agent-impl",
+    "invocationHash": "8cd6d3c213a26dfba0c7f80506687f801122327e0a09c44eb0508e218c7262c3",
+    "stepId": "S000001",
+    "taskId": "agent-impl",
+    "kind": "agent",
+    "label": "Create backup mechanism and fix seed script",
+    "taskDefRef": "tasks/01KMN3GQ7R89D4SKG7BGZ0S3J5/task.json"
+  },
+  "checksum": "b63c4e20d1eb23fdff33b5c844425cbc104c84b3b1b19b73fec3242b49f64c9b"
+}

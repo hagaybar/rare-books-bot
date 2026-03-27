@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJYSXSS8NSR71H9FACYE48",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000011:pipeline-agent",
+  "stepId": "S000011",
+  "kind": "agent",
+  "title": "Seed agent authorities and publisher authorities",
+  "io": {
+    "inputJsonPath": "tasks/01KMNJYSXSS8NSR71H9FACYE48/input.json",
+    "outputJsonPath": "tasks/01KMNJYSXSS8NSR71H9FACYE48/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Seed the agent_authorities + agent_aliases tables and publisher_authorities.\n\n1. Agent authorities:\n   cd /home/hagaybar/projects/rare-books-bot && poetry run python -m app.cli seed_agent_authorities\n\n   If this fails because agents don't have authority_uri values, the seed script\n   should still create authorities from agent_norm grouping. Check the output.\n\n2. Publisher authorities (if publisher_research.json exists):\n   cd /home/hagaybar/projects/rare-books-bot\n   if [ -f data/normalization/publisher_research.json ]; then\n     poetry run python -m scripts.metadata.populate_publisher_authority\n   fi\n\n3. Verify:\n   python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\naa = c.execute('SELECT count(*) FROM agent_authorities').fetchone()[0]\nal = c.execute('SELECT count(*) FROM agent_aliases').fetchone()[0]\nal_types = c.execute('SELECT alias_type, count(*) FROM agent_aliases GROUP BY alias_type').fetchall()\nprint(f'Agent authorities: {aa}')\nprint(f'Agent aliases: {al}')\nfor t, n in al_types: print(f'  {t}: {n}')\ntry:\n    pa = c.execute('SELECT count(*) FROM publisher_authorities').fetchone()[0]\n    pv = c.execute('SELECT count(*) FROM publisher_variants').fetchone()[0]\n    print(f'Publisher authorities: {pa}, variants: {pv}')\nexcept: print('No publisher authority tables')\n\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Seed agent authorities and publisher authorities",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); aa=c.execute('SELECT count(*) FROM agent_authorities').fetchone()[0]; print(f'Authorities: {aa}'); assert aa > 100\""
+  }
+}

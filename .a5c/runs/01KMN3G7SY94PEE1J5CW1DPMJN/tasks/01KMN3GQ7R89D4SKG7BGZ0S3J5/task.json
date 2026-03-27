@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN3GQ7R89D4SKG7BGZ0S3J5",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000001:agent-impl",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Create backup mechanism and fix seed script",
+  "io": {
+    "inputJsonPath": "tasks/01KMN3GQ7R89D4SKG7BGZ0S3J5/input.json",
+    "outputJsonPath": "tasks/01KMN3GQ7R89D4SKG7BGZ0S3J5/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "description": "Two things to implement:\n\n1. Create scripts/utils/db_backup.py — a utility that:\n   - backup_db(db_path): copies db_path to db_path.bak (overwrites previous backup)\n   - restore_db(db_path): restores from db_path.bak\n   - Has a CLI: python -m scripts.utils.db_backup backup data/index/bibliographic.db\n   - Has a CLI: python -m scripts.utils.db_backup restore data/index/bibliographic.db\n   - Prints confirmation messages\n\n2. Fix scripts/network/seed_test_db.py — add a safety check at the top of main():\n   - If the target path is \"data/index/bibliographic.db\" (the production path), REFUSE to run\n   - Print an error: \"ERROR: Cannot seed the production database. Use a different path like data/index/test.db\"\n   - sys.exit(1)\n   - This prevents accidental destruction of production data\n\n3. Integrate backup into rebuild_pipeline.py — at the start of run_m3_index(), before creating the new DB:\n   - If db_path exists, call backup_db(db_path) first\n   - Print \"Backed up existing database to {db_path}.bak\"\n\n4. Commit all changes.\n\nVerification: python -c \"from scripts.utils.db_backup import backup_db, restore_db; print('OK')\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Create backup mechanism and fix seed script",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"from scripts.utils.db_backup import backup_db, restore_db; print('OK')\""
+  }
+}

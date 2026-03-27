@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJE40SHHGCGAZZM11WVWWS",
+  "taskId": "pipeline-shell",
+  "invocationKey": "full-ingestion-pipeline:S000003:pipeline-shell",
+  "stepId": "S000003",
+  "kind": "shell",
+  "title": "Verify core-verify",
+  "io": {
+    "outputJsonPath": "tasks/01KMNJE40SHHGCGAZZM11WVWWS/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\nr = c.execute('SELECT count(*) FROM records').fetchone()[0]\na = c.execute('SELECT count(DISTINCT agent_norm) FROM agents').fetchone()[0]\ni = c.execute('SELECT count(*) FROM imprints').fetchone()[0]\nuri = c.execute('SELECT count(DISTINCT authority_uri) FROM agents WHERE authority_uri IS NOT NULL').fetchone()[0]\nprint(f'Records: {r}')\nprint(f'Distinct agents: {a}')\nprint(f'Imprints: {i}')\nprint(f'Agents with authority_uri: {uri}')\n# Check normalization coverage\nhigh_date = c.execute('SELECT count(*) FROM imprints WHERE date_confidence >= 0.9').fetchone()[0]\nhigh_place = c.execute('SELECT count(*) FROM imprints WHERE place_confidence >= 0.9').fetchone()[0]\nhigh_pub = c.execute('SELECT count(*) FROM imprints WHERE publisher_confidence >= 0.8').fetchone()[0]\nprint(f'Date coverage (>=0.9): {high_date}/{i} ({100*high_date/i:.1f}%)')\nprint(f'Place coverage (>=0.9): {high_place}/{i} ({100*high_place/i:.1f}%)')\nprint(f'Publisher coverage (>=0.8): {high_pub}/{i} ({100*high_pub/i:.1f}%)')\n\"",
+    "phase": "core-verify",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

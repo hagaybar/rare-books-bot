@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:59:20.014Z",
+  "data": {
+    "effectId": "01KMN3MP21DPFJNY5WD695Z7P2",
+    "invocationKey": "db-rebuild:S000002:agent-impl",
+    "invocationHash": "1ba0aff6ad0a220d93d6b92e74e153db3baae13e3a2e7b85f14f8eb3c2350b7e",
+    "stepId": "S000002",
+    "taskId": "agent-impl",
+    "kind": "agent",
+    "label": "Run core rebuild pipeline (M1→M2→M3)",
+    "taskDefRef": "tasks/01KMN3MP21DPFJNY5WD695Z7P2/task.json"
+  },
+  "checksum": "bc5c24a38e75abf28cb3fe2cc3937f94ca347aea7f42a44fb810c7345302d7e2"
+}

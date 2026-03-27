@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T04:59:23.728Z",
+  "data": {
+    "effectId": "01KMPTJKP4YX24R5QA6G3QZJT4",
+    "invocationKey": "qa-e2e-testing:S000004:qa-agent",
+    "invocationHash": "1e34cd3e82a928f8f6c6301ff40a22fa24468792f13430ae8d5674a54a4d537d",
+    "stepId": "S000004",
+    "taskId": "qa-agent",
+    "kind": "agent",
+    "label": "Test Operator screens (Coverage, Workbench, Agent Chat)",
+    "taskDefRef": "tasks/01KMPTJKP4YX24R5QA6G3QZJT4/task.json"
+  },
+  "checksum": "f215c488e6a6a7c4bd8f45c59b8db5fafd26e74fff9f1ce1864c4a670ca2b204"
+}

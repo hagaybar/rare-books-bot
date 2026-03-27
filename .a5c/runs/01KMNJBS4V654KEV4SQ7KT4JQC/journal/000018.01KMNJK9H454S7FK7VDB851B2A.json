@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:20:43.044Z",
+  "data": {
+    "effectId": "01KMNJK9GR9GH923Y86BDMCVPY",
+    "invocationKey": "full-ingestion-pipeline:S000009:pipeline-agent",
+    "invocationHash": "0eca7c16b54ebd10d448b5820c85fa080f50c1540b795e7b8f520fc0856fa072",
+    "stepId": "S000009",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "Apply approved normalization fixes",
+    "taskDefRef": "tasks/01KMNJK9GR9GH923Y86BDMCVPY/task.json"
+  },
+  "checksum": "c4dd8b8acabf574d53d367f3d8758d045a41fcd03758efca5794e2cee221d28a"
+}

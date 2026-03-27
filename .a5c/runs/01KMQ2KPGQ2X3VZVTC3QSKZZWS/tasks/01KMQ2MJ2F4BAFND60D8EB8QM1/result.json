@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMQ2MJ2F4BAFND60D8EB8QM1",
+  "taskId": "bugfix-agent",
+  "invocationKey": "fix-qa-bugs:S000001:bugfix-agent",
+  "status": "ok",
+  "result": {
+    "bugsFixed": [
+      "BUG-001"
+    ]
+  },
+  "startedAt": "2026-03-27T07:22:48.621Z",
+  "finishedAt": "2026-03-27T07:22:48.621Z",
+  "value": {
+    "bugsFixed": [
+      "BUG-001"
+    ]
+  }
+}

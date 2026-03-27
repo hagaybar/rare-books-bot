@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:18:00.698Z",
+  "data": {
+    "effectId": "01KMNJEAZDAD85ZNJNPSJ64SNZ",
+    "invocationKey": "full-ingestion-pipeline:S000004:pipeline-agent",
+    "invocationHash": "acfbb1a55f77689fd5a29ac2e3b2a142ac1ffc60f7e5c236742fe915bb356bb8",
+    "stepId": "S000004",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "QA Audit: scan all normalization gaps",
+    "taskDefRef": "tasks/01KMNJEAZDAD85ZNJNPSJ64SNZ/task.json"
+  },
+  "checksum": "03087e33add4cd3b729a003497f519da2b6e0a62616e62ac1eefeaf2e62f1359"
+}

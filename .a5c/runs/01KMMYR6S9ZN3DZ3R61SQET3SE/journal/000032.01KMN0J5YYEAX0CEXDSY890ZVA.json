@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:05:32.254Z",
+  "data": {
+    "effectId": "01KMN0J5YHY6XV1ETT8YHNYVP3",
+    "invocationKey": "network-map-explorer:S000016:shell-verify",
+    "invocationHash": "16725cd20ed38b5cbb800e475a0fd24ed8019f153d5a43ed6698fbeb5addc147",
+    "stepId": "S000016",
+    "taskId": "shell-verify",
+    "kind": "shell",
+    "label": "Verify final-verification",
+    "taskDefRef": "tasks/01KMN0J5YHY6XV1ETT8YHNYVP3/task.json"
+  },
+  "checksum": "2fd024a16d26859b02abe2f49e3caadd04588126c5ea8d53e62cffa87f90eb8e"
+}

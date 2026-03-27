@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNJK9GR9GH923Y86BDMCVPY",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000009:pipeline-agent",
+  "status": "ok",
+  "result": {
+    "dateCoveragePct": 99.6,
+    "remainingGaps": 3,
+    "status": "completed",
+    "taskName": "Apply fixes"
+  },
+  "startedAt": "2026-03-26T17:26:53.580Z",
+  "finishedAt": "2026-03-26T17:26:53.580Z",
+  "value": {
+    "dateCoveragePct": 99.6,
+    "remainingGaps": 3,
+    "status": "completed",
+    "taskName": "Apply fixes"
+  }
+}

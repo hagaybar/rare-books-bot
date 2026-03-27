@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMPTXC09NS72V5CXV7XMBKBA",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000006:qa-agent",
+  "stepId": "S000006",
+  "kind": "agent",
+  "title": "Verify data integrity and consistency",
+  "io": {
+    "inputJsonPath": "tasks/01KMPTXC09NS72V5CXV7XMBKBA/input.json",
+    "outputJsonPath": "tasks/01KMPTXC09NS72V5CXV7XMBKBA/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Run data integrity checks directly against the database:\n\n1. Record counts match across related tables:\n   python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\nrecords = c.execute('SELECT count(*) FROM records').fetchone()[0]\nimprints = c.execute('SELECT count(*) FROM imprints').fetchone()[0]\nagents = c.execute('SELECT count(*) FROM agents').fetchone()[0]\ntitles = c.execute('SELECT count(*) FROM titles').fetchone()[0]\nprint(f'Records: {records}, Imprints: {imprints}, Agents: {agents}, Titles: {titles}')\n# Every imprint should have a valid record_id\norphan_imprints = c.execute('SELECT count(*) FROM imprints WHERE record_id NOT IN (SELECT id FROM records)').fetchone()[0]\nprint(f'Orphan imprints: {orphan_imprints}')\norphan_agents = c.execute('SELECT count(*) FROM agents WHERE record_id NOT IN (SELECT id FROM records)').fetchone()[0]\nprint(f'Orphan agents: {orphan_agents}')\n\"\n\n2. Wikipedia URL integrity:\n   python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\nbroken = c.execute(\"SELECT count(*) FROM authority_enrichment WHERE wikipedia_url LIKE '%Special:GoToLinkedPage%'\").fetchone()[0]\nnull_urls = c.execute('SELECT count(*) FROM authority_enrichment WHERE wikipedia_url IS NULL AND wikidata_id IS NOT NULL').fetchone()[0]\nprint(f'Broken Wikipedia URLs: {broken}')\nprint(f'Missing Wikipedia URLs (with Wikidata): {null_urls}')\n\"\n\n3. Network table consistency:\n   python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\n# Every network_agent should have a valid agent_norm in agents table\norphan_net = c.execute('SELECT count(*) FROM network_agents WHERE agent_norm NOT IN (SELECT DISTINCT agent_norm FROM agents)').fetchone()[0]\nprint(f'Orphan network agents: {orphan_net}')\n# Every network_edge source/target should be in network_agents\nbad_edges = c.execute('SELECT count(*) FROM network_edges WHERE source_agent_norm NOT IN (SELECT agent_norm FROM network_agents) OR target_agent_norm NOT IN (SELECT agent_norm FROM network_agents)').fetchone()[0]\nprint(f'Edges with missing agents: {bad_edges}')\n\"\n\n4. Authority enrichment completeness:\n   python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\nagents_with_uri = c.execute('SELECT count(DISTINCT authority_uri) FROM agents WHERE authority_uri IS NOT NULL').fetchone()[0]\nenriched = c.execute('SELECT count(*) FROM authority_enrichment').fetchone()[0]\nprint(f'Agents with URI: {agents_with_uri}, Enriched: {enriched}')\n\"\n\nReport all findings.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Verify data integrity and consistency"
+  }
+}

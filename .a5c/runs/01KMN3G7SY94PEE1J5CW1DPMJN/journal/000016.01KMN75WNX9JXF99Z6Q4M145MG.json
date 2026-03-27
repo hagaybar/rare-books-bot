@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T14:01:09.565Z",
+  "data": {
+    "effectId": "01KMN75WNG19H3F6Q0EB2H8PZ5",
+    "invocationKey": "db-rebuild:S000008:agent-impl",
+    "invocationHash": "91a8289f9fe665633cae5d51b2900bd167175396a88e26bc32f28b9385a9bd7b",
+    "stepId": "S000008",
+    "taskId": "agent-impl",
+    "kind": "agent",
+    "label": "Wikipedia Pass 2: Summaries",
+    "taskDefRef": "tasks/01KMN75WNG19H3F6Q0EB2H8PZ5/task.json"
+  },
+  "checksum": "f68ca0006896d25f63acec500438853fb3b1fb70a82f1a4654da55a7137c2e84"
+}

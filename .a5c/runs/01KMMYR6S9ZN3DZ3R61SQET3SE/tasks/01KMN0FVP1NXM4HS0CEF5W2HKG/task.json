@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN0FVP1NXM4HS0CEF5W2HKG",
+  "taskId": "implementation-task",
+  "invocationKey": "network-map-explorer:S000013:implementation-task",
+  "stepId": "S000013",
+  "kind": "agent",
+  "title": "Task 11: ControlBar Component",
+  "io": {
+    "inputJsonPath": "tasks/01KMN0FVP1NXM4HS0CEF5W2HKG/input.json",
+    "outputJsonPath": "tasks/01KMN0FVP1NXM4HS0CEF5W2HKG/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Follow Task 11 in the plan exactly. Create frontend/src/components/network/ControlBar.tsx — filter controls with connection type toggle buttons (colored by type), century dropdown, role dropdown, and agent count slider. IMPORTANT: The slider must be debounced (300ms) using useDebouncedCallback hook with local state for smooth dragging. Use the EXACT code from the plan (includes AgentSlider sub-component). Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-26-network-map-explorer.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-26-network-map-explorer-design.md",
+    "taskName": "ControlBar Component",
+    "taskNumber": 11,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit 2>&1 | tail -10"
+  }
+}

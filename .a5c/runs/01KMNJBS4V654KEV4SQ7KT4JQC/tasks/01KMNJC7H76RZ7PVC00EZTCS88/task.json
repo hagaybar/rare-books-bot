@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJC7H76RZ7PVC00EZTCS88",
+  "taskId": "pipeline-shell",
+  "invocationKey": "full-ingestion-pipeline:S000001:pipeline-shell",
+  "stepId": "S000001",
+  "kind": "shell",
+  "title": "Verify backup",
+  "io": {
+    "outputJsonPath": "tasks/01KMNJC7H76RZ7PVC00EZTCS88/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"\nfrom scripts.utils.db_backup import backup_db\nfrom pathlib import Path\ndb = Path('data/index/bibliographic.db')\nif db.exists():\n    backup_db(db)\n    print('Backup created')\nelse:\n    print('No existing DB to back up')\n\"",
+    "phase": "backup",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

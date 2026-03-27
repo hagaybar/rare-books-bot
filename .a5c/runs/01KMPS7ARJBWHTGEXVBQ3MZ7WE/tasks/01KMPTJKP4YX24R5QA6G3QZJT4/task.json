@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMPTJKP4YX24R5QA6G3QZJT4",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000004:qa-agent",
+  "stepId": "S000004",
+  "kind": "agent",
+  "title": "Test Operator screens (Coverage, Workbench, Agent Chat)",
+  "io": {
+    "inputJsonPath": "tasks/01KMPTJKP4YX24R5QA6G3QZJT4/input.json",
+    "outputJsonPath": "tasks/01KMPTJKP4YX24R5QA6G3QZJT4/output.json"
+  },
+  "inputs": {
+    "backendUrl": "http://localhost:8000",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Test operator screens using Playwright:\n\n**Coverage (http://localhost:5173/operator/coverage)**:\n1. Navigate, verify charts render (recharts pie/bar)\n2. Check coverage stats for date, place, publisher, agent\n3. Verify confidence distribution displays\n4. Take screenshot\n\n**Workbench (http://localhost:5173/operator/workbench)**:\n1. Navigate, verify table renders\n2. Test filtering, sorting, pagination if available\n3. Check for editable cells\n4. Take screenshot\n\n**Agent Chat (http://localhost:5173/operator/agent)**:\n1. Navigate, verify UI loads\n2. Check coverage sidebar\n3. If possible, test a simple agent query\n4. Take screenshot\n\n**Review (http://localhost:5173/operator/review)**:\n1. Navigate, verify loads\n2. Take screenshot\n\nReport all findings for each screen.",
+    "frontendUrl": "http://localhost:5173",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Test Operator screens (Coverage, Workbench, Agent Chat)"
+  }
+}

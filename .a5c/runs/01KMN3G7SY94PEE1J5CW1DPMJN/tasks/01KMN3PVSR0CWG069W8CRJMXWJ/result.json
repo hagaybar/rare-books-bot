@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN3PVSR0CWG069W8CRJMXWJ",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000004:agent-impl",
+  "status": "ok",
+  "result": {
+    "agentAliases": 7496,
+    "agentAuthorities": 3102,
+    "status": "completed",
+    "taskName": "Seed authorities"
+  },
+  "startedAt": "2026-03-26T13:04:14.163Z",
+  "finishedAt": "2026-03-26T13:04:14.163Z",
+  "value": {
+    "agentAliases": 7496,
+    "agentAuthorities": 3102,
+    "status": "completed",
+    "taskName": "Seed authorities"
+  }
+}

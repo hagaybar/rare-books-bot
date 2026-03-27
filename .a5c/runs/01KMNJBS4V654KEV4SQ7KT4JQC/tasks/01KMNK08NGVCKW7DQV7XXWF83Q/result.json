@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNK08NGVCKW7DQV7XXWF83Q",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000013:pipeline-agent",
+  "status": "ok",
+  "result": {
+    "enrichedCount": 1924,
+    "status": "completed",
+    "taskName": "Wikidata enrichment",
+    "withWikidata": 1921
+  },
+  "startedAt": "2026-03-26T18:58:02.135Z",
+  "finishedAt": "2026-03-26T18:58:02.135Z",
+  "value": {
+    "enrichedCount": 1924,
+    "status": "completed",
+    "taskName": "Wikidata enrichment",
+    "withWikidata": 1921
+  }
+}

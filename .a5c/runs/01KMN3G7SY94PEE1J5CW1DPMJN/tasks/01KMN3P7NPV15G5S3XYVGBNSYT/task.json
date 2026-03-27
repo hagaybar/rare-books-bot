@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN3P7NPV15G5S3XYVGBNSYT",
+  "taskId": "shell-verify",
+  "invocationKey": "db-rebuild:S000003:shell-verify",
+  "stepId": "S000003",
+  "kind": "shell",
+  "title": "Verify core-rebuild",
+  "io": {
+    "outputJsonPath": "tasks/01KMN3P7NPV15G5S3XYVGBNSYT/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\ntables = [t[0] for t in c.execute(\"SELECT name FROM sqlite_master WHERE type='table'\").fetchall()]\nprint(f'Tables: {len(tables)}')\nr = c.execute('SELECT count(*) FROM records').fetchone()[0]\na = c.execute('SELECT count(DISTINCT agent_norm) FROM agents').fetchone()[0]\ni = c.execute('SELECT count(*) FROM imprints').fetchone()[0]\nprint(f'Records: {r}, Agents: {a}, Imprints: {i}')\n\"",
+    "phase": "core-rebuild",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

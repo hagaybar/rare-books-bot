@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN75WNG19H3F6Q0EB2H8PZ5",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000008:agent-impl",
+  "stepId": "S000008",
+  "kind": "agent",
+  "title": "Wikipedia Pass 2: Summaries",
+  "io": {
+    "inputJsonPath": "tasks/01KMN75WNG19H3F6Q0EB2H8PZ5/input.json",
+    "outputJsonPath": "tasks/01KMN75WNG19H3F6Q0EB2H8PZ5/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "description": "Run Wikipedia enrichment Pass 2 — fetch article summaries for all cached agents.\n\ncd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.enrichment.batch_wikipedia --pass 2 --db data/index/bibliographic.db\n\nThis fetches 2-3 paragraph summaries and extracts name variants. Takes ~45 minutes.\n\nVerify:\n  python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); s=c.execute('SELECT count(*) FROM wikipedia_cache WHERE summary_extract IS NOT NULL').fetchone()[0]; print(f'Summaries: {s}')\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Wikipedia Pass 2: Summaries",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); s=c.execute('SELECT count(*) FROM wikipedia_cache WHERE summary_extract IS NOT NULL').fetchone()[0]; print(f'Summaries: {s}')\""
+  }
+}

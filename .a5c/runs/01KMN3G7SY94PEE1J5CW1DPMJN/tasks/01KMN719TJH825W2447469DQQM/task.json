@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN719TJH825W2447469DQQM",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000007:agent-impl",
+  "stepId": "S000007",
+  "kind": "agent",
+  "title": "Wikipedia Pass 1: Links and categories",
+  "io": {
+    "inputJsonPath": "tasks/01KMN719TJH825W2447469DQQM/input.json",
+    "outputJsonPath": "tasks/01KMN719TJH825W2447469DQQM/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "description": "Run Wikipedia enrichment Pass 1 — fetch wikilinks and categories for all agents with Wikipedia articles.\n\n1. Apply Wikipedia schema:\n   sqlite3 data/index/bibliographic.db < scripts/enrichment/wikipedia_schema.sql 2>/dev/null || true\n\n2. Run Pass 1:\n   cd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.enrichment.batch_wikipedia --pass 1 --db data/index/bibliographic.db\n\n3. Verify:\n   python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); wc=c.execute('SELECT count(*) FROM wikipedia_cache').fetchone()[0]; print(f'Wikipedia cache: {wc}')\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Wikipedia Pass 1: Links and categories",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); wc=c.execute('SELECT count(*) FROM wikipedia_cache').fetchone()[0]; print(f'Cache: {wc}')\""
+  }
+}

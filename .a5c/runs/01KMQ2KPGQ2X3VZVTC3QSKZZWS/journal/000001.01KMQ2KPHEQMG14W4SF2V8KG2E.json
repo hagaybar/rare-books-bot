@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-27T07:19:48.014Z",
+  "data": {
+    "runId": "01KMQ2KPGQ2X3VZVTC3QSKZZWS",
+    "processId": "fix-qa-bugs",
+    "entrypoint": {
+      "importPath": "../../processes/fix-qa-bugs.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Fix 8 QA bugs from reports/qa-e2e-report.md. YOLO mode."
+  },
+  "checksum": "e1036abf09c22afa9dbd00306c1d12246b07eeeb926700c35fab1e9869687c3c"
+}

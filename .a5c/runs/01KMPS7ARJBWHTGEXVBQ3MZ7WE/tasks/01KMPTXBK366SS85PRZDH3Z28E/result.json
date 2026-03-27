@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMPTXBK366SS85PRZDH3Z28E",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000005:qa-agent",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-27T05:05:16.061Z",
+  "finishedAt": "2026-03-27T05:05:16.061Z",
+  "value": {
+    "status": "completed"
+  }
+}

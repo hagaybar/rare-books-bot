@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMMZV4YMZZ56J8J75YTVG4PZ",
+  "taskId": "shell-verify",
+  "invocationKey": "network-map-explorer:S000004:shell-verify",
+  "status": "ok",
+  "result": {
+    "agents": 36,
+    "connectionTypes": 5,
+    "edges": 47,
+    "geocodes": 413,
+    "phase": "phase1-data-foundation",
+    "placed": 36,
+    "status": "verified"
+  },
+  "startedAt": "2026-03-26T11:53:11.256Z",
+  "finishedAt": "2026-03-26T11:53:11.256Z",
+  "value": {
+    "agents": 36,
+    "connectionTypes": 5,
+    "edges": 47,
+    "geocodes": 413,
+    "phase": "phase1-data-foundation",
+    "placed": 36,
+    "status": "verified"
+  }
+}

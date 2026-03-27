@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNJYKM8ZDAG9CM889QFXQCV",
+  "taskId": "pipeline-shell",
+  "invocationKey": "full-ingestion-pipeline:S000010:pipeline-shell",
+  "status": "ok",
+  "result": {
+    "phase": "post-fix-verify",
+    "status": "verified"
+  },
+  "startedAt": "2026-03-26T17:26:53.980Z",
+  "finishedAt": "2026-03-26T17:26:53.980Z",
+  "value": {
+    "phase": "post-fix-verify",
+    "status": "verified"
+  }
+}

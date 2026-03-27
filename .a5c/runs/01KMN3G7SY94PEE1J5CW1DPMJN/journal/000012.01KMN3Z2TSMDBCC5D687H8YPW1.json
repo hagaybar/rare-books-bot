@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T13:05:00.761Z",
+  "data": {
+    "effectId": "01KMN3Z2TDG4TKVAEECJHKYVK0",
+    "invocationKey": "db-rebuild:S000006:agent-impl",
+    "invocationHash": "0db9557fc01e317014752a788a7d9c9fa8b555cb5cef632284a5161aa63d4c5f",
+    "stepId": "S000006",
+    "taskId": "agent-impl",
+    "kind": "agent",
+    "label": "Run Wikidata enrichment",
+    "taskDefRef": "tasks/01KMN3Z2TDG4TKVAEECJHKYVK0/task.json"
+  },
+  "checksum": "34e67bff2485b05d66b908b320092ba358eb822619364177619af58473bfd7a9"
+}

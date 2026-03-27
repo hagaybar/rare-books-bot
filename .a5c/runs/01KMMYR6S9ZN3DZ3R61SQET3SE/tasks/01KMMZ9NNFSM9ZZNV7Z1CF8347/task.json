@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMMZ9NNFSM9ZZNV7Z1CF8347",
+  "taskId": "implementation-task",
+  "invocationKey": "network-map-explorer:S000002:implementation-task",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Task 2: Build Script for Materialized Tables",
+  "io": {
+    "inputJsonPath": "tasks/01KMMZ9NNFSM9ZZNV7Z1CF8347/input.json",
+    "outputJsonPath": "tasks/01KMMZ9NNFSM9ZZNV7Z1CF8347/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Follow Task 2 in the plan exactly. Create scripts/network/__init__.py, scripts/network/build_network_tables.py, tests/scripts/network/__init__.py, and tests/scripts/network/test_build_network_tables.py. The build script materializes network_edges (from wikipedia_connections + teacher/student + co-publication) and network_agents (with place assignment, display_name fallback chain, connection counts). Use the EXACT code from the plan. Run tests: poetry run pytest tests/scripts/network/test_build_network_tables.py -v. All tests must pass. Then git add and commit.",
+    "planPath": "docs/superpowers/plans/2026-03-26-network-map-explorer.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-26-network-map-explorer-design.md",
+    "taskName": "Build Script for Materialized Tables",
+    "taskNumber": 2,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/scripts/network/test_build_network_tables.py -v 2>&1 | tail -15"
+  }
+}

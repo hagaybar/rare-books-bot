@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:04:15.826Z",
+  "data": {
+    "effectId": "01KMN0FVA6HMQ8HWHAVBX1KY0F",
+    "invocationKey": "network-map-explorer:S000012:implementation-task",
+    "invocationHash": "1e485c0d52f2d78132619b487abfccec3575b5fa31c7b41e8d112d74476072aa",
+    "stepId": "S000012",
+    "taskId": "implementation-task",
+    "kind": "agent",
+    "label": "Task 10: MapView Component",
+    "taskDefRef": "tasks/01KMN0FVA6HMQ8HWHAVBX1KY0F/task.json"
+  },
+  "checksum": "9101a73295b3d8959a7c3b0a7512e59cc408bdb47b1d4c9c86f14dd6025291b3"
+}

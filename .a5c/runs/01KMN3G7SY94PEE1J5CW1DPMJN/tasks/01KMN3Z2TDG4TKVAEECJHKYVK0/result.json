@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN3Z2TDG4TKVAEECJHKYVK0",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000006:agent-impl",
+  "status": "ok",
+  "result": {
+    "enrichedCount": 242,
+    "status": "completed",
+    "taskName": "Wikidata enrichment"
+  },
+  "startedAt": "2026-03-26T13:58:30.228Z",
+  "finishedAt": "2026-03-26T13:58:30.228Z",
+  "value": {
+    "enrichedCount": 242,
+    "status": "completed",
+    "taskName": "Wikidata enrichment"
+  }
+}

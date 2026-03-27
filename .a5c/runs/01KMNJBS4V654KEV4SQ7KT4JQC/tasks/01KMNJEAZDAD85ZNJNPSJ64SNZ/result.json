@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNJEAZDAD85ZNJNPSJ64SNZ",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000004:pipeline-agent",
+  "status": "ok",
+  "result": {
+    "dateGaps": 61,
+    "placeGaps": 0,
+    "publisherGaps": 0,
+    "status": "completed",
+    "taskName": "QA Audit"
+  },
+  "startedAt": "2026-03-26T17:20:26.721Z",
+  "finishedAt": "2026-03-26T17:20:26.721Z",
+  "value": {
+    "dateGaps": 61,
+    "placeGaps": 0,
+    "publisherGaps": 0,
+    "status": "completed",
+    "taskName": "QA Audit"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN0J5YHY6XV1ETT8YHNYVP3",
+  "taskId": "shell-verify",
+  "invocationKey": "network-map-explorer:S000016:shell-verify",
+  "stepId": "S000016",
+  "kind": "shell",
+  "title": "Verify final-verification",
+  "io": {
+    "outputJsonPath": "tasks/01KMN0J5YHY6XV1ETT8YHNYVP3/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && echo \"=== Git Status ===\" && git status --short && echo \"=== Test Results ===\" && poetry run pytest tests/app/test_network_api.py tests/scripts/network/ -v 2>&1 | tail -10 && echo \"=== Frontend Build ===\" && cd frontend && npm run build 2>&1 | tail -5 && echo \"=== DONE ===\"",
+    "phase": "final-verification",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

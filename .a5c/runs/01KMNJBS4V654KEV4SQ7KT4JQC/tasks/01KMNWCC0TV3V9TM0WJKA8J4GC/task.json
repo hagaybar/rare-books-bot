@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNWCC0TV3V9TM0WJKA8J4GC",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000015:pipeline-agent",
+  "stepId": "S000015",
+  "kind": "agent",
+  "title": "Wikipedia Pass 2: Summaries and name variants",
+  "io": {
+    "inputJsonPath": "tasks/01KMNWCC0TV3V9TM0WJKA8J4GC/input.json",
+    "outputJsonPath": "tasks/01KMNWCC0TV3V9TM0WJKA8J4GC/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Fetch article summaries for all cached agents.\n\ncd /home/hagaybar/projects/rare-books-bot\npoetry run python -m scripts.enrichment.batch_wikipedia --pass 2 --db data/index/bibliographic.db\n\nVerify:\n  python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); s=c.execute('SELECT count(*) FROM wikipedia_cache WHERE summary_extract IS NOT NULL').fetchone()[0]; print(f'Summaries: {s}')\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Wikipedia Pass 2: Summaries and name variants",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); s=c.execute('SELECT count(*) FROM wikipedia_cache WHERE summary_extract IS NOT NULL').fetchone()[0]; print(f'Summaries: {s}')\""
+  }
+}

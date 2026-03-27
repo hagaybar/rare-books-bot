@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQ2MJ2F4BAFND60D8EB8QM1",
+  "taskId": "bugfix-agent",
+  "invocationKey": "fix-qa-bugs:S000001:bugfix-agent",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "BUG-001: Fix SPA routing for direct URL navigation",
+  "io": {
+    "inputJsonPath": "tasks/01KMQ2MJ2F4BAFND60D8EB8QM1/input.json",
+    "outputJsonPath": "tasks/01KMQ2MJ2F4BAFND60D8EB8QM1/output.json"
+  },
+  "inputs": {
+    "description": "Fix the Vite dev server to serve index.html for all unmatched routes (SPA fallback).\n\nRead frontend/vite.config.ts. The issue is that direct navigation to /network, /chat, etc. returns 404 because Vite forwards these to the FastAPI backend proxy instead of serving the React SPA.\n\nThe fix: Add an appType or configure the proxy to fall back to index.html for non-API routes. The simplest approach in Vite is to ensure the proxy only matches API paths, and Vite's default SPA fallback handles the rest.\n\nCheck current proxy config — it likely has entries for /metadata, /network, /chat, /health, etc. The problem is /chat and /network are BOTH API routes AND frontend routes. The proxy intercepts them before Vite's SPA fallback.\n\n**Solution**: The proxy entries for /chat and /network need to be more specific (e.g., only proxy POST /chat, not GET /chat). Or better: change the API routes to use an /api prefix to avoid collision.\n\nActually, the simplest fix: just ensure the proxy doesn't intercept GET requests for HTML pages. Check if Vite has a way to only proxy certain methods or content types.\n\nThe cleanest fix for Vite 5+:\n1. Keep the proxy entries as they are (they proxy API calls correctly)\n2. The issue is that direct browser navigation sends GET /network with Accept: text/html\n3. Vite's proxy intercepts this before the SPA fallback\n4. Fix: configure the proxy to only match when the request is NOT asking for HTML\n\nOr the practical fix: just don't proxy /network and /chat paths — they're only used by the frontend. The API uses POST /chat (not GET), and the network API is at /network/map and /network/agent.\n\nRead the vite.config.ts, understand the current proxy, and apply the minimal fix. Then verify: cd frontend && npm run build.\n\nCommit: git add frontend/vite.config.ts && git commit -m \"fix: SPA routing for direct URL navigation (BUG-001)\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "BUG-001: Fix SPA routing for direct URL navigation"
+  }
+}

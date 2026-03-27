@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMPTXBK366SS85PRZDH3Z28E",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000005:qa-agent",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Test Diagnostics and Admin screens",
+  "io": {
+    "inputJsonPath": "tasks/01KMPTXBK366SS85PRZDH3Z28E/input.json",
+    "outputJsonPath": "tasks/01KMPTXBK366SS85PRZDH3Z28E/output.json"
+  },
+  "inputs": {
+    "backendUrl": "http://localhost:8000",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Test remaining screens using Playwright:\n\n**DB Explorer (http://localhost:5173/diagnostics/db)**:\n1. Navigate, verify table list loads\n2. Click on different tables: records, agents, imprints, agent_aliases, wikipedia_cache, network_agents\n3. Verify data rows display\n4. Test pagination if available\n5. Check for empty tables: publisher_variants, physical_descriptions\n6. Take screenshots\n\n**Query Debugger (http://localhost:5173/diagnostics/query)**:\n1. Navigate, verify loads\n2. If possible, run a test query\n3. Take screenshot\n\n**Publishers (http://localhost:5173/admin/publishers)**:\n1. Navigate, verify table loads with 227 publisher authorities\n2. Take screenshot\n\n**Enrichment (http://localhost:5173/admin/enrichment)**:\n1. Navigate, verify enriched agents display\n2. Check Wikipedia links are clickable and correct (not broken Special:GoToLinkedPage URLs)\n3. Check Wikidata links\n4. Take screenshot\n\n**Health (http://localhost:5173/admin/health)**:\n1. Navigate, check health status\n2. Take screenshot\n\nReport all findings.",
+    "frontendUrl": "http://localhost:5173",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Test Diagnostics and Admin screens"
+  }
+}

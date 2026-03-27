@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T11:43:24.860Z",
+  "data": {
+    "effectId": "01KMMZ9NNFSM9ZZNV7Z1CF8347",
+    "invocationKey": "network-map-explorer:S000002:implementation-task",
+    "invocationHash": "a9da1fc3da7bde92c73419cad3dd1a541af5459b49c860ecca8265bb0e326bc6",
+    "stepId": "S000002",
+    "taskId": "implementation-task",
+    "kind": "agent",
+    "label": "Task 2: Build Script for Materialized Tables",
+    "taskDefRef": "tasks/01KMMZ9NNFSM9ZZNV7Z1CF8347/task.json"
+  },
+  "checksum": "a321a11104b3e45eb026712f9462b0a3893e465eeb2a856817626af88bf27459"
+}

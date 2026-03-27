@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNWCCCTAV9PT0J44SK6QGWS",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000016:pipeline-agent",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-26T20:11:42.502Z",
+  "finishedAt": "2026-03-26T20:11:42.502Z",
+  "value": {
+    "status": "completed"
+  }
+}

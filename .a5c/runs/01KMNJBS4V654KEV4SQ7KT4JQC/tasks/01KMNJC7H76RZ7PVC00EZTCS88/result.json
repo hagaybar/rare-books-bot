@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNJC7H76RZ7PVC00EZTCS88",
+  "taskId": "pipeline-shell",
+  "invocationKey": "full-ingestion-pipeline:S000001:pipeline-shell",
+  "status": "ok",
+  "result": {
+    "phase": "backup",
+    "status": "done"
+  },
+  "startedAt": "2026-03-26T17:17:00.650Z",
+  "finishedAt": "2026-03-26T17:17:00.650Z",
+  "value": {
+    "phase": "backup",
+    "status": "done"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-27T04:35:45.585Z",
+  "data": {
+    "runId": "01KMPS7ARJBWHTGEXVBQ3MZ7WE",
+    "processId": "qa-e2e-testing",
+    "entrypoint": {
+      "importPath": "../../processes/qa-e2e-testing.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "E2E QA testing of Rare Books Bot with Playwright. YOLO mode."
+  },
+  "checksum": "50a21bc86fcb955554e1da83d86f2c2485dd291807fc39a0906c608fd0ffa194"
+}

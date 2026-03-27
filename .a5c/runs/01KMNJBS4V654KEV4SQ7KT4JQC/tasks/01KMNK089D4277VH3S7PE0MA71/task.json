@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNK089D4277VH3S7PE0MA71",
+  "taskId": "pipeline-breakpoint",
+  "invocationKey": "full-ingestion-pipeline:S000012:pipeline-breakpoint",
+  "stepId": "S000012",
+  "kind": "breakpoint",
+  "title": "Core DB is ready. About to start Wikidata + Wikipedia enrichment. This takes ~1-4 hours depending on data. Continue?",
+  "breakpoint": {
+    "options": [
+      "Yes, continue with enrichment",
+      "Skip enrichment — done for now"
+    ],
+    "question": "Core DB is ready. About to start Wikidata + Wikipedia enrichment. This takes ~1-4 hours depending on data. Continue?"
+  },
+  "inputs": {
+    "options": [
+      "Yes, continue with enrichment",
+      "Skip enrichment — done for now"
+    ],
+    "question": "Core DB is ready. About to start Wikidata + Wikipedia enrichment. This takes ~1-4 hours depending on data. Continue?"
+  }
+}

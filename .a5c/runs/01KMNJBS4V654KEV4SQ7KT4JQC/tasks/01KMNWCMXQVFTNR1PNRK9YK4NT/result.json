@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNWCMXQVFTNR1PNRK9YK4NT",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000017:pipeline-agent",
+  "status": "ok",
+  "result": {
+    "networkAgents": 2757,
+    "networkEdges": 32277,
+    "status": "completed",
+    "taskName": "Network tables",
+    "wikiConnections": 32124
+  },
+  "startedAt": "2026-03-26T20:13:11.819Z",
+  "finishedAt": "2026-03-26T20:13:11.819Z",
+  "value": {
+    "networkAgents": 2757,
+    "networkEdges": 32277,
+    "status": "completed",
+    "taskName": "Network tables",
+    "wikiConnections": 32124
+  }
+}

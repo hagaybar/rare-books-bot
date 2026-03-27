@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNK089D4277VH3S7PE0MA71",
+  "taskId": "pipeline-breakpoint",
+  "invocationKey": "full-ingestion-pipeline:S000012:pipeline-breakpoint",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Auto-approved in YOLO mode"
+  },
+  "startedAt": "2026-03-26T17:27:47.901Z",
+  "finishedAt": "2026-03-26T17:27:47.901Z",
+  "value": {
+    "approved": true,
+    "response": "Auto-approved in YOLO mode"
+  }
+}

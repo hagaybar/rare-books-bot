@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMMZV4YMZZ56J8J75YTVG4PZ",
+  "taskId": "shell-verify",
+  "invocationKey": "network-map-explorer:S000004:shell-verify",
+  "stepId": "S000004",
+  "kind": "shell",
+  "title": "Verify phase1-data-foundation",
+  "io": {
+    "outputJsonPath": "tasks/01KMMZV4YMZZ56J8J75YTVG4PZ/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"\nimport sqlite3, json\nc = sqlite3.connect('data/index/bibliographic.db')\ne = c.execute('SELECT count(*) FROM network_edges').fetchone()[0]\na = c.execute('SELECT count(*) FROM network_agents').fetchone()[0]\ntypes = c.execute('SELECT connection_type, count(*) FROM network_edges GROUP BY connection_type').fetchall()\nplaced = c.execute('SELECT count(*) FROM network_agents WHERE lat IS NOT NULL').fetchone()[0]\nprint(f'Edges: {e}, Agents: {a} (placed: {placed})')\nfor t, cnt in types: print(f'  {t}: {cnt}')\ngeocodes = json.load(open('data/normalization/place_geocodes.json'))\nprint(f'Geocodes: {len(geocodes)}')\n\"",
+    "phase": "phase1-data-foundation",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

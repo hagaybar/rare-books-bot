@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T14:16:17.903Z",
+  "data": {
+    "effectId": "01KMN81KQ3AFEDGZ11QJSYVV84",
+    "invocationKey": "db-rebuild:S000011:shell-verify",
+    "invocationHash": "b7ad08ae1080ec637943f7f8cb54e7bb3889a1c371dd58c45aaa07527b13c24f",
+    "stepId": "S000011",
+    "taskId": "shell-verify",
+    "kind": "shell",
+    "label": "Verify final-verification",
+    "taskDefRef": "tasks/01KMN81KQ3AFEDGZ11QJSYVV84/task.json"
+  },
+  "checksum": "84411c54a4aa1d19f07e1f4c947256e28fea2c011c5bbad568e5dd387622f720"
+}

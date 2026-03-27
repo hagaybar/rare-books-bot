@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:20:26.982Z",
+  "data": {
+    "effectId": "01KMNJJSTTF1AT1F6HHZSKGPV5",
+    "invocationKey": "full-ingestion-pipeline:S000005:pipeline-agent",
+    "invocationHash": "2590af4cac6dc691975e07d6f0fc90f3d12f70109efbd53eafc9718c9b0871f8",
+    "stepId": "S000005",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "QA Fix: Date normalization gaps",
+    "taskDefRef": "tasks/01KMNJJSTTF1AT1F6HHZSKGPV5/task.json"
+  },
+  "checksum": "81127e52ef7c5f32ecefc05abd6d6c7119feb5aa28f1d27e1e6d3b88ef926fd7"
+}

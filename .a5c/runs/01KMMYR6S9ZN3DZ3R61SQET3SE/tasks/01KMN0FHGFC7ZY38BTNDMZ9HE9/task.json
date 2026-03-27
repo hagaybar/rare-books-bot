@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN0FHGFC7ZY38BTNDMZ9HE9",
+  "taskId": "implementation-task",
+  "invocationKey": "network-map-explorer:S000011:implementation-task",
+  "stepId": "S000011",
+  "kind": "agent",
+  "title": "Task 9: Network Page, Routing, and Sidebar",
+  "io": {
+    "inputJsonPath": "tasks/01KMN0FHGFC7ZY38BTNDMZ9HE9/input.json",
+    "outputJsonPath": "tasks/01KMN0FHGFC7ZY38BTNDMZ9HE9/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Follow Task 9 in the plan exactly. (1) Create frontend/src/pages/Network.tsx — main page component with useQuery for map data and agent detail, placeholderData for smooth transitions, toast notifications for errors, empty results overlay. Uses MapView, ControlBar, AgentPanel components. Use the EXACT code from the plan. (2) Add route in frontend/src/App.tsx: import Network and add <Route path=\"/network\" element={<Network />} />. (3) Add to Sidebar.tsx: add 'network' GlobeAlt icon to ICONS and nav item to Primary section. Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-26-network-map-explorer.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-26-network-map-explorer-design.md",
+    "taskName": "Network Page, Routing, and Sidebar",
+    "taskNumber": 9,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit 2>&1 | tail -10"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:27:47.769Z",
+  "data": {
+    "effectId": "01KMNK089D4277VH3S7PE0MA71",
+    "invocationKey": "full-ingestion-pipeline:S000012:pipeline-breakpoint",
+    "invocationHash": "d12a23a8cffc6e62fce037b9c8b02ab6258620e97ef6b405de41160293bba3ca",
+    "stepId": "S000012",
+    "taskId": "pipeline-breakpoint",
+    "kind": "breakpoint",
+    "label": "Core DB is ready. About to start Wikidata + Wikipedia enrichment. This takes ~1-4 hours depending on data. Continue?",
+    "taskDefRef": "tasks/01KMNK089D4277VH3S7PE0MA71/task.json"
+  },
+  "checksum": "1b4f2be9235815da13971deb3fef3204277d0b25246216fc82a09a7d33f2e0eb"
+}

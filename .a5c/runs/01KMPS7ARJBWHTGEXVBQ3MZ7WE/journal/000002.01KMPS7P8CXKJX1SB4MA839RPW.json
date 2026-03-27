@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T04:35:57.324Z",
+  "data": {
+    "effectId": "01KMPS7P7YGT5GNAEN7X2FQ7CJ",
+    "invocationKey": "qa-e2e-testing:S000001:qa-agent",
+    "invocationHash": "32aa5725d6ba82c483e33a1f4d87cb83a3574d9338380a75981304bb52655766",
+    "stepId": "S000001",
+    "taskId": "qa-agent",
+    "kind": "agent",
+    "label": "Build test map and verify app structure",
+    "taskDefRef": "tasks/01KMPS7P7YGT5GNAEN7X2FQ7CJ/task.json"
+  },
+  "checksum": "8ff6ae8ac2e8b00bab4f7d4f449475baeeb5c5f383d1a4bb6208dd5892f5de45"
+}

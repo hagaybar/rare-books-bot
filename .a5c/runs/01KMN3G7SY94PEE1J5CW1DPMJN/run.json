@@ -1,0 +1,14 @@
+{
+  "runId": "01KMN3G7SY94PEE1J5CW1DPMJN",
+  "request": "db-rebuild",
+  "processId": "db-rebuild",
+  "entrypoint": {
+    "importPath": "../../processes/db-rebuild.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/db-rebuild.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-26T12:56:54.344Z",
+  "prompt": "Rebuild bibliographic.db from MARC XML + enrichment + backup mechanism",
+  "completionProof": "3c7c86e05e21c423f0b8ade9adcb8bdc"
+}

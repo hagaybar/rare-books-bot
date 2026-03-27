@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T14:15:36.591Z",
+  "data": {
+    "effectId": "01KMN80BC3AVN6F1EBWBCK4B2Q",
+    "invocationKey": "db-rebuild:S000010:agent-impl",
+    "invocationHash": "3da2b3e7b2c3d5c840169f9c259273e0b3b3e934ad32c3bbcb34d464c018ff6d",
+    "stepId": "S000010",
+    "taskId": "agent-impl",
+    "kind": "agent",
+    "label": "Rebuild network tables",
+    "taskDefRef": "tasks/01KMN80BC3AVN6F1EBWBCK4B2Q/task.json"
+  },
+  "checksum": "ee91ca4a60673eb19feda6970c5a869493a7dcb2a443c9e409f8baaf0e30baa1"
+}

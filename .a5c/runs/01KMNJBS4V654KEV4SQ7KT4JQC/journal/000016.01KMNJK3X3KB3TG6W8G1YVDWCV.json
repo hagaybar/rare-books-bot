@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:20:37.283Z",
+  "data": {
+    "effectId": "01KMNJK3WPRY2Z7VTF8PVZM2DC",
+    "invocationKey": "full-ingestion-pipeline:S000008:pipeline-breakpoint",
+    "invocationHash": "ee8a62d5e37dca9e543df6884f1d445000dac4c25150776f588554f8505dda56",
+    "stepId": "S000008",
+    "taskId": "pipeline-breakpoint",
+    "kind": "breakpoint",
+    "label": "Normalization QA complete. Proposed fixes are in data/qa/*_fixes_proposed.json. Review them and approve applying the fixes.",
+    "taskDefRef": "tasks/01KMNJK3WPRY2Z7VTF8PVZM2DC/task.json"
+  },
+  "checksum": "48e1a4a8bff6a4e08264bae3fec6a00387b2085b397e585847c1b96843aefc0f"
+}

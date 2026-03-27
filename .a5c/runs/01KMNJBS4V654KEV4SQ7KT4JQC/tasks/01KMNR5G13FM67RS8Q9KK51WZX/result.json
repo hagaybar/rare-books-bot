@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNR5G13FM67RS8Q9KK51WZX",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000014:pipeline-agent",
+  "status": "ok",
+  "result": {
+    "cacheCount": 1336,
+    "status": "completed",
+    "taskName": "Wikipedia Pass 1"
+  },
+  "startedAt": "2026-03-26T20:11:41.721Z",
+  "finishedAt": "2026-03-26T20:11:41.721Z",
+  "value": {
+    "cacheCount": 1336,
+    "status": "completed",
+    "taskName": "Wikipedia Pass 1"
+  }
+}

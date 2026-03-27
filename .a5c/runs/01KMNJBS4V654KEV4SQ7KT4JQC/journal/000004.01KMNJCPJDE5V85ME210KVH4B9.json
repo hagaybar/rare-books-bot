@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:17:07.021Z",
+  "data": {
+    "effectId": "01KMNJCPJ131NVPCD523VBS2XY",
+    "invocationKey": "full-ingestion-pipeline:S000002:pipeline-agent",
+    "invocationHash": "fb604bd61e5c563f28d5b6c737db35e22a39722d5292a2dc54d909f9e2088997",
+    "stepId": "S000002",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "M1: Parse MARC XML to canonical JSONL",
+    "taskDefRef": "tasks/01KMNJCPJ131NVPCD523VBS2XY/task.json"
+  },
+  "checksum": "ed085eaf84e7446db4afc01dece3041cf6ceccc8c0bc06065c204dc9d44f60bd"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T20:11:51.107Z",
+  "data": {
+    "effectId": "01KMNWCMXQVFTNR1PNRK9YK4NT",
+    "invocationKey": "full-ingestion-pipeline:S000017:pipeline-agent",
+    "invocationHash": "2a658ffdcc6cb030fda159fbd15c8946891232b17c9899d74314256e3db598a2",
+    "stepId": "S000017",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "Build network tables (edges + agents)",
+    "taskDefRef": "tasks/01KMNWCMXQVFTNR1PNRK9YK4NT/task.json"
+  },
+  "checksum": "fb20c35a69e9e95a0d03050029c4f0bb528bc599e1fec913761022e20a00f1ac"
+}

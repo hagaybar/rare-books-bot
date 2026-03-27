@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN3MP21DPFJNY5WD695Z7P2",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000002:agent-impl",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Run core rebuild pipeline (M1→M2→M3)",
+  "io": {
+    "inputJsonPath": "tasks/01KMN3MP21DPFJNY5WD695Z7P2/input.json",
+    "outputJsonPath": "tasks/01KMN3MP21DPFJNY5WD695Z7P2/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "description": "Run the full rebuild pipeline from MARC XML to SQLite database.\n\nThe XML file is at: data/marc_source/rare_book_bibs.xml (8.2MB, ~2800 records)\n\nCommand:\n  cd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.marc.rebuild_pipeline --full data/marc_source/rare_book_bibs.xml\n\nThis runs:\n  - M1: Parse MARC XML → data/canonical/records.jsonl\n  - M2: Normalize (dates, places, publishers, agents) → data/m2/records_m1m2.jsonl\n  - M3: Build SQLite index → data/index/bibliographic.db\n\nThe alias maps at data/normalization/place_aliases/place_alias_map.json and data/normalization/publisher_aliases/publisher_alias_map.json will be used automatically if they exist.\n\nAfter the pipeline completes, verify:\n  python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); r=c.execute('SELECT count(*) FROM records').fetchone()[0]; a=c.execute('SELECT count(DISTINCT agent_norm) FROM agents').fetchone()[0]; i=c.execute('SELECT count(*) FROM imprints').fetchone()[0]; print(f'Records: {r}, Agents: {a}, Imprints: {i}')\"\n\nExpected: ~2800 records, ~2500+ distinct agents, ~2500+ imprints.\n\nDo NOT commit the database (it's gitignored). But do commit any fixes if the pipeline needed patching.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Run core rebuild pipeline (M1→M2→M3)",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); r=c.execute('SELECT count(*) FROM records').fetchone()[0]; a=c.execute('SELECT count(DISTINCT agent_norm) FROM agents').fetchone()[0]; print(f'Records: {r}, Agents: {a}'); assert r > 1000, f'Only {r} records'\""
+  }
+}

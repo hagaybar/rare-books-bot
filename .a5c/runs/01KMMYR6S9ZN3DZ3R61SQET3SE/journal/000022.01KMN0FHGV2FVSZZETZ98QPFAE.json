@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:04:05.787Z",
+  "data": {
+    "effectId": "01KMN0FHGFC7ZY38BTNDMZ9HE9",
+    "invocationKey": "network-map-explorer:S000011:implementation-task",
+    "invocationHash": "f75c5bbfed7786e6a3a56130ff8457d817725be30af4dfd7a535ff6ae83dceaa",
+    "stepId": "S000011",
+    "taskId": "implementation-task",
+    "kind": "agent",
+    "label": "Task 9: Network Page, Routing, and Sidebar",
+    "taskDefRef": "tasks/01KMN0FHGFC7ZY38BTNDMZ9HE9/task.json"
+  },
+  "checksum": "49fda3852800b803bf768c5247700b8a4f10b06ecb0956d5ae31c96b4fb751c1"
+}

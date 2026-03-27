@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN3GQ7R89D4SKG7BGZ0S3J5",
+  "taskId": "agent-impl",
+  "invocationKey": "db-rebuild:S000001:agent-impl",
+  "status": "ok",
+  "result": {
+    "status": "completed",
+    "taskName": "Backup mechanism"
+  },
+  "startedAt": "2026-03-26T12:59:11.641Z",
+  "finishedAt": "2026-03-26T12:59:11.641Z",
+  "value": {
+    "status": "completed",
+    "taskName": "Backup mechanism"
+  }
+}

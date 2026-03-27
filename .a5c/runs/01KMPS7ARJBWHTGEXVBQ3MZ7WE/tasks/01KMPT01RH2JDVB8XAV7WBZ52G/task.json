@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMPT01RH2JDVB8XAV7WBZ52G",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000003:qa-agent",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Test Network Map end-to-end",
+  "io": {
+    "inputJsonPath": "tasks/01KMPT01RH2JDVB8XAV7WBZ52G/input.json",
+    "outputJsonPath": "tasks/01KMPT01RH2JDVB8XAV7WBZ52G/output.json"
+  },
+  "inputs": {
+    "backendUrl": "http://localhost:8000",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Test the Network Map screen (http://localhost:5173/network) using Playwright:\n\n1. Navigate to /network\n2. Verify map renders (MapLibre + OpenFreeMap tiles)\n3. Verify agent dots appear on the map\n4. Verify connection arcs are visible\n5. Test control bar:\n   - Toggle connection types (click each button)\n   - Change century dropdown\n   - Change role dropdown\n   - Move agent slider\n6. Test agent interaction:\n   - Click an agent dot on the map\n   - Verify side panel opens with agent details\n   - Check Wikipedia summary displays\n   - Check connections list in panel\n   - Click a connection to navigate to that agent\n7. Test background click to close panel\n8. Verify status bar shows correct counts\n9. Check console for WebGL errors or API failures\n10. Take screenshots of working states and any errors\n\nCheck API directly:\n- curl http://localhost:8000/network/map?connection_types=teacher_student&limit=10\n- curl http://localhost:8000/network/agent/maimonides%2C%20moses\n\nReport all findings.",
+    "frontendUrl": "http://localhost:5173",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Test Network Map end-to-end"
+  }
+}

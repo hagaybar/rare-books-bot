@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMMZVT28RW7YR3HN1Y2M9WYS",
+  "taskId": "implementation-task",
+  "invocationKey": "network-map-explorer:S000005:implementation-task",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Task 4: API Pydantic Models",
+  "io": {
+    "inputJsonPath": "tasks/01KMMZVT28RW7YR3HN1Y2M9WYS/input.json",
+    "outputJsonPath": "tasks/01KMMZVT28RW7YR3HN1Y2M9WYS/output.json"
+  },
+  "inputs": {
+    "branch": "feature/network-map-explorer",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Follow Task 4 in the plan exactly. Create app/api/network_models.py with Pydantic models: MapNode, MapEdge, MapMeta, MapResponse, AgentConnection, AgentDetail. Use the EXACT code from the plan. Verify import: poetry run python -c \"from app.api.network_models import MapResponse, AgentDetail; print('OK')\". Commit.",
+    "planPath": "docs/superpowers/plans/2026-03-26-network-map-explorer.md",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "specPath": "docs/superpowers/specs/2026-03-26-network-map-explorer-design.md",
+    "taskName": "API Pydantic Models",
+    "taskNumber": 4,
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -c \"from app.api.network_models import MapResponse, AgentDetail; print('OK')\""
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T04:49:15.550Z",
+  "data": {
+    "effectId": "01KMPT01RH2JDVB8XAV7WBZ52G",
+    "invocationKey": "qa-e2e-testing:S000003:qa-agent",
+    "invocationHash": "b6fb272f98a109a0b3da5b6aa40812be3299ecff0a8439e5ca28d85efb9abcb3",
+    "stepId": "S000003",
+    "taskId": "qa-agent",
+    "kind": "agent",
+    "label": "Test Network Map end-to-end",
+    "taskDefRef": "tasks/01KMPT01RH2JDVB8XAV7WBZ52G/task.json"
+  },
+  "checksum": "4a33432d74b25bcf9309f920bee122ad0e9bd3c14e2df0c3bba336b359df6867"
+}

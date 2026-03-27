@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNK08NGVCKW7DQV7XXWF83Q",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000013:pipeline-agent",
+  "stepId": "S000013",
+  "kind": "agent",
+  "title": "Wikidata enrichment (authority URI + name-based)",
+  "io": {
+    "inputJsonPath": "tasks/01KMNK08NGVCKW7DQV7XXWF83Q/input.json",
+    "outputJsonPath": "tasks/01KMNK08NGVCKW7DQV7XXWF83Q/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Enrich agents with Wikidata metadata. Two strategies:\n\nSTRATEGY 1 (preferred): Authority URI based\n  If agents have authority_uri values (from MARC $0 subfield), use the standard pipeline:\n  cd /home/hagaybar/projects/rare-books-bot\n  sqlite3 data/index/bibliographic.db < scripts/enrichment/schema.sql 2>/dev/null || true\n  poetry run python -m scripts.enrichment.run_batch_enrichment\n  poetry run python -m scripts.enrichment.populate_authority_enrichment\n  poetry run python -m scripts.enrichment.reenrich_with_relationships\n\n  Check first: python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); u=c.execute('SELECT count(DISTINCT authority_uri) FROM agents WHERE authority_uri IS NOT NULL').fetchone()[0]; print(f'Agents with authority_uri: {u}')\"\n\nSTRATEGY 2 (fallback): Name-based search\n  If agents have NO authority_uri values (authority_uri is NULL), use name-based enrichment:\n  cd /home/hagaybar/projects/rare-books-bot\n  sqlite3 data/index/bibliographic.db < scripts/enrichment/schema.sql 2>/dev/null || true\n  poetry run python -m scripts.enrichment.run_name_enrichment --latin-only --limit 1000 --delay 1.5\n\n  Then populate:\n  poetry run python -m scripts.enrichment.populate_from_name_cache\n  poetry run python -m scripts.enrichment.reenrich_with_relationships\n\nVerify:\n  python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\nae = c.execute('SELECT count(*) FROM authority_enrichment').fetchone()[0]\nwd = c.execute('SELECT count(*) FROM authority_enrichment WHERE wikidata_id IS NOT NULL').fetchone()[0]\nprint(f'Authority enrichment: {ae} total ({wd} with Wikidata)')\n\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Wikidata enrichment (authority URI + name-based)",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); ae=c.execute('SELECT count(*) FROM authority_enrichment').fetchone()[0]; print(f'Enriched: {ae}')\""
+  }
+}

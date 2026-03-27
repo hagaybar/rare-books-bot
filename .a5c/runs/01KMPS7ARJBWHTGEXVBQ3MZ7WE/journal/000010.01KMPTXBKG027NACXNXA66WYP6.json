@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T05:05:15.888Z",
+  "data": {
+    "effectId": "01KMPTXBK366SS85PRZDH3Z28E",
+    "invocationKey": "qa-e2e-testing:S000005:qa-agent",
+    "invocationHash": "56a23d1064ba8e2b82c680e1adb6923c99fd47fe550e179c7bad8f0748f2b070",
+    "stepId": "S000005",
+    "taskId": "qa-agent",
+    "kind": "agent",
+    "label": "Test Diagnostics and Admin screens",
+    "taskDefRef": "tasks/01KMPTXBK366SS85PRZDH3Z28E/task.json"
+  },
+  "checksum": "9e21f24087bed7b719c8b7cea0597dc4e1cfee9b60c171030fa1582dbca714a9"
+}

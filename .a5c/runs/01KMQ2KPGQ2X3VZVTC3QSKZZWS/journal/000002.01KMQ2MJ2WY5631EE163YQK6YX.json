@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T07:20:16.220Z",
+  "data": {
+    "effectId": "01KMQ2MJ2F4BAFND60D8EB8QM1",
+    "invocationKey": "fix-qa-bugs:S000001:bugfix-agent",
+    "invocationHash": "47d1cef22d743a759b685809478a156bcb23b95ccf919d5fe36a14317645520d",
+    "stepId": "S000001",
+    "taskId": "bugfix-agent",
+    "kind": "agent",
+    "label": "BUG-001: Fix SPA routing for direct URL navigation",
+    "taskDefRef": "tasks/01KMQ2MJ2F4BAFND60D8EB8QM1/task.json"
+  },
+  "checksum": "a21e36a8e1dfbc2ca8c33947d258e20b2a193308f1b5fe864d520bdd65e06bd9"
+}

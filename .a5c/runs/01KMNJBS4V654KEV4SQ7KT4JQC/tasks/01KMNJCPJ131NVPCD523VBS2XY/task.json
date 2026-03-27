@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJCPJ131NVPCD523VBS2XY",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000002:pipeline-agent",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "M1: Parse MARC XML to canonical JSONL",
+  "io": {
+    "inputJsonPath": "tasks/01KMNJCPJ131NVPCD523VBS2XY/input.json",
+    "outputJsonPath": "tasks/01KMNJCPJ131NVPCD523VBS2XY/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Parse the MARC XML file to canonical JSONL records.\n\nRun:\n  cd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.marc.rebuild_pipeline --full data/marc_source/rare_books_with_lod.xml --m2-only-skip\n\nActually, the rebuild_pipeline doesn't have a parse-only flag. Instead run the full pipeline\nwhich does M1→M2→M3 in one shot:\n\n  cd /home/hagaybar/projects/rare-books-bot && poetry run python -m scripts.marc.rebuild_pipeline --full data/marc_source/rare_books_with_lod.xml\n\nThis runs:\n  - M1: Parse MARC XML → data/canonical/records.jsonl (extracts all fields including $0 authority URIs)\n  - M2: Normalize dates/places/publishers/agents using alias maps at:\n    - data/normalization/place_aliases/place_alias_map.json\n    - data/normalization/publisher_aliases/publisher_alias_map.json\n  - M3: Build SQLite index → data/index/bibliographic.db\n\nThe pipeline handles everything: date normalization (12 patterns including Hebrew calendar),\nplace normalization (196+ alias mappings, 99.3% coverage), publisher normalization (2,152 aliases, 98.8%).\n\nVerify:\n  python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\nr = c.execute('SELECT count(*) FROM records').fetchone()[0]\na = c.execute('SELECT count(DISTINCT agent_norm) FROM agents').fetchone()[0]\ni = c.execute('SELECT count(*) FROM imprints').fetchone()[0]\nuri = c.execute('SELECT count(DISTINCT authority_uri) FROM agents WHERE authority_uri IS NOT NULL').fetchone()[0]\nprint(f'Records: {r}, Agents: {a}, Imprints: {i}, With authority_uri: {uri}')\nassert r > 1000, f'Only {r} records'\n\"\n\nIf it fails, debug. The pipeline is well-tested and should work on any valid MARC XML.",
+    "marcXml": "data/marc_source/rare_books_with_lod.xml",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "M1: Parse MARC XML to canonical JSONL",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import sqlite3; c=sqlite3.connect('data/index/bibliographic.db'); r=c.execute('SELECT count(*) FROM records').fetchone()[0]; print(f'Records: {r}'); assert r > 1000\""
+  }
+}

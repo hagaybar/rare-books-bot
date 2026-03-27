@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T20:11:41.990Z",
+  "data": {
+    "effectId": "01KMNWCC0TV3V9TM0WJKA8J4GC",
+    "invocationKey": "full-ingestion-pipeline:S000015:pipeline-agent",
+    "invocationHash": "ab267f9c9cbd9eb637626221a3fc542a42a8e3df2b77693b71e3915cb7397ea4",
+    "stepId": "S000015",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "Wikipedia Pass 2: Summaries and name variants",
+    "taskDefRef": "tasks/01KMNWCC0TV3V9TM0WJKA8J4GC/task.json"
+  },
+  "checksum": "4e1d64fd0858054bc470a5ed3a031f634bd132b6bcdbd037bb9d9ae1a4b37616"
+}

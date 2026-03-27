@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:27:48.156Z",
+  "data": {
+    "effectId": "01KMNK08NGVCKW7DQV7XXWF83Q",
+    "invocationKey": "full-ingestion-pipeline:S000013:pipeline-agent",
+    "invocationHash": "078ba31537f10f84ac0305922167252da268592381645e270c043d83879c78c2",
+    "stepId": "S000013",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "Wikidata enrichment (authority URI + name-based)",
+    "taskDefRef": "tasks/01KMNK08NGVCKW7DQV7XXWF83Q/task.json"
+  },
+  "checksum": "f774f68625936472cd13ebb579e6d2573bae046597438df58211190e0aa93913"
+}

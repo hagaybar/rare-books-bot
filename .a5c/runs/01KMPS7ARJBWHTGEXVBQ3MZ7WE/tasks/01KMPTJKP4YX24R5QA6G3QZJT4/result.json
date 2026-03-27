@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMPTJKP4YX24R5QA6G3QZJT4",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000004:qa-agent",
+  "status": "ok",
+  "result": {
+    "bugs": 6,
+    "criticalBugs": 1,
+    "phase": "operator+admin+data",
+    "wikiUrlsFixed": true
+  },
+  "startedAt": "2026-03-27T05:05:15.635Z",
+  "finishedAt": "2026-03-27T05:05:15.635Z",
+  "value": {
+    "bugs": 6,
+    "criticalBugs": 1,
+    "phase": "operator+admin+data",
+    "wikiUrlsFixed": true
+  }
+}

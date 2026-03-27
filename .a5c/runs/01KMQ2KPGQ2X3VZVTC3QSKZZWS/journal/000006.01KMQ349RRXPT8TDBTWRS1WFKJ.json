@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T07:28:51.992Z",
+  "data": {
+    "effectId": "01KMQ349RBR1YBHNEPC77M1QJF",
+    "invocationKey": "fix-qa-bugs:S000003:verify-shell",
+    "invocationHash": "9267982ad473a48d4050b0804a9688413f0e9d67f11f43cf777bdfddd40e40f9",
+    "stepId": "S000003",
+    "taskId": "verify-shell",
+    "kind": "shell",
+    "label": "Verify verification",
+    "taskDefRef": "tasks/01KMQ349RBR1YBHNEPC77M1QJF/task.json"
+  },
+  "checksum": "12c94ae95b042cbc584abf53734a86d43359bff47871026ba8004d826fabe9c4"
+}

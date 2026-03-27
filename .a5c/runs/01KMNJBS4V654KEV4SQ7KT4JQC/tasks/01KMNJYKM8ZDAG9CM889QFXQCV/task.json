@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJYKM8ZDAG9CM889QFXQCV",
+  "taskId": "pipeline-shell",
+  "invocationKey": "full-ingestion-pipeline:S000010:pipeline-shell",
+  "stepId": "S000010",
+  "kind": "shell",
+  "title": "Verify post-fix-verify",
+  "io": {
+    "outputJsonPath": "tasks/01KMNJYKM8ZDAG9CM889QFXQCV/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"\nimport sqlite3, json\nc = sqlite3.connect('data/index/bibliographic.db')\ni = c.execute('SELECT count(*) FROM imprints').fetchone()[0]\nhd = c.execute('SELECT count(*) FROM imprints WHERE date_confidence >= 0.9').fetchone()[0]\nhp = c.execute('SELECT count(*) FROM imprints WHERE place_confidence >= 0.9').fetchone()[0]\nhpub = c.execute('SELECT count(*) FROM imprints WHERE publisher_confidence >= 0.8').fetchone()[0]\nremaining_date = c.execute('SELECT count(*) FROM imprints WHERE (date_confidence < 0.9 OR date_confidence IS NULL) AND date_raw IS NOT NULL').fetchone()[0]\nremaining_place = c.execute('SELECT count(*) FROM imprints WHERE (place_confidence < 0.9 OR place_confidence IS NULL) AND place_raw IS NOT NULL').fetchone()[0]\nremaining_pub = c.execute('SELECT count(*) FROM imprints WHERE (publisher_confidence < 0.8 OR publisher_confidence IS NULL) AND publisher_raw IS NOT NULL').fetchone()[0]\nprint('POST-FIX NORMALIZATION COVERAGE:')\nprint(f'  Date:      {hd}/{i} ({100*hd/i:.1f}%) — {remaining_date} gaps remaining')\nprint(f'  Place:     {hp}/{i} ({100*hp/i:.1f}%) — {remaining_place} gaps remaining')\nprint(f'  Publisher: {hpub}/{i} ({100*hpub/i:.1f}%) — {remaining_pub} gaps remaining')\n\"",
+    "phase": "post-fix-verify",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

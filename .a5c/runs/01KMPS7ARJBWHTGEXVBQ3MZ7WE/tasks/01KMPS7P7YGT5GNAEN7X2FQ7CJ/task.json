@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMPS7P7YGT5GNAEN7X2FQ7CJ",
+  "taskId": "qa-agent",
+  "invocationKey": "qa-e2e-testing:S000001:qa-agent",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Build test map and verify app structure",
+  "io": {
+    "inputJsonPath": "tasks/01KMPS7P7YGT5GNAEN7X2FQ7CJ/input.json",
+    "outputJsonPath": "tasks/01KMPS7P7YGT5GNAEN7X2FQ7CJ/output.json"
+  },
+  "inputs": {
+    "backendUrl": "http://localhost:8000",
+    "dbPath": "data/index/bibliographic.db",
+    "description": "You are a QA engineer. First, understand the app by:\n\n1. Use Playwright to navigate to http://localhost:5173 and take a screenshot\n2. Map all sidebar navigation items and their URLs\n3. Click through each screen and take screenshots\n4. List all screens found, their purpose, and their data sources\n5. Check the API health: curl http://localhost:8000/health\n6. Check API docs: curl http://localhost:8000/docs\n\nThe app has these screens (from sidebar):\n- Chat (/) - Main query interface with LLM\n- Network (/network) - Geographic network map\n- Coverage (/operator/coverage) - Metadata coverage stats\n- Workbench (/operator/workbench) - Issue triage\n- Agent Chat (/operator/agent) - Metadata co-pilot\n- Review (/operator/review) - HITL review\n- Query Debugger (/diagnostics/query) - Query testing\n- DB Explorer (/diagnostics/db) - Table browser\n- Publishers (/admin/publishers) - Publisher authorities\n- Enrichment (/admin/enrichment) - Agent enrichment browser\n- Health (/admin/health) - System health\n\nVisit each screen, note what loads, any errors, empty states, or broken UI.\nTake screenshots of each. Report findings as JSON.",
+    "frontendUrl": "http://localhost:5173",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Build test map and verify app structure"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMN0J5YHY6XV1ETT8YHNYVP3",
+  "taskId": "shell-verify",
+  "invocationKey": "network-map-explorer:S000016:shell-verify",
+  "status": "ok",
+  "result": {
+    "build": "success",
+    "phase": "final-verification",
+    "status": "verified",
+    "tests": "10 passed"
+  },
+  "startedAt": "2026-03-26T12:06:07.668Z",
+  "finishedAt": "2026-03-26T12:06:07.668Z",
+  "value": {
+    "build": "success",
+    "phase": "final-verification",
+    "status": "verified",
+    "tests": "10 passed"
+  }
+}

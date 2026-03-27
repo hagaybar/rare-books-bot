@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:17:53.573Z",
+  "data": {
+    "effectId": "01KMNJE40SHHGCGAZZM11WVWWS",
+    "invocationKey": "full-ingestion-pipeline:S000003:pipeline-shell",
+    "invocationHash": "ee52c0d742b505c40af905c757b6b84f70f067f0d49682cb80d46cebe1f86b3f",
+    "stepId": "S000003",
+    "taskId": "pipeline-shell",
+    "kind": "shell",
+    "label": "Verify core-verify",
+    "taskDefRef": "tasks/01KMNJE40SHHGCGAZZM11WVWWS/task.json"
+  },
+  "checksum": "49977d964a26f4c1205f0ad8c788cc3dddbeddb1e26bcd0121ee1461569cee0f"
+}

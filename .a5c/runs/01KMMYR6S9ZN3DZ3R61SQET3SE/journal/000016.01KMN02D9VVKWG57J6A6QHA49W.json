@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T11:56:55.483Z",
+  "data": {
+    "effectId": "01KMN02D9EYC8V740ZJFC002FR",
+    "invocationKey": "network-map-explorer:S000008:shell-verify",
+    "invocationHash": "3e586554f9dc9cfe424cb171cfaa77f4523e4c8292cb5b5f042e87e757e2b0b1",
+    "stepId": "S000008",
+    "taskId": "shell-verify",
+    "kind": "shell",
+    "label": "Verify phase2-api-layer",
+    "taskDefRef": "tasks/01KMN02D9EYC8V740ZJFC002FR/task.json"
+  },
+  "checksum": "7472b5171ce5a931edb86cac5c06db7cdd25792391f8cf8c673df92056525a05"
+}

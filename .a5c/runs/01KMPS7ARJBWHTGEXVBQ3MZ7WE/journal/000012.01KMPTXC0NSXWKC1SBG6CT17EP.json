@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T05:05:16.309Z",
+  "data": {
+    "effectId": "01KMPTXC09NS72V5CXV7XMBKBA",
+    "invocationKey": "qa-e2e-testing:S000006:qa-agent",
+    "invocationHash": "85da2074707113a7acff7c77a2d38c4ea517a81571984494b5989b3ea29f915a",
+    "stepId": "S000006",
+    "taskId": "qa-agent",
+    "kind": "agent",
+    "label": "Verify data integrity and consistency",
+    "taskDefRef": "tasks/01KMPTXC09NS72V5CXV7XMBKBA/task.json"
+  },
+  "checksum": "96ffa005a0f344550c9eafc7b34d352815ca3391d8aef1f6d7540e77655f7883"
+}

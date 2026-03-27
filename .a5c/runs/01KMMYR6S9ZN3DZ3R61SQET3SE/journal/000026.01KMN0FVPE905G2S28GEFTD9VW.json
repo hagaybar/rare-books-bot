@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:04:16.206Z",
+  "data": {
+    "effectId": "01KMN0FVP1NXM4HS0CEF5W2HKG",
+    "invocationKey": "network-map-explorer:S000013:implementation-task",
+    "invocationHash": "c4d5b26527ddf4619c70766b0b809408b51fe9b766146c409ff5d604d1840cfe",
+    "stepId": "S000013",
+    "taskId": "implementation-task",
+    "kind": "agent",
+    "label": "Task 11: ControlBar Component",
+    "taskDefRef": "tasks/01KMN0FVP1NXM4HS0CEF5W2HKG/task.json"
+  },
+  "checksum": "8317dc8f44190840f623508f7b95469476e0586173915bb43cf1ef6abe225a63"
+}

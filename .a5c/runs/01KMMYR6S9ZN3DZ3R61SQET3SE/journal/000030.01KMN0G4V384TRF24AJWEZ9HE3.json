@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T12:04:25.571Z",
+  "data": {
+    "effectId": "01KMN0G4TQ96NJKAJWYN0H8S9D",
+    "invocationKey": "network-map-explorer:S000015:implementation-task",
+    "invocationHash": "5a24cb0892348db037118934d7d6739aff778fbc13c4b9d697dca49564dea3eb",
+    "stepId": "S000015",
+    "taskId": "implementation-task",
+    "kind": "agent",
+    "label": "Task 13: Integration Test and Verification",
+    "taskDefRef": "tasks/01KMN0G4TQ96NJKAJWYN0H8S9D/task.json"
+  },
+  "checksum": "cbc3801b1b0d854dbf9aed973b805b0ca692fe0c66beb8e6fd095f3804683415"
+}

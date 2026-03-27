@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNJYSXSS8NSR71H9FACYE48",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000011:pipeline-agent",
+  "status": "ok",
+  "result": {
+    "aliases": 5073,
+    "authorities": 2934,
+    "status": "completed",
+    "taskName": "Seed authorities"
+  },
+  "startedAt": "2026-03-26T17:27:47.502Z",
+  "finishedAt": "2026-03-26T17:27:47.502Z",
+  "value": {
+    "aliases": 5073,
+    "authorities": 2934,
+    "status": "completed",
+    "taskName": "Seed authorities"
+  }
+}

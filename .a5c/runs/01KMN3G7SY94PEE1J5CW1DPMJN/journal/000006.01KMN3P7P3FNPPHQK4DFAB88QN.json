@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T13:00:10.819Z",
+  "data": {
+    "effectId": "01KMN3P7NPV15G5S3XYVGBNSYT",
+    "invocationKey": "db-rebuild:S000003:shell-verify",
+    "invocationHash": "b7fbf6334b93059c0d097ec5865e3d8ed5884fc4ab4b6554bdd86f17a3091820",
+    "stepId": "S000003",
+    "taskId": "shell-verify",
+    "kind": "shell",
+    "label": "Verify core-rebuild",
+    "taskDefRef": "tasks/01KMN3P7NPV15G5S3XYVGBNSYT/task.json"
+  },
+  "checksum": "3df96f33d645183e8e4acff70d74220822768378924ca594b2df254d9ba0e5cc"
+}

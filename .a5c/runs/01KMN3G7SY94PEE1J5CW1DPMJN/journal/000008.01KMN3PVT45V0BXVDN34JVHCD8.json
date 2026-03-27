@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T13:00:31.428Z",
+  "data": {
+    "effectId": "01KMN3PVSR0CWG069W8CRJMXWJ",
+    "invocationKey": "db-rebuild:S000004:agent-impl",
+    "invocationHash": "151d2156186c28508e50e0c53ecb259387f14c8e6f306b47ee67bbedde3231d1",
+    "stepId": "S000004",
+    "taskId": "agent-impl",
+    "kind": "agent",
+    "label": "Seed agent and publisher authorities",
+    "taskDefRef": "tasks/01KMN3PVSR0CWG069W8CRJMXWJ/task.json"
+  },
+  "checksum": "fe1a63af201a81a0f9c9ae0f83b525dceade0d01b68875525f62291a5cd99473"
+}

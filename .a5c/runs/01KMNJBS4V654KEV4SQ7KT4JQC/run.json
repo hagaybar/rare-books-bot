@@ -1,0 +1,14 @@
+{
+  "runId": "01KMNJBS4V654KEV4SQ7KT4JQC",
+  "request": "full-ingestion-pipeline",
+  "processId": "full-ingestion-pipeline",
+  "entrypoint": {
+    "importPath": "../../processes/full-ingestion-pipeline.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/full-ingestion-pipeline.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-26T17:16:36.901Z",
+  "prompt": "Full MARC XML ingestion with LOD authority URIs. YOLO mode.",
+  "completionProof": "fb0e941e0d02463fb582d9f93b07f72a"
+}

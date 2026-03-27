@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMNJJSTTF1AT1F6HHZSKGPV5",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000005:pipeline-agent",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "QA Fix: Date normalization gaps",
+  "io": {
+    "inputJsonPath": "tasks/01KMNJJSTTF1AT1F6HHZSKGPV5/input.json",
+    "outputJsonPath": "tasks/01KMNJJSTTF1AT1F6HHZSKGPV5/output.json"
+  },
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "description": "Review and fix date normalization gaps.\n\nRead the audit report: data/qa/norm_audit.json — look at the \"date\" section.\n\nFor each low-confidence or unparsed date in audit[\"date\"][\"low_confidence\"]:\n\n1. CATEGORIZE the issue:\n   - \"hebrew_unparsed\": Hebrew calendar date not recognized (e.g., תק\"ג, שנת ה'שע\"ח)\n   - \"complex_range\": Multiple dates or ranges not captured (e.g., \"1758-1765\")\n   - \"circa_variant\": Circa notation variant not recognized (e.g., \"ca.\", \"um\", \"environ\")\n   - \"embedded_noise\": Date buried in other text\n   - \"no_date\": Genuinely has no date (e.g., \"n.d.\", \"[s.a.]\")\n   - \"already_correct\": The normalization is actually correct but confidence is low\n\n2. For fixable issues, determine if the fix should be:\n   a) A NEW PATTERN in scripts/marc/normalize.py (for recurring patterns)\n   b) A DIRECT DB UPDATE for one-off values (using the feedback_loop.py pattern)\n\n3. For new patterns: add them to normalize_date() in scripts/marc/normalize.py. Run tests.\n4. For direct fixes: prepare SQL UPDATE statements but DO NOT execute them yet.\n\nWrite proposed fixes to data/qa/date_fixes_proposed.json:\n{\n  \"new_patterns\": [{\"pattern\": \"...\", \"example_raw\": \"...\", \"expected_start\": N, \"expected_end\": N, \"confidence\": 0.X}],\n  \"direct_fixes\": [{\"raw\": \"...\", \"current_start\": N, \"proposed_start\": N, \"proposed_end\": N, \"proposed_confidence\": 0.X, \"reason\": \"...\"}],\n  \"already_correct\": [{\"raw\": \"...\", \"count\": N, \"reason\": \"confidence is actually appropriate\"}],\n  \"unfixable\": [{\"raw\": \"...\", \"count\": N, \"reason\": \"genuinely no date\"}],\n  \"summary\": {\"total_gaps\": N, \"fixable\": N, \"new_patterns\": N, \"direct_fixes\": N, \"already_correct\": N, \"unfixable\": N}\n}\n\nIf new patterns were added to normalize.py, run: poetry run pytest tests/ -k \"date\" -v\nCommit code changes (new patterns) but NOT the proposed fixes JSON (that's for review).",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "QA Fix: Date normalization gaps",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"import json; f=json.load(open('data/qa/date_fixes_proposed.json')); print(f['summary'])\""
+  }
+}

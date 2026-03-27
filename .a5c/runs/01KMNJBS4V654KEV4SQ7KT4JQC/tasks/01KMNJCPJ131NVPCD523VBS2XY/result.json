@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMNJCPJ131NVPCD523VBS2XY",
+  "taskId": "pipeline-agent",
+  "invocationKey": "full-ingestion-pipeline:S000002:pipeline-agent",
+  "status": "ok",
+  "result": {
+    "agentCount": 3102,
+    "authorityUriCount": 2434,
+    "recordCount": 2796,
+    "status": "completed",
+    "taskName": "Core rebuild"
+  },
+  "startedAt": "2026-03-26T17:17:53.317Z",
+  "finishedAt": "2026-03-26T17:17:53.317Z",
+  "value": {
+    "agentCount": 3102,
+    "authorityUriCount": 2434,
+    "recordCount": 2796,
+    "status": "completed",
+    "taskName": "Core rebuild"
+  }
+}

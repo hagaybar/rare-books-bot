@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-26T17:20:27.735Z",
+  "data": {
+    "effectId": "01KMNJJTJA3Y9PJPP20SHPXVZW",
+    "invocationKey": "full-ingestion-pipeline:S000007:pipeline-agent",
+    "invocationHash": "384f7a8d5be123fffa9e144ac369d8eb0741a2cb4b6e7a2750144d13904208f9",
+    "stepId": "S000007",
+    "taskId": "pipeline-agent",
+    "kind": "agent",
+    "label": "QA Fix: Publisher normalization gaps",
+    "taskDefRef": "tasks/01KMNJJTJA3Y9PJPP20SHPXVZW/task.json"
+  },
+  "checksum": "3638d84e37a617e77df5675460c343a0418feb34df0275de500d4eb0f8430263"
+}

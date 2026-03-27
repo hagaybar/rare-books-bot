@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMN81KQ3AFEDGZ11QJSYVV84",
+  "taskId": "shell-verify",
+  "invocationKey": "db-rebuild:S000011:shell-verify",
+  "stepId": "S000011",
+  "kind": "shell",
+  "title": "Verify final-verification",
+  "io": {
+    "outputJsonPath": "tasks/01KMN81KQ3AFEDGZ11QJSYVV84/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && python3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\ntables = [t[0] for t in c.execute(\"SELECT name FROM sqlite_master WHERE type='table'\").fetchall()]\nprint(f'Tables: {len(tables)} — {sorted(tables)}')\nr = c.execute('SELECT count(*) FROM records').fetchone()[0]\na = c.execute('SELECT count(DISTINCT agent_norm) FROM agents').fetchone()[0]\ni = c.execute('SELECT count(*) FROM imprints').fetchone()[0]\nprint(f'Records: {r}, Agents: {a}, Imprints: {i}')\ntry:\n    ae = c.execute('SELECT count(*) FROM authority_enrichment').fetchone()[0]\n    print(f'Authority enrichment: {ae}')\nexcept: print('No authority_enrichment table')\ntry:\n    wc = c.execute('SELECT count(*) FROM wikipedia_cache').fetchone()[0]\n    wconn = c.execute('SELECT count(*) FROM wikipedia_connections').fetchone()[0]\n    print(f'Wikipedia: cache={wc}, connections={wconn}')\nexcept: print('No wikipedia tables')\ntry:\n    ne = c.execute('SELECT count(*) FROM network_edges').fetchone()[0]\n    na = c.execute('SELECT count(*) FROM network_agents').fetchone()[0]\n    print(f'Network: edges={ne}, agents={na}')\nexcept: print('No network tables')\nimport os\nsize_mb = os.path.getsize('data/index/bibliographic.db') / 1024 / 1024\nprint(f'DB size: {size_mb:.1f} MB')\n\"",
+    "phase": "final-verification",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

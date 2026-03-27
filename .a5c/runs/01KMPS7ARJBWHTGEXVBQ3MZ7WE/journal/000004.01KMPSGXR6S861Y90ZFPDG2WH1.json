@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T04:40:59.910Z",
+  "data": {
+    "effectId": "01KMPSGXQTNN75B96PZ4GWMTKE",
+    "invocationKey": "qa-e2e-testing:S000002:qa-agent",
+    "invocationHash": "f67cad785ac7075dca1c601ed19a096ea9925dae1b62d78055b131f39e5edcaf",
+    "stepId": "S000002",
+    "taskId": "qa-agent",
+    "kind": "agent",
+    "label": "Test Chat flow end-to-end",
+    "taskDefRef": "tasks/01KMPSGXQTNN75B96PZ4GWMTKE/task.json"
+  },
+  "checksum": "5142029987b7a3a9fc429f1ba34e6fa281745d302743eeedba210e04807246f0"
+}
