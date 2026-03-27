@@ -6,12 +6,13 @@ import { useNetworkStore } from '../stores/networkStore';
 import MapView from '../components/network/MapView';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
+import Legend from '../components/network/Legend';
 import type { MapNode } from '../types/network';
 
 export default function Network() {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
 
-  const { connectionTypes, minConfidence, century, place, role, agentLimit } =
+  const { connectionTypes, minConfidence, century, place, role, agentLimit, colorBy } =
     useNetworkStore();
 
   const {
@@ -64,7 +65,9 @@ export default function Network() {
             onAgentClick={handleAgentClick}
             onBackgroundClick={handleClosePanel}
             isLoading={isLoading}
+            colorBy={colorBy}
           />
+          <Legend colorBy={colorBy} />
           {/* Empty results overlay */}
           {!isLoading && mapData && mapData.nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
