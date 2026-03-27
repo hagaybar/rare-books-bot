@@ -77,8 +77,23 @@ interface AgentFilters {
   century: string;
 }
 
-async function fetchFacets(): Promise<Facets> {
-  const res = await fetch('/metadata/enrichment/facets');
+async function fetchFacets(filters: {
+  search?: string;
+  occupation?: string;
+  century?: string;
+  role?: string;
+  hasBio?: boolean;
+  hasImage?: boolean;
+}): Promise<Facets> {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.occupation) params.set('occupation', filters.occupation);
+  if (filters.century) params.set('century', filters.century);
+  if (filters.role) params.set('role', filters.role);
+  if (filters.hasBio) params.set('has_bio', 'true');
+  if (filters.hasImage) params.set('has_image', 'true');
+  const qs = params.toString();
+  const res = await fetch(`/metadata/enrichment/facets${qs ? `?${qs}` : ''}`);
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json();
 }
@@ -393,9 +408,10 @@ export default function Enrichment() {
   });
 
   const facetsQuery = useQuery({
-    queryKey: ['enrichment-facets'],
-    queryFn: fetchFacets,
-    staleTime: 60_000,
+    queryKey: ['enrichment-facets', filters],
+    queryFn: () => fetchFacets(filters),
+    placeholderData: (prev) => prev,
+    staleTime: 10_000,
   });
 
   const agentsQuery = useQuery({
