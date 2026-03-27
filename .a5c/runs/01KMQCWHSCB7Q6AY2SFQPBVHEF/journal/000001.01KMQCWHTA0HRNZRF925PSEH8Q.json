@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-27T10:19:23.850Z",
+  "data": {
+    "runId": "01KMQCWHSCB7Q6AY2SFQPBVHEF",
+    "processId": "cascading-filters",
+    "entrypoint": {
+      "importPath": "../../processes/cascading-filters.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Cascading enrichment filters. YOLO."
+  },
+  "checksum": "4e9f23146868ac16f6be362e2dc1c6b4fb059a76c5a54a72f7cdba169e3f74f0"
+}

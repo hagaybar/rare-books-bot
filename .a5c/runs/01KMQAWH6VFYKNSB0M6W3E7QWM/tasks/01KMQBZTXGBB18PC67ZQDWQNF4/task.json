@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQBZTXGBB18PC67ZQDWQNF4",
+  "taskId": "panel-agent",
+  "invocationKey": "enrichment-record-panel:S000003:panel-agent",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Task 3: Wire panel into Enrichment page + audit external links",
+  "io": {
+    "inputJsonPath": "tasks/01KMQBZTXGBB18PC67ZQDWQNF4/input.json",
+    "outputJsonPath": "tasks/01KMQBZTXGBB18PC67ZQDWQNF4/output.json"
+  },
+  "inputs": {
+    "description": "Read the plan at docs/superpowers/plans/2026-03-27-enrichment-record-panel.md — Task 3.\n\n1. In frontend/src/pages/admin/Enrichment.tsx:\n   - Import EnrichmentRecordPanel\n   - Add state: selectedAgent\n   - Change the record count badge from <span> to <button> with onClick\n   - Render EnrichmentRecordPanel when selectedAgent is set\n   - The panel should appear to the RIGHT of the card grid (use flex layout)\n\n2. IMPORTANT AUDIT: Check ALL external links across the entire Enrichment.tsx file and the new panel component. Every <a> tag that links to an external URL (Wikipedia, Wikidata, VIAF, Primo, or any non-app URL) MUST have target=\"_blank\" rel=\"noopener noreferrer\". Check:\n   - Wikipedia links on enrichment cards\n   - Wikidata links on enrichment cards\n   - VIAF links on enrichment cards\n   - Primo links in the record panel\n   - Any other external links\n\nFix any that are missing target=\"_blank\".\n\n3. Also check these other files for external links that might not open in new tabs:\n   - frontend/src/components/network/AgentPanel.tsx (external links section)\n   - frontend/src/components/chat/ (any Primo links in chat responses)\n\nVerify: cd frontend && npx tsc --noEmit && npm run build\n\nCommit: git add frontend/src/ && git commit -m \"feat: wire record panel into Enrichment page, audit all external links for new-tab behavior\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 3: Wire panel into Enrichment page + audit external links",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit && npm run build 2>&1 | tail -5"
+  }
+}

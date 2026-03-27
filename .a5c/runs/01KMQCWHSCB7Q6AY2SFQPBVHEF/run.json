@@ -1,0 +1,14 @@
+{
+  "runId": "01KMQCWHSCB7Q6AY2SFQPBVHEF",
+  "request": "cascading-filters",
+  "processId": "cascading-filters",
+  "entrypoint": {
+    "importPath": "../../processes/cascading-filters.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/cascading-filters.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-27T10:19:23.837Z",
+  "prompt": "Cascading enrichment filters. YOLO.",
+  "completionProof": "a3fcd981988bc0ebb0a3238c86a556de"
+}

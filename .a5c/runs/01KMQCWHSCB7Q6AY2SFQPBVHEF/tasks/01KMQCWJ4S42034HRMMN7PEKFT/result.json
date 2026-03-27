@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMQCWJ4S42034HRMMN7PEKFT",
+  "taskId": "filter-agent",
+  "invocationKey": "cascading-filters:S000001:filter-agent",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-27T10:22:36.091Z",
+  "finishedAt": "2026-03-27T10:22:36.091Z",
+  "value": {
+    "status": "completed"
+  }
+}

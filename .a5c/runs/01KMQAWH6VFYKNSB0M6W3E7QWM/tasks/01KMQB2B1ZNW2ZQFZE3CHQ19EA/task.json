@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQB2B1ZNW2ZQFZE3CHQ19EA",
+  "taskId": "panel-agent",
+  "invocationKey": "enrichment-record-panel:S000002:panel-agent",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Task 2: Frontend API client + Panel component",
+  "io": {
+    "inputJsonPath": "tasks/01KMQB2B1ZNW2ZQFZE3CHQ19EA/input.json",
+    "outputJsonPath": "tasks/01KMQB2B1ZNW2ZQFZE3CHQ19EA/output.json"
+  },
+  "inputs": {
+    "description": "Read the plan at docs/superpowers/plans/2026-03-27-enrichment-record-panel.md — Task 2.\n\n1. Add to frontend/src/api/metadata.ts:\n   - AgentRecord and AgentRecordsResponse interfaces\n   - fetchAgentRecords(wikidataId?, agentNorm?) function\n\n2. Create frontend/src/components/enrichment/EnrichmentRecordPanel.tsx:\n   - Slide-in panel (w-96, right side, full height)\n   - Header: display name, lifespan, record count, close button\n   - Scrollable record list: each shows title (linked to Primo), date/place/publisher/role\n   - Footer: \"Ask in Chat\" button + \"View in Primo\" button\n\nIMPORTANT: ALL external links (Primo, Wikipedia, Wikidata, VIAF) must use target=\"_blank\" rel=\"noopener noreferrer\" to open in new tabs. Check the whole component for this.\n\nUse the EXACT code from the plan as a starting point, but ensure:\n- All <a> tags with external URLs have target=\"_blank\" rel=\"noopener noreferrer\"\n- Loading and error states are handled\n- Record titles link to Primo in new tabs\n\nVerify: cd frontend && npx tsc --noEmit\n\nCommit: git add frontend/src/api/metadata.ts frontend/src/components/enrichment/EnrichmentRecordPanel.tsx && git commit -m \"feat: add EnrichmentRecordPanel component and API client\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 2: Frontend API client + Panel component",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit 2>&1 | tail -5"
+  }
+}

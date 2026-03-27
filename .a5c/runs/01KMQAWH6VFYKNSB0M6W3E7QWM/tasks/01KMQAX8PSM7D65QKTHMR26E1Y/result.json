@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMQAX8PSM7D65QKTHMR26E1Y",
+  "taskId": "panel-agent",
+  "invocationKey": "enrichment-record-panel:S000001:panel-agent",
+  "status": "ok",
+  "result": {
+    "recordCount": 14,
+    "status": "completed"
+  },
+  "startedAt": "2026-03-27T09:47:36.076Z",
+  "finishedAt": "2026-03-27T09:47:36.076Z",
+  "value": {
+    "recordCount": 14,
+    "status": "completed"
+  }
+}

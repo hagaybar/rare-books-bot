@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T09:44:50.152Z",
+  "data": {
+    "effectId": "01KMQAX8PSM7D65QKTHMR26E1Y",
+    "invocationKey": "enrichment-record-panel:S000001:panel-agent",
+    "invocationHash": "a825f3d0eba971366ff8ded97e44cb4a5e48244833eede4f29da74da5cbdb86c",
+    "stepId": "S000001",
+    "taskId": "panel-agent",
+    "kind": "agent",
+    "label": "Task 1: API Endpoint for agent records",
+    "taskDefRef": "tasks/01KMQAX8PSM7D65QKTHMR26E1Y/task.json"
+  },
+  "checksum": "7e0f1addf16efa8ad0f4d34b931f7b675a988e2a39df4adf62cdbc2e60f22131"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T10:19:24.198Z",
+  "data": {
+    "effectId": "01KMQCWJ4S42034HRMMN7PEKFT",
+    "invocationKey": "cascading-filters:S000001:filter-agent",
+    "invocationHash": "ff7aebf110e9262bc73d3d2605b2e8bd0474bf179828114e5199e3e082250a6d",
+    "stepId": "S000001",
+    "taskId": "filter-agent",
+    "kind": "agent",
+    "label": "Task 1: Backend — shared WHERE builder + scoped facets",
+    "taskDefRef": "tasks/01KMQCWJ4S42034HRMMN7PEKFT/task.json"
+  },
+  "checksum": "d03fe2edf0e66acca07cb4bd4d346d8df0fcbdb32bf642266987c9ac28a7994e"
+}

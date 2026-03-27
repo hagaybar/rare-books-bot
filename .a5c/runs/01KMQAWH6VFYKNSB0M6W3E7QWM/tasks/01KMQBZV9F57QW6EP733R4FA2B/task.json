@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQBZV9F57QW6EP733R4FA2B",
+  "taskId": "panel-shell",
+  "invocationKey": "enrichment-record-panel:S000004:panel-shell",
+  "stepId": "S000004",
+  "kind": "shell",
+  "title": "Verify final-verify",
+  "io": {
+    "outputJsonPath": "tasks/01KMQBZV9F57QW6EP733R4FA2B/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && echo \"=== TypeScript ===\" && cd frontend && npx tsc --noEmit 2>&1 | tail -3 && echo \"=== Build ===\" && npm run build 2>&1 | tail -3 && echo \"=== API Test ===\" && cd /home/hagaybar/projects/rare-books-bot && curl -s 'http://localhost:8000/metadata/enrichment/agent-records?wikidata_id=Q319902' | python3 -c \"import sys,json; d=json.load(sys.stdin); print(f'{d[\"display_name\"]}: {d[\"record_count\"]} records')\" && echo \"=== Done ===\"",
+    "phase": "final-verify",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

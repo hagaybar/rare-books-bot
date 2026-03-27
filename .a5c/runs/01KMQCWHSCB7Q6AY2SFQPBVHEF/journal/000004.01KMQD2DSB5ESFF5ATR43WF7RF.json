@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T10:22:36.331Z",
+  "data": {
+    "effectId": "01KMQD2DRZR5303V33R60F1T1R",
+    "invocationKey": "cascading-filters:S000002:filter-agent",
+    "invocationHash": "7bcc8630526746f67ac75742fc55e5a14812633dd860986dddb4ec3ca92ea0d7",
+    "stepId": "S000002",
+    "taskId": "filter-agent",
+    "kind": "agent",
+    "label": "Task 2: Frontend — pass filters to facets query",
+    "taskDefRef": "tasks/01KMQD2DRZR5303V33R60F1T1R/task.json"
+  },
+  "checksum": "1deb6ca2f443a8d1c0d4c8a1a94e70bc44c93b4e5c93a636006467efa9aed31a"
+}

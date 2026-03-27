@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMQBZV9F57QW6EP733R4FA2B",
+  "taskId": "panel-shell",
+  "invocationKey": "enrichment-record-panel:S000004:panel-shell",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-27T10:03:43.433Z",
+  "finishedAt": "2026-03-27T10:03:43.433Z",
+  "value": {
+    "status": "completed"
+  }
+}

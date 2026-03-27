@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T09:47:36.397Z",
+  "data": {
+    "effectId": "01KMQB2B1ZNW2ZQFZE3CHQ19EA",
+    "invocationKey": "enrichment-record-panel:S000002:panel-agent",
+    "invocationHash": "3f65f7d3537feb682794f21685359937c039dfea36839e33ba646df9aed82941",
+    "stepId": "S000002",
+    "taskId": "panel-agent",
+    "kind": "agent",
+    "label": "Task 2: Frontend API client + Panel component",
+    "taskDefRef": "tasks/01KMQB2B1ZNW2ZQFZE3CHQ19EA/task.json"
+  },
+  "checksum": "f5ab54ba7e954efa087bcc914001f6c1b1142e1386ad94091b8051631b2e460b"
+}

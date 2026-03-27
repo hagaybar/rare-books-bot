@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T10:23:57.215Z",
+  "data": {
+    "effectId": "01KMQD4WRJGVT8RSPPD40R6H4G",
+    "invocationKey": "cascading-filters:S000003:filter-shell",
+    "invocationHash": "db400446a5b471f1db4eadc3dfaa997d473ec5bf6b052ffe9f1d556ab9400989",
+    "stepId": "S000003",
+    "taskId": "filter-shell",
+    "kind": "shell",
+    "label": "Verify final",
+    "taskDefRef": "tasks/01KMQD4WRJGVT8RSPPD40R6H4G/task.json"
+  },
+  "checksum": "1cfb4422fa4631f5f75a7481c53f53daf74e04cefcf7bdcf299ddb43df355d1b"
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMQD4WRJGVT8RSPPD40R6H4G",
+  "taskId": "filter-shell",
+  "invocationKey": "cascading-filters:S000003:filter-shell",
+  "status": "ok",
+  "result": {
+    "status": "verified"
+  },
+  "startedAt": "2026-03-27T10:23:57.369Z",
+  "finishedAt": "2026-03-27T10:23:57.369Z",
+  "value": {
+    "status": "verified"
+  }
+}

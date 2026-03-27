@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T10:03:42.908Z",
+  "data": {
+    "effectId": "01KMQBZTXGBB18PC67ZQDWQNF4",
+    "invocationKey": "enrichment-record-panel:S000003:panel-agent",
+    "invocationHash": "5f6cd4a86760fc82748686ecd2026d9190c8b2a5126eb837f43a3d248bd4713e",
+    "stepId": "S000003",
+    "taskId": "panel-agent",
+    "kind": "agent",
+    "label": "Task 3: Wire panel into Enrichment page + audit external links",
+    "taskDefRef": "tasks/01KMQBZTXGBB18PC67ZQDWQNF4/task.json"
+  },
+  "checksum": "d6f19009a52c42bbf9461cecdcbd07c554ed231a2f1f6810f52711fa29d9e52f"
+}

@@ -1,0 +1,14 @@
+{
+  "runId": "01KMQAWH6VFYKNSB0M6W3E7QWM",
+  "request": "enrichment-record-panel",
+  "processId": "enrichment-record-panel",
+  "entrypoint": {
+    "importPath": "../../processes/enrichment-record-panel.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/enrichment-record-panel.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-27T09:44:26.093Z",
+  "prompt": "Implement Enrichment Record Panel. YOLO mode.",
+  "completionProof": "ed7642f966b3fbb6383fd329a6646117"
+}

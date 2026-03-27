@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQD4WRJGVT8RSPPD40R6H4G",
+  "taskId": "filter-shell",
+  "invocationKey": "cascading-filters:S000003:filter-shell",
+  "stepId": "S000003",
+  "kind": "shell",
+  "title": "Verify final",
+  "io": {
+    "outputJsonPath": "tasks/01KMQD4WRJGVT8RSPPD40R6H4G/output.json"
+  },
+  "inputs": {
+    "command": "cd /home/hagaybar/projects/rare-books-bot && echo \"=== Build ===\" && cd frontend && npm run build 2>&1 | tail -3 && echo \"=== API ===\" && cd /home/hagaybar/projects/rare-books-bot && curl -s 'http://localhost:8000/metadata/enrichment/facets?occupation=rabbi' | python3 -c \"import sys,json; d=json.load(sys.stdin); total=sum(c['count'] for c in d['centuries']); print(f'Rabbi centuries total: {total}')\" && echo \"=== Done ===\"",
+    "phase": "final",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

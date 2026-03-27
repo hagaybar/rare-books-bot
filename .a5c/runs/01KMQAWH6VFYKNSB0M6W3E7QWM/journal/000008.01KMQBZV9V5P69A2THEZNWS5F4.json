@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T10:03:43.291Z",
+  "data": {
+    "effectId": "01KMQBZV9F57QW6EP733R4FA2B",
+    "invocationKey": "enrichment-record-panel:S000004:panel-shell",
+    "invocationHash": "2bcf40ffd399e46cfbe574f8a0c19b726e69433e78a1945e036e181bce34bef5",
+    "stepId": "S000004",
+    "taskId": "panel-shell",
+    "kind": "shell",
+    "label": "Verify final-verify",
+    "taskDefRef": "tasks/01KMQBZV9F57QW6EP733R4FA2B/task.json"
+  },
+  "checksum": "fbc5756ad0039dddf3ae64685b7c3d7d1e7cfdbd9aadb862f60ebfe7b42c044f"
+}
