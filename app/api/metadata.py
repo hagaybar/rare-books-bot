@@ -1948,22 +1948,23 @@ async def get_enriched_agents(
 
         where_sql = " AND ".join(where_clauses)
 
-        # Count total
+        # Count total (deduplicated by wikidata_id to merge Hebrew/Latin name variants)
         total = conn.execute(
-            f"SELECT count(DISTINCT a.agent_norm) FROM agents a "
+            f"SELECT count(DISTINCT COALESCE(ae.wikidata_id, a.agent_norm)) FROM agents a "
             f"JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri "
             f"WHERE {where_sql}",
             params,
         ).fetchone()[0]
 
-        # Fetch agents with enrichment (deduplicated by agent_norm)
+        # Fetch agents with enrichment (deduplicated by wikidata_id to merge
+        # Hebrew/Latin variants of the same person into a single card)
         rows = conn.execute(
             f"""
             SELECT
-                a.agent_norm,
-                a.agent_raw,
+                MIN(a.agent_norm) as agent_norm,
+                GROUP_CONCAT(DISTINCT a.agent_raw) as agent_raw,
                 a.agent_type,
-                a.role_raw,
+                GROUP_CONCAT(DISTINCT a.role_raw) as role_raw,
                 a.authority_uri,
                 ae.nli_id,
                 ae.wikidata_id,
@@ -1980,7 +1981,7 @@ async def get_enriched_agents(
             FROM agents a
             JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
             WHERE {where_sql}
-            GROUP BY a.agent_norm
+            GROUP BY COALESCE(ae.wikidata_id, a.agent_norm)
             ORDER BY record_count DESC
             LIMIT ? OFFSET ?
             """,
