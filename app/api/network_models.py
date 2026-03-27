@@ -29,6 +29,8 @@ class MapMeta(BaseModel):
     total_agents: int
     showing: int
     total_edges: int
+    category_limited: bool = False
+    category_total: int = 0
 
 
 class MapResponse(BaseModel):

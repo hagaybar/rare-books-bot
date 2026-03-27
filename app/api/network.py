@@ -22,7 +22,8 @@ router = APIRouter(prefix="/network", tags=["network"])
 DB_PATH = Path("data/index/bibliographic.db")
 
 VALID_CONNECTION_TYPES = {
-    "teacher_student", "wikilink", "llm_extraction", "category", "co_publication"
+    "teacher_student", "wikilink", "llm_extraction", "category", "co_publication",
+    "same_place_period",
 }
 
 
@@ -43,9 +44,13 @@ async def get_network_map(
 ) -> MapResponse:
     """Return filtered nodes and edges for the network map."""
     types = [t.strip() for t in connection_types.split(",") if t.strip()]
-    invalid = set(types) - VALID_CONNECTION_TYPES
-    if invalid:
-        raise HTTPException(400, f"Invalid connection types: {invalid}")
+
+    # Handle empty types — return nodes only, no edges
+    empty_types = not types or types == ["none"]
+    if not empty_types:
+        invalid = set(types) - VALID_CONNECTION_TYPES
+        if invalid:
+            raise HTTPException(400, f"Invalid connection types: {invalid}")
 
     conn = _get_db()
     try:
@@ -73,25 +78,37 @@ async def get_network_map(
 
         where_sql = " AND ".join(where_clauses)
 
-        # Get top agents by connection count within selected types
-        type_placeholders = ",".join("?" for _ in types)
-        agents_sql = f"""
-            SELECT na.*, COALESCE(ec.edge_count, 0) as filtered_count
-            FROM network_agents na
-            LEFT JOIN (
-                SELECT agent_norm, count(*) as edge_count FROM (
-                    SELECT source_agent_norm as agent_norm FROM network_edges
-                    WHERE connection_type IN ({type_placeholders}) AND confidence >= ?
-                    UNION ALL
-                    SELECT target_agent_norm FROM network_edges
-                    WHERE connection_type IN ({type_placeholders}) AND confidence >= ?
-                ) GROUP BY agent_norm
-            ) ec ON ec.agent_norm = na.agent_norm
-            WHERE {where_sql}
-            ORDER BY filtered_count DESC
-            LIMIT ?
-        """
-        agent_params = [*types, min_confidence, *types, min_confidence, *params, limit]
+        if empty_types:
+            # No connection types selected — return agents sorted by record_count, no edges
+            agents_sql = f"""
+                SELECT na.*, 0 as filtered_count
+                FROM network_agents na
+                WHERE {where_sql}
+                ORDER BY na.record_count DESC
+                LIMIT ?
+            """
+            agent_params = [*params, limit]
+        else:
+            # Get top agents by connection count within selected types
+            type_placeholders = ",".join("?" for _ in types)
+            agents_sql = f"""
+                SELECT na.*, COALESCE(ec.edge_count, 0) as filtered_count
+                FROM network_agents na
+                LEFT JOIN (
+                    SELECT agent_norm, count(*) as edge_count FROM (
+                        SELECT source_agent_norm as agent_norm FROM network_edges
+                        WHERE connection_type IN ({type_placeholders}) AND confidence >= ?
+                        UNION ALL
+                        SELECT target_agent_norm FROM network_edges
+                        WHERE connection_type IN ({type_placeholders}) AND confidence >= ?
+                    ) GROUP BY agent_norm
+                ) ec ON ec.agent_norm = na.agent_norm
+                WHERE {where_sql}
+                ORDER BY filtered_count DESC
+                LIMIT ?
+            """
+            agent_params = [*types, min_confidence, *types, min_confidence, *params, limit]
+
         rows = conn.execute(agents_sql, agent_params).fetchall()
 
         agent_norms = {r["agent_norm"] for r in rows}
@@ -118,22 +135,52 @@ async def get_network_map(
             ))
 
         # Get edges between returned agents
-        if len(agent_norms) < 2:
+        category_limited = False
+        category_total = 0
+
+        if empty_types or len(agent_norms) < 2:
             edges = []
         else:
             norm_list = list(agent_norms)
             norm_placeholders = ",".join("?" for _ in norm_list)
-            edge_sql = f"""
-                SELECT source_agent_norm, target_agent_norm, connection_type,
-                       confidence, relationship, bidirectional
-                FROM network_edges
-                WHERE connection_type IN ({type_placeholders})
-                  AND confidence >= ?
-                  AND source_agent_norm IN ({norm_placeholders})
-                  AND target_agent_norm IN ({norm_placeholders})
-            """
-            edge_params = [*types, min_confidence, *norm_list, *norm_list]
-            edge_rows = conn.execute(edge_sql, edge_params).fetchall()
+
+            # Build per-type edge queries, applying LIMIT 100 for category
+            edge_queries = []
+            edge_params_all: list = []
+
+            for t in types:
+                if t == "category":
+                    edge_queries.append(f"""
+                        SELECT source_agent_norm, target_agent_norm, connection_type,
+                               confidence, relationship, bidirectional
+                        FROM (
+                            SELECT source_agent_norm, target_agent_norm, connection_type,
+                                   confidence, relationship, bidirectional
+                            FROM network_edges
+                            WHERE connection_type = 'category'
+                              AND confidence >= ?
+                              AND source_agent_norm IN ({norm_placeholders})
+                              AND target_agent_norm IN ({norm_placeholders})
+                            ORDER BY confidence DESC
+                            LIMIT 100
+                        )
+                    """)
+                    edge_params_all.extend([min_confidence, *norm_list, *norm_list])
+                else:
+                    edge_queries.append(f"""
+                        SELECT source_agent_norm, target_agent_norm, connection_type,
+                               confidence, relationship, bidirectional
+                        FROM network_edges
+                        WHERE connection_type = ?
+                          AND confidence >= ?
+                          AND source_agent_norm IN ({norm_placeholders})
+                          AND target_agent_norm IN ({norm_placeholders})
+                    """)
+                    edge_params_all.extend([t, min_confidence, *norm_list, *norm_list])
+
+            combined_sql = " UNION ALL ".join(edge_queries)
+            edge_rows = conn.execute(combined_sql, edge_params_all).fetchall()
+
             edges = [
                 MapEdge(
                     source=r["source_agent_norm"],
@@ -146,6 +193,20 @@ async def get_network_map(
                 for r in edge_rows
             ]
 
+            # Check if category was limited
+            if "category" in types:
+                cat_total_row = conn.execute(
+                    f"""SELECT count(*) FROM network_edges
+                        WHERE connection_type = 'category'
+                          AND confidence >= ?
+                          AND source_agent_norm IN ({norm_placeholders})
+                          AND target_agent_norm IN ({norm_placeholders})""",
+                    [min_confidence, *norm_list, *norm_list],
+                ).fetchone()
+                category_total = cat_total_row[0]
+                if category_total > 100:
+                    category_limited = True
+
         total_agents = conn.execute(
             "SELECT count(*) FROM network_agents WHERE lat IS NOT NULL"
         ).fetchone()[0]
@@ -157,6 +218,8 @@ async def get_network_map(
                 total_agents=total_agents,
                 showing=len(nodes),
                 total_edges=len(edges),
+                category_limited=category_limited,
+                category_total=category_total,
             ),
         )
     finally:

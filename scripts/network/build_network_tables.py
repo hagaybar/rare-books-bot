@@ -85,6 +85,10 @@ def build_network_edges(conn: sqlite3.Connection) -> int:
     copub_count = _build_co_publication_edges(conn)
     logger.info("Inserted %d co-publication connections", copub_count)
 
+    # 4. Same place/period (agents sharing same city with >=10 year overlap)
+    spp_count = _build_same_place_period_edges(conn)
+    logger.info("Inserted %d same-place-period connections", spp_count)
+
     # Create indexes
     conn.execute("CREATE INDEX idx_network_edges_source ON network_edges(source_agent_norm)")
     conn.execute("CREATE INDEX idx_network_edges_target ON network_edges(target_agent_norm)")
@@ -188,6 +192,53 @@ def _resolve_name_to_agent_norm(conn: sqlite3.Connection, name: str) -> str | No
             return row[0]
 
     return None
+
+
+def _build_same_place_period_edges(conn: sqlite3.Connection) -> int:
+    """Find agents active in the same city during overlapping periods (>=10 years)."""
+    # For each agent, get their place + date range per place
+    agent_places = conn.execute("""
+        SELECT a.agent_norm, i.place_norm,
+               MIN(i.date_start) as earliest, MAX(i.date_start) as latest
+        FROM agents a
+        JOIN imprints i ON a.record_id = i.record_id
+        WHERE i.place_norm IS NOT NULL AND i.date_start IS NOT NULL
+          AND i.place_norm != '[sine loco]'
+        GROUP BY a.agent_norm, i.place_norm
+        HAVING MAX(i.date_start) - MIN(i.date_start) >= 0
+    """).fetchall()
+
+    # Group by place
+    from collections import defaultdict
+    place_agents = defaultdict(list)
+    for norm, place, earliest, latest in agent_places:
+        place_agents[place].append((norm, earliest, latest))
+
+    count = 0
+    for place, agents in place_agents.items():
+        for i in range(len(agents)):
+            for j in range(i + 1, len(agents)):
+                a1_norm, a1_start, a1_end = agents[i]
+                a2_norm, a2_start, a2_end = agents[j]
+                # Check overlap of at least 10 years
+                overlap_start = max(a1_start, a2_start)
+                overlap_end = min(a1_end or a1_start, a2_end or a2_start)
+                if overlap_end - overlap_start >= 10:
+                    src = min(a1_norm, a2_norm)
+                    tgt = max(a1_norm, a2_norm)
+                    try:
+                        conn.execute(
+                            """INSERT OR IGNORE INTO network_edges
+                               (source_agent_norm, target_agent_norm, connection_type,
+                                confidence, relationship, bidirectional, evidence)
+                               VALUES (?, ?, 'same_place_period', 0.70, ?, 1, ?)""",
+                            (src, tgt, f"both active in {place}",
+                             f"{place}: {overlap_start}-{overlap_end}"),
+                        )
+                        count += conn.execute("SELECT changes()").fetchone()[0]
+                    except sqlite3.IntegrityError:
+                        pass
+    return count
 
 
 def _build_co_publication_edges(conn: sqlite3.Connection) -> int:
