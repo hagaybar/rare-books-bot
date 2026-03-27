@@ -8,6 +8,7 @@ import json
 import logging
 import re
 import sqlite3
+from collections import defaultdict
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -121,33 +122,35 @@ def _build_teacher_student_edges(conn: sqlite3.Connection) -> int:
             continue
         source_norm = agent_row[0]
 
-        # Teachers
+        # Teachers: agent is the STUDENT, teacher_name is the TEACHER
+        # Edge direction: teacher -> student, relationship="teacher of"
         for teacher_name in person_info.get("teachers", []):
-            target_norm = _resolve_name_to_agent_norm(conn, teacher_name)
-            if target_norm and target_norm != source_norm:
-                try:
-                    conn.execute(
-                        """INSERT OR IGNORE INTO network_edges
-                           (source_agent_norm, target_agent_norm, connection_type,
-                            confidence, relationship, bidirectional)
-                           VALUES (?, ?, 'teacher_student', 0.85, 'student of', 0)""",
-                        (source_norm, target_norm),
-                    )
-                    count += conn.execute("SELECT changes()").fetchone()[0]
-                except sqlite3.IntegrityError:
-                    pass
-
-        # Students
-        for student_name in person_info.get("students", []):
-            target_norm = _resolve_name_to_agent_norm(conn, student_name)
-            if target_norm and target_norm != source_norm:
+            teacher_norm = _resolve_name_to_agent_norm(conn, teacher_name)
+            if teacher_norm and teacher_norm != source_norm:
                 try:
                     conn.execute(
                         """INSERT OR IGNORE INTO network_edges
                            (source_agent_norm, target_agent_norm, connection_type,
                             confidence, relationship, bidirectional)
                            VALUES (?, ?, 'teacher_student', 0.85, 'teacher of', 0)""",
-                        (source_norm, target_norm),
+                        (teacher_norm, source_norm),
+                    )
+                    count += conn.execute("SELECT changes()").fetchone()[0]
+                except sqlite3.IntegrityError:
+                    pass
+
+        # Students: agent is the TEACHER, student_name is the STUDENT
+        # Edge direction: teacher -> student, relationship="teacher of"
+        for student_name in person_info.get("students", []):
+            student_norm = _resolve_name_to_agent_norm(conn, student_name)
+            if student_norm and student_norm != source_norm:
+                try:
+                    conn.execute(
+                        """INSERT OR IGNORE INTO network_edges
+                           (source_agent_norm, target_agent_norm, connection_type,
+                            confidence, relationship, bidirectional)
+                           VALUES (?, ?, 'teacher_student', 0.85, 'teacher of', 0)""",
+                        (source_norm, student_norm),
                     )
                     count += conn.execute("SELECT changes()").fetchone()[0]
                 except sqlite3.IntegrityError:
@@ -209,7 +212,6 @@ def _build_same_place_period_edges(conn: sqlite3.Connection) -> int:
     """).fetchall()
 
     # Group by place
-    from collections import defaultdict
     place_agents = defaultdict(list)
     for norm, place, earliest, latest in agent_places:
         place_agents[place].append((norm, earliest, latest))
@@ -397,6 +399,120 @@ def build_network_agents(
     return inserted
 
 
+def _merge_duplicate_agents(conn: sqlite3.Connection) -> int:
+    """Merge agent_norms that share the same wikidata_id into a single canonical norm.
+
+    For each wikidata_id with multiple agent_norms, pick the one with the most records
+    as canonical. Update edges to use the canonical norm, then remove duplicates.
+
+    Returns the number of agent_norms merged away.
+    """
+    # 1. Get all (agent_norm, wikidata_id) pairs
+    rows = conn.execute("""
+        SELECT DISTINCT a.agent_norm, ae.wikidata_id
+        FROM agents a
+        JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
+        WHERE ae.wikidata_id IS NOT NULL
+    """).fetchall()
+
+    # 2. Group agent_norms by wikidata_id
+    wikidata_groups: dict[str, list[str]] = defaultdict(list)
+    for agent_norm, wikidata_id in rows:
+        wikidata_groups[wikidata_id].append(agent_norm)
+
+    merged_count = 0
+    for wikidata_id, norms in wikidata_groups.items():
+        if len(norms) <= 1:
+            continue
+
+        # 3. Pick canonical norm: the one with the most records
+        best_norm = None
+        best_count = -1
+        for norm in norms:
+            rc = conn.execute(
+                "SELECT count(DISTINCT record_id) FROM agents WHERE agent_norm = ?",
+                (norm,),
+            ).fetchone()[0]
+            if rc > best_count:
+                best_count = rc
+                best_norm = norm
+
+        non_canonical = [n for n in norms if n != best_norm]
+        logger.info(
+            "Merging wikidata_id %s: canonical=%s, merging=%s",
+            wikidata_id, best_norm, non_canonical,
+        )
+
+        # 4. Update edges to use canonical norm
+        # Drop the UNIQUE index first to allow temporary duplicates during rewrite
+        conn.execute("DROP INDEX IF EXISTS idx_network_edges_unique_triple")
+        # Check if the table-level unique constraint exists; we recreate via temp table approach
+        # Instead: update in place, then deduplicate
+        for old_norm in non_canonical:
+            conn.execute(
+                "UPDATE OR IGNORE network_edges SET source_agent_norm = ? WHERE source_agent_norm = ?",
+                (best_norm, old_norm),
+            )
+            # Delete any rows that couldn't be updated (they'd be duplicates)
+            conn.execute(
+                "DELETE FROM network_edges WHERE source_agent_norm = ?",
+                (old_norm,),
+            )
+            conn.execute(
+                "UPDATE OR IGNORE network_edges SET target_agent_norm = ? WHERE target_agent_norm = ?",
+                (best_norm, old_norm),
+            )
+            conn.execute(
+                "DELETE FROM network_edges WHERE target_agent_norm = ?",
+                (old_norm,),
+            )
+
+        # 5. Delete duplicate edges (same source+target+type) keeping one
+        conn.execute("""
+            DELETE FROM network_edges WHERE rowid NOT IN (
+                SELECT MIN(rowid) FROM network_edges
+                GROUP BY source_agent_norm, target_agent_norm, connection_type
+            )
+        """)
+
+        # 6. Delete self-referencing edges
+        conn.execute(
+            "DELETE FROM network_edges WHERE source_agent_norm = target_agent_norm"
+        )
+
+        # 7. Delete non-canonical agents
+        for old_norm in non_canonical:
+            conn.execute(
+                "DELETE FROM network_agents WHERE agent_norm = ?",
+                (old_norm,),
+            )
+            merged_count += 1
+
+    return merged_count
+
+
+def _cleanup_orphan_edges(conn: sqlite3.Connection) -> int:
+    """Delete edges where either endpoint is not in network_agents."""
+    conn.execute("""
+        DELETE FROM network_edges
+        WHERE source_agent_norm NOT IN (SELECT agent_norm FROM network_agents)
+           OR target_agent_norm NOT IN (SELECT agent_norm FROM network_agents)
+    """)
+    removed = conn.execute("SELECT changes()").fetchone()[0]
+    return removed
+
+
+def _recompute_connection_counts(conn: sqlite3.Connection) -> None:
+    """Recompute connection_count for all agents after cleanup."""
+    conn.execute("""
+        UPDATE network_agents SET connection_count = (
+            SELECT count(*) FROM network_edges
+            WHERE source_agent_norm = network_agents.agent_norm
+               OR target_agent_norm = network_agents.agent_norm
+        )
+    """)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build network tables")
     parser.add_argument("db_path", type=Path, help="Path to bibliographic.db")
@@ -413,8 +529,26 @@ def main():
     try:
         edge_count = build_network_edges(conn)
         agent_count = build_network_agents(conn, geocodes)
+
+        # Post-build cleanup
+        # Issue 2: Merge duplicate agents sharing the same wikidata_id
+        merged = _merge_duplicate_agents(conn)
+        logger.info("Merged %d duplicate agent norms", merged)
+
+        # Issue 1: Remove orphan edges (endpoints not in network_agents)
+        orphans_removed = _cleanup_orphan_edges(conn)
+        logger.info("Removed %d orphan edges", orphans_removed)
+
+        # Issue 4: Recompute connection_count after all cleanup
+        _recompute_connection_counts(conn)
+        logger.info("Recomputed connection counts")
+
         conn.commit()
-        logger.info("Done. %d edges, %d agents", edge_count, agent_count)
+
+        # Final counts
+        final_edges = conn.execute("SELECT count(*) FROM network_edges").fetchone()[0]
+        final_agents = conn.execute("SELECT count(*) FROM network_agents").fetchone()[0]
+        logger.info("Done. %d edges, %d agents (after cleanup)", final_edges, final_agents)
     finally:
         conn.close()
 
