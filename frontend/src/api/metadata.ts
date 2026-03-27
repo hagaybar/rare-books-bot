@@ -16,9 +16,44 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+/**
+ * Map raw API confidence bands to the ConfidenceBand shape expected by the UI.
+ * The backend returns { band_label, lower, upper, count } but our TypeScript
+ * types expect { label, min_confidence, max_confidence, count }.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapConfidenceBands(raw: any[]): CoverageReport['date_coverage']['confidence_distribution'] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((b) => ({
+    label: b.label ?? b.band_label ?? String(b.lower ?? ''),
+    min_confidence: b.min_confidence ?? b.lower ?? 0,
+    max_confidence: b.max_confidence ?? b.upper ?? 1,
+    count: b.count ?? 0,
+  }));
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapFieldCoverage(raw: any): CoverageReport['date_coverage'] {
+  return {
+    ...raw,
+    confidence_distribution: mapConfidenceBands(raw.confidence_distribution),
+  };
+}
+
 export async function fetchCoverage(): Promise<CoverageReport> {
   const res = await fetch(`${BASE}/coverage`);
-  return handleResponse<CoverageReport>(res);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: any = await handleResponse<any>(res);
+  return {
+    ...data,
+    date_coverage: mapFieldCoverage(data.date_coverage),
+    place_coverage: mapFieldCoverage(data.place_coverage),
+    publisher_coverage: mapFieldCoverage(data.publisher_coverage),
+    agent_name_coverage: mapFieldCoverage(data.agent_name_coverage),
+    agent_role_coverage: data.agent_role_coverage
+      ? mapFieldCoverage(data.agent_role_coverage)
+      : data.agent_role_coverage,
+  };
 }
 
 export async function fetchIssues(

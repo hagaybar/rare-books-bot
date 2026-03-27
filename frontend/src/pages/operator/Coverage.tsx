@@ -110,10 +110,9 @@ function qualityScore(report: CoverageReport): number {
   let totalWeight = 0;
   for (const key of FIELD_KEYS) {
     const fc = fieldCoverageOf(report, key);
-    const highBand = fc.confidence_distribution.find(
-      (b) => b.min_confidence >= 0.95
-    );
-    const highCount = highBand ? highBand.count : 0;
+    const highCount = fc.confidence_distribution
+      .filter((b) => b.min_confidence >= 0.95)
+      .reduce((sum, b) => sum + b.count, 0);
     const total = fc.total_records;
     if (total > 0) {
       weightedSum += weights[key] * (highCount / total);
@@ -191,16 +190,17 @@ function CoverageBarFull({
         <span className="text-sm text-gray-500">{overallPct}% populated</span>
       </div>
       <div className="w-full h-5 bg-gray-200 rounded-full overflow-hidden flex">
-        {sortedBands.map((band) => {
+        {sortedBands.map((band, index) => {
           const w = pct(band.count, total);
           if (w === 0) return null;
           const bk = bandKey(band.min_confidence, band.max_confidence);
+          const bandLabel = band.label || bk;
           return (
             <div
-              key={band.label}
+              key={`${bandLabel}-${index}`}
               className={`${BAND_BG_CLASSES[bk]} h-full transition-all`}
               style={{ width: `${w}%` }}
-              title={`${band.label}: ${fmt(band.count)} (${w}%)`}
+              title={`${bandLabel}: ${fmt(band.count)} (${w}%)`}
             />
           );
         })}

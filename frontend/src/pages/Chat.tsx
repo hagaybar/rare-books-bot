@@ -76,6 +76,9 @@ export default function Chat() {
       if (!trimmed || loading) return;
 
       setInput('');
+      if (inputRef.current) {
+        inputRef.current.style.height = 'auto';
+      }
       setError(null);
 
       // Add user message

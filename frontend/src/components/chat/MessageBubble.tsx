@@ -142,7 +142,8 @@ export default function MessageBubble({
           </div>
         )}
 
-        {/* Main message text */}
+        {/* Main message text (skip when clarification box already shows it) */}
+        {!message.clarificationNeeded && (
         <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 text-sm text-gray-800 leading-relaxed shadow-sm">
           <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
             <ReactMarkdown>{cleanedContent}</ReactMarkdown>
@@ -173,6 +174,7 @@ export default function MessageBubble({
             </div>
           )}
         </div>
+        )}
 
         {/* Agent narrative (biographical context) */}
         {agentNarrative && (
