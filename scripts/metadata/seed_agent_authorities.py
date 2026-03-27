@@ -375,6 +375,122 @@ def seed_from_enrichment(conn: sqlite3.Connection) -> Dict:
 
 
 # ---------------------------------------------------------------------------
+# Public: seed_from_agents (fallback for agents without authority_uri)
+# ---------------------------------------------------------------------------
+
+
+def seed_from_agents(conn: sqlite3.Connection) -> Dict:
+    """Seed agent authorities from distinct agent_norm values.
+
+    Fallback for agents that lack ``authority_uri``.  Groups by
+    ``(agent_norm, agent_type)`` and creates one authority per group,
+    with the ``agent_norm`` as canonical name and a single primary alias.
+
+    Also adds ``agent_raw`` variants (the original un-normalized forms)
+    as ``variant_spelling`` aliases when they differ from the norm.
+
+    Idempotent: uses INSERT OR IGNORE.
+
+    Parameters
+    ----------
+    conn : sqlite3.Connection
+        Database connection with ``agents``, ``agent_authorities``,
+        and ``agent_aliases`` tables.
+
+    Returns
+    -------
+    dict
+        Statistics with keys: ``authorities_created``, ``primary_aliases``,
+        ``variant_aliases``.
+    """
+    stats = {
+        "authorities_created": 0,
+        "primary_aliases": 0,
+        "variant_aliases": 0,
+    }
+
+    # Get distinct (agent_norm, agent_type) pairs for agents without authority_uri
+    rows = conn.execute(
+        """SELECT agent_norm, agent_type
+           FROM agents
+           WHERE (authority_uri IS NULL OR authority_uri = '')
+             AND agent_norm IS NOT NULL AND agent_norm != ''
+           GROUP BY agent_norm, agent_type"""
+    ).fetchall()
+
+    for row in rows:
+        agent_norm = row["agent_norm"] if isinstance(row, sqlite3.Row) else row[0]
+        agent_type = row["agent_type"] if isinstance(row, sqlite3.Row) else row[1]
+
+        # Fetch distinct agent_raw values for this norm+type combo
+        raw_rows = conn.execute(
+            """SELECT DISTINCT agent_raw FROM agents
+               WHERE agent_norm = ? AND agent_type = ?
+                 AND (authority_uri IS NULL OR authority_uri = '')""",
+            (agent_norm, agent_type),
+        ).fetchall()
+        agent_raws = [
+            (r["agent_raw"] if isinstance(r, sqlite3.Row) else r[0])
+            for r in raw_rows
+        ]
+
+        if not agent_norm or not agent_norm.strip():
+            continue
+
+        canonical_name = agent_norm.strip()
+
+        # Create authority (no external IDs available)
+        auth_id = _insert_authority_or_ignore(
+            conn,
+            canonical_name=canonical_name,
+            agent_type=agent_type,
+            authority_uri=None,
+            confidence=0.4,  # Lower confidence: no external authority
+        )
+
+        if auth_id is None:
+            continue
+
+        stats["authorities_created"] += 1
+
+        # Add agent_norm as primary alias
+        alias = AgentAlias(
+            alias_form=canonical_name,
+            alias_type="primary",
+            script=detect_script(canonical_name),
+            is_primary=True,
+            priority=10,
+        )
+        _insert_alias_or_ignore(conn, auth_id, alias)
+        stats["primary_aliases"] += 1
+
+        # Add distinct agent_raw values as variant_spelling aliases
+        # (when they differ from agent_norm after lowercasing)
+        if agent_raws:
+            seen_lower = {canonical_name.lower()}
+            for raw in agent_raws:
+                if not raw:
+                    continue
+                raw = raw.strip()
+                if not raw or raw.lower() in seen_lower:
+                    continue
+                seen_lower.add(raw.lower())
+                variant_alias = AgentAlias(
+                    alias_form=raw,
+                    alias_type="variant_spelling",
+                    script=detect_script(raw),
+                    is_primary=False,
+                    priority=5,
+                    notes="from agent_raw",
+                )
+                _insert_alias_or_ignore(conn, auth_id, variant_alias)
+                stats["variant_aliases"] += 1
+
+    conn.commit()
+    return stats
+
+
+# ---------------------------------------------------------------------------
 # Public: seed_all
 # ---------------------------------------------------------------------------
 
@@ -402,6 +518,9 @@ def seed_all(conn: sqlite3.Connection) -> Dict:
     # Step 1: Seed from enrichment (authorities + primary + enrichment aliases)
     enrichment_stats = seed_from_enrichment(conn)
 
+    # Step 1b: Seed from agents without authority_uri (fallback)
+    agent_stats = seed_from_agents(conn)
+
     # Step 2: Generate word-reorder aliases for all primary aliases
     word_reorder_count = 0
     primary_aliases = conn.execute(
@@ -421,29 +540,26 @@ def seed_all(conn: sqlite3.Connection) -> Dict:
 
     conn.commit()
 
-    # Step 3: Generate cross-script aliases from enrichment
-    # (already done in seed_from_enrichment, but we count separately
-    #  for the statistics breakdown)
-
     # Build combined statistics
-    total_aliases = (
-        enrichment_stats["primary_aliases"]
-        + enrichment_stats["variant_aliases"]
-        + enrichment_stats["cross_script_aliases"]
-        + word_reorder_count
-    )
+    total_primary = enrichment_stats["primary_aliases"] + agent_stats["primary_aliases"]
+    total_variant = enrichment_stats["variant_aliases"] + agent_stats["variant_aliases"]
+    total_cross = enrichment_stats["cross_script_aliases"]
+    total_aliases = total_primary + total_variant + total_cross + word_reorder_count
 
     return {
-        "authorities_created": enrichment_stats["authorities_created"],
+        "authorities_created": (
+            enrichment_stats["authorities_created"]
+            + agent_stats["authorities_created"]
+        ),
         "aliases_created": total_aliases,
-        "primary_aliases": enrichment_stats["primary_aliases"],
-        "variant_aliases": enrichment_stats["variant_aliases"],
-        "cross_script_aliases": enrichment_stats["cross_script_aliases"],
+        "primary_aliases": total_primary,
+        "variant_aliases": total_variant,
+        "cross_script_aliases": total_cross,
         "word_reorder_aliases": word_reorder_count,
         "aliases_by_type": {
-            "primary": enrichment_stats["primary_aliases"],
-            "variant_spelling": enrichment_stats["variant_aliases"],
-            "cross_script": enrichment_stats["cross_script_aliases"],
+            "primary": total_primary,
+            "variant_spelling": total_variant,
+            "cross_script": total_cross,
             "word_reorder": word_reorder_count,
         },
     }
