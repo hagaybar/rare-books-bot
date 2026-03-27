@@ -114,6 +114,7 @@ async def get_network_map(
                 occupations=occupations,
                 connection_count=r["connection_count"],
                 has_wikipedia=bool(r["has_wikipedia"]),
+                primary_role=r["primary_role"],
             ))
 
         # Get edges between returned agents

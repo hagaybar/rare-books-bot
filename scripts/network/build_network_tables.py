@@ -227,6 +227,7 @@ def build_network_agents(
             birth_year INTEGER,
             death_year INTEGER,
             occupations TEXT,
+            primary_role TEXT,
             has_wikipedia INTEGER DEFAULT 0,
             record_count INTEGER DEFAULT 0,
             connection_count INTEGER DEFAULT 0
@@ -309,6 +310,13 @@ def build_network_agents(
             (agent_norm,),
         ).fetchone()[0]
 
+        # Primary role (most common role for this agent)
+        role_row = conn.execute(
+            "SELECT role_norm, count(*) as cnt FROM agents WHERE agent_norm = ? AND role_norm IS NOT NULL GROUP BY role_norm ORDER BY cnt DESC LIMIT 1",
+            (agent_norm,),
+        ).fetchone()
+        primary_role = role_row[0] if role_row else None
+
         # Connection count (from network_edges)
         connection_count = conn.execute(
             """SELECT count(*) FROM network_edges
@@ -323,13 +331,13 @@ def build_network_agents(
         conn.execute(
             """INSERT OR REPLACE INTO network_agents
                (agent_norm, display_name, place_norm, lat, lon,
-                birth_year, death_year, occupations, has_wikipedia,
-                record_count, connection_count)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                birth_year, death_year, occupations, primary_role,
+                has_wikipedia, record_count, connection_count)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 agent_norm, display_name, place_norm, lat, lon,
-                birth_year, death_year, occupations, has_wikipedia,
-                record_count, connection_count,
+                birth_year, death_year, occupations, primary_role,
+                has_wikipedia, record_count, connection_count,
             ),
         )
         inserted += 1

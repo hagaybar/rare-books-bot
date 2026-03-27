@@ -13,6 +13,7 @@ class MapNode(BaseModel):
     occupations: list[str] = Field(default_factory=list)
     connection_count: int = 0
     has_wikipedia: bool = False
+    primary_role: str | None = None
 
 
 class MapEdge(BaseModel):
