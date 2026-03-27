@@ -21,7 +21,11 @@ export interface MapParams {
 
 export async function fetchMapData(params: MapParams): Promise<MapResponse> {
   const qs = new URLSearchParams();
-  qs.set('connection_types', params.connectionTypes.join(','));
+  if (params.connectionTypes.length === 0) {
+    qs.set('connection_types', 'none');
+  } else {
+    qs.set('connection_types', params.connectionTypes.join(','));
+  }
   if (params.minConfidence !== undefined) qs.set('min_confidence', String(params.minConfidence));
   if (params.century) qs.set('century', String(params.century));
   if (params.place) qs.set('place', params.place);

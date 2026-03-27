@@ -58,11 +58,12 @@ export default function ControlBar() {
         </select>
       </div>
 
-      {/* Connection type toggles */}
-      <div className="flex items-center gap-2">
+      {/* Connection type toggles — tiered */}
+      <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm font-medium text-gray-700">Connections:</span>
-        {(Object.entries(CONNECTION_TYPE_CONFIG) as [ConnectionType, typeof CONNECTION_TYPE_CONFIG[ConnectionType]][]).map(
-          ([type, config]) => {
+        {(Object.entries(CONNECTION_TYPE_CONFIG) as [ConnectionType, typeof CONNECTION_TYPE_CONFIG[ConnectionType]][])
+          .filter(([, config]) => config.tier === 'primary')
+          .map(([type, config]) => {
             const active = connectionTypes.includes(type);
             const [r, g, b] = config.color;
             return (
@@ -79,8 +80,29 @@ export default function ControlBar() {
                 {config.label}
               </button>
             );
-          }
-        )}
+          })}
+        <span className="text-gray-300">|</span>
+        <span className="text-xs text-gray-400">More:</span>
+        {(Object.entries(CONNECTION_TYPE_CONFIG) as [ConnectionType, typeof CONNECTION_TYPE_CONFIG[ConnectionType]][])
+          .filter(([, config]) => config.tier === 'secondary')
+          .map(([type, config]) => {
+            const active = connectionTypes.includes(type);
+            const [r, g, b] = config.color;
+            return (
+              <button
+                key={type}
+                onClick={() => toggleConnectionType(type)}
+                className={`px-1.5 py-0.5 text-xs rounded border transition-colors ${
+                  active
+                    ? 'text-white border-transparent'
+                    : 'text-gray-400 border-gray-200 bg-white hover:bg-gray-50'
+                }`}
+                style={active ? { backgroundColor: `rgb(${r},${g},${b})` } : undefined}
+              >
+                {config.label}
+              </button>
+            );
+          })}
       </div>
 
       {/* Century filter */}

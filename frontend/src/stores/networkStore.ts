@@ -22,7 +22,7 @@ interface NetworkState {
 }
 
 const DEFAULT_STATE = {
-  connectionTypes: ['teacher_student'] as ConnectionType[],
+  connectionTypes: [] as ConnectionType[],
   minConfidence: 0.5,
   century: null as number | null,
   place: null as string | null,
@@ -38,7 +38,6 @@ export const useNetworkStore = create<NetworkState>((set) => ({
   toggleConnectionType: (type) =>
     set((state) => {
       const exists = state.connectionTypes.includes(type);
-      if (exists && state.connectionTypes.length === 1) return state; // keep at least one
       return {
         connectionTypes: exists
           ? state.connectionTypes.filter((t) => t !== type)

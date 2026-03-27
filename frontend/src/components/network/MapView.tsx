@@ -137,12 +137,16 @@ export default function MapView({
         id: 'connections',
         data: edges,
         getSourcePosition: (d) => {
-          const n = nodeMap.get(d.source);
-          return [n?.lon ?? 0, n?.lat ?? 0];
+          return jitteredPositions.get(d.source) ?? (() => {
+            const n = nodeMap.get(d.source);
+            return [n?.lon ?? 0, n?.lat ?? 0] as [number, number];
+          })();
         },
         getTargetPosition: (d) => {
-          const n = nodeMap.get(d.target);
-          return [n?.lon ?? 0, n?.lat ?? 0];
+          return jitteredPositions.get(d.target) ?? (() => {
+            const n = nodeMap.get(d.target);
+            return [n?.lon ?? 0, n?.lat ?? 0] as [number, number];
+          })();
         },
         getSourceColor: (d) => {
           const config = CONNECTION_TYPE_CONFIG[d.type as keyof typeof CONNECTION_TYPE_CONFIG];
@@ -150,11 +154,12 @@ export default function MapView({
           const isHighlighted =
             selectedAgent &&
             (d.source === selectedAgent || d.target === selectedAgent);
-          const opacity = selectedAgent
-            ? isHighlighted
-              ? Math.round(d.confidence * 255)
-              : 25
-            : Math.round(d.confidence * 200);
+          let opacity: number;
+          if (selectedAgent) {
+            opacity = isHighlighted ? Math.round(d.confidence * 255) : 25;
+          } else {
+            opacity = d.confidence >= 0.8 ? 200 : d.confidence >= 0.6 ? 130 : 60;
+          }
           return [...baseColor, opacity] as [number, number, number, number];
         },
         getTargetColor: (d) => {
@@ -163,16 +168,16 @@ export default function MapView({
           const isHighlighted =
             selectedAgent &&
             (d.source === selectedAgent || d.target === selectedAgent);
-          const opacity = selectedAgent
-            ? isHighlighted
-              ? Math.round(d.confidence * 255)
-              : 25
-            : Math.round(d.confidence * 200);
+          let opacity: number;
+          if (selectedAgent) {
+            opacity = isHighlighted ? Math.round(d.confidence * 255) : 25;
+          } else {
+            opacity = d.confidence >= 0.8 ? 200 : d.confidence >= 0.6 ? 130 : 60;
+          }
           return [...baseColor, opacity] as [number, number, number, number];
         },
         getWidth: (d) => {
-          const config = CONNECTION_TYPE_CONFIG[d.type as keyof typeof CONNECTION_TYPE_CONFIG];
-          const base = config?.width ?? 1;
+          const base = d.confidence >= 0.8 ? 3 : d.confidence >= 0.6 ? 2 : 1;
           if (
             selectedAgent &&
             (d.source === selectedAgent || d.target === selectedAgent)
@@ -187,7 +192,7 @@ export default function MapView({
           getWidth: selectedAgent,
         },
       }),
-    [edges, nodeMap, selectedAgent]
+    [edges, nodeMap, selectedAgent, jitteredPositions]
   );
 
   const labelNodes = useMemo(() => {

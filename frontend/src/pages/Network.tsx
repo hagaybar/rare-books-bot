@@ -54,6 +54,14 @@ export default function Network() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Page header */}
+      <div className="px-4 pt-3 pb-1">
+        <h1 className="text-xl font-semibold text-gray-900">Scholarly Network Map</h1>
+        <p className="text-sm text-gray-500">
+          Explore connections between {mapData?.meta.total_agents?.toLocaleString() ?? '...'} historical figures across Europe and the Middle East
+        </p>
+      </div>
+
       <ControlBar />
 
       <div className="flex flex-1 relative overflow-hidden">
@@ -86,7 +94,9 @@ export default function Network() {
       <div className="px-4 py-2 bg-gray-50 border-t text-sm text-gray-500 flex justify-between">
         <span>
           {mapData
-            ? `Showing ${mapData.meta.showing} of ${mapData.meta.total_agents} agents \u00B7 ${mapData.meta.total_edges} connections`
+            ? connectionTypes.length === 0
+              ? `Showing ${mapData.meta.showing} of ${mapData.meta.total_agents} agents \u00B7 Select connection types to see relationships`
+              : `Showing ${mapData.meta.showing} of ${mapData.meta.total_agents} agents \u00B7 ${mapData.meta.total_edges} connections${mapData.meta.category_limited ? ` (Shared Topics limited to top 100 of ${mapData.meta.category_total})` : ''}`
             : 'Loading...'}
         </span>
         {isLoading && <span className="text-blue-500">Updating...</span>}

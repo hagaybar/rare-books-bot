@@ -80,6 +80,8 @@ export interface MapMeta {
   total_agents: number;
   showing: number;
   total_edges: number;
+  category_limited: boolean;
+  category_total: number;
 }
 
 export interface MapResponse {
@@ -117,16 +119,19 @@ export type ConnectionType =
   | 'wikilink'
   | 'llm_extraction'
   | 'category'
-  | 'co_publication';
+  | 'co_publication'
+  | 'same_place_period';
 
 export const CONNECTION_TYPE_CONFIG: Record<ConnectionType, {
   label: string;
   color: [number, number, number];
   width: number;
+  tier: 'primary' | 'secondary';
 }> = {
-  teacher_student: { label: 'Teacher/Student', color: [59, 130, 246], width: 3 },
-  wikilink: { label: 'Wikipedia Link', color: [245, 158, 11], width: 2 },
-  llm_extraction: { label: 'LLM Extracted', color: [139, 92, 246], width: 2 },
-  category: { label: 'Category', color: [156, 163, 175], width: 1 },
-  co_publication: { label: 'Co-Publication', color: [16, 185, 129], width: 2 },
+  teacher_student: { label: 'Teacher & Student', color: [59, 130, 246], width: 3, tier: 'primary' },
+  co_publication: { label: 'Published Together', color: [16, 185, 129], width: 2, tier: 'primary' },
+  same_place_period: { label: 'Active in Same City', color: [6, 182, 212], width: 2, tier: 'primary' },
+  wikilink: { label: 'Mentioned Together', color: [245, 158, 11], width: 2, tier: 'primary' },
+  llm_extraction: { label: 'AI-Discovered', color: [139, 92, 246], width: 2, tier: 'secondary' },
+  category: { label: 'Shared Topics', color: [156, 163, 175], width: 1, tier: 'secondary' },
 };
