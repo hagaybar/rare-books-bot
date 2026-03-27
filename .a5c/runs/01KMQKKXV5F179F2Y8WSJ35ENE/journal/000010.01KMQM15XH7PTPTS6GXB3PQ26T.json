@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T12:24:15.537Z",
+  "data": {
+    "effectId": "01KMQM15X4ZJP0HWZAFVKJGS91",
+    "invocationKey": "network-readability:S000005:readability-agent",
+    "invocationHash": "4de0bcc24491abca34cf80d1b650c8efd67cb2cfb68df2e27dfb6175c8408ee3",
+    "stepId": "S000005",
+    "taskId": "readability-agent",
+    "kind": "agent",
+    "label": "Task 5: Legend component + wire into Network page",
+    "taskDefRef": "tasks/01KMQM15X4ZJP0HWZAFVKJGS91/task.json"
+  },
+  "checksum": "c890295ad889023b3f3534b8de8aaa3b673dfc4cd9258de5ce426ed0ec7f289c"
+}

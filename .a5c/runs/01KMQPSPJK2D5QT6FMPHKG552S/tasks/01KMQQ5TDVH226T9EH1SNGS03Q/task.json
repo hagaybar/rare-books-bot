@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQQ5TDVH226T9EH1SNGS03Q",
+  "taskId": "phase23-agent",
+  "invocationKey": "network-phase23:S000003:phase23-agent",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Task 3: Frontend components — tiered buttons, arc hierarchy, header",
+  "io": {
+    "inputJsonPath": "tasks/01KMQQ5TDVH226T9EH1SNGS03Q/input.json",
+    "outputJsonPath": "tasks/01KMQQ5TDVH226T9EH1SNGS03Q/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-27-network-map-phase2-3.md — Task 3 completely. Implement ALL steps:\n\n1. ControlBar.tsx: Replace connection type buttons with tiered layout. Primary buttons (Teacher & Student, Published Together, Active in Same City, Mentioned Together) are normal-sized. After a | separator and \"More:\" label, show secondary buttons (AI-Discovered, Shared Topics) smaller and muted. Filter CONNECTION_TYPE_CONFIG entries by tier.\n\n2. MapView.tsx: Update arc layer:\n   - getSourcePosition/getTargetPosition: use jitteredPositions lookup (fall back to nodeMap)\n   - getSourceColor/getTargetColor: confidence-based opacity (>=0.8→200, >=0.6→130, <0.6→60) when no selection; keep existing selection highlighting logic\n   - getWidth: confidence-based (>=0.8→3px, >=0.6→2px, <0.6→1px), doubled when selected\n\n3. Network.tsx:\n   - Add page header before ControlBar: \"Scholarly Network Map\" (text-xl font-semibold) + subtitle with agent count\n   - Update status bar: when connectionTypes is empty show \"Select connection types to see relationships\"; when category_limited show the limit note\n   - Import connectionTypes from useNetworkStore\n\nVerify: cd frontend && npx tsc --noEmit && npm run build\nCommit and push.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 3: Frontend components — tiered buttons, arc hierarchy, header",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit && npm run build 2>&1 | tail -5"
+  }
+}

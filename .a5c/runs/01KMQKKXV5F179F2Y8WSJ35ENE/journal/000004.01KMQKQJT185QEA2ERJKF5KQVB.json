@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T12:19:01.057Z",
+  "data": {
+    "effectId": "01KMQKQJSNRAADVD0WFA1Q1HQY",
+    "invocationKey": "network-readability:S000002:readability-agent",
+    "invocationHash": "255f15fd255d8cbc14a3e85892a39a672d2b8680d76c4a3d432edced84172a8d",
+    "stepId": "S000002",
+    "taskId": "readability-agent",
+    "kind": "agent",
+    "label": "Task 2: Frontend types + color palettes + store",
+    "taskDefRef": "tasks/01KMQKQJSNRAADVD0WFA1Q1HQY/task.json"
+  },
+  "checksum": "d40c60f82a45ce1d3174cd6248e85e609e677a3ede3a7529174bb8ea5f043987"
+}

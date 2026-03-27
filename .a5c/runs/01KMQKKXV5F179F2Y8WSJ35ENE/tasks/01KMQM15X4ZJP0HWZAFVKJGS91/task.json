@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQM15X4ZJP0HWZAFVKJGS91",
+  "taskId": "readability-agent",
+  "invocationKey": "network-readability:S000005:readability-agent",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Task 5: Legend component + wire into Network page",
+  "io": {
+    "inputJsonPath": "tasks/01KMQM15X4ZJP0HWZAFVKJGS91/input.json",
+    "outputJsonPath": "tasks/01KMQM15X4ZJP0HWZAFVKJGS91/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-27-network-map-readability.md — Task 5.\n\n1. Create frontend/src/components/network/Legend.tsx — compact overlay in bottom-left of map showing current color palette entries as colored dots with labels, plus \"Size = connections\" note. Use absolute positioning, bg-white/90 with backdrop-blur.\n\n2. In frontend/src/pages/Network.tsx: import Legend and useNetworkStore, get colorBy from store, pass colorBy to MapView as prop, render Legend inside the map container div.\n\nVerify: cd frontend && npx tsc --noEmit && npm run build. Commit and push.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 5: Legend component + wire into Network page",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit && npm run build 2>&1 | tail -5"
+  }
+}

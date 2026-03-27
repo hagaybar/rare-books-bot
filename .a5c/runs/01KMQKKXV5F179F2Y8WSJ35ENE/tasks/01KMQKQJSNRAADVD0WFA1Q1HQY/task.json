@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQKQJSNRAADVD0WFA1Q1HQY",
+  "taskId": "readability-agent",
+  "invocationKey": "network-readability:S000002:readability-agent",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Task 2: Frontend types + color palettes + store",
+  "io": {
+    "inputJsonPath": "tasks/01KMQKQJSNRAADVD0WFA1Q1HQY/input.json",
+    "outputJsonPath": "tasks/01KMQKQJSNRAADVD0WFA1Q1HQY/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-27-network-map-readability.md — Task 2. In frontend/src/types/network.ts: add primary_role to MapNode, add ColorByMode type, add CENTURY_COLORS/ROLE_COLORS/OCCUPATION_COLORS palettes, add getCenturyLabel() and getAgentColor() helper functions. In frontend/src/stores/networkStore.ts: add colorBy state and setColorBy action, default 'century'. Verify: cd frontend && npx tsc --noEmit. Commit.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 2: Frontend types + color palettes + store",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit 2>&1 | tail -3"
+  }
+}

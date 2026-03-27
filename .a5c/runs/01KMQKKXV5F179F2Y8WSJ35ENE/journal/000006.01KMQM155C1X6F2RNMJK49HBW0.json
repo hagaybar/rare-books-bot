@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T12:24:14.764Z",
+  "data": {
+    "effectId": "01KMQM1551CJQ3K8NXJ7MCT7HY",
+    "invocationKey": "network-readability:S000003:readability-agent",
+    "invocationHash": "bb32e2ef1607395641aabcc9c4fe47b9fbec588b6902bbcbbca921af7bea604c",
+    "stepId": "S000003",
+    "taskId": "readability-agent",
+    "kind": "agent",
+    "label": "Task 3: MapView — color, size, jitter, labels",
+    "taskDefRef": "tasks/01KMQM1551CJQ3K8NXJ7MCT7HY/task.json"
+  },
+  "checksum": "239043c0736a107e5af552f03922a02ca080798ee96d46b519e4f25a56bc28ec"
+}

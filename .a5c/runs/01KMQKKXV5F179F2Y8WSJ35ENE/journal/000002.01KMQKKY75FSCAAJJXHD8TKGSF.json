@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T12:17:01.669Z",
+  "data": {
+    "effectId": "01KMQKKY6Q1JQVH50J5AH90JMH",
+    "invocationKey": "network-readability:S000001:readability-agent",
+    "invocationHash": "49efa03ae30eade0f1c486c22641282eadc2384e137716feda02d6bf4758fca0",
+    "stepId": "S000001",
+    "taskId": "readability-agent",
+    "kind": "agent",
+    "label": "Task 1: Add primary_role to backend",
+    "taskDefRef": "tasks/01KMQKKY6Q1JQVH50J5AH90JMH/task.json"
+  },
+  "checksum": "b760e46eedc4483e2f951814246dfb4246369b1c7184941f4ec4fe1b2c69c0bc"
+}

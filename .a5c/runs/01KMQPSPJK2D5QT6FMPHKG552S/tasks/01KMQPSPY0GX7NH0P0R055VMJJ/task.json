@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQPSPY0GX7NH0P0R055VMJJ",
+  "taskId": "phase23-agent",
+  "invocationKey": "network-phase23:S000001:phase23-agent",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Task 1: Backend — same_place_period + API fixes",
+  "io": {
+    "inputJsonPath": "tasks/01KMQPSPY0GX7NH0P0R055VMJJ/input.json",
+    "outputJsonPath": "tasks/01KMQPSPY0GX7NH0P0R055VMJJ/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-27-network-map-phase2-3.md — Task 1 completely. Implement ALL steps:\n1. Add _build_same_place_period_edges() to build_network_tables.py — finds agents sharing the same place_norm with overlapping active periods (>=10 years). Call it in build_network_edges BEFORE indexes.\n2. Rebuild: poetry run python -m scripts.network.build_network_tables data/index/bibliographic.db data/normalization/place_geocodes.json\n3. In app/api/network.py: add 'same_place_period' to VALID_CONNECTION_TYPES. Handle empty connection_types (when types=[] or types=['none'], return nodes with 0 edges — don't let empty IN() cause SQL error). Add category limit: when 'category' is in types, LIMIT 100 for category edges only.\n4. In app/api/network_models.py: add category_limited: bool = False and category_total: int = 0 to MapMeta.\n5. Test all 3 scenarios (empty types, same_place_period, category limited).\nCommit.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 1: Backend — same_place_period + API fixes",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && curl -s 'http://localhost:8000/network/map?connection_types=same_place_period&limit=10' | python3 -c \"import sys,json; d=json.load(sys.stdin); print(f'Edges: {len(d[\"edges\"])}')\""
+  }
+}

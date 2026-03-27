@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T13:12:36.557Z",
+  "data": {
+    "effectId": "01KMQPSPY0GX7NH0P0R055VMJJ",
+    "invocationKey": "network-phase23:S000001:phase23-agent",
+    "invocationHash": "b5db827ff6bc23cf75df9f1e4531e47286b00d8c6e3f4577c98be9c718b89190",
+    "stepId": "S000001",
+    "taskId": "phase23-agent",
+    "kind": "agent",
+    "label": "Task 1: Backend — same_place_period + API fixes",
+    "taskDefRef": "tasks/01KMQPSPY0GX7NH0P0R055VMJJ/task.json"
+  },
+  "checksum": "5e3b7b13a62af3794671445aaa4cbff4804e8f6b7d398cc01c921f15287a346a"
+}

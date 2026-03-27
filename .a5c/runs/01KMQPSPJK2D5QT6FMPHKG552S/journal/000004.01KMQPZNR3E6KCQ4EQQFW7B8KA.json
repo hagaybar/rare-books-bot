@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T13:15:51.939Z",
+  "data": {
+    "effectId": "01KMQPZNQQPZEGNH3YE8HK4Y5V",
+    "invocationKey": "network-phase23:S000002:phase23-agent",
+    "invocationHash": "771452a3404b77ab263708b9e8ef135f46f616496392653510c8e21b756cbb72",
+    "stepId": "S000002",
+    "taskId": "phase23-agent",
+    "kind": "agent",
+    "label": "Task 2: Frontend types + store + API client",
+    "taskDefRef": "tasks/01KMQPZNQQPZEGNH3YE8HK4Y5V/task.json"
+  },
+  "checksum": "c0d02c1588f8d7a0d064aad05c35a7a46f7855f9bbacfd9f56c954b0eea57247"
+}

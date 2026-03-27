@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T12:24:15.149Z",
+  "data": {
+    "effectId": "01KMQM15H11A2R2H3ZCJTGAMS5",
+    "invocationKey": "network-readability:S000004:readability-agent",
+    "invocationHash": "6c50eadf4b07f8f5751a5b144522e2a3597b34065c258ab1e6c53d54064c2987",
+    "stepId": "S000004",
+    "taskId": "readability-agent",
+    "kind": "agent",
+    "label": "Task 4: ControlBar — Color-by dropdown",
+    "taskDefRef": "tasks/01KMQM15H11A2R2H3ZCJTGAMS5/task.json"
+  },
+  "checksum": "7b73388617de4d572c58f21fcb230820a90295d15fe54e491f9f772abc5e553b"
+}

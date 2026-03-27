@@ -1,0 +1,14 @@
+{
+  "runId": "01KMQPSPJK2D5QT6FMPHKG552S",
+  "request": "network-phase23",
+  "processId": "network-phase23",
+  "entrypoint": {
+    "importPath": "../../processes/network-phase23.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/network-phase23.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-27T13:12:36.197Z",
+  "prompt": "Network Map Phase 2+3. YOLO.",
+  "completionProof": "c59fbafb578ebe7bbfde794a744b3f04"
+}

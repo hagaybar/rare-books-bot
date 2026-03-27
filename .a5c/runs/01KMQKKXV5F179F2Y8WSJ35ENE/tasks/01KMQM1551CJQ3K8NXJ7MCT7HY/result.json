@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMQM1551CJQ3K8NXJ7MCT7HY",
+  "taskId": "readability-agent",
+  "invocationKey": "network-readability:S000003:readability-agent",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-27T12:24:14.911Z",
+  "finishedAt": "2026-03-27T12:24:14.911Z",
+  "value": {
+    "status": "completed"
+  }
+}

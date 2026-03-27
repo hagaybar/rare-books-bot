@@ -1,0 +1,14 @@
+{
+  "runId": "01KMQKKXV5F179F2Y8WSJ35ENE",
+  "request": "network-readability",
+  "processId": "network-readability",
+  "entrypoint": {
+    "importPath": "../../processes/network-readability.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/network-readability.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-27T12:17:01.295Z",
+  "prompt": "Network Map readability. YOLO.",
+  "completionProof": "4c0fa6a597c2ef98a8989f580880d71e"
+}

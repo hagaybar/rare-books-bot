@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMQQ5TDVH226T9EH1SNGS03Q",
+  "taskId": "phase23-agent",
+  "invocationKey": "network-phase23:S000003:phase23-agent",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-27T13:19:13.501Z",
+  "finishedAt": "2026-03-27T13:19:13.501Z",
+  "value": {
+    "status": "completed"
+  }
+}

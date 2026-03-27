@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMQM1551CJQ3K8NXJ7MCT7HY",
+  "taskId": "readability-agent",
+  "invocationKey": "network-readability:S000003:readability-agent",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Task 3: MapView — color, size, jitter, labels",
+  "io": {
+    "inputJsonPath": "tasks/01KMQM1551CJQ3K8NXJ7MCT7HY/input.json",
+    "outputJsonPath": "tasks/01KMQM1551CJQ3K8NXJ7MCT7HY/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-27-network-map-readability.md — Task 3. This is the core visual change in frontend/src/components/network/MapView.tsx.\n\n1. Add colorBy to Props and import getAgentColor, ColorByMode from types.\n2. Add jitteredPositions useMemo that spreads agents at the same city in a circle pattern.\n3. Update ScatterplotLayer: getPosition uses jitteredPositions, getRadius uses connection_count (4 + min(count/10, 10)), getFillColor uses getAgentColor(d, colorBy), add getLineColor/getLineWidth for white ring selection, add stroked+lineWidthUnits.\n4. Add TextLayer for labels: top 15 agents by connection_count, getPosition from jitteredPositions, fontSize 12, fontWeight 600, white outline, pixelOffset [10,0].\n5. Add labelLayer to the DeckGL layers array.\n6. Update all updateTriggers to include colorBy.\n\nIMPORTANT: Import TextLayer from '@deck.gl/layers'. Use globalThis.Map for JavaScript Maps (not the react-map-gl Map component).\n\nVerify: cd frontend && npx tsc --noEmit. Commit.",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 3: MapView — color, size, jitter, labels",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit 2>&1 | tail -3"
+  }
+}
