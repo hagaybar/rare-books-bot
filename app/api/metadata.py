@@ -2056,3 +2056,91 @@ async def get_agent_enrichment(agent_norm: str):
         return item
     finally:
         conn.close()
+
+
+@router.get("/enrichment/agent-records", summary="Records for an enriched agent")
+async def get_agent_records(
+    wikidata_id: str = Query("", description="Wikidata ID (e.g., Q319902)"),
+    agent_norm: str = Query("", description="Agent norm (fallback if no wikidata_id)"),
+):
+    """Get bibliographic records where this agent appears."""
+    if not wikidata_id and not agent_norm:
+        raise HTTPException(400, "Provide either wikidata_id or agent_norm")
+    if wikidata_id and agent_norm:
+        raise HTTPException(400, "Provide only one of wikidata_id or agent_norm")
+
+    db_path = _get_db_path()
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    try:
+        # Find all agent_norms for this entity
+        if wikidata_id:
+            norms = [r[0] for r in conn.execute(
+                """SELECT DISTINCT a.agent_norm FROM agents a
+                   JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
+                   WHERE ae.wikidata_id = ?""",
+                (wikidata_id,),
+            ).fetchall()]
+            # Get display name from enrichment
+            label_row = conn.execute(
+                "SELECT label FROM authority_enrichment WHERE wikidata_id = ? LIMIT 1",
+                (wikidata_id,),
+            ).fetchone()
+            display_name = label_row["label"] if label_row else (norms[0] if norms else "Unknown")
+        else:
+            norms = [agent_norm]
+            label_row = conn.execute(
+                """SELECT ae.label FROM authority_enrichment ae
+                   JOIN agents a ON a.authority_uri = ae.authority_uri
+                   WHERE a.agent_norm = ? LIMIT 1""",
+                (agent_norm,),
+            ).fetchone()
+            display_name = label_row["label"] if label_row else agent_norm
+
+        if not norms:
+            raise HTTPException(404, f"Agent not found: {wikidata_id or agent_norm}")
+
+        placeholders = ",".join("?" for _ in norms)
+        rows = conn.execute(
+            f"""SELECT DISTINCT
+                    r.mms_id,
+                    t.value as title,
+                    i.date_raw,
+                    i.date_start,
+                    i.place_norm,
+                    i.publisher_norm,
+                    a.role_raw as role
+                FROM agents a
+                JOIN records r ON a.record_id = r.id
+                LEFT JOIN titles t ON t.record_id = r.id AND t.title_type = 'main'
+                LEFT JOIN imprints i ON i.record_id = r.id
+                WHERE a.agent_norm IN ({placeholders})
+                ORDER BY i.date_start ASC NULLS LAST""",
+            norms,
+        ).fetchall()
+
+        records = []
+        seen_mms = set()
+        for row in rows:
+            mms = row["mms_id"]
+            if mms in seen_mms:
+                continue
+            seen_mms.add(mms)
+            records.append({
+                "mms_id": mms,
+                "title": row["title"],
+                "date_raw": row["date_raw"],
+                "date_start": row["date_start"],
+                "place_norm": row["place_norm"],
+                "publisher_norm": row["publisher_norm"],
+                "role": row["role"],
+                "primo_url": _generate_primo_url(mms) if mms else None,
+            })
+
+        return {
+            "display_name": display_name,
+            "record_count": len(records),
+            "records": records,
+        }
+    finally:
+        conn.close()
