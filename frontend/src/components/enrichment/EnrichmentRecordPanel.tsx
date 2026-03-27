@@ -38,7 +38,7 @@ export default function EnrichmentRecordPanel({
       </div>
 
       {/* Records list */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3">
         {isLoading && <p className="text-sm text-gray-400">Loading records...</p>}
         {error && <p className="text-sm text-red-500">Could not load records.</p>}
         {data?.records.map((rec) => (
