@@ -149,6 +149,11 @@ class CanonicalRecord(BaseModel):
         description="Notes with explicit tags (5XX)"
     )
 
+    physical_description: List[SourcedValue] = Field(
+        default_factory=list,
+        description="Physical description from 300 field ($a extent, $b illustrations, $c dimensions)"
+    )
+
     acquisition: List[SourcedValue] = Field(
         default_factory=list,
         description="Acquisition/provenance events from 541 field"

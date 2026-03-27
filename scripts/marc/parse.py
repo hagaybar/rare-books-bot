@@ -623,6 +623,30 @@ def extract_variant_titles(record: pymarc.Record) -> List[SourcedValue]:
     return variant_titles
 
 
+def extract_physical_description(record: pymarc.Record) -> List[SourcedValue]:
+    """Extract physical description from MARC 300 field."""
+    descriptions = []
+
+    try:
+        fields_300 = record.get_fields('300')
+        for occ, field in enumerate(fields_300):
+            parts = []
+            sources = []
+            for subfield in field.subfields:
+                code = subfield[0]
+                value = subfield[1]
+                if code not in ['6', '8']:
+                    parts.append(value)
+                    sources.append(_make_source_ref('300', occ, code))
+
+            if parts:
+                descriptions.append(SourcedValue(value=' '.join(parts), source=sources))
+    except KeyError:
+        pass
+
+    return descriptions
+
+
 def extract_acquisition(record: pymarc.Record) -> List[SourcedValue]:
     """Extract acquisition/provenance events from MARC 541 field."""
     acquisitions = []
@@ -681,6 +705,7 @@ def parse_marc_record(record: pymarc.Record, source_file: Optional[str] = None) 
     subjects = extract_subjects(record)
     agents = extract_agents(record)
     notes = extract_notes(record)
+    physical_description = extract_physical_description(record)
     acquisition = extract_acquisition(record)
 
     # Build canonical record
@@ -696,6 +721,7 @@ def parse_marc_record(record: pymarc.Record, source_file: Optional[str] = None) 
         subjects=subjects,
         agents=agents,
         notes=notes,
+        physical_description=physical_description,
         acquisition=acquisition
     )
 
