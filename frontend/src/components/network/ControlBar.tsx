@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNetworkStore } from '../../stores/networkStore';
 import { CONNECTION_TYPE_CONFIG } from '../../types/network';
-import type { ConnectionType } from '../../types/network';
+import type { ConnectionType, ColorByMode } from '../../types/network';
 
 function useDebouncedCallback(callback: (val: number) => void, delay: number) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -38,10 +38,26 @@ export default function ControlBar() {
     setCentury,
     role,
     setRole,
+    colorBy,
+    setColorBy,
   } = useNetworkStore();
 
   return (
     <div className="px-4 py-3 bg-white border-b flex flex-wrap items-center gap-4">
+      {/* Color by */}
+      <div className="flex items-center gap-1">
+        <span className="text-sm text-gray-600">Color by:</span>
+        <select
+          value={colorBy}
+          onChange={(e) => setColorBy(e.target.value as ColorByMode)}
+          className="text-sm border border-gray-300 rounded px-2 py-1"
+        >
+          <option value="century">Life Period</option>
+          <option value="role">Role</option>
+          <option value="occupation">Occupation</option>
+        </select>
+      </div>
+
       {/* Connection type toggles */}
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium text-gray-700">Connections:</span>
