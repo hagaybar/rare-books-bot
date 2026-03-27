@@ -22,7 +22,10 @@ export default function EnrichmentRecordPanel({
   });
 
   return (
-    <div className="w-96 bg-white border-l shadow-lg flex flex-col h-full flex-shrink-0">
+    <>
+    {/* Backdrop to close panel on outside click */}
+    <div className="fixed inset-0 z-30" onClick={onClose} />
+    <div className="fixed top-0 right-0 w-96 h-screen bg-white border-l shadow-lg flex flex-col z-40">
       {/* Header */}
       <div className="p-4 border-b flex justify-between items-start">
         <div>
@@ -84,5 +87,6 @@ export default function EnrichmentRecordPanel({
         </a>
       </div>
     </div>
+    </>
   );
 }
