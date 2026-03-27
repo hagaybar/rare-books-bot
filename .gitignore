@@ -111,6 +111,28 @@ data/
 !data/normalization/marc_country_codes.json
 !data/normalization/place_geocodes.json
 
+# Exception: Track production databases (public bibliographic data, expensive to regenerate)
+!data/index/
+!data/index/bibliographic.db
+!data/enrichment/
+!data/enrichment/cache.db
+
+# Exception: Track intermediate pipeline outputs (regenerable but convenient)
+!data/canonical/
+!data/canonical/records.jsonl
+!data/canonical/extraction_report.json
+!data/m2/
+!data/m2/records_m1m2.jsonl
+
+# Exception: Track QA audit artifacts
+!data/qa/
+!data/qa/*.json
+
+# Exception: Track publisher research and aliases
+!data/normalization/publisher_aliases/
+!data/normalization/publisher_aliases/publisher_alias_map.json
+!data/normalization/publisher_research.json
+
 outputs/
 archived/
 

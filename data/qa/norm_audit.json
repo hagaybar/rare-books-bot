@@ -1,0 +1,450 @@
+{
+  "date": {
+    "by_method": [
+      {
+        "method": "year_exact",
+        "confidence": 0.99,
+        "count": 1278
+      },
+      {
+        "method": "year_embedded",
+        "confidence": 0.92,
+        "count": 365
+      },
+      {
+        "method": "hebrew_gematria_bracketed",
+        "confidence": 0.92,
+        "count": 336
+      },
+      {
+        "method": "hebrew_gematria",
+        "confidence": 0.9,
+        "count": 219
+      },
+      {
+        "method": "year_bracketed_gregorian",
+        "confidence": 0.9,
+        "count": 167
+      },
+      {
+        "method": "year_bracketed",
+        "confidence": 0.95,
+        "count": 119
+      },
+      {
+        "method": "year_circa_pm5",
+        "confidence": 0.9,
+        "count": 79
+      },
+      {
+        "method": "year_range",
+        "confidence": 0.9,
+        "count": 78
+      },
+      {
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 61
+      },
+      {
+        "method": "year_embedded_range",
+        "confidence": 0.9,
+        "count": 41
+      },
+      {
+        "method": "year_bracketed_range",
+        "confidence": 0.9,
+        "count": 22
+      }
+    ],
+    "low_confidence": [
+      {
+        "raw": "[17--?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 6
+      },
+      {
+        "raw": "[19--?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 5
+      },
+      {
+        "raw": "163-?",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 3
+      },
+      {
+        "raw": "[192-?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 2
+      },
+      {
+        "raw": "[19--]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 2
+      },
+      {
+        "raw": "[18--?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 2
+      },
+      {
+        "raw": "[177-?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 2
+      },
+      {
+        "raw": "ש-",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "לא ח'ס'ר'ת' דבר [תרס\"ח-תרע\"א]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "{193-?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "an. d[omi]ni M.D. XXVJ. Die. j. me[n]sis octobris.",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[והוא י'ש'פ'ו'ט' תבל' בצדק? תל\"ה?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[הסכ' שע\"ה]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[date unknown]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[?-192]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[?-189]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[197-?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[196-]-",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[19 ?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[186-?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[178-]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[177?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[176?]-",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[16  ?]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "[-- ١٧]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "MDLXI.",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "MDCCXLVIII.",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "M. DCCXXXI.",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "By Pieter de Hondt,",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "Anno MDCLXXXIII.",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "Anno M. DC. LXXIX.",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "AC. M D C LXXX.[-M D C LXXXIII.]",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "A. MDCCXIV.",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "198-",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "193-",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "18O7",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "183 -183",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "182 -190",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "181 -183",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "180 -181",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "179-",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "179 -181",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "178 -",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "176 -",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "17 ?",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      },
+      {
+        "raw": "17 -",
+        "start": null,
+        "end": null,
+        "method": "unparsed",
+        "confidence": 0.0,
+        "count": 1
+      }
+    ],
+    "low_count": 61,
+    "high_count": 2704
+  },
+  "place": {
+    "low_confidence": [],
+    "low_count": 0,
+    "high_count": 2754,
+    "unmapped": []
+  },
+  "publisher": {
+    "low_confidence": [],
+    "low_count": 0,
+    "high_count": 2740
+  },
+  "total_imprints": 2773,
+  "summary": {
+    "date_coverage_pct": 97.5,
+    "place_coverage_pct": 99.3,
+    "publisher_coverage_pct": 98.8
+  }
+}

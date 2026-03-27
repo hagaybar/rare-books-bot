@@ -1,0 +1,468 @@
+{
+  "new_patterns": [
+    {
+      "raw": "[17--?]",
+      "pattern": "century_partial",
+      "proposed_start": 1700,
+      "proposed_end": 1799,
+      "confidence": 0.8,
+      "method": "century_partial",
+      "reason": "Century-level date [17--?] means 1700s",
+      "affected_records": 6
+    },
+    {
+      "raw": "[19--?]",
+      "pattern": "century_partial",
+      "proposed_start": 1900,
+      "proposed_end": 1999,
+      "confidence": 0.8,
+      "method": "century_partial",
+      "reason": "Century-level date [19--?]/[19--] means 1900s",
+      "affected_records": 5
+    },
+    {
+      "raw": "163-?",
+      "pattern": "decade_partial",
+      "proposed_start": 1630,
+      "proposed_end": 1639,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date 163-? means 1630s",
+      "affected_records": 3
+    },
+    {
+      "raw": "[192-?]",
+      "pattern": "decade_partial",
+      "proposed_start": 1920,
+      "proposed_end": 1929,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date [192-?] means 1920s",
+      "affected_records": 2
+    },
+    {
+      "raw": "[19--]",
+      "pattern": "century_partial",
+      "proposed_start": 1900,
+      "proposed_end": 1999,
+      "confidence": 0.8,
+      "method": "century_partial",
+      "reason": "Century-level date [19--?]/[19--] means 1900s",
+      "affected_records": 2
+    },
+    {
+      "raw": "[18--?]",
+      "pattern": "century_partial",
+      "proposed_start": 1800,
+      "proposed_end": 1899,
+      "confidence": 0.8,
+      "method": "century_partial",
+      "reason": "Century-level date [18--?] means 1800s",
+      "affected_records": 2
+    },
+    {
+      "raw": "[177-?]",
+      "pattern": "decade_partial",
+      "proposed_start": 1770,
+      "proposed_end": 1779,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date [177-?] means 1770s",
+      "affected_records": 2
+    },
+    {
+      "raw": "{193-?]",
+      "pattern": "decade_partial",
+      "proposed_start": 1930,
+      "proposed_end": 1939,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date {193-?] means 1930s (typo: curly brace instead of bracket)",
+      "affected_records": 1
+    },
+    {
+      "raw": "[197-?]",
+      "pattern": "decade_partial",
+      "proposed_start": 1970,
+      "proposed_end": 1979,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date [197-?] means 1970s",
+      "affected_records": 1
+    },
+    {
+      "raw": "[196-]-",
+      "pattern": "decade_partial",
+      "proposed_start": 1960,
+      "proposed_end": 1969,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date [196-]- means 1960s (open-ended)",
+      "affected_records": 1
+    },
+    {
+      "raw": "[19 ?]",
+      "pattern": "century_partial",
+      "proposed_start": 1900,
+      "proposed_end": 1999,
+      "confidence": 0.8,
+      "method": "century_partial",
+      "reason": "Century-level date [19 ?] means 1900s (space variant)",
+      "affected_records": 1
+    },
+    {
+      "raw": "[186-?]",
+      "pattern": "decade_partial",
+      "proposed_start": 1860,
+      "proposed_end": 1869,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date [186-?] means 1860s",
+      "affected_records": 1
+    },
+    {
+      "raw": "[178-]",
+      "pattern": "decade_partial",
+      "proposed_start": 1780,
+      "proposed_end": 1789,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date [178-] means 1780s",
+      "affected_records": 1
+    },
+    {
+      "raw": "[177?]",
+      "pattern": "decade_partial",
+      "proposed_start": 1770,
+      "proposed_end": 1779,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date [177?] means 1770s",
+      "affected_records": 1
+    },
+    {
+      "raw": "[176?]-",
+      "pattern": "decade_partial",
+      "proposed_start": 1760,
+      "proposed_end": 1769,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date [176?]- means 1760s (open-ended multi-vol)",
+      "affected_records": 1
+    },
+    {
+      "raw": "[16  ?]",
+      "pattern": "century_partial",
+      "proposed_start": 1600,
+      "proposed_end": 1699,
+      "confidence": 0.8,
+      "method": "century_partial",
+      "reason": "Century-level date [16  ?] means 1600s (space variant)",
+      "affected_records": 1
+    },
+    {
+      "raw": "198-",
+      "pattern": "decade_partial",
+      "proposed_start": 1980,
+      "proposed_end": 1989,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date 198- means 1980s",
+      "affected_records": 1
+    },
+    {
+      "raw": "193-",
+      "pattern": "decade_partial",
+      "proposed_start": 1930,
+      "proposed_end": 1939,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date 193- means 1930s",
+      "affected_records": 1
+    },
+    {
+      "raw": "179-",
+      "pattern": "decade_partial",
+      "proposed_start": 1790,
+      "proposed_end": 1799,
+      "confidence": 0.85,
+      "method": "decade_partial",
+      "reason": "Decade-level date 179- means 1790s",
+      "affected_records": 1
+    },
+    {
+      "raw": "178 -",
+      "pattern": "decade_partial",
+      "proposed_start": 1780,
+      "proposed_end": 1789,
+      "confidence": 0.8,
+      "method": "decade_partial_open",
+      "reason": "Open-ended decade 178_- means 1780s (start of multi-vol)",
+      "affected_records": 1
+    },
+    {
+      "raw": "176 -",
+      "pattern": "decade_partial",
+      "proposed_start": 1760,
+      "proposed_end": 1769,
+      "confidence": 0.8,
+      "method": "decade_partial_open",
+      "reason": "Open-ended decade 176_- means 1760s (start of multi-vol)",
+      "affected_records": 1
+    },
+    {
+      "raw": "17 ?",
+      "pattern": "century_partial",
+      "proposed_start": 1700,
+      "proposed_end": 1799,
+      "confidence": 0.8,
+      "method": "century_partial",
+      "reason": "Century-level date 17 ? means 1700s (unbracketed variant)",
+      "affected_records": 1
+    },
+    {
+      "raw": "17 -",
+      "pattern": "century_partial",
+      "proposed_start": 1700,
+      "proposed_end": 1799,
+      "confidence": 0.8,
+      "method": "century_partial",
+      "reason": "Century-level date 17 - means 1700s (open-ended variant)",
+      "affected_records": 1
+    }
+  ],
+  "direct_fixes": [
+    {
+      "raw": "לא ח'ס'ר'ת' דבר [תרס\"ח-תרע\"א]",
+      "proposed_start": 1908,
+      "proposed_end": 1911,
+      "confidence": 0.9,
+      "method": "hebrew_chronogram",
+      "reason": "תרס\"ח-תרע\"א = 5668-5671 = 1908-1911 (Hebrew calendar range)",
+      "category": "hebrew_unparsed",
+      "affected_records": 1
+    },
+    {
+      "raw": "an. d[omi]ni M.D. XXVJ. Die. j. me[n]sis octobris.",
+      "proposed_start": 1526,
+      "proposed_end": 1526,
+      "confidence": 0.9,
+      "method": "roman_numeral_embedded",
+      "reason": "Anno Domini M.D.XXVJ = 1526 (October 1st)",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "[והוא י'ש'פ'ו'ט' תבל' בצדק? תל\"ה?]",
+      "proposed_start": 1675,
+      "proposed_end": 1675,
+      "confidence": 0.85,
+      "method": "hebrew_chronogram",
+      "reason": "תל\"ה = 5435 = 1675 (Hebrew chronogram with question mark)",
+      "category": "hebrew_unparsed",
+      "affected_records": 1
+    },
+    {
+      "raw": "[הסכ' שע\"ה]",
+      "proposed_start": 1615,
+      "proposed_end": 1615,
+      "confidence": 0.85,
+      "method": "hebrew_date_abbrev",
+      "reason": "שע\"ה = 5375 = 1615 (Haskama date abbreviation)",
+      "category": "hebrew_unparsed",
+      "affected_records": 1
+    },
+    {
+      "raw": "[?-192]",
+      "proposed_start": null,
+      "proposed_end": 1929,
+      "confidence": 0.8,
+      "method": "open_start_range",
+      "reason": "[?-192] means unknown start, end in 1920s decade",
+      "category": "complex_range",
+      "affected_records": 1
+    },
+    {
+      "raw": "[?-189]",
+      "proposed_start": null,
+      "proposed_end": 1899,
+      "confidence": 0.8,
+      "method": "open_start_range",
+      "reason": "[?-189] means unknown start, end in 1890s decade",
+      "category": "complex_range",
+      "affected_records": 1
+    },
+    {
+      "raw": "[-- ١٧]",
+      "proposed_start": 1700,
+      "proposed_end": 1799,
+      "confidence": 0.75,
+      "method": "arabic_numerals",
+      "reason": "١٧ = 17 in Arabic-Indic numerals, means 1700s century",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "MDLXI.",
+      "proposed_start": 1561,
+      "proposed_end": 1561,
+      "confidence": 0.95,
+      "method": "roman_numeral",
+      "reason": "MDLXI = 1561",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "MDCCXLVIII.",
+      "proposed_start": 1748,
+      "proposed_end": 1748,
+      "confidence": 0.95,
+      "method": "roman_numeral",
+      "reason": "MDCCXLVIII = 1748",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "M. DCCXXXI.",
+      "proposed_start": 1731,
+      "proposed_end": 1731,
+      "confidence": 0.95,
+      "method": "roman_numeral",
+      "reason": "M.DCCXXXI = 1731",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "Anno MDCLXXXIII.",
+      "proposed_start": 1683,
+      "proposed_end": 1683,
+      "confidence": 0.95,
+      "method": "roman_numeral",
+      "reason": "Anno MDCLXXXIII = 1683",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "Anno M. DC. LXXIX.",
+      "proposed_start": 1679,
+      "proposed_end": 1679,
+      "confidence": 0.95,
+      "method": "roman_numeral",
+      "reason": "Anno M.DC.LXXIX = 1679",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "AC. M D C LXXX.[-M D C LXXXIII.]",
+      "proposed_start": 1680,
+      "proposed_end": 1683,
+      "confidence": 0.9,
+      "method": "roman_numeral_range",
+      "reason": "AC. MDCLXXX-MDCLXXXIII = 1680-1683",
+      "category": "complex_range",
+      "affected_records": 1
+    },
+    {
+      "raw": "A. MDCCXIV.",
+      "proposed_start": 1714,
+      "proposed_end": 1714,
+      "confidence": 0.95,
+      "method": "roman_numeral",
+      "reason": "A. MDCCXIV = 1714",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "18O7",
+      "proposed_start": 1807,
+      "proposed_end": 1807,
+      "confidence": 0.95,
+      "method": "ocr_typo_fix",
+      "reason": "18O7 is OCR error for 1807 (letter O instead of digit 0)",
+      "category": "embedded_noise",
+      "affected_records": 1
+    },
+    {
+      "raw": "183 -183",
+      "proposed_start": 1830,
+      "proposed_end": 1839,
+      "confidence": 0.85,
+      "method": "truncated_range",
+      "reason": "Truncated range 183_-183_ means 1830-1839",
+      "category": "complex_range",
+      "affected_records": 1
+    },
+    {
+      "raw": "182 -190",
+      "proposed_start": 1820,
+      "proposed_end": 1909,
+      "confidence": 0.8,
+      "method": "truncated_range",
+      "reason": "Truncated range 182_-190_ means 1820-1909",
+      "category": "complex_range",
+      "affected_records": 1
+    },
+    {
+      "raw": "181 -183",
+      "proposed_start": 1810,
+      "proposed_end": 1839,
+      "confidence": 0.85,
+      "method": "truncated_range",
+      "reason": "Truncated range 181_-183_ means 1810-1839",
+      "category": "complex_range",
+      "affected_records": 1
+    },
+    {
+      "raw": "180 -181",
+      "proposed_start": 1800,
+      "proposed_end": 1819,
+      "confidence": 0.85,
+      "method": "truncated_range",
+      "reason": "Truncated range 180_-181_ means 1800-1819",
+      "category": "complex_range",
+      "affected_records": 1
+    },
+    {
+      "raw": "179 -181",
+      "proposed_start": 1790,
+      "proposed_end": 1819,
+      "confidence": 0.85,
+      "method": "truncated_range",
+      "reason": "Truncated range 179_-181_ means 1790-1819",
+      "category": "complex_range",
+      "affected_records": 1
+    }
+  ],
+  "already_correct": [],
+  "unfixable": [
+    {
+      "raw": "ש-",
+      "reason": "Truncated Hebrew date fragment, insufficient data",
+      "category": "hebrew_unparsed",
+      "affected_records": 1
+    },
+    {
+      "raw": "[date unknown]",
+      "reason": "Explicitly marked as unknown date, no information available",
+      "category": "no_date",
+      "affected_records": 1
+    },
+    {
+      "raw": "By Pieter de Hondt,",
+      "reason": "Publisher name incorrectly placed in date field, not a date",
+      "category": "no_date",
+      "affected_records": 1
+    }
+  ],
+  "summary": {
+    "total_gaps": 61,
+    "fixable": 58,
+    "new_patterns": 23,
+    "new_patterns_records": 38,
+    "direct_fixes": 20,
+    "direct_fixes_records": 20,
+    "already_correct": 0,
+    "unfixable": 3,
+    "unfixable_records": 3
+  }
+}
