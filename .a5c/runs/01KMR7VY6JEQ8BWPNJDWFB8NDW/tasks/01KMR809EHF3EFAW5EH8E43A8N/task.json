@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMR809EHF3EFAW5EH8E43A8N",
+  "taskId": "netfix-agent",
+  "invocationKey": "network-data-fix:S000002:netfix-agent",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Write network methodology report",
+  "io": {
+    "inputJsonPath": "tasks/01KMR809EHF3EFAW5EH8E43A8N/input.json",
+    "outputJsonPath": "tasks/01KMR809EHF3EFAW5EH8E43A8N/output.json"
+  },
+  "inputs": {
+    "description": "Write a detailed methodology report about how the Scholarly Network Map works AFTER the fixes.\n\nRead these files to understand the full pipeline:\n1. scripts/network/build_network_tables.py — how edges and agents are built\n2. app/api/network.py — how the API serves map data\n3. frontend/src/components/network/MapView.tsx — how the map renders\n4. frontend/src/components/network/ControlBar.tsx — how filters work\n5. frontend/src/pages/Network.tsx — page structure\n6. frontend/src/types/network.ts — connection type config\n\nAlso check the actual data:\npython3 -c \"\nimport sqlite3\nc = sqlite3.connect('data/index/bibliographic.db')\nprint('=== Edge types ===')\nfor r in c.execute('SELECT connection_type, count(*), avg(confidence) FROM network_edges GROUP BY connection_type ORDER BY count(*) DESC').fetchall():\n    print(f'  {r[0]}: {r[1]} (avg conf {r[2]:.2f})')\nprint(f'Total edges: {c.execute(\"SELECT count(*) FROM network_edges\").fetchone()[0]}')\nprint(f'Total agents: {c.execute(\"SELECT count(*) FROM network_agents\").fetchone()[0]}')\nprint(f'Agents with connections: {c.execute(\"SELECT count(*) FROM network_agents WHERE connection_count > 0\").fetchone()[0]}')\n\"\n\nWrite the report to: reports/network-methodology.md\n\nThe report MUST cover these sections (short, specific, concrete):\n\n1. **Network Construction** — What is the process of building the network? What decisions are made, and in what order? What determines whether a connection is created or not?\n\n2. **Connection Types** — What are the 6 types, how is each computed, what data source does each use, what confidence level, what does each actually mean?\n\n3. **Agent Deduplication** — How are Hebrew/Latin variants merged? What is the canonical form? How are edges normalized?\n\n4. **Roles** — How do agent roles factor into the network logic? Does a role affect connections or just appearance?\n\n5. **Time Spans** — How is time handled? Does the network change over time, or is time just a visual attribute? What drives time-based behavior?\n\n6. **Rendering Logic** — How does the network get placed on the map? What determines position, visibility, color, size? How does filtering work?\n\n7. **Data Quality Measures** — What cleanup steps exist? Orphan removal, self-reference deletion, deduplication, confidence thresholds?\n\n8. **Ambiguities and Limitations** — Where is the logic fragile? What could produce unexpected results? What assumptions are made?\n\nBe specific — quote actual SQL queries, function names, line numbers. Report what ACTUALLY HAPPENS, not what should happen.\n\nCommit: git add reports/network-methodology.md && git commit -m \"docs: add network methodology report\" && git push origin main",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Write network methodology report",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && test -f reports/network-methodology.md && wc -l reports/network-methodology.md"
+  }
+}

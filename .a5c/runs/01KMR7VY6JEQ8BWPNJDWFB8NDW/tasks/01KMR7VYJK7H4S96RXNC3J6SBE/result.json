@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMR7VYJK7H4S96RXNC3J6SBE",
+  "taskId": "netfix-agent",
+  "invocationKey": "network-data-fix:S000001:netfix-agent",
+  "status": "ok",
+  "result": {
+    "agents": 2714,
+    "edges": 28945,
+    "status": "completed"
+  },
+  "startedAt": "2026-03-27T18:13:17.657Z",
+  "finishedAt": "2026-03-27T18:13:17.657Z",
+  "value": {
+    "agents": 2714,
+    "edges": 28945,
+    "status": "completed"
+  }
+}

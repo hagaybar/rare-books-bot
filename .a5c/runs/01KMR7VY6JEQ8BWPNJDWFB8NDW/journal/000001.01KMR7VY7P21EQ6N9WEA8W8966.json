@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-27T18:10:55.350Z",
+  "data": {
+    "runId": "01KMR7VY6JEQ8BWPNJDWFB8NDW",
+    "processId": "network-data-fix",
+    "entrypoint": {
+      "importPath": "../../processes/network-data-fix.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Fix 4 network data issues + write methodology report"
+  },
+  "checksum": "23f4f6274bd116539221f94479d9c0048b86ad433d59f399a8926270fa8a9fdb"
+}

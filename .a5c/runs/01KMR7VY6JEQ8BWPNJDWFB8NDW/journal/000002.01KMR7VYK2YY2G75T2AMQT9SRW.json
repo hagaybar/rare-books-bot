@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T18:10:55.714Z",
+  "data": {
+    "effectId": "01KMR7VYJK7H4S96RXNC3J6SBE",
+    "invocationKey": "network-data-fix:S000001:netfix-agent",
+    "invocationHash": "a394fac42f094ebe62aabe19f453795d0ad2f4c9c2868a5c751964c4eb9d333c",
+    "stepId": "S000001",
+    "taskId": "netfix-agent",
+    "kind": "agent",
+    "label": "Fix all 4 data quality issues in build_network_tables.py",
+    "taskDefRef": "tasks/01KMR7VYJK7H4S96RXNC3J6SBE/task.json"
+  },
+  "checksum": "bc63c7f917897b7fae5b318d28ee5978d73c16a23ff306b3562132991ebefe0c"
+}

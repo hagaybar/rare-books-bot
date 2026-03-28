@@ -1,0 +1,14 @@
+{
+  "runId": "01KMR7VY6JEQ8BWPNJDWFB8NDW",
+  "request": "network-data-fix",
+  "processId": "network-data-fix",
+  "entrypoint": {
+    "importPath": "../../processes/network-data-fix.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/network-data-fix.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-27T18:10:55.336Z",
+  "prompt": "Fix 4 network data issues + write methodology report",
+  "completionProof": "20172f2d38894c77fb96affc9a7ba64b"
+}

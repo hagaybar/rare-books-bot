@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-27T18:13:17.917Z",
+  "data": {
+    "effectId": "01KMR809EHF3EFAW5EH8E43A8N",
+    "invocationKey": "network-data-fix:S000002:netfix-agent",
+    "invocationHash": "753afad997476d0b1ed4d479f664049dd6d232b383b760954494cea27fe2be8c",
+    "stepId": "S000002",
+    "taskId": "netfix-agent",
+    "kind": "agent",
+    "label": "Write network methodology report",
+    "taskDefRef": "tasks/01KMR809EHF3EFAW5EH8E43A8N/task.json"
+  },
+  "checksum": "031fc885035cc9522e03d2cb7348b616991c6fc52cefff9eb062f4b3dc9abed0"
+}
