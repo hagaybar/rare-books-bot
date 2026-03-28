@@ -13,7 +13,9 @@ import DatabaseExplorer from './pages/diagnostics/DatabaseExplorer';
 import Publishers from './pages/admin/Publishers';
 import Health from './pages/admin/Health';
 import Enrichment from './pages/admin/Enrichment';
+import Users from './pages/admin/Users';
 import Network from './pages/Network';
+import { Toaster } from 'sonner';
 import { useAuthStore } from './stores/authStore';
 
 const queryClient = new QueryClient({
@@ -39,6 +41,7 @@ function RootRedirect() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <Toaster position="top-right" richColors />
       <BrowserRouter>
         <Routes>
           {/* Login page — outside Layout (no sidebar) */}
@@ -64,6 +67,7 @@ function App() {
             <Route path="/diagnostics/db" element={<DatabaseExplorer />} />
             <Route path="/admin/publishers" element={<Publishers />} />
             <Route path="/admin/enrichment" element={<Enrichment />} />
+            <Route path="/admin/users" element={<Users />} />
             <Route path="/admin/health" element={<Health />} />
             {/* Legacy redirects */}
             <Route

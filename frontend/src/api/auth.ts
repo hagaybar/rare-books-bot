@@ -58,3 +58,64 @@ export async function logoutApi(): Promise<void> {
     credentials: 'include',
   });
 }
+
+// ---------------------------------------------------------------------------
+// User management (admin only)
+// ---------------------------------------------------------------------------
+
+export interface UserListItem {
+  id: number;
+  username: string;
+  role: string;
+  is_active: boolean;
+  last_login: string | null;
+  tokens_used_this_month: number;
+  token_limit: number;
+}
+
+export async function fetchUsers(): Promise<UserListItem[]> {
+  const res = await fetch('/auth/users', { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to fetch users');
+  return res.json();
+}
+
+export async function createUserApi(data: {
+  username: string;
+  password: string;
+  role: string;
+  token_limit?: number;
+}): Promise<unknown> {
+  const res = await fetch('/auth/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Failed' }));
+    throw new Error(err.detail || 'Failed to create user');
+  }
+  return res.json();
+}
+
+export async function updateUserApi(
+  userId: number,
+  data: {
+    role?: string;
+    is_active?: boolean;
+    token_limit?: number;
+    new_password?: string;
+  },
+): Promise<unknown> {
+  const res = await fetch(`/auth/users/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Failed' }));
+    throw new Error(err.detail || 'Failed to update user');
+  }
+  return res.json();
+}
