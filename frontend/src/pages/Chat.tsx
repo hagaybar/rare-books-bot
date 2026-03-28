@@ -5,7 +5,8 @@
  * - Scrollable message history
  * - Fixed-bottom input bar
  * - Welcome state with example query chips
- * - Loading state with spinner
+ * - WebSocket streaming with thinking mode and progressive text
+ * - HTTP POST fallback when WebSocket is unavailable
  * - Phase indicator and confidence display
  * - Follow-up suggestion chips
  * - Clarification prompts
@@ -13,7 +14,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import type { ChatMessage } from '../types/chat';
+import type { ChatMessage, ChatResponse, StreamingState } from '../types/chat';
 import { sendChatMessage, fetchPrimoUrls } from '../api/chat';
 import { authenticatedFetch } from '../api/auth';
 import { useAppStore } from '../stores/appStore';
@@ -43,6 +44,17 @@ function nextId(): string {
   return `msg-${Date.now()}-${messageIdCounter}`;
 }
 
+/**
+ * Build the WebSocket URL that works with the Vite dev proxy.
+ * The Vite config proxies /ws -> ws://localhost:8000, so we build
+ * a relative ws:// URL from the current page origin.
+ */
+function getWsUrl(): string {
+  const loc = window.location;
+  const protocol = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${loc.host}/ws/chat`;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -61,6 +73,10 @@ export default function Chat() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  /** Ref to the WebSocket for the current streaming request. */
+  const wsRef = useRef<WebSocket | null>(null);
+  /** ID of the assistant message being streamed. */
+  const streamingMsgIdRef = useRef<string | null>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -70,6 +86,16 @@ export default function Chat() {
   // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
+  }, []);
+
+  // Clean up WebSocket on unmount
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
   }, []);
 
   // Restore session from URL ?session=XYZ parameter
@@ -110,7 +136,298 @@ export default function Chat() {
   }, [searchParams, restoredSessionId, setSessionId]);
 
   // ------------------------------------------------------------------
-  // Send message handler
+  // Update the streaming assistant message in-place
+  // ------------------------------------------------------------------
+
+  const updateStreamingMessage = useCallback(
+    (updater: (prev: ChatMessage) => ChatMessage) => {
+      const msgId = streamingMsgIdRef.current;
+      if (!msgId) return;
+      setMessages((prev) =>
+        prev.map((m) => (m.id === msgId ? updater(m) : m)),
+      );
+    },
+    [],
+  );
+
+  // ------------------------------------------------------------------
+  // WebSocket streaming send
+  // ------------------------------------------------------------------
+
+  const sendViaWebSocket = useCallback(
+    (text: string): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        let ws: WebSocket;
+        try {
+          ws = new WebSocket(getWsUrl());
+        } catch {
+          reject(new Error('WebSocket not supported'));
+          return;
+        }
+        wsRef.current = ws;
+
+        // Create the placeholder assistant message in thinking state
+        const assistantMsgId = nextId();
+        streamingMsgIdRef.current = assistantMsgId;
+
+        const assistantMsg: ChatMessage = {
+          id: assistantMsgId,
+          role: 'assistant',
+          content: '',
+          candidateSet: null,
+          suggestedFollowups: [],
+          clarificationNeeded: null,
+          phase: null,
+          confidence: null,
+          metadata: {},
+          timestamp: new Date(),
+          streamingState: 'thinking' as StreamingState,
+          thinkingSteps: [],
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+
+        const connectionTimeout = setTimeout(() => {
+          if (ws.readyState === WebSocket.CONNECTING) {
+            ws.close();
+            reject(new Error('WebSocket connection timeout'));
+          }
+        }, 5000);
+
+        ws.onopen = () => {
+          clearTimeout(connectionTimeout);
+          ws.send(JSON.stringify({
+            message: text,
+            session_id: sessionId,
+          }));
+        };
+
+        ws.onmessage = (event) => {
+          let data: Record<string, unknown>;
+          try {
+            data = JSON.parse(event.data as string) as Record<string, unknown>;
+          } catch {
+            return;
+          }
+
+          const msgType = data.type as string;
+
+          switch (msgType) {
+            case 'session_created': {
+              const newSessionId = data.session_id as string;
+              if (newSessionId) {
+                setSessionId(newSessionId);
+              }
+              break;
+            }
+
+            case 'thinking': {
+              const thinkingText = data.text as string ?? data.message as string ?? '';
+              if (thinkingText) {
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'thinking',
+                  thinkingSteps: [...(prev.thinkingSteps ?? []), thinkingText],
+                }));
+              }
+              break;
+            }
+
+            case 'progress': {
+              // Legacy progress messages -- treat as thinking steps
+              const progressText = data.message as string ?? '';
+              if (progressText) {
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'thinking',
+                  thinkingSteps: [...(prev.thinkingSteps ?? []), progressText],
+                }));
+              }
+              break;
+            }
+
+            case 'stream_start': {
+              updateStreamingMessage((prev) => ({
+                ...prev,
+                streamingState: 'streaming',
+              }));
+              break;
+            }
+
+            case 'stream_chunk': {
+              const chunkText = data.text as string ?? '';
+              if (chunkText) {
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'streaming',
+                  content: prev.content + chunkText,
+                }));
+              }
+              break;
+            }
+
+            case 'batch': {
+              // Legacy batch messages from the existing WS protocol
+              // Treat as a progress step
+              const batchNum = data.batch_num as number ?? 0;
+              const totalBatches = data.total_batches as number ?? 0;
+              if (batchNum && totalBatches) {
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'thinking',
+                  thinkingSteps: [
+                    ...(prev.thinkingSteps ?? []),
+                    `Loading results (batch ${String(batchNum)}/${String(totalBatches)})...`,
+                  ],
+                }));
+              }
+              break;
+            }
+
+            case 'complete': {
+              const resp = data.response as ChatResponse | undefined;
+              if (resp) {
+                // Persist session ID from the complete response
+                if (resp.session_id && resp.session_id !== sessionId) {
+                  setSessionId(resp.session_id);
+                }
+
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'complete',
+                  // Use the complete response content if we didn't get stream chunks
+                  content: prev.content || resp.message,
+                  candidateSet: resp.candidate_set,
+                  suggestedFollowups: resp.suggested_followups,
+                  clarificationNeeded: resp.clarification_needed,
+                  phase: resp.phase,
+                  confidence: resp.confidence,
+                  metadata: resp.metadata,
+                }));
+
+                // Batch-resolve Primo URLs for any new candidates
+                if (resp.candidate_set?.candidates.length) {
+                  const ids = resp.candidate_set.candidates.map((c) => c.record_id);
+                  fetchPrimoUrls(ids)
+                    .then((urls) => {
+                      if (Object.keys(urls).length > 0) {
+                        setPrimoUrls((prev) => ({ ...prev, ...urls }));
+                      }
+                    })
+                    .catch(() => {
+                      // Primo URL resolution is non-critical
+                    });
+                }
+              }
+
+              streamingMsgIdRef.current = null;
+              ws.close();
+              wsRef.current = null;
+              resolve();
+              break;
+            }
+
+            case 'error': {
+              const errorMessage = data.message as string ?? 'Unknown WebSocket error';
+              streamingMsgIdRef.current = null;
+              ws.close();
+              wsRef.current = null;
+              reject(new Error(errorMessage));
+              break;
+            }
+
+            default:
+              // Unknown message type -- ignore
+              break;
+          }
+        };
+
+        ws.onerror = () => {
+          clearTimeout(connectionTimeout);
+          streamingMsgIdRef.current = null;
+          wsRef.current = null;
+          // Remove the placeholder assistant message
+          setMessages((prev) => prev.filter((m) => m.id !== assistantMsgId));
+          reject(new Error('WebSocket connection failed'));
+        };
+
+        ws.onclose = (event) => {
+          clearTimeout(connectionTimeout);
+          wsRef.current = null;
+          // If the connection closed before we got a complete message,
+          // finalize whatever we have
+          if (streamingMsgIdRef.current === assistantMsgId) {
+            // Abnormal close -- mark as complete with whatever text we have
+            if (!event.wasClean) {
+              updateStreamingMessage((prev) => ({
+                ...prev,
+                streamingState: 'complete',
+                content: prev.content || 'Connection lost. Please try again.',
+              }));
+            } else {
+              // Clean close but no complete message received; finalize
+              updateStreamingMessage((prev) => ({
+                ...prev,
+                streamingState: 'complete',
+              }));
+            }
+            streamingMsgIdRef.current = null;
+            resolve();
+          }
+        };
+      });
+    },
+    [sessionId, setSessionId, updateStreamingMessage],
+  );
+
+  // ------------------------------------------------------------------
+  // HTTP fallback send (existing logic)
+  // ------------------------------------------------------------------
+
+  const sendViaHttp = useCallback(
+    async (text: string) => {
+      const apiResponse = await sendChatMessage(text, sessionId);
+
+      if (!apiResponse.success || !apiResponse.response) {
+        throw new Error(apiResponse.error ?? 'Unknown error from server');
+      }
+
+      const resp = apiResponse.response;
+
+      // Persist session ID
+      if (resp.session_id && resp.session_id !== sessionId) {
+        setSessionId(resp.session_id);
+      }
+
+      // Build assistant message
+      const botMsg: ChatMessage = {
+        id: nextId(),
+        role: 'assistant',
+        content: resp.message,
+        candidateSet: resp.candidate_set,
+        suggestedFollowups: resp.suggested_followups,
+        clarificationNeeded: resp.clarification_needed,
+        phase: resp.phase,
+        confidence: resp.confidence,
+        metadata: resp.metadata,
+        timestamp: new Date(),
+        streamingState: 'complete',
+      };
+      setMessages((prev) => [...prev, botMsg]);
+
+      // Batch-resolve Primo URLs for any new candidates
+      if (resp.candidate_set?.candidates.length) {
+        const ids = resp.candidate_set.candidates.map((c) => c.record_id);
+        const urls = await fetchPrimoUrls(ids);
+        if (Object.keys(urls).length > 0) {
+          setPrimoUrls((prev) => ({ ...prev, ...urls }));
+        }
+      }
+    },
+    [sessionId, setSessionId],
+  );
+
+  // ------------------------------------------------------------------
+  // Send message handler (WebSocket first, HTTP fallback)
   // ------------------------------------------------------------------
 
   const handleSend = useCallback(
@@ -141,52 +458,23 @@ export default function Chat() {
       setLoading(true);
 
       try {
-        const apiResponse = await sendChatMessage(trimmed, sessionId);
-
-        if (!apiResponse.success || !apiResponse.response) {
-          throw new Error(apiResponse.error ?? 'Unknown error from server');
+        // Try WebSocket first for streaming experience
+        await sendViaWebSocket(trimmed);
+      } catch {
+        // WebSocket failed -- fall back to HTTP POST
+        try {
+          await sendViaHttp(trimmed);
+        } catch (httpErr) {
+          const errMsg = httpErr instanceof Error ? httpErr.message : 'Something went wrong';
+          setError(errMsg);
         }
-
-        const resp = apiResponse.response;
-
-        // Persist session ID
-        if (resp.session_id && resp.session_id !== sessionId) {
-          setSessionId(resp.session_id);
-        }
-
-        // Build assistant message
-        const botMsg: ChatMessage = {
-          id: nextId(),
-          role: 'assistant',
-          content: resp.message,
-          candidateSet: resp.candidate_set,
-          suggestedFollowups: resp.suggested_followups,
-          clarificationNeeded: resp.clarification_needed,
-          phase: resp.phase,
-          confidence: resp.confidence,
-          metadata: resp.metadata,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, botMsg]);
-
-        // Batch-resolve Primo URLs for any new candidates
-        if (resp.candidate_set?.candidates.length) {
-          const ids = resp.candidate_set.candidates.map((c) => c.record_id);
-          const urls = await fetchPrimoUrls(ids);
-          if (Object.keys(urls).length > 0) {
-            setPrimoUrls((prev) => ({ ...prev, ...urls }));
-          }
-        }
-      } catch (err) {
-        const errMsg = err instanceof Error ? err.message : 'Something went wrong';
-        setError(errMsg);
       } finally {
         setLoading(false);
         // Re-focus input
         inputRef.current?.focus();
       }
     },
-    [loading, sessionId, setSessionId],
+    [loading, sendViaWebSocket, sendViaHttp],
   );
 
   // ------------------------------------------------------------------
@@ -213,6 +501,12 @@ export default function Chat() {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 160) + 'px';
   };
+
+  // ------------------------------------------------------------------
+  // Derived state: check if we are in streaming mode (WS active)
+  // ------------------------------------------------------------------
+
+  const isStreamingActive = streamingMsgIdRef.current !== null;
 
   // ------------------------------------------------------------------
   // Render
@@ -280,8 +574,8 @@ export default function Chat() {
               />
             ))}
 
-            {/* Loading indicator */}
-            {loading && (
+            {/* Loading indicator (only when not streaming -- streaming has its own UI) */}
+            {loading && !isStreamingActive && (
               <div className="flex justify-start">
                 <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 shadow-sm">
                   <div className="flex items-center gap-2">

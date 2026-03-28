@@ -125,6 +125,12 @@ export interface GroundingData {
 }
 
 // ---------------------------------------------------------------------------
+// Streaming state for assistant messages
+// ---------------------------------------------------------------------------
+
+export type StreamingState = 'thinking' | 'streaming' | 'complete';
+
+// ---------------------------------------------------------------------------
 // UI-only models (not in backend)
 // ---------------------------------------------------------------------------
 
@@ -139,4 +145,8 @@ export interface ChatMessage {
   confidence: number | null;
   metadata: Record<string, unknown>;
   timestamp: Date;
+
+  /** Streaming-related fields (only meaningful for assistant messages). */
+  streamingState?: StreamingState;
+  thinkingSteps?: string[];
 }
