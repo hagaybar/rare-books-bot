@@ -12,12 +12,15 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, status, WebSocket, WebSocketDisconnect, Request
+from fastapi import Depends, FastAPI, HTTPException, status, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
+from app.api.auth_deps import require_role
+from app.api.auth_routes import router as auth_router
 from app.api.diagnostics import router as diagnostics_router
 from app.api.metadata import router as metadata_router
 from app.api.network import router as network_router
@@ -58,6 +61,10 @@ async def lifespan(app):
     global session_store, db_path, enrichment_service
 
     # --- Startup ---
+    # Initialize auth database
+    from app.api.auth_db import init_auth_db
+    init_auth_db()
+
     # Get paths from environment or use defaults
     sessions_db = Path(os.getenv("SESSIONS_DB_PATH", "data/chat/sessions.db"))
     bib_db = Path(os.getenv("BIBLIOGRAPHIC_DB_PATH", "data/index/bibliographic.db"))
@@ -105,14 +112,56 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Add CORS middleware (allow all origins for development)
+# Add CORS middleware (configurable via CORS_ORIGIN env var)
+_cors_origins = os.getenv("CORS_ORIGIN", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Middleware: enforce role-based auth on /metadata/* endpoints
+@app.middleware("http")
+async def metadata_auth_middleware(request: Request, call_next):
+    """Apply role-based auth to metadata endpoints.
+
+    /metadata/enrichment/* -> guest (accessible to all authenticated users)
+    /metadata/* (everything else) -> full
+    """
+    path = request.url.path
+    if not path.startswith("/metadata/"):
+        return await call_next(request)
+
+    from app.api.auth_service import validate_access_token
+    from app.api.auth_deps import ROLE_HIERARCHY
+
+    token = request.cookies.get("access_token")
+    if not token:
+        return JSONResponse(status_code=401, content={"detail": "Not authenticated"})
+    payload = validate_access_token(token)
+    if not payload:
+        return JSONResponse(status_code=401, content={"detail": "Invalid or expired token"})
+
+    user_level = ROLE_HIERARCHY.get(payload.get("role", ""), 0)
+
+    # Enrichment endpoints are guest-accessible
+    if path.startswith("/metadata/enrichment"):
+        min_level = ROLE_HIERARCHY["guest"]
+    else:
+        min_level = ROLE_HIERARCHY["full"]
+
+    if user_level < min_level:
+        required = "guest" if path.startswith("/metadata/enrichment") else "full"
+        return JSONResponse(
+            status_code=403,
+            content={"detail": f"Requires {required} role or higher"},
+        )
+
+    return await call_next(request)
+
 
 # Middleware: log all /metadata/* interactions
 @app.middleware("http")
@@ -178,13 +227,16 @@ async def log_metadata_interactions(request: Request, call_next):
         )
 
 
-# Register metadata quality router
+# Register auth router (no auth required on auth endpoints themselves)
+app.include_router(auth_router)
+
+# Register metadata quality router (auth enforced via middleware above)
 app.include_router(metadata_router)
 
-# Register diagnostics router
+# Register diagnostics router (auth enforced via router-level dependency)
 app.include_router(diagnostics_router)
 
-# Register network map explorer router
+# Register network map explorer router (auth enforced via router-level dependency)
 app.include_router(network_router)
 
 
@@ -272,7 +324,7 @@ async def health_check():
 
 
 @app.get("/health/extended", response_model=HealthExtendedResponse)
-async def health_extended():
+async def health_extended(_user=Depends(require_role("full"))):
     """Extended health check with database file details.
 
     Returns file sizes and modification times for the bibliographic
@@ -303,7 +355,7 @@ async def health_extended():
 
 @app.post("/chat", response_model=ChatResponseAPI)
 @limiter.limit("10/minute")
-async def chat(request: Request, chat_request: ChatRequest):
+async def chat(request: Request, chat_request: ChatRequest, _user=Depends(require_role("limited"))):
     """Chat endpoint -- all queries go through the scholar pipeline.
 
     Three-stage pipeline:
@@ -312,6 +364,7 @@ async def chat(request: Request, chat_request: ChatRequest):
     3. Narrate: LLM composes a scholarly response from verified data
 
     Rate limited to 10 requests per minute per IP address.
+    Requires 'limited' role or higher.
 
     Args:
         request: FastAPI Request object (for rate limiting)
@@ -566,8 +619,10 @@ async def websocket_chat(websocket: WebSocket):
     - Batched results (groups of 10 candidates)
     - Real-time streaming for better UX
 
+    Requires 'limited' role or higher (JWT validated from cookies at connection time).
+
     Protocol:
-    1. Client connects
+    1. Client connects (JWT validated from cookie)
     2. Client sends JSON: {"message": "query", "session_id": "optional-id"}
     3. Server streams JSON messages:
        - {"type": "progress", "message": "Compiling query..."}
@@ -576,6 +631,23 @@ async def websocket_chat(websocket: WebSocket):
        - {"type": "complete", "response": ChatResponse}
     4. Connection closes
     """
+    # Validate JWT from cookies before accepting connection
+    from app.api.auth_service import validate_access_token
+    from app.api.auth_deps import ROLE_HIERARCHY
+
+    token = websocket.cookies.get("access_token")
+    if not token:
+        await websocket.close(code=4001, reason="Not authenticated")
+        return
+    payload = validate_access_token(token)
+    if not payload:
+        await websocket.close(code=4001, reason="Invalid or expired token")
+        return
+    user_level = ROLE_HIERARCHY.get(payload.get("role", ""), 0)
+    if user_level < ROLE_HIERARCHY["limited"]:
+        await websocket.close(code=4003, reason="Requires limited role or higher")
+        return
+
     await websocket.accept()
     store = get_session_store()
     _bib_db = get_db_path()  # retained for potential future use

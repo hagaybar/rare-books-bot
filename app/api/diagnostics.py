@@ -15,7 +15,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+
+from app.api.auth_deps import require_role
 
 from app.api.diagnostics_models import (
     ColumnInfo,
@@ -36,7 +38,11 @@ from app.api.diagnostics_models import (
     TablesResponse,
 )
 
-router = APIRouter(prefix="/diagnostics", tags=["diagnostics"])
+router = APIRouter(
+    prefix="/diagnostics",
+    tags=["diagnostics"],
+    dependencies=[Depends(require_role("full"))],
+)
 
 # ---------------------------------------------------------------------------
 # Constants
