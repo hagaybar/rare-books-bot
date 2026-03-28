@@ -469,8 +469,9 @@ export default function Chat() {
       try {
         // Try WebSocket first for streaming experience
         await sendViaWebSocket(trimmed);
-      } catch {
+      } catch (wsErr) {
         // WebSocket failed -- fall back to HTTP POST
+        console.warn('[Chat] WebSocket failed, falling back to HTTP:', wsErr instanceof Error ? wsErr.message : wsErr);
         try {
           await sendViaHttp(trimmed);
         } catch (httpErr) {
