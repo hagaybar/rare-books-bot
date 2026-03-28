@@ -562,5 +562,24 @@ def seed_agent_authorities(
                 typer.echo(f"    {alias_type}: {count}")
 
 
+@app.command("create-user")
+def create_user_cmd(
+    username: str = typer.Argument(..., help="Username"),
+    password: str = typer.Argument(..., help="Password (min 8 chars)"),
+    role: str = typer.Option("admin", help="Role: admin, full, limited, guest"),
+):
+    """Create a new user (for bootstrapping the first admin)."""
+    from app.api.auth_db import init_auth_db
+    from app.api.auth_service import create_user as _create_user
+
+    init_auth_db()
+    try:
+        user_id = _create_user(username, password, role)
+        typer.echo(f"Created user '{username}' (id={user_id}, role={role})")
+    except Exception as e:
+        typer.echo(f"Error: {e}")
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()
