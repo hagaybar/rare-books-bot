@@ -748,7 +748,7 @@ pytest tests/app/test_api.py -v --run-integration
 
 **When to use**: After re-exporting MARC XML from Alma, after data corruption, or when alias maps have been updated.
 
-**Source file**: `data/marc_source/rare_book_bibs.xml` (tracked in git — public bibliographic data from NLI catalog). For LOD (Linked Open Data) export with `$0` authority URIs, use `rare_books_with_lod.xml`.
+**Source file**: `data/marc_source/rare_books_with_lod.xml` (tracked in git — public bibliographic data from the Sourasky Central Library, Tel Aviv University). LOD export with `$0` authority URIs for Wikidata enrichment.
 
 **Run via slash command**:
 ```
