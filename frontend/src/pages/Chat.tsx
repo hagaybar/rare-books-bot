@@ -12,9 +12,10 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import type { ChatMessage } from '../types/chat';
 import { sendChatMessage, fetchPrimoUrls } from '../api/chat';
+import { authenticatedFetch } from '../api/auth';
 import { useAppStore } from '../stores/appStore';
 import { useAuthStore } from '../stores/authStore';
 import MessageBubble from '../components/chat/MessageBubble';
@@ -49,12 +50,14 @@ function nextId(): string {
 export default function Chat() {
   const { sessionId, setSessionId } = useAppStore();
   const user = useAuthStore((s) => s.user);
+  const [searchParams] = useSearchParams();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [primoUrls, setPrimoUrls] = useState<Record<string, string>>({});
+  const [restoredSessionId, setRestoredSessionId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -68,6 +71,43 @@ export default function Chat() {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Restore session from URL ?session=XYZ parameter
+  useEffect(() => {
+    const urlSessionId = searchParams.get('session');
+    if (!urlSessionId || urlSessionId === restoredSessionId) return;
+
+    setRestoredSessionId(urlSessionId);
+    setSessionId(urlSessionId);
+
+    // Load session messages from the backend
+    (async () => {
+      try {
+        const res = await authenticatedFetch(`/sessions/${urlSessionId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const restored: ChatMessage[] = (data.messages || []).map(
+          (msg: { role: string; content: string; timestamp: string }, i: number) => ({
+            id: `restored-${i}`,
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            candidateSet: null,
+            suggestedFollowups: [],
+            clarificationNeeded: null,
+            phase: null,
+            confidence: null,
+            metadata: {},
+            timestamp: new Date(msg.timestamp),
+          }),
+        );
+        if (restored.length > 0) {
+          setMessages(restored);
+        }
+      } catch {
+        // Session load failed silently -- user can still start fresh
+      }
+    })();
+  }, [searchParams, restoredSessionId, setSessionId]);
 
   // ------------------------------------------------------------------
   // Send message handler

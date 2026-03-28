@@ -317,6 +317,52 @@ class SessionStore:
         )
         return count
 
+    def get_recent_sessions(
+        self, user_id: str, limit: int = 5
+    ) -> List[Dict[str, Any]]:
+        """Get the most recent sessions for a user with summary info.
+
+        Returns sessions with the first user message as title, message count,
+        and last activity timestamp.
+
+        Args:
+            user_id: User identifier
+            limit: Maximum number of sessions to return (default 5)
+
+        Returns:
+            List of dicts with session_id, title, message_count, last_activity
+        """
+        conn = self._get_connection()
+
+        cursor = conn.execute(
+            """
+            SELECT s.session_id, s.updated_at,
+                   (SELECT COUNT(*) FROM chat_messages WHERE session_id = s.session_id) as msg_count,
+                   (SELECT content FROM chat_messages
+                    WHERE session_id = s.session_id AND role = 'user'
+                    ORDER BY timestamp ASC LIMIT 1) as first_user_msg
+            FROM chat_sessions s
+            WHERE s.user_id = ? AND s.expired_at IS NULL
+            ORDER BY s.updated_at DESC
+            LIMIT ?
+            """,
+            (user_id, limit),
+        )
+
+        results = []
+        for row in cursor.fetchall():
+            title = row[3] or "New conversation"
+            if len(title) > 50:
+                title = title[:47] + "..."
+            results.append({
+                "session_id": row[0],
+                "title": title,
+                "message_count": row[2],
+                "last_activity": row[1],
+            })
+
+        return results
+
     def list_user_sessions(
         self, user_id: str, include_expired: bool = False
     ) -> List[str]:

@@ -1,9 +1,39 @@
 /**
- * Chat API client for POST /chat endpoint.
+ * Chat API client for POST /chat and GET /chat/history endpoints.
  */
 
 import type { ChatResponseAPI } from '../types/chat';
 import { authenticatedFetch } from './auth';
+
+// ---------------------------------------------------------------------------
+// Recent chats (sidebar)
+// ---------------------------------------------------------------------------
+
+export interface RecentChat {
+  session_id: string;
+  title: string;
+  message_count: number;
+  last_activity: string;
+}
+
+/**
+ * Fetch the 5 most recent chat sessions for the current user.
+ *
+ * Returns an empty array on error (non-critical UI element).
+ */
+export async function fetchRecentChats(): Promise<RecentChat[]> {
+  try {
+    const res = await authenticatedFetch('/chat/history');
+    if (!res.ok) return [];
+    return (await res.json()) as RecentChat[];
+  } catch {
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Chat messages
+// ---------------------------------------------------------------------------
 
 /**
  * Send a message to the chat endpoint.

@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback, useLayoutEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAppStore } from '../stores/appStore';
 import { useAuthStore } from '../stores/authStore';
 import { getRoleLevel } from './AuthGuard';
+import { fetchRecentChats } from '../api/chat';
+import type { RecentChat } from '../api/chat';
 
 // ---------------------------------------------------------------------------
 // Icon paths (Heroicons outline style)
@@ -121,6 +124,92 @@ function NavIcon({ d, className }: { d: string; className?: string }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Relative time helper
+// ---------------------------------------------------------------------------
+
+function relativeTime(isoString: string): string {
+  const now = Date.now();
+  const then = new Date(isoString).getTime();
+  const diffMs = now - then;
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return 'just now';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay === 1) return 'yesterday';
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return new Date(isoString).toLocaleDateString();
+}
+
+// ---------------------------------------------------------------------------
+// Recent Chats sub-component
+// ---------------------------------------------------------------------------
+
+function RecentChats() {
+  const navigate = useNavigate();
+  const { setSessionId } = useAppStore();
+
+  const { data: chats = [] } = useQuery<RecentChat[]>({
+    queryKey: ['recentChats'],
+    queryFn: fetchRecentChats,
+    staleTime: 30_000,        // refresh every 30s
+    refetchInterval: 60_000,  // auto-poll every 60s
+  });
+
+  if (chats.length === 0) {
+    return (
+      <div className="px-5 py-2">
+        <p className="text-[10px] text-gray-600">No recent chats</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0.5">
+      {chats.map((chat) => (
+        <button
+          key={chat.session_id}
+          type="button"
+          onClick={() => {
+            setSessionId(chat.session_id);
+            navigate(`/chat?session=${chat.session_id}`);
+          }}
+          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left
+            text-gray-500 hover:bg-gray-800/50 hover:text-gray-300 transition-colors group"
+          title={chat.title}
+        >
+          <svg
+            className="w-3.5 h-3.5 shrink-0 text-gray-600 group-hover:text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
+            />
+          </svg>
+          <div className="min-w-0 flex-1">
+            <div className="text-xs truncate">{chat.title}</div>
+            <div className="text-[10px] text-gray-600">
+              {relativeTime(chat.last_activity)}
+            </div>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Sidebar
+// ---------------------------------------------------------------------------
+
 export default function Sidebar() {
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useAppStore();
   const { user, logout } = useAuthStore();
@@ -234,6 +323,16 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
+
+      {/* Recent Chats -- only for limited role and above, hidden when collapsed */}
+      {user && !sidebarCollapsed && userLevel >= getRoleLevel('limited') && (
+        <div className="px-2 py-3 border-t border-gray-800">
+          <p className="px-3 mb-2 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+            Recent Chats
+          </p>
+          <RecentChats />
+        </div>
+      )}
 
       {/* User info + logout */}
       {user && !sidebarCollapsed && (

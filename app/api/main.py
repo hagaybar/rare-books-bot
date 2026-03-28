@@ -364,6 +364,23 @@ async def health_extended(_user=Depends(require_role("full"))):
     )
 
 
+@app.get("/chat/history")
+async def chat_history(request: Request, _user=Depends(require_role("limited"))):
+    """Return the 5 most recent chat sessions for the current user.
+
+    Each entry includes session_id, title (first user message truncated to
+    50 chars), message_count, and last_activity timestamp.
+
+    Requires 'limited' role or higher.
+    """
+    store = get_session_store()
+    user_id = str(_user.get("user_id", ""))
+    if not user_id:
+        return []
+
+    return store.get_recent_sessions(user_id, limit=5)
+
+
 @app.post("/chat", response_model=ChatResponseAPI)
 @limiter.limit("30/minute")
 async def chat(request: Request, chat_request: ChatRequest, _user=Depends(require_role("limited"))):
@@ -450,11 +467,11 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
                     detail=f"Session {chat_request.session_id} not found",
                 )
         else:
-            # Create new session
-            session = store.create_session()
+            # Create new session with user_id for history tracking
+            session = store.create_session(user_id=str(user_id) if user_id else None)
             logger.info(
                 "Created new session for chat request",
-                extra={"session_id": session.session_id},
+                extra={"session_id": session.session_id, "user_id": user_id},
             )
 
         # Update context if provided
@@ -798,7 +815,7 @@ async def websocket_chat(websocket: WebSocket):
                 await websocket.close()
                 return
         else:
-            session = store.create_session()
+            session = store.create_session(user_id=str(ws_user_id) if ws_user_id else None)
             session_id = session.session_id
             await websocket.send_json({
                 "type": "session_created",
