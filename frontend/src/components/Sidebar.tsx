@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useLayoutEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAppStore } from '../stores/appStore';
+import { useAuthStore } from '../stores/authStore';
+import { getRoleLevel } from './AuthGuard';
 
 // ---------------------------------------------------------------------------
 // Icon paths (Heroicons outline style)
@@ -30,6 +32,7 @@ interface NavItem {
   label: string;
   icon: string;
   healthDot?: boolean;
+  minRole: 'guest' | 'limited' | 'full' | 'admin';
 }
 
 interface NavSection {
@@ -41,32 +44,32 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Primary',
     items: [
-      { to: '/chat', label: 'Chat', icon: ICONS.chat },
-      { to: '/network', label: 'Network', icon: ICONS.network },
+      { to: '/chat', label: 'Chat', icon: ICONS.chat, minRole: 'limited' },
+      { to: '/network', label: 'Network', icon: ICONS.network, minRole: 'guest' },
     ],
   },
   {
     title: 'Operator',
     items: [
-      { to: '/operator/coverage', label: 'Coverage', icon: ICONS.coverage },
-      { to: '/operator/workbench', label: 'Workbench', icon: ICONS.workbench },
-      { to: '/operator/agent', label: 'Agent Chat', icon: ICONS.agent },
-      { to: '/operator/review', label: 'Review', icon: ICONS.review },
+      { to: '/operator/coverage', label: 'Coverage', icon: ICONS.coverage, minRole: 'full' },
+      { to: '/operator/workbench', label: 'Workbench', icon: ICONS.workbench, minRole: 'full' },
+      { to: '/operator/agent', label: 'Agent Chat', icon: ICONS.agent, minRole: 'full' },
+      { to: '/operator/review', label: 'Review', icon: ICONS.review, minRole: 'full' },
     ],
   },
   {
     title: 'Diagnostics',
     items: [
-      { to: '/diagnostics/query', label: 'Query Debugger', icon: ICONS.queryDebugger },
-      { to: '/diagnostics/db', label: 'DB Explorer', icon: ICONS.dbExplorer },
+      { to: '/diagnostics/query', label: 'Query Debugger', icon: ICONS.queryDebugger, minRole: 'full' },
+      { to: '/diagnostics/db', label: 'DB Explorer', icon: ICONS.dbExplorer, minRole: 'full' },
     ],
   },
   {
     title: 'Admin',
     items: [
-      { to: '/admin/publishers', label: 'Publishers', icon: ICONS.publishers },
-      { to: '/admin/enrichment', label: 'Enrichment', icon: ICONS.agent },
-      { to: '/admin/health', label: 'Health', icon: ICONS.health, healthDot: true },
+      { to: '/admin/publishers', label: 'Publishers', icon: ICONS.publishers, minRole: 'full' },
+      { to: '/admin/enrichment', label: 'Enrichment', icon: ICONS.agent, minRole: 'guest' },
+      { to: '/admin/health', label: 'Health', icon: ICONS.health, healthDot: true, minRole: 'full' },
     ],
   },
 ];
@@ -80,7 +83,7 @@ function useHealthStatus() {
 
   const check = useCallback(async () => {
     try {
-      const res = await fetch('/health');
+      const res = await fetch('/health', { credentials: 'include' });
       if (!res.ok) { setHealthy(false); return; }
       const data = await res.json();
       setHealthy(data.status === 'healthy');
@@ -118,7 +121,10 @@ function NavIcon({ d, className }: { d: string; className?: string }) {
 
 export default function Sidebar() {
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useAppStore();
+  const { user, logout } = useAuthStore();
   const healthy = useHealthStatus();
+
+  const userLevel = getRoleLevel(user?.role ?? 'guest');
 
   // Auto-collapse on narrow viewports
   useLayoutEffect(() => {
@@ -139,6 +145,14 @@ export default function Sidebar() {
       : healthy
         ? 'bg-green-500'
         : 'bg-red-500';
+
+  // Filter sections — only show sections that have at least one visible item
+  const visibleSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter(
+      (item) => userLevel >= getRoleLevel(item.minRole),
+    ),
+  })).filter((section) => section.items.length > 0);
 
   return (
     <aside
@@ -171,7 +185,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto">
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.title}>
             {!sidebarCollapsed && (
               <p className="px-3 mb-2 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
@@ -218,6 +232,20 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
+
+      {/* User info + logout */}
+      {user && !sidebarCollapsed && (
+        <div className="px-4 py-3 border-t border-gray-800">
+          <div className="text-xs text-gray-400">{user.username}</div>
+          <div className="text-xs text-gray-500 capitalize">{user.role}</div>
+          <button
+            onClick={logout}
+            className="text-xs text-red-400 mt-1 hover:text-red-300 transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      )}
 
       {/* Footer */}
       <div className={`px-4 py-4 border-t border-gray-800 text-xs text-gray-600 ${sidebarCollapsed ? 'text-center' : ''}`}>

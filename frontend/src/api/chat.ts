@@ -24,6 +24,7 @@ export async function sendChatMessage(
   const res = await fetch('/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
@@ -50,6 +51,7 @@ export async function fetchPrimoUrls(
     const res = await fetch('/metadata/primo-urls', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ mms_ids: mmsIds }),
     });
 

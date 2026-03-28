@@ -16,7 +16,7 @@ export async function fetchPublishers(
   const params = new URLSearchParams();
   if (type) params.set('type', type);
   const qs = params.toString();
-  const res = await fetch(`${BASE}/publishers${qs ? `?${qs}` : ''}`);
+  const res = await fetch(`${BASE}/publishers${qs ? `?${qs}` : ''}`, { credentials: 'include' });
   return handleResponse<PublisherAuthorityListResponse>(res);
 }
 
@@ -31,6 +31,7 @@ export async function createPublisher(data: {
   const res = await fetch(`${BASE}/publishers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
   return handleResponse<PublisherAuthority>(res);
@@ -50,13 +51,14 @@ export async function updatePublisher(
   const res = await fetch(`${BASE}/publishers/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
   return handleResponse<PublisherAuthority>(res);
 }
 
 export async function deletePublisher(id: number): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`${BASE}/publishers/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${BASE}/publishers/${id}`, { method: 'DELETE', credentials: 'include' });
   return handleResponse<{ success: boolean; message: string }>(res);
 }
 
@@ -67,6 +69,7 @@ export async function addVariant(
   const res = await fetch(`${BASE}/publishers/${publisherId}/variants`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
   return handleResponse<PublisherAuthority>(res);
@@ -78,6 +81,7 @@ export async function deleteVariant(
 ): Promise<{ success: boolean; message: string }> {
   const res = await fetch(`${BASE}/publishers/${publisherId}/variants/${variantId}`, {
     method: 'DELETE',
+    credentials: 'include',
   });
   return handleResponse<{ success: boolean; message: string }>(res);
 }

@@ -12,9 +12,11 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import type { ChatMessage } from '../types/chat';
 import { sendChatMessage, fetchPrimoUrls } from '../api/chat';
 import { useAppStore } from '../stores/appStore';
+import { useAuthStore } from '../stores/authStore';
 import MessageBubble from '../components/chat/MessageBubble';
 import FollowUpChips from '../components/chat/FollowUpChips';
 
@@ -46,6 +48,7 @@ function nextId(): string {
 
 export default function Chat() {
   const { sessionId, setSessionId } = useAppStore();
+  const user = useAuthStore((s) => s.user);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -283,43 +286,63 @@ export default function Chat() {
       {/* Input bar */}
       <div className="border-t border-gray-200 bg-white">
         <div className="max-w-3xl mx-auto px-4 py-3">
-          <div className="flex items-end gap-2">
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={handleInput}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask about rare books..."
-                rows={1}
-                disabled={loading}
-                className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5
-                  text-sm text-gray-900 placeholder:text-gray-400
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-shadow"
-                style={{ maxHeight: '160px' }}
-              />
+          {user?.role === 'guest' ? (
+            /* Guest: show login prompt instead of input */
+            <div className="text-center py-2">
+              <p className="text-sm text-gray-500">
+                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  Login
+                </Link>{' '}
+                to use the chat
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => handleSend(input)}
-              disabled={loading || !input.trim()}
-              className="shrink-0 w-10 h-10 rounded-xl bg-blue-600 text-white
-                flex items-center justify-center
-                hover:bg-blue-700 active:bg-blue-800
-                disabled:bg-gray-300 disabled:cursor-not-allowed
-                transition-colors shadow-sm cursor-pointer"
-              title="Send message"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-              </svg>
-            </button>
-          </div>
-          <p className="text-[10px] text-gray-400 mt-1.5 text-center">
-            Press Enter to send, Shift+Enter for new line
-          </p>
+          ) : (
+            <>
+              {/* Quota badge for limited users */}
+              {user?.role === 'limited' && user.token_limit != null && (
+                <div className="text-xs text-gray-400 text-center mb-1">
+                  Tokens: {user.tokens_used_this_month ?? 0} / {user.token_limit}
+                </div>
+              )}
+              <div className="flex items-end gap-2">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={handleInput}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask about rare books..."
+                    rows={1}
+                    disabled={loading}
+                    className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5
+                      text-sm text-gray-900 placeholder:text-gray-400
+                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                      transition-shadow"
+                    style={{ maxHeight: '160px' }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSend(input)}
+                  disabled={loading || !input.trim()}
+                  className="shrink-0 w-10 h-10 rounded-xl bg-blue-600 text-white
+                    flex items-center justify-center
+                    hover:bg-blue-700 active:bg-blue-800
+                    disabled:bg-gray-300 disabled:cursor-not-allowed
+                    transition-colors shadow-sm cursor-pointer"
+                  title="Send message"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1.5 text-center">
+                Press Enter to send, Shift+Enter for new line
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

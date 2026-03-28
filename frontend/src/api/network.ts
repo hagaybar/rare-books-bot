@@ -32,11 +32,11 @@ export async function fetchMapData(params: MapParams): Promise<MapResponse> {
   if (params.role) qs.set('role', params.role);
   if (params.limit) qs.set('limit', String(params.limit));
 
-  const res = await fetch(`${BASE}/map?${qs}`);
+  const res = await fetch(`${BASE}/map?${qs}`, { credentials: 'include' });
   return handleResponse<MapResponse>(res);
 }
 
 export async function fetchAgentDetail(agentNorm: string): Promise<AgentDetail> {
-  const res = await fetch(`${BASE}/agent/${encodeURIComponent(agentNorm)}`);
+  const res = await fetch(`${BASE}/agent/${encodeURIComponent(agentNorm)}`, { credentials: 'include' });
   return handleResponse<AgentDetail>(res);
 }

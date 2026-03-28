@@ -52,7 +52,7 @@ interface EnrichmentStats {
 }
 
 async function fetchStats(): Promise<EnrichmentStats> {
-  const res = await fetch('/metadata/enrichment/stats');
+  const res = await fetch('/metadata/enrichment/stats', { credentials: 'include' });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json();
 }
@@ -93,7 +93,7 @@ async function fetchFacets(filters: {
   if (filters.hasBio) params.set('has_bio', 'true');
   if (filters.hasImage) params.set('has_image', 'true');
   const qs = params.toString();
-  const res = await fetch(`/metadata/enrichment/facets${qs ? `?${qs}` : ''}`);
+  const res = await fetch(`/metadata/enrichment/facets${qs ? `?${qs}` : ''}`, { credentials: 'include' });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json();
 }
@@ -113,7 +113,7 @@ async function fetchAgents(
   if (filters.role) params.set('role', filters.role);
   if (filters.occupation) params.set('occupation', filters.occupation);
   if (filters.century) params.set('century', filters.century);
-  const res = await fetch(`/metadata/enrichment/agents?${params}`);
+  const res = await fetch(`/metadata/enrichment/agents?${params}`, { credentials: 'include' });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json();
 }

@@ -41,7 +41,7 @@ function mapFieldCoverage(raw: any): CoverageReport['date_coverage'] {
 }
 
 export async function fetchCoverage(): Promise<CoverageReport> {
-  const res = await fetch(`${BASE}/coverage`);
+  const res = await fetch(`${BASE}/coverage`, { credentials: 'include' });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: any = await handleResponse<any>(res);
   return {
@@ -66,13 +66,13 @@ export async function fetchIssues(
   if (maxConfidence !== undefined) params.set('max_confidence', String(maxConfidence));
   if (limit !== undefined) params.set('limit', String(limit));
   if (offset !== undefined) params.set('offset', String(offset));
-  const res = await fetch(`${BASE}/issues?${params}`);
+  const res = await fetch(`${BASE}/issues?${params}`, { credentials: 'include' });
   return handleResponse<{ items: IssueRecord[]; total: number }>(res);
 }
 
 export async function fetchClusters(field?: string): Promise<Cluster[]> {
   const params = field ? `?field=${encodeURIComponent(field)}` : '';
-  const res = await fetch(`${BASE}/clusters${params}`);
+  const res = await fetch(`${BASE}/clusters${params}`, { credentials: 'include' });
   return handleResponse<Cluster[]>(res);
 }
 
@@ -85,6 +85,7 @@ export async function submitCorrection(
   const res = await fetch(`${BASE}/corrections`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({
       field,
       raw_value: rawValue,
@@ -102,6 +103,7 @@ export async function agentChat(
   const res = await fetch(`${BASE}/agent/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ field, message: message ?? '' }),
   });
   return handleResponse<AgentChatResponse>(res);
@@ -131,7 +133,7 @@ export async function fetchAgentRecords(
   const params = new URLSearchParams();
   if (wikidataId) params.set('wikidata_id', wikidataId);
   else if (agentNorm) params.set('agent_norm', agentNorm);
-  const res = await fetch(`${BASE}/enrichment/agent-records?${params}`);
+  const res = await fetch(`${BASE}/enrichment/agent-records?${params}`, { credentials: 'include' });
   return handleResponse<AgentRecordsResponse>(res);
 }
 
@@ -147,6 +149,6 @@ export async function fetchCorrectionHistory(
   if (limit !== undefined) params.set('limit', String(limit));
   if (offset !== undefined) params.set('offset', String(offset));
   const qs = params.toString();
-  const res = await fetch(`${BASE}/corrections/history${qs ? `?${qs}` : ''}`);
+  const res = await fetch(`${BASE}/corrections/history${qs ? `?${qs}` : ''}`, { credentials: 'include' });
   return handleResponse<CorrectionHistoryResponse>(res);
 }

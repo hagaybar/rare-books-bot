@@ -34,6 +34,7 @@ export async function runQuery(
   const res = await fetch(`${BASE}/query-run`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ query_text: queryText, limit }),
   });
   return handleResponse<QueryRunResponse>(res);
@@ -48,7 +49,7 @@ export async function getQueryRuns(
     limit: String(limit),
     offset: String(offset),
   });
-  const res = await fetch(`${BASE}/query-runs?${params.toString()}`);
+  const res = await fetch(`${BASE}/query-runs?${params.toString()}`, { credentials: 'include' });
   return handleResponse<QueryRunsResponse>(res);
 }
 
@@ -60,6 +61,7 @@ export async function submitLabels(
   const res = await fetch(`${BASE}/labels`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ run_id: runId, labels }),
   });
   return handleResponse<LabelsResponse>(res);
@@ -67,13 +69,13 @@ export async function submitLabels(
 
 /** B8: Retrieve labels for a specific run. */
 export async function getLabels(runId: number): Promise<RunLabelsResponse> {
-  const res = await fetch(`${BASE}/labels/${String(runId)}`);
+  const res = await fetch(`${BASE}/labels/${String(runId)}`, { credentials: 'include' });
   return handleResponse<RunLabelsResponse>(res);
 }
 
 /** B9: Export the gold set as JSON. */
 export async function exportGoldSet(): Promise<GoldSetResponse> {
-  const res = await fetch(`${BASE}/gold-set/export`);
+  const res = await fetch(`${BASE}/gold-set/export`, { credentials: 'include' });
   return handleResponse<GoldSetResponse>(res);
 }
 
@@ -81,13 +83,14 @@ export async function exportGoldSet(): Promise<GoldSetResponse> {
 export async function runRegression(): Promise<RegressionResponse> {
   const res = await fetch(`${BASE}/gold-set/regression`, {
     method: 'POST',
+    credentials: 'include',
   });
   return handleResponse<RegressionResponse>(res);
 }
 
 /** B11: List all database tables with row counts and columns. */
 export async function getTables(): Promise<TablesResponse> {
-  const res = await fetch(`${BASE}/tables`);
+  const res = await fetch(`${BASE}/tables`, { credentials: 'include' });
   return handleResponse<TablesResponse>(res);
 }
 
@@ -105,6 +108,7 @@ export async function getTableRows(
   if (search) params.set('search', search);
   const res = await fetch(
     `${BASE}/tables/${encodeURIComponent(tableName)}/rows?${params.toString()}`,
+    { credentials: 'include' },
   );
   return handleResponse<TableRowsResponse>(res);
 }
