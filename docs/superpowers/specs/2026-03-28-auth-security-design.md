@@ -208,7 +208,7 @@ with "I can only help with bibliographic queries about the rare books collection
 
 ### 4. Bot Protection
 
-- **CORS**: Only allow requests from configured origin (e.g., `https://yourdomain.com`, `http://localhost:5173`)
+- **CORS**: Only allow requests from configured origin (e.g., `https://yourdomain.com`, `http://localhost:5173`). Must set `allow_credentials=True` in FastAPI CORSMiddleware for cookies to work cross-origin during development (Vite dev server on :5173 → FastAPI on :8000). In production (same-origin), CORS is not needed but doesn't hurt.
 - **CSRF**: Protection relies on JSON content-type requirement (`Content-Type: application/json`) plus `SameSite=Lax`. Cross-origin forms cannot set JSON content-type. All POST endpoints must reject `application/x-www-form-urlencoded`.
 - **Request fingerprinting**: Log User-Agent + IP. Flag patterns (>100 req/min from same IP regardless of session)
 - **Cookie-only JWT**: Not in Authorization header — prevents easy scripting with `curl`
