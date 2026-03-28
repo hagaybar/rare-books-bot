@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:33:17.592Z",
+  "data": {
+    "effectId": "01KMTMNWRC2A0A7G4PCHB7M2FQ",
+    "invocationKey": "auth-plan-a:S000006:auth-agent",
+    "invocationHash": "6131887df47a5f3d3e2941d267dbee1ab1408425e09d48fd5a5e57f46fe784e8",
+    "stepId": "S000006",
+    "taskId": "auth-agent",
+    "kind": "agent",
+    "label": "Task 7: Auth endpoint tests",
+    "taskDefRef": "tasks/01KMTMNWRC2A0A7G4PCHB7M2FQ/task.json"
+  },
+  "checksum": "69798b14eadd317f2cbe075cd4ade478611657a2d22c52287b4ddb41cfc4bd25"
+}

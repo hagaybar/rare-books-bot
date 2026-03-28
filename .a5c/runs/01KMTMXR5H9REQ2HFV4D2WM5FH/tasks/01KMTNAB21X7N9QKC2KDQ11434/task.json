@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTNAB21X7N9QKC2KDQ11434",
+  "taskId": "authb-agent",
+  "invocationKey": "auth-plan-b:S000003:authb-agent",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Task 3: AuthGuard + routing + sidebar + chat + credentials",
+  "io": {
+    "inputJsonPath": "tasks/01KMTNAB21X7N9QKC2KDQ11434/input.json",
+    "outputJsonPath": "tasks/01KMTNAB21X7N9QKC2KDQ11434/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-b-frontend.md — Task 3 completely. This is the biggest task — read ALL steps.\n\n1. Create frontend/src/components/AuthGuard.tsx — checks auth on mount via initialize(), redirects to /login if no user, checks page-level role access. Use code from plan.\n\n2. Update frontend/src/App.tsx:\n   - Import Login and AuthGuard\n   - Add <Route path=\"/login\" element={<Login />} /> OUTSIDE the Layout\n   - Wrap the Layout route in AuthGuard: <Route element={<AuthGuard><Layout /></AuthGuard>}>\n   - Add redirect: if user is guest and path is /, redirect to /network\n\n3. Update frontend/src/components/Sidebar.tsx:\n   - Import useAuthStore\n   - Add minRole to each nav item\n   - Filter items by user role level\n   - Add user info at bottom: username, role badge, logout button\n   - When sidebar is collapsed, just show logout icon\n\n4. Update frontend/src/pages/Chat.tsx:\n   - Import useAuthStore\n   - If user.role === 'guest': show \"Login to use chat\" message + link to /login instead of input\n   - If user.role === 'limited': show remaining quota badge if available\n\n5. CRITICAL: Add credentials: 'include' to ALL fetch() calls in:\n   - frontend/src/api/chat.ts (every fetch call)\n   - frontend/src/api/metadata.ts (every fetch call)\n   - frontend/src/api/network.ts (every fetch call)\n   Without this, cookies won't be sent and all API calls will return 401.\n\nVerify: cd frontend && npx tsc --noEmit && npm run build\nCommit and push: git add frontend/src/ && git commit -m \"feat: AuthGuard, routing, sidebar role filtering, chat gating, credentials\" && git push origin feature/auth-security",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 3: AuthGuard + routing + sidebar + chat + credentials",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit && npm run build 2>&1 | tail -5"
+  }
+}

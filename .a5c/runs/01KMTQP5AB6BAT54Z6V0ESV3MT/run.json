@@ -1,0 +1,14 @@
+{
+  "runId": "01KMTQP5AB6BAT54Z6V0ESV3MT",
+  "request": "auth-plan-c",
+  "processId": "auth-plan-c",
+  "entrypoint": {
+    "importPath": "../../processes/auth-plan-c.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/auth-plan-c.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-28T17:25:52.085Z",
+  "prompt": "Auth Plan C hardening. YOLO.",
+  "completionProof": "8b3861beef8f0b9fa7c374c7cabc94e0"
+}

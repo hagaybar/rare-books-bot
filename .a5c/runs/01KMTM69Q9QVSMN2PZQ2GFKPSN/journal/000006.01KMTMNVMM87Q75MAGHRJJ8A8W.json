@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:33:16.436Z",
+  "data": {
+    "effectId": "01KMTMNVM80VRQQ04FNX21MG4D",
+    "invocationKey": "auth-plan-a:S000003:auth-agent",
+    "invocationHash": "966722240e90cb2db2643a37faa4f870d6846c6b369aee04f2f08b19630779c8",
+    "stepId": "S000003",
+    "taskId": "auth-agent",
+    "kind": "agent",
+    "label": "Task 4: Auth routes (login, guest, refresh, me, user CRUD)",
+    "taskDefRef": "tasks/01KMTMNVM80VRQQ04FNX21MG4D/task.json"
+  },
+  "checksum": "86200c49de750007459d3ce7a59f31ec48ee664b579d2e7d26c8b935eea6059a"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:33:17.207Z",
+  "data": {
+    "effectId": "01KMTMNWCAN84R31360APZM6AK",
+    "invocationKey": "auth-plan-a:S000005:auth-agent",
+    "invocationHash": "b9c50aa2393af431675dd5c02546d46dc38617da43082e8076f3407151cc8f7a",
+    "stepId": "S000005",
+    "taskId": "auth-agent",
+    "kind": "agent",
+    "label": "Task 6: CLI create-user command",
+    "taskDefRef": "tasks/01KMTMNWCAN84R31360APZM6AK/task.json"
+  },
+  "checksum": "0a007c4d6fc286f9e45b489abcc5a38b44fc5d6274fe783dce2e33817553934a"
+}

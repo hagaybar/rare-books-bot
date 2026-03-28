@@ -1,0 +1,14 @@
+{
+  "runId": "01KMTMXR5H9REQ2HFV4D2WM5FH",
+  "request": "auth-plan-b",
+  "processId": "auth-plan-b",
+  "entrypoint": {
+    "importPath": "../../processes/auth-plan-b.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/auth-plan-b.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-28T16:37:35.042Z",
+  "prompt": "Auth Plan B frontend. YOLO.",
+  "completionProof": "896414fa296e9eab1c66ecd8519b20c8"
+}

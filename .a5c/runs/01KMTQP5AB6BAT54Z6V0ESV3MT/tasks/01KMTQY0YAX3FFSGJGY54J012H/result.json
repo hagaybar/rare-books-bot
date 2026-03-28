@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMTQY0YAX3FFSGJGY54J012H",
+  "taskId": "authc-agent",
+  "invocationKey": "auth-plan-c:S000003:authc-agent",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-28T17:30:09.898Z",
+  "finishedAt": "2026-03-28T17:30:09.898Z",
+  "value": {
+    "status": "completed"
+  }
+}

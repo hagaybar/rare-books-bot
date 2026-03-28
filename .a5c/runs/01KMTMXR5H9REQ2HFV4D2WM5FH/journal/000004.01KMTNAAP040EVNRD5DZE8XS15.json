@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:44:27.200Z",
+  "data": {
+    "effectId": "01KMTNAANKSTQN2NTS7YB8RMS2",
+    "invocationKey": "auth-plan-b:S000002:authb-agent",
+    "invocationHash": "c3467fa2437e1195306ad320429c143740baeadd9b18066642986305b784799b",
+    "stepId": "S000002",
+    "taskId": "authb-agent",
+    "kind": "agent",
+    "label": "Task 2: Login page",
+    "taskDefRef": "tasks/01KMTNAANKSTQN2NTS7YB8RMS2/task.json"
+  },
+  "checksum": "6de3089999772d9434c68dbfa13223e057f049f128b1d464cfb2a20a206f1203"
+}

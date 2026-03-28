@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTM6A2RNFRTBV4XS0XNP8P6",
+  "taskId": "auth-agent",
+  "invocationKey": "auth-plan-a:S000001:auth-agent",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Tasks 1+2: Dependencies, auth DB, auth models, auth service",
+  "io": {
+    "inputJsonPath": "tasks/01KMTM6A2RNFRTBV4XS0XNP8P6/input.json",
+    "outputJsonPath": "tasks/01KMTM6A2RNFRTBV4XS0XNP8P6/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-a-core.md — Tasks 1 and 2 completely.\n\n1. Install dependencies: poetry add PyJWT \"passlib[bcrypt]\"\n2. Create app/api/auth_db.py — auth database schema (users, refresh_tokens, token_usage, settings, audit_log). Use EXACT code from plan.\n3. Create app/api/auth_models.py — Pydantic models (LoginRequest, TokenResponse, UserInfo, CreateUserRequest, UpdateUserRequest, UserListItem). Use EXACT code from plan.\n4. Create app/api/auth_service.py — password hashing, JWT create/validate, authenticate_user, create_user, audit_log, refresh token management. Use EXACT code from plan. Auto-generate JWT_SECRET if not set (dev mode).\n\nVerify:\n  poetry run python -c \"from app.api.auth_db import init_auth_db; init_auth_db(); print('DB OK')\"\n  poetry run python -c \"from app.api.auth_service import hash_password, create_access_token; print('Service OK')\"\n\nCommit: git add pyproject.toml poetry.lock app/api/auth_db.py app/api/auth_models.py app/api/auth_service.py && git commit -m \"feat: add auth database, models, and service (JWT + bcrypt)\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Tasks 1+2: Dependencies, auth DB, auth models, auth service",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -c \"from app.api.auth_service import hash_password, verify_password; h = hash_password('test'); assert verify_password('test', h); print('OK')\""
+  }
+}

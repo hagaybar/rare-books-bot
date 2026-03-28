@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:44:27.598Z",
+  "data": {
+    "effectId": "01KMTNAB21X7N9QKC2KDQ11434",
+    "invocationKey": "auth-plan-b:S000003:authb-agent",
+    "invocationHash": "e8352cb040e9f7beb84908d4f8d54734b74e99105974fb8159661f33d55c55fd",
+    "stepId": "S000003",
+    "taskId": "authb-agent",
+    "kind": "agent",
+    "label": "Task 3: AuthGuard + routing + sidebar + chat + credentials",
+    "taskDefRef": "tasks/01KMTNAB21X7N9QKC2KDQ11434/task.json"
+  },
+  "checksum": "b4ae9602955fe2653e11375c2293eabb452c58f8be9d60bf3436f01e20f65b80"
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTMNVM80VRQQ04FNX21MG4D",
+  "taskId": "auth-agent",
+  "invocationKey": "auth-plan-a:S000003:auth-agent",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Task 4: Auth routes (login, guest, refresh, me, user CRUD)",
+  "io": {
+    "inputJsonPath": "tasks/01KMTMNVM80VRQQ04FNX21MG4D/input.json",
+    "outputJsonPath": "tasks/01KMTMNVM80VRQQ04FNX21MG4D/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-a-core.md — Task 4. Create app/api/auth_routes.py with FastAPI router at /auth prefix. Endpoints: POST /login, POST /guest, POST /refresh, POST /logout, GET /me, GET /users (admin), POST /users (admin), PUT /users/{id} (admin). Use httpOnly cookies for JWT. Use EXACT code from plan.\n\nVerify: poetry run python -c \"from app.api.auth_routes import router; print(f'Routes: {len(router.routes)}')\"\nCommit: git add app/api/auth_routes.py && git commit -m \"feat: add auth routes — login, guest, refresh, me, user CRUD\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 4: Auth routes (login, guest, refresh, me, user CRUD)",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -c \"from app.api.auth_routes import router; print(f'Routes: {len(router.routes)}')\""
+  }
+}

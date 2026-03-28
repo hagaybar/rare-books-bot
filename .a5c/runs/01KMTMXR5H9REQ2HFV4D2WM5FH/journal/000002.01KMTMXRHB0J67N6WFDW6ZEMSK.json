@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:37:35.404Z",
+  "data": {
+    "effectId": "01KMTMXRGZCEYZQBTV5KE4FSMX",
+    "invocationKey": "auth-plan-b:S000001:authb-agent",
+    "invocationHash": "1a489ad87378c748bc951c6cf9544cb8c8f66832e1ff9fd10ff32f16b16dc1c4",
+    "stepId": "S000001",
+    "taskId": "authb-agent",
+    "kind": "agent",
+    "label": "Task 1: Vite proxy + auth API client + auth store",
+    "taskDefRef": "tasks/01KMTMXRGZCEYZQBTV5KE4FSMX/task.json"
+  },
+  "checksum": "d185eb55738905594773e46e82b9abad48846f5d7fdd90273cae61ec36e28313"
+}

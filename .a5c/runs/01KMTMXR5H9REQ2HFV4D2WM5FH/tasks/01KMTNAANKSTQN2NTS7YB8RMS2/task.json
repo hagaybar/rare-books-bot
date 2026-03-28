@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTNAANKSTQN2NTS7YB8RMS2",
+  "taskId": "authb-agent",
+  "invocationKey": "auth-plan-b:S000002:authb-agent",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Task 2: Login page",
+  "io": {
+    "inputJsonPath": "tasks/01KMTNAANKSTQN2NTS7YB8RMS2/input.json",
+    "outputJsonPath": "tasks/01KMTNAANKSTQN2NTS7YB8RMS2/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-b-frontend.md — Task 2. Create frontend/src/pages/Login.tsx — login form (username + password + Login button) + \"or\" divider + \"Continue as Guest\" button. On login success, call fetchMe and navigate to /. On guest, navigate to /network. Show error messages. Use EXACT code from plan.\n\nVerify: cd frontend && npx tsc --noEmit\nCommit: git add frontend/src/pages/Login.tsx && git commit -m \"feat: add Login page with username/password and guest option\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 2: Login page",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit 2>&1 | tail -3"
+  }
+}

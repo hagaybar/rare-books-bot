@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTQP5NWE2BWQYDW0A9QMM73",
+  "taskId": "authc-agent",
+  "invocationKey": "auth-plan-c:S000001:authc-agent",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Task 1: Security module",
+  "io": {
+    "inputJsonPath": "tasks/01KMTQP5NWE2BWQYDW0A9QMM73/input.json",
+    "outputJsonPath": "tasks/01KMTQP5NWE2BWQYDW0A9QMM73/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-c-hardening.md — Task 1. Create app/api/security.py with ALL functions from the plan:\n- record_token_usage(user_id, tokens): write to token_usage table using INSERT ON CONFLICT UPDATE\n- check_quota(user_id): check if user has remaining monthly quota, return (allowed, used, limit)\n- is_chat_enabled() / set_chat_enabled(): read/write chat_enabled setting\n- check_moderation(text): async call to OpenAI Moderation API, return (safe, category)\n- mask_pii(text): regex-based email and phone masking\n- validate_output(text): check for leaked API keys or secrets in LLM output\n- validate_input(text): check length, strip control chars\n\nUse the EXACT code from the plan.\nVerify: poetry run python -c \"from app.api.security import record_token_usage, check_quota, is_chat_enabled, mask_pii; print('OK')\"\nCommit: git add app/api/security.py && git commit -m \"feat: security module — token tracking, quota, moderation, PII, kill switch\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 1: Security module",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -c \"from app.api.security import record_token_usage, check_quota, is_chat_enabled, mask_pii, validate_output; print('OK')\""
+  }
+}

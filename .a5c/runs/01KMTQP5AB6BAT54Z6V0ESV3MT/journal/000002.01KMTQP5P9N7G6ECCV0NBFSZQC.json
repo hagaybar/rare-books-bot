@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T17:25:52.458Z",
+  "data": {
+    "effectId": "01KMTQP5NWE2BWQYDW0A9QMM73",
+    "invocationKey": "auth-plan-c:S000001:authc-agent",
+    "invocationHash": "f9c39d5e599855a745e1fff7445158726151f793ea9875fb41b7ac0537b49a4c",
+    "stepId": "S000001",
+    "taskId": "authc-agent",
+    "kind": "agent",
+    "label": "Task 1: Security module",
+    "taskDefRef": "tasks/01KMTQP5NWE2BWQYDW0A9QMM73/task.json"
+  },
+  "checksum": "301aa5665949338536c8088dd3b434b562c95386daff032eb0ba99a3b7321bab"
+}
