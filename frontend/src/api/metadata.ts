@@ -5,6 +5,7 @@ import type {
   AgentChatResponse,
   CorrectionHistoryResponse,
 } from '../types/metadata';
+import { authenticatedFetch } from './auth';
 
 const BASE = '/metadata';
 
@@ -41,7 +42,7 @@ function mapFieldCoverage(raw: any): CoverageReport['date_coverage'] {
 }
 
 export async function fetchCoverage(): Promise<CoverageReport> {
-  const res = await fetch(`${BASE}/coverage`, { credentials: 'include' });
+  const res = await authenticatedFetch(`${BASE}/coverage`);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: any = await handleResponse<any>(res);
   return {
@@ -66,13 +67,13 @@ export async function fetchIssues(
   if (maxConfidence !== undefined) params.set('max_confidence', String(maxConfidence));
   if (limit !== undefined) params.set('limit', String(limit));
   if (offset !== undefined) params.set('offset', String(offset));
-  const res = await fetch(`${BASE}/issues?${params}`, { credentials: 'include' });
+  const res = await authenticatedFetch(`${BASE}/issues?${params}`);
   return handleResponse<{ items: IssueRecord[]; total: number }>(res);
 }
 
 export async function fetchClusters(field?: string): Promise<Cluster[]> {
   const params = field ? `?field=${encodeURIComponent(field)}` : '';
-  const res = await fetch(`${BASE}/clusters${params}`, { credentials: 'include' });
+  const res = await authenticatedFetch(`${BASE}/clusters${params}`);
   return handleResponse<Cluster[]>(res);
 }
 
@@ -82,10 +83,9 @@ export async function submitCorrection(
   canonicalValue: string,
   evidence?: string
 ): Promise<{ success: boolean; records_affected: number }> {
-  const res = await fetch(`${BASE}/corrections`, {
+  const res = await authenticatedFetch(`${BASE}/corrections`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify({
       field,
       raw_value: rawValue,
@@ -100,10 +100,9 @@ export async function agentChat(
   field: string,
   message?: string
 ): Promise<AgentChatResponse> {
-  const res = await fetch(`${BASE}/agent/chat`, {
+  const res = await authenticatedFetch(`${BASE}/agent/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify({ field, message: message ?? '' }),
   });
   return handleResponse<AgentChatResponse>(res);
@@ -133,7 +132,7 @@ export async function fetchAgentRecords(
   const params = new URLSearchParams();
   if (wikidataId) params.set('wikidata_id', wikidataId);
   else if (agentNorm) params.set('agent_norm', agentNorm);
-  const res = await fetch(`${BASE}/enrichment/agent-records?${params}`, { credentials: 'include' });
+  const res = await authenticatedFetch(`${BASE}/enrichment/agent-records?${params}`);
   return handleResponse<AgentRecordsResponse>(res);
 }
 
@@ -149,6 +148,6 @@ export async function fetchCorrectionHistory(
   if (limit !== undefined) params.set('limit', String(limit));
   if (offset !== undefined) params.set('offset', String(offset));
   const qs = params.toString();
-  const res = await fetch(`${BASE}/corrections/history${qs ? `?${qs}` : ''}`, { credentials: 'include' });
+  const res = await authenticatedFetch(`${BASE}/corrections/history${qs ? `?${qs}` : ''}`);
   return handleResponse<CorrectionHistoryResponse>(res);
 }

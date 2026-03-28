@@ -3,6 +3,7 @@
  */
 
 import type { ChatResponseAPI } from '../types/chat';
+import { authenticatedFetch } from './auth';
 
 /**
  * Send a message to the chat endpoint.
@@ -21,10 +22,9 @@ export async function sendChatMessage(
     body.session_id = sessionId;
   }
 
-  const res = await fetch('/chat', {
+  const res = await authenticatedFetch('/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(body),
   });
 
@@ -48,10 +48,9 @@ export async function fetchPrimoUrls(
   if (mmsIds.length === 0) return {};
 
   try {
-    const res = await fetch('/metadata/primo-urls', {
+    const res = await authenticatedFetch('/metadata/primo-urls', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ mms_ids: mmsIds }),
     });
 

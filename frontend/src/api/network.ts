@@ -1,4 +1,5 @@
 import type { MapResponse, AgentDetail } from '../types/network';
+import { authenticatedFetch } from './auth';
 
 const BASE = '/network';
 
@@ -32,11 +33,11 @@ export async function fetchMapData(params: MapParams): Promise<MapResponse> {
   if (params.role) qs.set('role', params.role);
   if (params.limit) qs.set('limit', String(params.limit));
 
-  const res = await fetch(`${BASE}/map?${qs}`, { credentials: 'include' });
+  const res = await authenticatedFetch(`${BASE}/map?${qs}`);
   return handleResponse<MapResponse>(res);
 }
 
 export async function fetchAgentDetail(agentNorm: string): Promise<AgentDetail> {
-  const res = await fetch(`${BASE}/agent/${encodeURIComponent(agentNorm)}`, { credentials: 'include' });
+  const res = await authenticatedFetch(`${BASE}/agent/${encodeURIComponent(agentNorm)}`);
   return handleResponse<AgentDetail>(res);
 }

@@ -59,6 +59,29 @@ export async function logoutApi(): Promise<void> {
   });
 }
 
+/**
+ * Fetch wrapper that auto-refreshes JWT on 401 and retries once.
+ */
+export async function authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const opts = { ...options, credentials: 'include' as RequestCredentials };
+  let res = await fetch(url, opts);
+
+  if (res.status === 401) {
+    // Try refreshing the token
+    try {
+      await refreshToken();
+      // Retry the original request
+      res = await fetch(url, opts);
+    } catch {
+      // Refresh failed — redirect to login
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
+  }
+
+  return res;
+}
+
 // ---------------------------------------------------------------------------
 // User management (admin only)
 // ---------------------------------------------------------------------------
@@ -74,7 +97,7 @@ export interface UserListItem {
 }
 
 export async function fetchUsers(): Promise<UserListItem[]> {
-  const res = await fetch('/auth/users', { credentials: 'include' });
+  const res = await authenticatedFetch('/auth/users');
   if (!res.ok) throw new Error('Failed to fetch users');
   return res.json();
 }
@@ -85,10 +108,9 @@ export async function createUserApi(data: {
   role: string;
   token_limit?: number;
 }): Promise<unknown> {
-  const res = await fetch('/auth/users', {
+  const res = await authenticatedFetch('/auth/users', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data),
   });
   if (!res.ok) {
@@ -107,10 +129,9 @@ export async function updateUserApi(
     new_password?: string;
   },
 ): Promise<unknown> {
-  const res = await fetch(`/auth/users/${userId}`, {
+  const res = await authenticatedFetch(`/auth/users/${userId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data),
   });
   if (!res.ok) {

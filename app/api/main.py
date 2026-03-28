@@ -50,6 +50,7 @@ from scripts.chat.plan_models import (
 )
 
 from scripts.utils.logger import LoggerManager
+from scripts.utils.llm_logger import token_accumulator
 from scripts.enrichment import EnrichmentService
 from scripts.metadata.interaction_logger import interaction_logger
 
@@ -464,6 +465,9 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
         user_message = Message(role="user", content=chat_request.message)
         store.add_message(session.session_id, user_message)
 
+        # Reset token accumulator before pipeline
+        token_accumulator.reset()
+
         # All queries go through the scholar pipeline
         result = await _run_scholar_pipeline(
             chat_request, session, store, bib_db
@@ -476,9 +480,8 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
             result.response.message = validate_output(result.response.message)
 
         # Security check 7: Token recording
-        tokens_used = 0
-        if result.response and result.response.metadata:
-            tokens_used = result.response.metadata.get("tokens_used", 0)
+        # Read actual token usage accumulated by LLM logger during pipeline
+        tokens_used = token_accumulator.get()
         if tokens_used > 0:
             record_token_usage(user_id, tokens_used)
 
@@ -818,6 +821,9 @@ async def websocket_chat(websocket: WebSocket):
             previous_record_ids=previous_record_ids,
         )
 
+        # Reset token accumulator before pipeline
+        token_accumulator.reset()
+
         # ---- Stage 1: Interpret ----
         await websocket.send_json({
             "type": "progress",
@@ -901,7 +907,8 @@ async def websocket_chat(websocket: WebSocket):
         })
 
         # ---- Post-response security: Token recording + audit ----
-        tokens_used = scholar_response.metadata.get("tokens_used", 0)
+        # Read actual token usage accumulated by LLM logger during pipeline
+        tokens_used = token_accumulator.get()
         if tokens_used > 0:
             record_token_usage(ws_user_id, tokens_used)
 
