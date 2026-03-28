@@ -44,7 +44,7 @@ from scripts.chat.session_store import SessionStore
 # Scholar pipeline (3-stage: interpret -> execute -> narrate)
 from scripts.chat.interpreter import interpret
 from scripts.chat.executor import execute_plan as execute_scholar_plan
-from scripts.chat.narrator import narrate
+from scripts.chat.narrator import narrate, narrate_streaming, describe_filters
 from scripts.chat.plan_models import (
     SessionContext,
 )
@@ -843,16 +843,11 @@ async def websocket_chat(websocket: WebSocket):
 
         # ---- Stage 1: Interpret ----
         await websocket.send_json({
-            "type": "progress",
-            "message": "Interpreting your query..."
+            "type": "thinking",
+            "text": "Interpreting your query..."
         })
 
         plan = await interpret(message, ws_session_context)
-
-        await websocket.send_json({
-            "type": "progress",
-            "message": f"Understood: {', '.join(plan.intents)} (confidence: {plan.confidence:.0%})"
-        })
 
         # ---- Clarification short-circuit ----
         if plan.clarification and plan.confidence < 0.7:
@@ -876,9 +871,10 @@ async def websocket_chat(websocket: WebSocket):
             return
 
         # ---- Stage 2: Execute ----
+        filter_desc = describe_filters(plan)
         await websocket.send_json({
-            "type": "progress",
-            "message": f"Executing {len(plan.execution_steps)} plan steps..."
+            "type": "thinking",
+            "text": f"Searching for {filter_desc}..."
         })
 
         execution_result = execute_scholar_plan(
@@ -887,12 +883,23 @@ async def websocket_chat(websocket: WebSocket):
 
         records_found = len(execution_result.grounding.records)
         await websocket.send_json({
-            "type": "progress",
-            "message": f"Found {records_found} records. Composing scholarly response..."
+            "type": "thinking",
+            "text": f"Found {records_found} matching records"
         })
 
-        # ---- Stage 3: Narrate ----
-        scholar_response = await narrate(message, execution_result)
+        # ---- Stage 3: Narrate (streaming) ----
+        await websocket.send_json({"type": "stream_start"})
+
+        async def _stream_chunk(text: str) -> None:
+            """Forward a narrator text chunk to the WebSocket client."""
+            await websocket.send_json({
+                "type": "stream_chunk",
+                "text": text,
+            })
+
+        scholar_response = await narrate_streaming(
+            message, execution_result, chunk_callback=_stream_chunk
+        )
 
         # ---- Post-response security: Output validation ----
         narrative = validate_output(scholar_response.narrative)
