@@ -325,6 +325,39 @@ def get_llm_logger() -> LLMLogger:
     return _llm_logger
 
 
+# =============================================================================
+# Thread-safe token accumulator for per-request token tracking
+# =============================================================================
+
+class _TokenAccumulator:
+    """Thread-local accumulator for summing LLM tokens within a request.
+
+    Usage:
+        token_accumulator.reset()   # at start of request
+        # ... pipeline runs, log_llm_call auto-accumulates ...
+        total = token_accumulator.get()  # at end of request
+    """
+
+    def __init__(self) -> None:
+        self._local = threading.local()
+
+    def reset(self) -> None:
+        """Reset the counter to 0. Call at the start of each request."""
+        self._local.total = 0
+
+    def add(self, tokens: int) -> None:
+        """Add tokens to the running total."""
+        current = getattr(self._local, "total", 0)
+        self._local.total = current + tokens
+
+    def get(self) -> int:
+        """Return the accumulated token count since last reset."""
+        return getattr(self._local, "total", 0)
+
+
+token_accumulator = _TokenAccumulator()
+
+
 def log_llm_call(
     call_type: str,
     model: str,
@@ -360,38 +393,5 @@ def log_llm_call(
     # Accumulate tokens for the current request
     total = entry.get("usage", {}).get("total_tokens", 0)
     if total > 0:
-        _token_accumulator.add(total)
+        token_accumulator.add(total)
     return entry
-
-
-# =============================================================================
-# Thread-safe token accumulator for per-request token tracking
-# =============================================================================
-
-class _TokenAccumulator:
-    """Thread-local accumulator for summing LLM tokens within a request.
-
-    Usage:
-        token_accumulator.reset()   # at start of request
-        # ... pipeline runs, log_llm_call auto-accumulates ...
-        total = token_accumulator.get()  # at end of request
-    """
-
-    def __init__(self) -> None:
-        self._local = threading.local()
-
-    def reset(self) -> None:
-        """Reset the counter to 0. Call at the start of each request."""
-        self._local.total = 0
-
-    def add(self, tokens: int) -> None:
-        """Add tokens to the running total."""
-        current = getattr(self._local, "total", 0)
-        self._local.total = current + tokens
-
-    def get(self) -> int:
-        """Return the accumulated token count since last reset."""
-        return getattr(self._local, "total", 0)
-
-
-token_accumulator = _TokenAccumulator()
