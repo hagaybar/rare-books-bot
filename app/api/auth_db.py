@@ -82,3 +82,17 @@ def get_auth_db() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     return conn
+
+
+def purge_audit_log(days: int = 90) -> int:
+    """Delete audit log entries older than N days. Returns count of deleted rows."""
+    conn = get_auth_db()
+    try:
+        cursor = conn.execute(
+            "DELETE FROM audit_log WHERE timestamp < datetime('now', ?)",
+            (f'-{days} days',),
+        )
+        conn.commit()
+        return cursor.rowcount
+    finally:
+        conn.close()

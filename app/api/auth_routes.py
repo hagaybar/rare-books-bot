@@ -143,6 +143,22 @@ async def create_user_endpoint(body: CreateUserRequest, admin=Depends(require_ro
         raise
 
 
+@router.get("/settings/chat-status")
+async def get_chat_status(admin=Depends(require_role("admin"))):
+    from app.api.security import is_chat_enabled
+    return {"chat_enabled": is_chat_enabled()}
+
+
+@router.post("/settings/chat-toggle")
+async def toggle_chat(admin=Depends(require_role("admin"))):
+    from app.api.security import is_chat_enabled, set_chat_enabled
+    current = is_chat_enabled()
+    set_chat_enabled(not current)
+    audit_log("chat_toggled", user_id=admin["user_id"], username=admin["username"],
+              details=f"Chat {'disabled' if current else 'enabled'}")
+    return {"chat_enabled": not current}
+
+
 @router.put("/users/{user_id}")
 async def update_user(user_id: int, body: UpdateUserRequest, admin=Depends(require_role("admin"))):
     conn = get_auth_db()

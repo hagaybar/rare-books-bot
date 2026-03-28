@@ -460,6 +460,26 @@ export default function Users() {
     queryFn: fetchUsers,
   });
 
+  // Fetch chat status (kill switch)
+  const chatStatus = useQuery({
+    queryKey: ['chat-status'],
+    queryFn: async () => {
+      const res = await fetch('/auth/settings/chat-status', { credentials: 'include' });
+      return res.json();
+    },
+  });
+
+  const toggleChat = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/auth/settings/chat-toggle', { method: 'POST', credentials: 'include' });
+      return res.json();
+    },
+    onSuccess: () => {
+      chatStatus.refetch();
+      toast.success('Chat status toggled');
+    },
+  });
+
   return (
     <div>
       {/* Header */}
@@ -478,6 +498,26 @@ export default function Users() {
           className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors shadow-sm"
         >
           Create User
+        </button>
+      </div>
+
+      {/* Chat Kill Switch */}
+      <div className="flex items-center justify-between p-4 bg-white rounded-lg border mb-6">
+        <div>
+          <h3 className="font-medium text-gray-900">Chat Service</h3>
+          <p className="text-sm text-gray-500">
+            {chatStatus.data?.chat_enabled ? 'Chat is enabled for all users' : 'Chat is disabled (emergency mode)'}
+          </p>
+        </div>
+        <button
+          onClick={() => toggleChat.mutate()}
+          className={`px-4 py-2 rounded-lg text-sm font-medium ${
+            chatStatus.data?.chat_enabled
+              ? 'bg-red-50 text-red-700 hover:bg-red-100'
+              : 'bg-green-50 text-green-700 hover:bg-green-100'
+          }`}
+        >
+          {chatStatus.data?.chat_enabled ? 'Disable Chat' : 'Enable Chat'}
         </button>
       </div>
 

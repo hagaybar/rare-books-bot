@@ -581,5 +581,16 @@ def create_user_cmd(
         raise typer.Exit(1)
 
 
+@app.command("purge-audit")
+def purge_audit(
+    days: int = typer.Option(90, help="Delete audit entries older than N days"),
+):
+    """Purge old audit log entries."""
+    from app.api.auth_db import purge_audit_log
+
+    count = purge_audit_log(days)
+    print(f"Purged {count} audit log entries older than {days} days")
+
+
 if __name__ == "__main__":
     app()
