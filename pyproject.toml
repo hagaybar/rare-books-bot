@@ -35,6 +35,9 @@ dependencies = [
     # Code quality (in main deps for convenience)
     "pylint>=3.3.7,<4.0.0",
     "black>=25.1.0,<26.0.0",
+    "pyjwt (>=2.12.1,<3.0.0)",
+    "passlib[bcrypt] (>=1.7.4,<2.0.0)",
+    "bcrypt (<5)",
 ]
 
 [tool.ruff]
