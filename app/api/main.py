@@ -7,6 +7,7 @@ This module provides the HTTP API layer that:
 - Returns structured responses with evidence
 """
 
+import json
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -25,6 +26,15 @@ from app.api.diagnostics import router as diagnostics_router
 from app.api.metadata import router as metadata_router
 from app.api.network import router as network_router
 from app.api.models import ChatRequest, ChatResponseAPI, HealthExtendedResponse, HealthResponse
+from app.api.security import (
+    is_chat_enabled,
+    validate_input,
+    check_quota,
+    mask_pii,
+    check_moderation,
+    validate_output,
+    record_token_usage,
+)
 from scripts.chat.models import (
     ChatResponse,
     Message,
@@ -46,8 +56,8 @@ from scripts.metadata.interaction_logger import interaction_logger
 # Initialize logger
 logger = LoggerManager.get_logger(__name__)
 
-# Initialize rate limiter (10 requests per minute per session)
-limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
+# Initialize rate limiter (30 requests per minute per IP)
+limiter = Limiter(key_func=get_remote_address, default_limits=["30/minute"])
 
 # Global state (initialized during lifespan startup)
 session_store: Optional[SessionStore] = None
@@ -354,7 +364,7 @@ async def health_extended(_user=Depends(require_role("full"))):
 
 
 @app.post("/chat", response_model=ChatResponseAPI)
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def chat(request: Request, chat_request: ChatRequest, _user=Depends(require_role("limited"))):
     """Chat endpoint -- all queries go through the scholar pipeline.
 
@@ -363,8 +373,18 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
     2. Execute: Deterministic executor walks the plan via SQL
     3. Narrate: LLM composes a scholarly response from verified data
 
-    Rate limited to 10 requests per minute per IP address.
+    Rate limited to 30 requests per minute per IP address.
     Requires 'limited' role or higher.
+
+    Security checks:
+    1. Kill switch (503 if chat disabled)
+    2. Input validation (400 if invalid)
+    3. Quota check (429 if exceeded)
+    4. PII masking before LLM call
+    5. Moderation check (400 if flagged)
+    6. Output validation after LLM response
+    7. Token usage recording
+    8. Audit logging
 
     Args:
         request: FastAPI Request object (for rate limiting)
@@ -376,6 +396,46 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
     Raises:
         HTTPException: On API errors
     """
+    from app.api.auth_service import audit_log
+
+    ip = request.client.host if request.client else "unknown"
+    user_id = _user.get("user_id")
+    username = _user.get("username", "unknown")
+
+    # --- Security check 1: Kill switch ---
+    if not is_chat_enabled():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Chat is currently disabled by administrator",
+        )
+
+    # --- Security check 2: Input validation ---
+    valid, error_msg = validate_input(chat_request.message)
+    if not valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_msg,
+        )
+
+    # --- Security check 3: Quota check ---
+    allowed, used, limit = check_quota(user_id)
+    if not allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Monthly token quota exceeded ({used}/{limit})",
+        )
+
+    # --- Security check 4: PII masking ---
+    chat_request.message = mask_pii(chat_request.message)
+
+    # --- Security check 5: Moderation ---
+    safe, category = await check_moderation(chat_request.message)
+    if not safe:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Message flagged by content moderation: {category}",
+        )
+
     store = get_session_store()
     bib_db = get_db_path()
 
@@ -405,9 +465,37 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
         store.add_message(session.session_id, user_message)
 
         # All queries go through the scholar pipeline
-        return await _run_scholar_pipeline(
+        result = await _run_scholar_pipeline(
             chat_request, session, store, bib_db
         )
+
+        # --- Post-response security checks ---
+
+        # Security check 6: Output validation
+        if result.response and result.response.message:
+            result.response.message = validate_output(result.response.message)
+
+        # Security check 7: Token recording
+        tokens_used = 0
+        if result.response and result.response.metadata:
+            tokens_used = result.response.metadata.get("tokens_used", 0)
+        if tokens_used > 0:
+            record_token_usage(user_id, tokens_used)
+
+        # Security check 8: Audit log
+        audit_log(
+            "chat_query",
+            user_id=user_id,
+            username=username,
+            details=json.dumps({
+                "query": chat_request.message[:200],
+                "tokens": tokens_used,
+                "session_id": session.session_id,
+            }),
+            ip_address=ip,
+        )
+
+        return result
 
     except HTTPException:
         raise
@@ -663,6 +751,39 @@ async def websocket_chat(websocket: WebSocket):
             await websocket.close()
             return
 
+        # --- WebSocket security checks ---
+        ws_user_id = payload.get("user_id")
+
+        # Kill switch
+        if not is_chat_enabled():
+            await websocket.send_json({"type": "error", "message": "Chat is currently disabled by administrator"})
+            await websocket.close()
+            return
+
+        # Input validation
+        valid, error_msg = validate_input(message)
+        if not valid:
+            await websocket.send_json({"type": "error", "message": error_msg})
+            await websocket.close()
+            return
+
+        # Quota check
+        allowed, used, limit = check_quota(ws_user_id)
+        if not allowed:
+            await websocket.send_json({"type": "error", "message": f"Monthly token quota exceeded ({used}/{limit})"})
+            await websocket.close()
+            return
+
+        # PII masking
+        message = mask_pii(message)
+
+        # Moderation
+        safe, category = await check_moderation(message)
+        if not safe:
+            await websocket.send_json({"type": "error", "message": f"Message flagged by content moderation: {category}"})
+            await websocket.close()
+            return
+
         # Get or create session
         if session_id:
             session = store.get_session(session_id)
@@ -750,9 +871,12 @@ async def websocket_chat(websocket: WebSocket):
         # ---- Stage 3: Narrate ----
         scholar_response = await narrate(message, execution_result)
 
+        # ---- Post-response security: Output validation ----
+        narrative = validate_output(scholar_response.narrative)
+
         # ---- Map to ChatResponse ----
         response = ChatResponse(
-            message=scholar_response.narrative,
+            message=narrative,
             candidate_set=None,
             suggested_followups=scholar_response.suggested_followups,
             clarification_needed=None,
@@ -768,13 +892,30 @@ async def websocket_chat(websocket: WebSocket):
 
         store.add_message(
             session_id,
-            Message(role="assistant", content=scholar_response.narrative),
+            Message(role="assistant", content=narrative),
         )
 
         await websocket.send_json({
             "type": "complete",
             "response": response.model_dump()
         })
+
+        # ---- Post-response security: Token recording + audit ----
+        tokens_used = scholar_response.metadata.get("tokens_used", 0)
+        if tokens_used > 0:
+            record_token_usage(ws_user_id, tokens_used)
+
+        from app.api.auth_service import audit_log
+        audit_log(
+            "chat_query_ws",
+            user_id=ws_user_id,
+            username=payload.get("username", "unknown"),
+            details=json.dumps({
+                "query": message[:200],
+                "tokens": tokens_used,
+                "session_id": session_id,
+            }),
+        )
 
         logger.info(
             "WebSocket scholar pipeline completed",
