@@ -155,7 +155,16 @@ export default function Chat() {
   // ------------------------------------------------------------------
 
   const sendViaWebSocket = useCallback(
-    (text: string): Promise<void> => {
+    async (text: string): Promise<void> => {
+      // Ensure token is fresh before opening WebSocket (WS can't auto-refresh on 401)
+      const meRes = await fetch('/auth/me', { credentials: 'include' });
+      if (!meRes.ok) {
+        const refreshRes = await fetch('/auth/refresh', { method: 'POST', credentials: 'include' });
+        if (!refreshRes.ok) {
+          throw new Error('Session expired');
+        }
+      }
+
       return new Promise((resolve, reject) => {
         let ws: WebSocket;
         try {
