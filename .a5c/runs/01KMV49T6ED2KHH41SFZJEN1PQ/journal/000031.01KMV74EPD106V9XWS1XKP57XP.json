@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:55:49.069Z",
+  "data": {
+    "effectId": "01KMV74EP16VKTDRP8BDD2QD6P",
+    "invocationKey": "agent-role-enrichment:S000011:final-verification",
+    "invocationHash": "f445f66b8f5465bec99b282df1fbd6fc13a0bee5e9678250751491fd9b6fedb0",
+    "stepId": "S000011",
+    "taskId": "final-verification",
+    "kind": "agent",
+    "label": "Final verification and statistics report",
+    "taskDefRef": "tasks/01KMV74EP16VKTDRP8BDD2QD6P/task.json"
+  },
+  "checksum": "6da182afb8b571f12f8ca946c076b5cac59066e370afc55d7c66a8da60c0eb04"
+}

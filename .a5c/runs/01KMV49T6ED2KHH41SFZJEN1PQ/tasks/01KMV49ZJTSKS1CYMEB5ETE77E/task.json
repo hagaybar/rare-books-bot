@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV49ZJTSKS1CYMEB5ETE77E",
+  "taskId": "backup-and-analyze",
+  "invocationKey": "agent-role-enrichment:S000001:backup-and-analyze",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Backup database and analyze enrichment scope",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "enrichmentCachePath": "data/enrichment/cache.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "tier3MinFrequency": 3
+  }
+}

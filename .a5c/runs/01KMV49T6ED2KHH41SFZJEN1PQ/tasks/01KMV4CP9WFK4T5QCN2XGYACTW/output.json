@@ -1,0 +1,16 @@
+{
+  "mappingCount": 332,
+  "directMappings": 34,
+  "semanticMappings": 298,
+  "unmapped": 171,
+  "totalOccupations": 503,
+  "mappingFile": "data/normalization/occupation_role_map.json",
+  "samples": [
+    {"occupation": "printer", "role_norm": "printer", "confidence": 0.95},
+    {"occupation": "engraver", "role_norm": "engraver", "confidence": 0.95},
+    {"occupation": "poet", "role_norm": "author", "confidence": 0.80},
+    {"occupation": "rabbi", "role_norm": "author", "confidence": 0.70},
+    {"occupation": "xylographer", "role_norm": "wood_engraver", "confidence": 0.90}
+  ],
+  "artifacts": ["data/normalization/occupation_role_map.json"]
+}

@@ -1,0 +1,18 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:12:18.996Z",
+  "data": {
+    "effectId": "01KMV4MSS87XVXRT3GHMQC69YN",
+    "invocationKey": "agent-role-enrichment:S000003:__sdk.breakpoint",
+    "invocationHash": "9fdeb63858c59baab3c62f411ea617d7a94a0cacdeea26f9cbdadf1f63624646",
+    "stepId": "S000003",
+    "taskId": "__sdk.breakpoint",
+    "kind": "breakpoint",
+    "label": "breakpoint",
+    "taskDefRef": "tasks/01KMV4MSS87XVXRT3GHMQC69YN/task.json",
+    "labels": [
+      "breakpoint"
+    ]
+  },
+  "checksum": "ba6f8978030aafd9bfd761d6689124ed2930d5678c0745145535ffb017f2ba97"
+}

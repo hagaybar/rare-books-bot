@@ -1,0 +1,11 @@
+{
+  "processed": 305,
+  "rolesAssigned": 63,
+  "wikidataFound": 112,
+  "errors": 0,
+  "resultsFile": "data/normalization/tier2_role_changes.jsonl",
+  "artifacts": [
+    "scripts/normalization/fetch_tier2_occupations.py",
+    "data/normalization/tier2_role_changes.jsonl"
+  ]
+}

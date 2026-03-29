@@ -1,0 +1,18 @@
+{
+  "backup_file": "data/index/bibliographic.db.backup.20260329_000638",
+  "scope": {
+    "total_agent_rows_other_unknown": 1655,
+    "distinct_agents_other_unknown": 1302
+  },
+  "tiers": {
+    "tier_1": { "distinct_agents": 684, "description": "Cached Wikidata occupations" },
+    "tier_2": { "distinct_agents": 301, "description": "Authority URI, no occupations" },
+    "tier_3": { "distinct_agents": 334, "high_frequency_gte_3": 8 }
+  },
+  "unique_wikidata_occupations": 503,
+  "files_created": [
+    "data/normalization/wikidata_occupations_raw.txt",
+    "data/normalization/role_enrichment_analysis.json"
+  ],
+  "artifacts": ["data/normalization/wikidata_occupations_raw.txt", "data/normalization/role_enrichment_analysis.json"]
+}

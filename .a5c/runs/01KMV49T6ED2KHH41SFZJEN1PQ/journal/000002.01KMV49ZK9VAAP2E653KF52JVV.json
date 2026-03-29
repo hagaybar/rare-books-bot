@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:06:24.489Z",
+  "data": {
+    "effectId": "01KMV49ZJTSKS1CYMEB5ETE77E",
+    "invocationKey": "agent-role-enrichment:S000001:backup-and-analyze",
+    "invocationHash": "7772bce163e196020c103ddc65f43a557b857ca483ff82d58f361876c0668bab",
+    "stepId": "S000001",
+    "taskId": "backup-and-analyze",
+    "kind": "agent",
+    "label": "Backup database and analyze enrichment scope",
+    "taskDefRef": "tasks/01KMV49ZJTSKS1CYMEB5ETE77E/task.json"
+  },
+  "checksum": "2824db829281e903fcb280ab71193000d2d30f7c6640675eb12cb23a2fa800d2"
+}

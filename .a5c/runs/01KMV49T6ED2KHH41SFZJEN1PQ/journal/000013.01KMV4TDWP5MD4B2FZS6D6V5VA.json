@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:15:23.414Z",
+  "data": {
+    "effectId": "01KMV4TDWABXE2MDNJPPCF7EAY",
+    "invocationKey": "agent-role-enrichment:S000005:verify-tier",
+    "invocationHash": "a0bf190d10e956f0ff7f54ba11887df4c4f801f7deaf0e7c220ffa7e32b3cbb1",
+    "stepId": "S000005",
+    "taskId": "verify-tier",
+    "kind": "agent",
+    "label": "Verify Tier 1 enrichment results",
+    "taskDefRef": "tasks/01KMV4TDWABXE2MDNJPPCF7EAY/task.json"
+  },
+  "checksum": "4bbff264b2baa521b0c80b16cdd99d6d4dca2e851a446a0b527da3335fc53566"
+}

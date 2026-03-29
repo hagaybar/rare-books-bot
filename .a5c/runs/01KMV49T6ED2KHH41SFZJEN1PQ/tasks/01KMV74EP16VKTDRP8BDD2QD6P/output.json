@@ -1,0 +1,12 @@
+{
+  "verified": true,
+  "otherReduction": "1924 -> 990 rows (48.5% reduction)",
+  "distinctOtherReduction": "1302 -> 807 agents (38.0% reduction)",
+  "wikidataEnriched": 1482,
+  "webSearchEnriched": 8,
+  "newRoles": 18,
+  "aldusManutius": "PASS - 6 roles (printer, publisher, editor, typographer, type_designer, author)",
+  "multiRoleAgents": "20 agents with 4+ roles",
+  "reportFile": "data/normalization/role_enrichment_final_report.json",
+  "artifacts": ["data/normalization/role_enrichment_final_report.json"]
+}

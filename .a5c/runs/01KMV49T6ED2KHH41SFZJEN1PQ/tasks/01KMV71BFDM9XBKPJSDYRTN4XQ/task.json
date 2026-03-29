@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV71BFDM9XBKPJSDYRTN4XQ",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "agent-role-enrichment:S000009:__sdk.breakpoint",
+  "stepId": "S000009",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "agentsSearched": 8,
+        "resultsFile": "data/normalization/tier3_web_search_results.json",
+        "rolesFound": 8
+      },
+      "question": "Tier 3 web search completed for 8 high-frequency agents. 8 roles found. Review results before applying?",
+      "title": "Review Tier 3 Web Search Results"
+    },
+    "requestedAt": "2026-03-28T21:54:07.469Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "agentsSearched": 8,
+        "resultsFile": "data/normalization/tier3_web_search_results.json",
+        "rolesFound": 8
+      },
+      "question": "Tier 3 web search completed for 8 high-frequency agents. 8 roles found. Review results before applying?",
+      "title": "Review Tier 3 Web Search Results"
+    },
+    "requestedAt": "2026-03-28T21:54:07.469Z"
+  }
+}

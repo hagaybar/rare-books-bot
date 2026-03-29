@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:50:35.264Z",
+  "data": {
+    "effectId": "01KMV6TW7MNTCNK0FQGXBS332J",
+    "invocationKey": "agent-role-enrichment:S000008:apply-tier3-search",
+    "invocationHash": "ea58ca75e442afda9511517426e1ef43cffeb624196df9ee6511844ea615e041",
+    "stepId": "S000008",
+    "taskId": "apply-tier3-search",
+    "kind": "agent",
+    "label": "Tier 3: Web search for high-frequency agents without authority URIs",
+    "taskDefRef": "tasks/01KMV6TW7MNTCNK0FQGXBS332J/task.json"
+  },
+  "checksum": "51b63e028922df33d3a28fe7bc11b82c20dc34e8970b2e446fe8d7da7cac5d70"
+}

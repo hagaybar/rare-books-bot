@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV4CP9WFK4T5QCN2XGYACTW",
+  "taskId": "build-occupation-mapping",
+  "invocationKey": "agent-role-enrichment:S000002:build-occupation-mapping",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "data/normalization/occupation_role_map.json"
+    ],
+    "directMappings": 34,
+    "mappingCount": 332,
+    "mappingFile": "data/normalization/occupation_role_map.json",
+    "samples": [
+      {
+        "confidence": 0.95,
+        "occupation": "printer",
+        "role_norm": "printer"
+      },
+      {
+        "confidence": 0.95,
+        "occupation": "engraver",
+        "role_norm": "engraver"
+      },
+      {
+        "confidence": 0.8,
+        "occupation": "poet",
+        "role_norm": "author"
+      },
+      {
+        "confidence": 0.7,
+        "occupation": "rabbi",
+        "role_norm": "author"
+      },
+      {
+        "confidence": 0.9,
+        "occupation": "xylographer",
+        "role_norm": "wood_engraver"
+      }
+    ],
+    "semanticMappings": 298,
+    "totalOccupations": 503,
+    "unmapped": 171
+  },
+  "startedAt": "2026-03-28T21:12:13.525Z",
+  "finishedAt": "2026-03-28T21:12:13.525Z",
+  "value": {
+    "artifacts": [
+      "data/normalization/occupation_role_map.json"
+    ],
+    "directMappings": 34,
+    "mappingCount": 332,
+    "mappingFile": "data/normalization/occupation_role_map.json",
+    "samples": [
+      {
+        "confidence": 0.95,
+        "occupation": "printer",
+        "role_norm": "printer"
+      },
+      {
+        "confidence": 0.95,
+        "occupation": "engraver",
+        "role_norm": "engraver"
+      },
+      {
+        "confidence": 0.8,
+        "occupation": "poet",
+        "role_norm": "author"
+      },
+      {
+        "confidence": 0.7,
+        "occupation": "rabbi",
+        "role_norm": "author"
+      },
+      {
+        "confidence": 0.9,
+        "occupation": "xylographer",
+        "role_norm": "wood_engraver"
+      }
+    ],
+    "semanticMappings": 298,
+    "totalOccupations": 503,
+    "unmapped": 171
+  }
+}

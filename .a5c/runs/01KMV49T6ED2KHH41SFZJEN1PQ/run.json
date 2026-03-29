@@ -1,0 +1,14 @@
+{
+  "runId": "01KMV49T6ED2KHH41SFZJEN1PQ",
+  "request": "agent-role-enrichment",
+  "processId": "agent-role-enrichment",
+  "entrypoint": {
+    "importPath": "../../processes/agent-role-enrichment.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/agent-role-enrichment.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-28T21:06:18.969Z",
+  "prompt": "Enrich agent roles in the bibliographic database by resolving Wikidata occupations, VIAF data, and web search to fill missing MARC relator terms. Store all matching roles per agent. Tier 3 high-frequency only (>=3). Auto-apply with backup.",
+  "completionProof": "9e758347a43c5d08893e2f8ecd397f6d"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV74EP16VKTDRP8BDD2QD6P",
+  "taskId": "final-verification",
+  "invocationKey": "agent-role-enrichment:S000011:final-verification",
+  "status": "ok",
+  "result": {
+    "aldusManutius": "PASS - 6 roles (printer, publisher, editor, typographer, type_designer, author)",
+    "artifacts": [
+      "data/normalization/role_enrichment_final_report.json"
+    ],
+    "distinctOtherReduction": "1302 -> 807 agents (38.0% reduction)",
+    "multiRoleAgents": "20 agents with 4+ roles",
+    "newRoles": 18,
+    "otherReduction": "1924 -> 990 rows (48.5% reduction)",
+    "reportFile": "data/normalization/role_enrichment_final_report.json",
+    "verified": true,
+    "webSearchEnriched": 8,
+    "wikidataEnriched": 1482
+  },
+  "startedAt": "2026-03-28T21:57:30.883Z",
+  "finishedAt": "2026-03-28T21:57:30.883Z",
+  "value": {
+    "aldusManutius": "PASS - 6 roles (printer, publisher, editor, typographer, type_designer, author)",
+    "artifacts": [
+      "data/normalization/role_enrichment_final_report.json"
+    ],
+    "distinctOtherReduction": "1302 -> 807 agents (38.0% reduction)",
+    "multiRoleAgents": "20 agents with 4+ roles",
+    "newRoles": 18,
+    "otherReduction": "1924 -> 990 rows (48.5% reduction)",
+    "reportFile": "data/normalization/role_enrichment_final_report.json",
+    "verified": true,
+    "webSearchEnriched": 8,
+    "wikidataEnriched": 1482
+  }
+}

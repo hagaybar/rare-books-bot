@@ -1,0 +1,9 @@
+{
+  "processed": 916,
+  "rolesAssigned": 1419,
+  "resultsFile": "data/normalization/tier1_role_changes.jsonl",
+  "artifacts": [
+    "scripts/normalization/apply_wikidata_roles.py",
+    "data/normalization/tier1_role_changes.jsonl"
+  ]
+}

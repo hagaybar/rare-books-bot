@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV71BFDM9XBKPJSDYRTN4XQ",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "agent-role-enrichment:S000009:__sdk.breakpoint",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Auto-approved in yolo mode. All 8 agents have reasonable role assignments with good confidence."
+  },
+  "startedAt": "2026-03-28T21:54:13.561Z",
+  "finishedAt": "2026-03-28T21:54:13.561Z",
+  "value": {
+    "approved": true,
+    "response": "Auto-approved in yolo mode. All 8 agents have reasonable role assignments with good confidence."
+  }
+}

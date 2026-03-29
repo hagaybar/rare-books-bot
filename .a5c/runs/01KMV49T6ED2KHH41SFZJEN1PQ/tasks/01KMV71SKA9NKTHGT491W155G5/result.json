@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV71SKA9NKTHGT491W155G5",
+  "taskId": "apply-tier3-results",
+  "invocationKey": "agent-role-enrichment:S000010:apply-tier3-results",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "data/normalization/tier3_role_changes.jsonl"
+    ],
+    "processed": 8,
+    "rolesAssigned": 8
+  },
+  "startedAt": "2026-03-28T21:55:39.828Z",
+  "finishedAt": "2026-03-28T21:55:39.828Z",
+  "value": {
+    "artifacts": [
+      "data/normalization/tier3_role_changes.jsonl"
+    ],
+    "processed": 8,
+    "rolesAssigned": 8
+  }
+}

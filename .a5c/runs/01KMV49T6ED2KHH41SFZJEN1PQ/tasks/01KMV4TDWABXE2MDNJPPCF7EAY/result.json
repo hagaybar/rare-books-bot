@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV4TDWABXE2MDNJPPCF7EAY",
+  "taskId": "verify-tier",
+  "invocationKey": "agent-role-enrichment:S000005:verify-tier",
+  "status": "ok",
+  "result": {
+    "artifacts": [],
+    "issues": [
+      {
+        "issue": "Incomplete cross-record propagation: 12 agents (44 rows) enriched on one record but still 'other' on other records",
+        "severity": "medium"
+      }
+    ],
+    "spotChecks": "5/5 passed (4 full, 1 partial due to propagation)",
+    "stats": {
+      "remaining_other": 1033,
+      "top_roles": {
+        "artist": 59,
+        "author": 791,
+        "curator": 97,
+        "printer": 40,
+        "translator": 159
+      },
+      "total_changes": 1419,
+      "wikidata_enriched_unique_agents": 662
+    },
+    "verified": true
+  },
+  "startedAt": "2026-03-28T21:18:17.909Z",
+  "finishedAt": "2026-03-28T21:18:17.909Z",
+  "value": {
+    "artifacts": [],
+    "issues": [
+      {
+        "issue": "Incomplete cross-record propagation: 12 agents (44 rows) enriched on one record but still 'other' on other records",
+        "severity": "medium"
+      }
+    ],
+    "spotChecks": "5/5 passed (4 full, 1 partial due to propagation)",
+    "stats": {
+      "remaining_other": 1033,
+      "top_roles": {
+        "artist": 59,
+        "author": 791,
+        "curator": 97,
+        "printer": 40,
+        "translator": 159
+      },
+      "total_changes": 1419,
+      "wikidata_enriched_unique_agents": 662
+    },
+    "verified": true
+  }
+}
