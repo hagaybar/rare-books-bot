@@ -160,3 +160,6 @@ logs/
 .a5c/runs/*/run.lock
 *.png
 frontend/.a5c/
+
+# Superpowers brainstorming artifacts
+.superpowers/

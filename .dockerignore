@@ -1,0 +1,51 @@
+# Version control
+.git
+.gitignore
+
+# Development
+.venv
+venv
+node_modules
+frontend/node_modules
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# IDE
+.vscode
+.idea
+*.sublime-*
+
+# Data (mounted as volume, not baked into image)
+data/
+
+# Docs and non-runtime files
+docs/
+archive/
+audits/
+reports/
+tests/
+*.md
+!frontend/README.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*
+*.env
+
+# Logs
+logs/
+*.log
+
+# Babysitter / superpowers
+.a5c/
+.superpowers/
+
+# Build artifacts
+frontend/dist/
