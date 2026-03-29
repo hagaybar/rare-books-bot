@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "2026.01.state-cache",
+  "savedAt": "2026-03-28T19:23:50.761Z",
+  "journalHead": {
+    "seq": 8,
+    "ulid": "01KMTYE631K3M6D2HYPH151VSE"
+  },
+  "stateVersion": 8,
+  "effectsByInvocation": {
+    "streaming-chat:S000001:stream-agent": {
+      "effectId": "01KMTXXCPZB33Y6A6AVB8ER73W",
+      "invocationKey": "streaming-chat:S000001:stream-agent",
+      "status": "resolved_ok",
+      "kind": "agent",
+      "label": "Task 1: Backend — narrator streaming + pipeline progress callbacks",
+      "taskId": "stream-agent",
+      "stepId": "S000001",
+      "requestedAt": "2026-03-28T19:14:40.492Z",
+      "resolvedAt": "2026-03-28T19:19:21.808Z"
+    },
+    "streaming-chat:S000002:stream-agent": {
+      "effectId": "01KMTY5ZNJF29T3P5MYG7T2ZAH",
+      "invocationKey": "streaming-chat:S000002:stream-agent",
+      "status": "resolved_ok",
+      "kind": "agent",
+      "label": "Task 2: Frontend — WebSocket chat + streaming message rendering",
+      "taskId": "stream-agent",
+      "stepId": "S000002",
+      "requestedAt": "2026-03-28T19:19:22.046Z",
+      "resolvedAt": "2026-03-28T19:23:50.136Z"
+    },
+    "streaming-chat:S000003:stream-agent": {
+      "effectId": "01KMTYE5PHHQ4E2Z84CCEGJM1Z",
+      "invocationKey": "streaming-chat:S000003:stream-agent",
+      "status": "resolved_ok",
+      "kind": "agent",
+      "label": "Task 3: Integration test + push",
+      "taskId": "stream-agent",
+      "stepId": "S000003",
+      "requestedAt": "2026-03-28T19:23:50.365Z",
+      "resolvedAt": "2026-03-28T19:23:50.523Z"
+    }
+  },
+  "pendingEffectsByKind": {},
+  "rebuildReason": "post_completion"
+}

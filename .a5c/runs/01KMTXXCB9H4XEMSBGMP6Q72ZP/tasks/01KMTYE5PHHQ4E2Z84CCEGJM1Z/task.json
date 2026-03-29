@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTYE5PHHQ4E2Z84CCEGJM1Z",
+  "taskId": "stream-agent",
+  "invocationKey": "streaming-chat:S000003:stream-agent",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Task 3: Integration test + push",
+  "io": {
+    "inputJsonPath": "tasks/01KMTYE5PHHQ4E2Z84CCEGJM1Z/input.json",
+    "outputJsonPath": "tasks/01KMTYE5PHHQ4E2Z84CCEGJM1Z/output.json"
+  },
+  "inputs": {
+    "description": "Verify the streaming chat works end-to-end.\n\nWorking directory: /home/hagaybar/projects/rare-books-bot\nBranch: feature/auth-security\n\n1. Check TypeScript compiles: cd frontend && npx tsc --noEmit\n2. Check frontend builds: cd frontend && npm run build\n3. Check backend imports: poetry run python -c \"from app.api.main import app; print('OK')\"\n4. Fix any issues found\n\nCommit any fixes and push:\ngit add -A && git status\ngit commit -m \"feat: streaming chat integration — thinking mode + progressive response\" (if there are changes)\ngit push origin feature/auth-security\n\nReturn JSON: { taskName: \"Integration\", status: \"completed\" }",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 3: Integration test + push",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit && npm run build 2>&1 | tail -3"
+  }
+}

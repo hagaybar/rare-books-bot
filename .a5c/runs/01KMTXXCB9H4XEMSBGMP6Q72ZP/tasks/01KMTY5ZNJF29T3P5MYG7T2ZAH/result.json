@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMTY5ZNJF29T3P5MYG7T2ZAH",
+  "taskId": "stream-agent",
+  "invocationKey": "streaming-chat:S000002:stream-agent",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-28T19:23:50.117Z",
+  "finishedAt": "2026-03-28T19:23:50.117Z",
+  "value": {
+    "status": "completed"
+  }
+}

@@ -69,6 +69,7 @@ pytest = "^8.4.1"
 pytest-cov = "^6.0.0"              # Test coverage
 ruff = "^0.12.5"
 httpx = "^0.28.1"                  # HTTP client for testing FastAPI
+websockets = "^16.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

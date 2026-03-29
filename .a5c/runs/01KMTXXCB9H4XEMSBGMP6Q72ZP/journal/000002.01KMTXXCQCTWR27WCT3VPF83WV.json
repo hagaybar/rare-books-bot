@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T19:14:40.492Z",
+  "data": {
+    "effectId": "01KMTXXCPZB33Y6A6AVB8ER73W",
+    "invocationKey": "streaming-chat:S000001:stream-agent",
+    "invocationHash": "610b6eb43f8d9b64089a13b354c2941f919098ace3a6b30ee304e26211768a49",
+    "stepId": "S000001",
+    "taskId": "stream-agent",
+    "kind": "agent",
+    "label": "Task 1: Backend — narrator streaming + pipeline progress callbacks",
+    "taskDefRef": "tasks/01KMTXXCPZB33Y6A6AVB8ER73W/task.json"
+  },
+  "checksum": "01133a0576bc23895df48ac411d3cce044bc88ba421f8e60478e3853662ec06c"
+}

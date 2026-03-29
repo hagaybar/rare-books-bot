@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTXXCPZB33Y6A6AVB8ER73W",
+  "taskId": "stream-agent",
+  "invocationKey": "streaming-chat:S000001:stream-agent",
+  "stepId": "S000001",
+  "kind": "agent",
+  "title": "Task 1: Backend — narrator streaming + pipeline progress callbacks",
+  "io": {
+    "inputJsonPath": "tasks/01KMTXXCPZB33Y6A6AVB8ER73W/input.json",
+    "outputJsonPath": "tasks/01KMTXXCPZB33Y6A6AVB8ER73W/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/specs/2026-03-28-streaming-chat-design.md completely. Implement backend streaming.\n\nWorking directory: /home/hagaybar/projects/rare-books-bot\nBranch: feature/auth-security\n\n### 1. Narrator streaming (scripts/chat/narrator.py)\n\nRead the existing narrator module first. Add an async streaming variant:\n\nThe narrator currently calls OpenAI and returns the full text. Add a new function (or modify existing) that:\n- Accepts a chunk_callback async function\n- Calls OpenAI with stream=True\n- For each chunk, calls await chunk_callback(text)\n- Returns the full assembled text\n\nIf the narrator uses the openai library's client.chat.completions.create(), the streaming version is:\n```python\nresponse = client.chat.completions.create(model=..., messages=..., stream=True)\nfull_text = []\nfor chunk in response:\n    if chunk.choices[0].delta.content:\n        text = chunk.choices[0].delta.content\n        full_text.append(text)\n        if chunk_callback:\n            await chunk_callback(text)\nreturn \"\".join(full_text)\n```\n\nIMPORTANT: Read how the narrator is actually structured. It may use a different pattern. Adapt accordingly.\n\n### 2. Pipeline progress callbacks (app/api/main.py)\n\nIn the /ws/chat WebSocket handler, update the pipeline execution to send thinking messages at key points:\n\n1. Before interpreter: send {\"type\": \"thinking\", \"text\": \"Interpreting your query...\"}\n2. After query compilation: send {\"type\": \"thinking\", \"text\": \"Searching for {description}...\"}\n3. After SQL execution: send {\"type\": \"thinking\", \"text\": \"Found {N} matching records\"}\n4. After enrichment: send {\"type\": \"thinking\", \"text\": \"Analyzing related scholars...\"}\n5. Before narrator: send {\"type\": \"stream_start\"}\n6. During narrator: forward each chunk as {\"type\": \"stream_chunk\", \"text\": \"...\"}\n7. After done: send {\"type\": \"complete\", \"response\": {...}}\n\nThe challenge: the scholar pipeline (scripts/chat/) is synchronous. You need to either:\na) Add await points by making the pipeline async with callbacks\nb) Or run the pipeline in a thread and use progress markers\n\nRead the actual pipeline code in scripts/chat/interpreter.py and how it's called in app/api/main.py to determine the best approach.\n\nA practical approach: wrap the existing synchronous pipeline but add WebSocket sends at the key integration points in main.py (before/after each pipeline stage call).\n\n### 3. Generate human-readable filter description\n\nAdd a helper that converts a query plan into readable text:\n- \"Searching for books published in Amsterdam between 1500 and 1599...\"\n- \"Searching for books by Maimonides...\"\n- \"Searching for Hebrew books about medicine...\"\n\nThis reads the compiled query plan's filters and produces a natural sentence.\n\nVerify: poetry run python -c \"from app.api.main import app; print('OK')\"\nCommit: git add scripts/chat/ app/api/ && git commit -m \"feat: narrator streaming + pipeline progress callbacks for thinking mode\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 1: Backend — narrator streaming + pipeline progress callbacks",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -c \"from app.api.main import app; print('OK')\""
+  }
+}
