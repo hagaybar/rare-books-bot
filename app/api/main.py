@@ -124,7 +124,8 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add CORS middleware (configurable via CORS_ORIGIN env var)
-_cors_origins = os.getenv("CORS_ORIGIN", "*").split(",")
+# Never use "*" with allow_credentials=True — enumerate allowed origins explicitly
+_cors_origins = os.getenv("CORS_ORIGIN", "http://localhost:5173,http://localhost:5174").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
@@ -428,12 +429,14 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
         )
 
     # --- Security check 2: Input validation ---
-    valid, error_msg = validate_input(chat_request.message)
+    valid, cleaned_or_error = validate_input(chat_request.message)
     if not valid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=error_msg,
+            detail=cleaned_or_error,
         )
+    if cleaned_or_error:
+        chat_request.message = cleaned_or_error
 
     # --- Security check 3: Quota check ---
     allowed, used, limit = check_quota(user_id)
@@ -520,15 +523,14 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            "Internal error in chat endpoint",
+        logger.exception(
+            "Chat error",
             extra={"error": str(e)},
-            exc_info=True,
         )
         return ChatResponseAPI(
             success=False,
             response=None,
-            error=f"Internal server error: {str(e)}",
+            error="An internal error occurred. Please try again.",
         )
 
 
@@ -668,17 +670,21 @@ async def _run_scholar_pipeline(
 
 
 @app.get("/sessions/{session_id}")
-async def get_session(session_id: str):
+async def get_session(session_id: str, user=Depends(require_role("limited"))):
     """Get session details.
+
+    Requires 'limited' role or higher. Users can only access their own sessions
+    (admins can access any session).
 
     Args:
         session_id: Session identifier
+        user: Authenticated user from JWT
 
     Returns:
         Session object with message history
 
     Raises:
-        HTTPException: If session not found
+        HTTPException: If session not found or access denied
     """
     store = get_session_store()
     session = store.get_session(session_id)
@@ -689,21 +695,32 @@ async def get_session(session_id: str):
             detail=f"Session {session_id} not found",
         )
 
+    # Ownership check: user can only access their own sessions (admin can access any)
+    if str(session.user_id) != str(user["user_id"]) and user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied",
+        )
+
     return session.model_dump()
 
 
 @app.delete("/sessions/{session_id}")
-async def expire_session(session_id: str):
+async def expire_session(session_id: str, user=Depends(require_role("limited"))):
     """Expire a session.
+
+    Requires 'limited' role or higher. Users can only expire their own sessions
+    (admins can expire any session).
 
     Args:
         session_id: Session identifier
+        user: Authenticated user from JWT
 
     Returns:
         Success message
 
     Raises:
-        HTTPException: If session not found
+        HTTPException: If session not found or access denied
     """
     store = get_session_store()
     session = store.get_session(session_id)
@@ -712,6 +729,13 @@ async def expire_session(session_id: str):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Session {session_id} not found",
+        )
+
+    # Ownership check: user can only expire their own sessions (admin can expire any)
+    if str(session.user_id) != str(user["user_id"]) and user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied",
         )
 
     store.expire_session(session_id)
@@ -781,11 +805,13 @@ async def websocket_chat(websocket: WebSocket):
             return
 
         # Input validation
-        valid, error_msg = validate_input(message)
+        valid, cleaned_or_error = validate_input(message)
         if not valid:
-            await websocket.send_json({"type": "error", "message": error_msg})
+            await websocket.send_json({"type": "error", "message": cleaned_or_error})
             await websocket.close()
             return
+        if cleaned_or_error:
+            message = cleaned_or_error
 
         # Quota check
         allowed, used, limit = check_quota(ws_user_id)
@@ -960,11 +986,11 @@ async def websocket_chat(websocket: WebSocket):
     except WebSocketDisconnect:
         logger.info("WebSocket client disconnected")
     except Exception as e:
-        logger.error(f"WebSocket error: {e}", exc_info=True)
+        logger.exception("WebSocket chat error")
         try:
             await websocket.send_json({
                 "type": "error",
-                "message": f"Internal error: {str(e)}"
+                "message": "An internal error occurred. Please try again."
             })
         except Exception:
             pass

@@ -1,4 +1,6 @@
 """Auth API routes: login, guest, refresh, me, user CRUD."""
+import os
+
 from fastapi import APIRouter, HTTPException, Request, Response, Depends, status
 
 from app.api.auth_models import (
@@ -18,6 +20,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 COOKIE_KWARGS = {
     "httponly": True,
     "samesite": "lax",
+    "secure": os.environ.get("HTTPS", "").lower() == "true",
     "path": "/",
 }
 
@@ -60,8 +63,12 @@ async def refresh(request: Request, response: Response):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
+    # Rotate refresh token: revoke old tokens and issue a new one
+    revoke_refresh_tokens(user["user_id"])
+    new_refresh = create_refresh_token(user["user_id"])
+
     access_token = create_access_token(user["user_id"], user["username"], user["role"])
-    response.set_cookie("access_token", access_token, max_age=900, **COOKIE_KWARGS)
+    _set_auth_cookies(response, access_token, new_refresh)
     return {"message": "Token refreshed", "role": user["role"]}
 
 
@@ -187,8 +194,11 @@ async def update_user(user_id: int, body: UpdateUserRequest, admin=Depends(requi
             conn.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", params)
             conn.commit()
 
+        audit_details = body.model_dump(exclude_none=True, exclude={"new_password"})
+        if body.new_password:
+            audit_details["password_changed"] = True
         audit_log("user_updated", user_id=admin["user_id"], username=admin["username"],
-                  details=f"Updated user {user_id}: {body.model_dump(exclude_none=True)}")
+                  details=f"Updated user {user_id}: {audit_details}")
         return {"message": "User updated"}
     finally:
         conn.close()

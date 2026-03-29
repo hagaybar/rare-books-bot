@@ -26,6 +26,10 @@ elif len(JWT_SECRET) < 32:
     raise ValueError("JWT_SECRET must be at least 32 characters long.")
 
 
+# Pre-computed dummy hash for constant-time rejection of non-existent users (H2 timing fix)
+_DUMMY_HASH = "$2b$12$LJ3m4ys3Lg1W9YVYkEO3MO1pFhVTbWJLRGMBMVOLJHSef/UUPTy.u"
+
+
 def hash_password(password: str) -> str:
     return bcrypt.hash(password)
 
@@ -125,6 +129,8 @@ def authenticate_user(username: str, password: str) -> dict | None:
             "SELECT * FROM users WHERE username = ?", (username,)
         ).fetchone()
         if not user:
+            # Constant-time: hash a dummy password to prevent timing-based user enumeration
+            verify_password("dummy_password_for_timing", _DUMMY_HASH)
             return None
         if not user["is_active"]:
             return None

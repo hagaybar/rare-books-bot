@@ -83,6 +83,7 @@ async def check_moderation(text: str) -> tuple[bool, str | None]:
     """Check text against OpenAI Moderation API. Returns (safe, category)."""
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
+        logger.warning("MODERATION SKIPPED: No OPENAI_API_KEY set")
         return True, None  # Skip if no key
 
     try:
@@ -95,7 +96,7 @@ async def check_moderation(text: str) -> tuple[bool, str | None]:
                 timeout=5.0,
             )
             if resp.status_code != 200:
-                logger.warning("Moderation API returned %d", resp.status_code)
+                logger.warning("MODERATION SKIPPED: API returned %d", resp.status_code)
                 return True, None  # Fail open
             data = resp.json()
             result = data["results"][0]
@@ -104,7 +105,7 @@ async def check_moderation(text: str) -> tuple[bool, str | None]:
                 return False, ", ".join(categories)
             return True, None
     except Exception as e:
-        logger.warning("Moderation API error: %s", e)
+        logger.warning("MODERATION SKIPPED: API error: %s", e)
         return True, None  # Fail open
 
 
@@ -143,13 +144,15 @@ MAX_QUERY_LENGTH = 1000
 
 
 def validate_input(text: str) -> tuple[bool, str | None]:
-    """Validate chat input. Returns (valid, error_message)."""
+    """Validate chat input. Returns (valid, error_message_or_cleaned_text).
+
+    On success, returns (True, cleaned_text) where cleaned_text has control
+    characters stripped. Callers should use the cleaned version.
+    """
     if not text or not text.strip():
         return False, "Empty query"
     if len(text) > MAX_QUERY_LENGTH:
         return False, f"Query too long ({len(text)} chars, max {MAX_QUERY_LENGTH})"
     # Strip control characters
     cleaned = ''.join(c for c in text if c.isprintable() or c in '\n\t')
-    if cleaned != text:
-        return True, None  # Allow but with cleaned version
-    return True, None
+    return True, cleaned  # Return cleaned version
