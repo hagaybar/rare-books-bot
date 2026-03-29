@@ -135,6 +135,29 @@ app.add_middleware(
 )
 
 
+# Security response headers middleware (N1)
+# Added AFTER CORS middleware so it does not overwrite CORS headers.
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    # Content-Security-Policy: allow self + OpenFreeMap tiles + Wikidata/Wikipedia images
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https://*.wikimedia.org https://*.wikipedia.org https://tiles.openfreemap.org https://*.openstreetmap.org; "
+        "connect-src 'self' ws: wss: https://api.openai.com; "
+        "font-src 'self'; "
+        "frame-ancestors 'none'"
+    )
+    return response
+
+
 # Middleware: enforce role-based auth on /metadata/* endpoints
 @app.middleware("http")
 async def metadata_auth_middleware(request: Request, call_next):

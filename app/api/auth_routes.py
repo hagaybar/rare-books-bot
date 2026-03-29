@@ -1,5 +1,8 @@
 """Auth API routes: login, guest, refresh, me, user CRUD."""
 import os
+import threading
+from collections import defaultdict
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request, Response, Depends, status
 
@@ -16,6 +19,28 @@ from app.api.auth_deps import require_role, get_current_user
 from app.api.auth_db import get_auth_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+# --- IP-based login rate limiting (N2) ---
+_ip_attempts: dict[str, list[float]] = defaultdict(list)
+_ip_lock = threading.Lock()
+IP_RATE_LIMIT = 10  # max failed attempts per IP
+IP_RATE_WINDOW = 900  # 15 minutes in seconds
+
+
+def _check_ip_rate_limit(ip: str) -> bool:
+    """Return True if the IP is allowed to attempt login, False if rate-limited."""
+    now = datetime.now().timestamp()
+    with _ip_lock:
+        attempts = _ip_attempts[ip]
+        _ip_attempts[ip] = [t for t in attempts if now - t < IP_RATE_WINDOW]
+        return len(_ip_attempts[ip]) < IP_RATE_LIMIT
+
+
+def _record_ip_failure(ip: str):
+    """Record a failed login attempt for the given IP."""
+    now = datetime.now().timestamp()
+    with _ip_lock:
+        _ip_attempts[ip].append(now)
 
 COOKIE_KWARGS = {
     "httponly": True,
@@ -34,8 +59,17 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str 
 @router.post("/login", response_model=TokenResponse)
 async def login(request: Request, body: LoginRequest, response: Response):
     ip = request.client.host if request.client else "unknown"
+
+    # IP-based rate limiting (N2): block after too many failed attempts
+    if not _check_ip_rate_limit(ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many login attempts. Try again later.",
+        )
+
     user = authenticate_user(body.username, body.password)
     if not user:
+        _record_ip_failure(ip)
         audit_log("login_failed", username=body.username, ip_address=ip)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
