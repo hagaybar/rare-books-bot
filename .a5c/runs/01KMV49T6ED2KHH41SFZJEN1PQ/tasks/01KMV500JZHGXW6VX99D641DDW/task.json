@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV500JZHGXW6VX99D641DDW",
+  "taskId": "apply-tier2",
+  "invocationKey": "agent-role-enrichment:S000006:apply-tier2",
+  "stepId": "S000006",
+  "kind": "agent",
+  "title": "Tier 2: Re-fetch Wikidata/VIAF for agents with authority URIs but no occupations",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "enrichmentCachePath": "data/enrichment/cache.db",
+    "mappingFile": "data/normalization/occupation_role_map.json",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

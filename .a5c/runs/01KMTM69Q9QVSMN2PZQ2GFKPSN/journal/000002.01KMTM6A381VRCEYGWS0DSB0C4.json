@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:24:46.952Z",
+  "data": {
+    "effectId": "01KMTM6A2RNFRTBV4XS0XNP8P6",
+    "invocationKey": "auth-plan-a:S000001:auth-agent",
+    "invocationHash": "ae440eda9ba415bd14dc4925363e3825bdbaf7619447dace3f754f0abcc3eab8",
+    "stepId": "S000001",
+    "taskId": "auth-agent",
+    "kind": "agent",
+    "label": "Tasks 1+2: Dependencies, auth DB, auth models, auth service",
+    "taskDefRef": "tasks/01KMTM6A2RNFRTBV4XS0XNP8P6/task.json"
+  },
+  "checksum": "10c2d7776455d444df331681608fc3e3ad4c822475c7f87257f5dc76a1ba1289"
+}

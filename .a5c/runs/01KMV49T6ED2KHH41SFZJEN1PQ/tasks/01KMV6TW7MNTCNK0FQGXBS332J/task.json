@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV6TW7MNTCNK0FQGXBS332J",
+  "taskId": "apply-tier3-search",
+  "invocationKey": "agent-role-enrichment:S000008:apply-tier3-search",
+  "stepId": "S000008",
+  "kind": "agent",
+  "title": "Tier 3: Web search for high-frequency agents without authority URIs",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "mappingFile": "data/normalization/occupation_role_map.json",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "tier3MinFrequency": 3
+  }
+}

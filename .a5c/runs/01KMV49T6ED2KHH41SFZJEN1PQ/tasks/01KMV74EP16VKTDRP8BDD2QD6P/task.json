@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV74EP16VKTDRP8BDD2QD6P",
+  "taskId": "final-verification",
+  "invocationKey": "agent-role-enrichment:S000011:final-verification",
+  "stepId": "S000011",
+  "kind": "agent",
+  "title": "Final verification and statistics report",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

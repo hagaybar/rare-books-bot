@@ -5,16 +5,20 @@
  * - Scrollable message history
  * - Fixed-bottom input bar
  * - Welcome state with example query chips
- * - Loading state with spinner
+ * - WebSocket streaming with thinking mode and progressive text
+ * - HTTP POST fallback when WebSocket is unavailable
  * - Phase indicator and confidence display
  * - Follow-up suggestion chips
  * - Clarification prompts
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { ChatMessage } from '../types/chat';
+import { Link, useSearchParams } from 'react-router-dom';
+import type { ChatMessage, ChatResponse, StreamingState } from '../types/chat';
 import { sendChatMessage, fetchPrimoUrls } from '../api/chat';
+import { authenticatedFetch } from '../api/auth';
 import { useAppStore } from '../stores/appStore';
+import { useAuthStore } from '../stores/authStore';
 import MessageBubble from '../components/chat/MessageBubble';
 import FollowUpChips from '../components/chat/FollowUpChips';
 
@@ -40,21 +44,44 @@ function nextId(): string {
   return `msg-${Date.now()}-${messageIdCounter}`;
 }
 
+/**
+ * Build the WebSocket URL that works with the Vite dev proxy.
+ * The Vite config proxies /ws -> ws://localhost:8000, so we build
+ * a relative ws:// URL from the current page origin.
+ */
+function getWsUrl(): string {
+  const loc = window.location;
+  const protocol = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+  // In dev mode (Vite on :5173/:5174), connect directly to backend on :8000
+  // to avoid proxy issues. In production (same origin), use loc.host.
+  if (loc.port === '5173' || loc.port === '5174') {
+    return `${protocol}//${loc.hostname}:8000/ws/chat`;
+  }
+  return `${protocol}//${loc.host}/ws/chat`;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export default function Chat() {
   const { sessionId, setSessionId } = useAppStore();
+  const user = useAuthStore((s) => s.user);
+  const [searchParams] = useSearchParams();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [primoUrls, setPrimoUrls] = useState<Record<string, string>>({});
+  const [restoredSessionId, setRestoredSessionId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  /** Ref to the WebSocket for the current streaming request. */
+  const wsRef = useRef<WebSocket | null>(null);
+  /** ID of the assistant message being streamed. */
+  const streamingMsgIdRef = useRef<string | null>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -66,8 +93,355 @@ export default function Chat() {
     inputRef.current?.focus();
   }, []);
 
+  // Clean up WebSocket on unmount
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, []);
+
+  // Restore session from URL ?session=XYZ parameter
+  useEffect(() => {
+    const urlSessionId = searchParams.get('session');
+    if (!urlSessionId || urlSessionId === restoredSessionId) return;
+
+    setRestoredSessionId(urlSessionId);
+    setSessionId(urlSessionId);
+
+    // Load session messages from the backend
+    (async () => {
+      try {
+        const res = await authenticatedFetch(`/sessions/${urlSessionId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const restored: ChatMessage[] = (data.messages || []).map(
+          (msg: { role: string; content: string; timestamp: string }, i: number) => ({
+            id: `restored-${i}`,
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            candidateSet: null,
+            suggestedFollowups: [],
+            clarificationNeeded: null,
+            phase: null,
+            confidence: null,
+            metadata: {},
+            timestamp: new Date(msg.timestamp),
+          }),
+        );
+        if (restored.length > 0) {
+          setMessages(restored);
+        }
+      } catch {
+        // Session load failed silently -- user can still start fresh
+      }
+    })();
+  }, [searchParams, restoredSessionId, setSessionId]);
+
   // ------------------------------------------------------------------
-  // Send message handler
+  // Update the streaming assistant message in-place
+  // ------------------------------------------------------------------
+
+  const updateStreamingMessage = useCallback(
+    (updater: (prev: ChatMessage) => ChatMessage) => {
+      const msgId = streamingMsgIdRef.current;
+      if (!msgId) return;
+      setMessages((prev) =>
+        prev.map((m) => (m.id === msgId ? updater(m) : m)),
+      );
+    },
+    [],
+  );
+
+  // ------------------------------------------------------------------
+  // WebSocket streaming send
+  // ------------------------------------------------------------------
+
+  const sendViaWebSocket = useCallback(
+    async (text: string): Promise<void> => {
+      // Ensure token is fresh before opening WebSocket (WS can't auto-refresh on 401)
+      const meRes = await fetch('/auth/me', { credentials: 'include' });
+      if (!meRes.ok) {
+        const refreshRes = await fetch('/auth/refresh', { method: 'POST', credentials: 'include' });
+        if (!refreshRes.ok) {
+          throw new Error('Session expired');
+        }
+      }
+
+      return new Promise((resolve, reject) => {
+        let ws: WebSocket;
+        try {
+          ws = new WebSocket(getWsUrl());
+        } catch {
+          reject(new Error('WebSocket not supported'));
+          return;
+        }
+        wsRef.current = ws;
+
+        // Create the placeholder assistant message in thinking state
+        const assistantMsgId = nextId();
+        streamingMsgIdRef.current = assistantMsgId;
+
+        const assistantMsg: ChatMessage = {
+          id: assistantMsgId,
+          role: 'assistant',
+          content: '',
+          candidateSet: null,
+          suggestedFollowups: [],
+          clarificationNeeded: null,
+          phase: null,
+          confidence: null,
+          metadata: {},
+          timestamp: new Date(),
+          streamingState: 'thinking' as StreamingState,
+          thinkingSteps: [],
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+
+        const connectionTimeout = setTimeout(() => {
+          if (ws.readyState === WebSocket.CONNECTING) {
+            ws.close();
+            reject(new Error('WebSocket connection timeout'));
+          }
+        }, 5000);
+
+        ws.onopen = () => {
+          clearTimeout(connectionTimeout);
+          ws.send(JSON.stringify({
+            message: text,
+            session_id: sessionId,
+          }));
+        };
+
+        ws.onmessage = (event) => {
+          let data: Record<string, unknown>;
+          try {
+            data = JSON.parse(event.data as string) as Record<string, unknown>;
+          } catch {
+            return;
+          }
+
+          const msgType = data.type as string;
+
+          switch (msgType) {
+            case 'session_created': {
+              const newSessionId = data.session_id as string;
+              if (newSessionId) {
+                setSessionId(newSessionId);
+              }
+              break;
+            }
+
+            case 'thinking': {
+              const thinkingText = data.text as string ?? data.message as string ?? '';
+              if (thinkingText) {
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'thinking',
+                  thinkingSteps: [...(prev.thinkingSteps ?? []), thinkingText],
+                }));
+              }
+              break;
+            }
+
+            case 'progress': {
+              // Legacy progress messages -- treat as thinking steps
+              const progressText = data.message as string ?? '';
+              if (progressText) {
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'thinking',
+                  thinkingSteps: [...(prev.thinkingSteps ?? []), progressText],
+                }));
+              }
+              break;
+            }
+
+            case 'stream_start': {
+              updateStreamingMessage((prev) => ({
+                ...prev,
+                streamingState: 'streaming',
+              }));
+              break;
+            }
+
+            case 'stream_chunk': {
+              const chunkText = data.text as string ?? '';
+              if (chunkText) {
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'streaming',
+                  content: prev.content + chunkText,
+                }));
+              }
+              break;
+            }
+
+            case 'batch': {
+              // Legacy batch messages from the existing WS protocol
+              // Treat as a progress step
+              const batchNum = data.batch_num as number ?? 0;
+              const totalBatches = data.total_batches as number ?? 0;
+              if (batchNum && totalBatches) {
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'thinking',
+                  thinkingSteps: [
+                    ...(prev.thinkingSteps ?? []),
+                    `Loading results (batch ${String(batchNum)}/${String(totalBatches)})...`,
+                  ],
+                }));
+              }
+              break;
+            }
+
+            case 'complete': {
+              const resp = data.response as ChatResponse | undefined;
+              if (resp) {
+                // Persist session ID from the complete response
+                if (resp.session_id && resp.session_id !== sessionId) {
+                  setSessionId(resp.session_id);
+                }
+
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'complete',
+                  // Use the complete response content if we didn't get stream chunks
+                  content: prev.content || resp.message,
+                  candidateSet: resp.candidate_set,
+                  suggestedFollowups: resp.suggested_followups,
+                  clarificationNeeded: resp.clarification_needed,
+                  phase: resp.phase,
+                  confidence: resp.confidence,
+                  metadata: resp.metadata,
+                }));
+
+                // Batch-resolve Primo URLs for any new candidates
+                if (resp.candidate_set?.candidates.length) {
+                  const ids = resp.candidate_set.candidates.map((c) => c.record_id);
+                  fetchPrimoUrls(ids)
+                    .then((urls) => {
+                      if (Object.keys(urls).length > 0) {
+                        setPrimoUrls((prev) => ({ ...prev, ...urls }));
+                      }
+                    })
+                    .catch(() => {
+                      // Primo URL resolution is non-critical
+                    });
+                }
+              }
+
+              streamingMsgIdRef.current = null;
+              ws.close();
+              wsRef.current = null;
+              resolve();
+              break;
+            }
+
+            case 'error': {
+              const errorMessage = data.message as string ?? 'Unknown WebSocket error';
+              streamingMsgIdRef.current = null;
+              ws.close();
+              wsRef.current = null;
+              reject(new Error(errorMessage));
+              break;
+            }
+
+            default:
+              // Unknown message type -- ignore
+              break;
+          }
+        };
+
+        ws.onerror = () => {
+          clearTimeout(connectionTimeout);
+          streamingMsgIdRef.current = null;
+          wsRef.current = null;
+          // Remove the placeholder assistant message
+          setMessages((prev) => prev.filter((m) => m.id !== assistantMsgId));
+          reject(new Error('WebSocket connection failed'));
+        };
+
+        ws.onclose = (event) => {
+          clearTimeout(connectionTimeout);
+          wsRef.current = null;
+          // If the connection closed before we got a complete message,
+          // finalize whatever we have
+          if (streamingMsgIdRef.current === assistantMsgId) {
+            // Abnormal close -- mark as complete with whatever text we have
+            if (!event.wasClean) {
+              updateStreamingMessage((prev) => ({
+                ...prev,
+                streamingState: 'complete',
+                content: prev.content || 'Connection lost. Please try again.',
+              }));
+            } else {
+              // Clean close but no complete message received; finalize
+              updateStreamingMessage((prev) => ({
+                ...prev,
+                streamingState: 'complete',
+              }));
+            }
+            streamingMsgIdRef.current = null;
+            resolve();
+          }
+        };
+      });
+    },
+    [sessionId, setSessionId, updateStreamingMessage],
+  );
+
+  // ------------------------------------------------------------------
+  // HTTP fallback send (existing logic)
+  // ------------------------------------------------------------------
+
+  const sendViaHttp = useCallback(
+    async (text: string) => {
+      const apiResponse = await sendChatMessage(text, sessionId);
+
+      if (!apiResponse.success || !apiResponse.response) {
+        throw new Error(apiResponse.error ?? 'Unknown error from server');
+      }
+
+      const resp = apiResponse.response;
+
+      // Persist session ID
+      if (resp.session_id && resp.session_id !== sessionId) {
+        setSessionId(resp.session_id);
+      }
+
+      // Build assistant message
+      const botMsg: ChatMessage = {
+        id: nextId(),
+        role: 'assistant',
+        content: resp.message,
+        candidateSet: resp.candidate_set,
+        suggestedFollowups: resp.suggested_followups,
+        clarificationNeeded: resp.clarification_needed,
+        phase: resp.phase,
+        confidence: resp.confidence,
+        metadata: resp.metadata,
+        timestamp: new Date(),
+        streamingState: 'complete',
+      };
+      setMessages((prev) => [...prev, botMsg]);
+
+      // Batch-resolve Primo URLs for any new candidates
+      if (resp.candidate_set?.candidates.length) {
+        const ids = resp.candidate_set.candidates.map((c) => c.record_id);
+        const urls = await fetchPrimoUrls(ids);
+        if (Object.keys(urls).length > 0) {
+          setPrimoUrls((prev) => ({ ...prev, ...urls }));
+        }
+      }
+    },
+    [sessionId, setSessionId],
+  );
+
+  // ------------------------------------------------------------------
+  // Send message handler (WebSocket first, HTTP fallback)
   // ------------------------------------------------------------------
 
   const handleSend = useCallback(
@@ -98,52 +472,24 @@ export default function Chat() {
       setLoading(true);
 
       try {
-        const apiResponse = await sendChatMessage(trimmed, sessionId);
-
-        if (!apiResponse.success || !apiResponse.response) {
-          throw new Error(apiResponse.error ?? 'Unknown error from server');
+        // Try WebSocket first for streaming experience
+        await sendViaWebSocket(trimmed);
+      } catch (wsErr) {
+        // WebSocket failed -- fall back to HTTP POST
+        console.warn('[Chat] WebSocket failed, falling back to HTTP:', wsErr instanceof Error ? wsErr.message : wsErr);
+        try {
+          await sendViaHttp(trimmed);
+        } catch (httpErr) {
+          const errMsg = httpErr instanceof Error ? httpErr.message : 'Something went wrong';
+          setError(errMsg);
         }
-
-        const resp = apiResponse.response;
-
-        // Persist session ID
-        if (resp.session_id && resp.session_id !== sessionId) {
-          setSessionId(resp.session_id);
-        }
-
-        // Build assistant message
-        const botMsg: ChatMessage = {
-          id: nextId(),
-          role: 'assistant',
-          content: resp.message,
-          candidateSet: resp.candidate_set,
-          suggestedFollowups: resp.suggested_followups,
-          clarificationNeeded: resp.clarification_needed,
-          phase: resp.phase,
-          confidence: resp.confidence,
-          metadata: resp.metadata,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, botMsg]);
-
-        // Batch-resolve Primo URLs for any new candidates
-        if (resp.candidate_set?.candidates.length) {
-          const ids = resp.candidate_set.candidates.map((c) => c.record_id);
-          const urls = await fetchPrimoUrls(ids);
-          if (Object.keys(urls).length > 0) {
-            setPrimoUrls((prev) => ({ ...prev, ...urls }));
-          }
-        }
-      } catch (err) {
-        const errMsg = err instanceof Error ? err.message : 'Something went wrong';
-        setError(errMsg);
       } finally {
         setLoading(false);
         // Re-focus input
         inputRef.current?.focus();
       }
     },
-    [loading, sessionId, setSessionId],
+    [loading, sendViaWebSocket, sendViaHttp],
   );
 
   // ------------------------------------------------------------------
@@ -170,6 +516,12 @@ export default function Chat() {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 160) + 'px';
   };
+
+  // ------------------------------------------------------------------
+  // Derived state: check if we are in streaming mode (WS active)
+  // ------------------------------------------------------------------
+
+  const isStreamingActive = streamingMsgIdRef.current !== null;
 
   // ------------------------------------------------------------------
   // Render
@@ -237,8 +589,8 @@ export default function Chat() {
               />
             ))}
 
-            {/* Loading indicator */}
-            {loading && (
+            {/* Loading indicator (only when not streaming -- streaming has its own UI) */}
+            {loading && !isStreamingActive && (
               <div className="flex justify-start">
                 <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 shadow-sm">
                   <div className="flex items-center gap-2">
@@ -283,43 +635,63 @@ export default function Chat() {
       {/* Input bar */}
       <div className="border-t border-gray-200 bg-white">
         <div className="max-w-3xl mx-auto px-4 py-3">
-          <div className="flex items-end gap-2">
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={handleInput}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask about rare books..."
-                rows={1}
-                disabled={loading}
-                className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5
-                  text-sm text-gray-900 placeholder:text-gray-400
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-shadow"
-                style={{ maxHeight: '160px' }}
-              />
+          {user?.role === 'guest' ? (
+            /* Guest: show login prompt instead of input */
+            <div className="text-center py-2">
+              <p className="text-sm text-gray-500">
+                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  Login
+                </Link>{' '}
+                to use the chat
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => handleSend(input)}
-              disabled={loading || !input.trim()}
-              className="shrink-0 w-10 h-10 rounded-xl bg-blue-600 text-white
-                flex items-center justify-center
-                hover:bg-blue-700 active:bg-blue-800
-                disabled:bg-gray-300 disabled:cursor-not-allowed
-                transition-colors shadow-sm cursor-pointer"
-              title="Send message"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-              </svg>
-            </button>
-          </div>
-          <p className="text-[10px] text-gray-400 mt-1.5 text-center">
-            Press Enter to send, Shift+Enter for new line
-          </p>
+          ) : (
+            <>
+              {/* Quota badge for limited users */}
+              {user?.role === 'limited' && user.token_limit != null && (
+                <div className="text-xs text-gray-400 text-center mb-1">
+                  Tokens: {user.tokens_used_this_month ?? 0} / {user.token_limit}
+                </div>
+              )}
+              <div className="flex items-end gap-2">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={handleInput}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask about rare books..."
+                    rows={1}
+                    disabled={loading}
+                    className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5
+                      text-sm text-gray-900 placeholder:text-gray-400
+                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                      transition-shadow"
+                    style={{ maxHeight: '160px' }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSend(input)}
+                  disabled={loading || !input.trim()}
+                  className="shrink-0 w-10 h-10 rounded-xl bg-blue-600 text-white
+                    flex items-center justify-center
+                    hover:bg-blue-700 active:bg-blue-800
+                    disabled:bg-gray-300 disabled:cursor-not-allowed
+                    transition-colors shadow-sm cursor-pointer"
+                  title="Send message"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1.5 text-center">
+                Press Enter to send, Shift+Enter for new line
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

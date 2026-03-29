@@ -1,0 +1,12 @@
+{
+  "verified": true,
+  "issues": [],
+  "stats": {
+    "tier2_changes": 63,
+    "tier2_distinct_agents": 21,
+    "total_wikidata_enriched": 681,
+    "remaining_other_unknown": 729,
+    "spot_checks": "3/3 passed"
+  },
+  "artifacts": []
+}

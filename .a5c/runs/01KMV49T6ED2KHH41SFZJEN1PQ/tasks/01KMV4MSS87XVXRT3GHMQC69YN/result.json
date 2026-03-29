@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV4MSS87XVXRT3GHMQC69YN",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "agent-role-enrichment:S000003:__sdk.breakpoint",
+  "status": "ok",
+  "result": {
+    "approved": true,
+    "response": "Auto-approved in yolo mode. 332 mappings look comprehensive."
+  },
+  "startedAt": "2026-03-28T21:12:25.351Z",
+  "finishedAt": "2026-03-28T21:12:25.351Z",
+  "value": {
+    "approved": true,
+    "response": "Auto-approved in yolo mode. 332 mappings look comprehensive."
+  }
+}

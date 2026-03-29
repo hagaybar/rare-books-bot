@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:12:34.638Z",
+  "data": {
+    "effectId": "01KMV4N921250GB135TTAAHWJW",
+    "invocationKey": "agent-role-enrichment:S000004:apply-tier1",
+    "invocationHash": "8ab45aa64b99057d632a7fabe554abc327d1ee08b54f88b57d3d5f162fc95fd5",
+    "stepId": "S000004",
+    "taskId": "apply-tier1",
+    "kind": "agent",
+    "label": "Tier 1: Apply cached Wikidata occupations to agents with unknown roles",
+    "taskDefRef": "tasks/01KMV4N921250GB135TTAAHWJW/task.json"
+  },
+  "checksum": "def9f4d15a5fddda0371f183550c8d796bd4be68357781d5ea912b576b01ea5b"
+}

@@ -1,0 +1,17 @@
+{
+  "verified": true,
+  "issues": [
+    {
+      "severity": "medium",
+      "issue": "Incomplete cross-record propagation: 12 agents (44 rows) enriched on one record but still 'other' on other records"
+    }
+  ],
+  "stats": {
+    "wikidata_enriched_unique_agents": 662,
+    "total_changes": 1419,
+    "remaining_other": 1033,
+    "top_roles": {"author": 791, "translator": 159, "curator": 97, "artist": 59, "printer": 40}
+  },
+  "spotChecks": "5/5 passed (4 full, 1 partial due to propagation)",
+  "artifacts": []
+}

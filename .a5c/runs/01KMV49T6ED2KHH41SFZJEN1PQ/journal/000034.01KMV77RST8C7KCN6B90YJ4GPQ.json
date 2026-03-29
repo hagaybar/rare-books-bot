@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:57:37.722Z",
+  "data": {
+    "effectId": "01KMV77RSJ1PBFH64TK5VTR3WD",
+    "invocationKey": "agent-role-enrichment:S000012:run-tests",
+    "invocationHash": "255df362704a24c6c20083addfce33ad0d1bf7c5ab8ba8ab7a04fb41244b98a5",
+    "stepId": "S000012",
+    "taskId": "run-tests",
+    "kind": "shell",
+    "label": "Run existing test suite to check for regressions",
+    "taskDefRef": "tasks/01KMV77RSJ1PBFH64TK5VTR3WD/task.json"
+  },
+  "checksum": "1d60c287acdca6e3eced23d94472e833e1abb324d4705afe3a488802f0cf389e"
+}

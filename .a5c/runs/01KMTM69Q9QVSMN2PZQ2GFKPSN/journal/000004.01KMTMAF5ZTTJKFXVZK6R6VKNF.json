@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:27:03.231Z",
+  "data": {
+    "effectId": "01KMTMAF5JRVJY8B0M0AGQD2KM",
+    "invocationKey": "auth-plan-a:S000002:auth-agent",
+    "invocationHash": "2ec286854a5330dcf236771ddb73af7c6ae77003b1d79b5843295f80780b891b",
+    "stepId": "S000002",
+    "taskId": "auth-agent",
+    "kind": "agent",
+    "label": "Task 3: Auth dependencies (role enforcement)",
+    "taskDefRef": "tasks/01KMTMAF5JRVJY8B0M0AGQD2KM/task.json"
+  },
+  "checksum": "33507257a15ea6ac421277233a12485d44b1809796c3a67a8d828751db55e5e8"
+}

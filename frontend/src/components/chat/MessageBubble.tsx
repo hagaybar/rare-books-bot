@@ -13,6 +13,7 @@ import ConfidenceBadge from '../shared/ConfidenceBadge';
 import FollowUpChips from './FollowUpChips';
 import GroundingSources from './GroundingSources';
 import PhaseIndicator from './PhaseIndicator';
+import ThinkingBlock from './ThinkingBlock';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -91,6 +92,11 @@ export default function MessageBubble({
   }
 
   // ---- Bot message ----
+  const isStreaming = message.streamingState === 'streaming';
+  const isThinking = message.streamingState === 'thinking';
+  const isStreamComplete = message.streamingState === 'complete' || !message.streamingState;
+  const thinkingSteps = message.thinkingSteps ?? [];
+
   const candidates = message.candidateSet?.candidates ?? [];
   const displayCandidates = candidates.slice(0, MAX_INLINE_CANDIDATES);
   const totalCount = message.candidateSet?.total_count ?? candidates.length;
@@ -116,8 +122,17 @@ export default function MessageBubble({
   return (
     <div className="flex justify-start">
       <div className="max-w-[85%] space-y-3">
+        {/* Thinking block (active during thinking, collapsible after) */}
+        {thinkingSteps.length > 0 && (
+          <ThinkingBlock
+            steps={thinkingSteps}
+            isActive={isThinking}
+            defaultCollapsed={isStreamComplete}
+          />
+        )}
+
         {/* Phase + confidence header */}
-        {(message.phase || message.confidence !== null) && (
+        {isStreamComplete && (message.phase || message.confidence !== null) && (
           <div className="flex items-center gap-2 flex-wrap">
             <PhaseIndicator phase={message.phase} />
             {message.confidence !== null && (
@@ -129,7 +144,7 @@ export default function MessageBubble({
         )}
 
         {/* Clarification prompt */}
-        {message.clarificationNeeded && (
+        {isStreamComplete && message.clarificationNeeded && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
             <div className="flex items-start gap-2">
               <svg className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -142,12 +157,26 @@ export default function MessageBubble({
           </div>
         )}
 
-        {/* Main message text (skip when clarification box already shows it) */}
-        {!message.clarificationNeeded && (
+        {/* Main message text -- streaming or complete */}
+        {/* During thinking-only state with no text yet, skip the bubble */}
+        {!message.clarificationNeeded && (isStreaming || (isStreamComplete && message.content)) && (
         <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 text-sm text-gray-800 leading-relaxed shadow-sm">
-          <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
-            <ReactMarkdown>{cleanedContent}</ReactMarkdown>
-          </div>
+          {isStreaming ? (
+            /* Streaming: show text so far with blinking cursor */
+            <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+              <span
+                className="inline-block w-[2px] h-[1em] bg-gray-600 ml-0.5 align-text-bottom"
+                style={{ animation: 'blink-cursor 1s step-end infinite' }}
+                aria-hidden="true"
+              />
+            </div>
+          ) : (
+            /* Complete: normal render */
+            <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+              <ReactMarkdown>{cleanedContent}</ReactMarkdown>
+            </div>
+          )}
 
           {/* Execution time + query details */}
           <div className="mt-2 flex items-center gap-3 flex-wrap">

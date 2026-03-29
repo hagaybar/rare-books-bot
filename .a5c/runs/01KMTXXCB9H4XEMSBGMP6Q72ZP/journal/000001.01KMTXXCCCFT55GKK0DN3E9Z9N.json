@@ -1,0 +1,15 @@
+{
+  "type": "RUN_CREATED",
+  "recordedAt": "2026-03-28T19:14:40.140Z",
+  "data": {
+    "runId": "01KMTXXCB9H4XEMSBGMP6Q72ZP",
+    "processId": "streaming-chat",
+    "entrypoint": {
+      "importPath": "../../processes/streaming-chat.js",
+      "exportName": "process"
+    },
+    "inputsRef": "inputs.json",
+    "prompt": "Streaming chat with thinking mode. YOLO."
+  },
+  "checksum": "c309820342955d97e9701a2088df1390b1c75bd5c5f44b189fcfd3bfc7692d97"
+}

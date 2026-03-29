@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T19:23:50.365Z",
+  "data": {
+    "effectId": "01KMTYE5PHHQ4E2Z84CCEGJM1Z",
+    "invocationKey": "streaming-chat:S000003:stream-agent",
+    "invocationHash": "1ba01cc017226e761d091bbb8a91db42ac549a22cc8366fb2e2fdfef12628979",
+    "stepId": "S000003",
+    "taskId": "stream-agent",
+    "kind": "agent",
+    "label": "Task 3: Integration test + push",
+    "taskDefRef": "tasks/01KMTYE5PHHQ4E2Z84CCEGJM1Z/task.json"
+  },
+  "checksum": "14f35c420de2a6982d6f8998eebd14896c9c5c3de7fe96e304a7217b1e1a83b3"
+}

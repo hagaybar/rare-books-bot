@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV4TDWABXE2MDNJPPCF7EAY",
+  "taskId": "verify-tier",
+  "invocationKey": "agent-role-enrichment:S000005:verify-tier",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Verify Tier 1 enrichment results",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "expectedCount": 684,
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "resultsFile": "data/normalization/tier1_role_changes.jsonl",
+    "tier": 1
+  }
+}

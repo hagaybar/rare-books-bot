@@ -1,4 +1,5 @@
 import type { PublisherAuthorityListResponse, PublisherAuthority } from '../types/publishers';
+import { authenticatedFetch } from './auth';
 
 const BASE = '/metadata';
 
@@ -16,7 +17,7 @@ export async function fetchPublishers(
   const params = new URLSearchParams();
   if (type) params.set('type', type);
   const qs = params.toString();
-  const res = await fetch(`${BASE}/publishers${qs ? `?${qs}` : ''}`);
+  const res = await authenticatedFetch(`${BASE}/publishers${qs ? `?${qs}` : ''}`);
   return handleResponse<PublisherAuthorityListResponse>(res);
 }
 
@@ -28,7 +29,7 @@ export async function createPublisher(data: {
   dates_active?: string;
   notes?: string;
 }): Promise<PublisherAuthority> {
-  const res = await fetch(`${BASE}/publishers`, {
+  const res = await authenticatedFetch(`${BASE}/publishers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -47,7 +48,7 @@ export async function updatePublisher(
     notes?: string;
   }
 ): Promise<PublisherAuthority> {
-  const res = await fetch(`${BASE}/publishers/${id}`, {
+  const res = await authenticatedFetch(`${BASE}/publishers/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -56,7 +57,7 @@ export async function updatePublisher(
 }
 
 export async function deletePublisher(id: number): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`${BASE}/publishers/${id}`, { method: 'DELETE' });
+  const res = await authenticatedFetch(`${BASE}/publishers/${id}`, { method: 'DELETE' });
   return handleResponse<{ success: boolean; message: string }>(res);
 }
 
@@ -64,7 +65,7 @@ export async function addVariant(
   publisherId: number,
   data: { variant_form: string; script: string; language?: string }
 ): Promise<PublisherAuthority> {
-  const res = await fetch(`${BASE}/publishers/${publisherId}/variants`, {
+  const res = await authenticatedFetch(`${BASE}/publishers/${publisherId}/variants`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -76,7 +77,7 @@ export async function deleteVariant(
   publisherId: number,
   variantId: number
 ): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`${BASE}/publishers/${publisherId}/variants/${variantId}`, {
+  const res = await authenticatedFetch(`${BASE}/publishers/${publisherId}/variants/${variantId}`, {
     method: 'DELETE',
   });
   return handleResponse<{ success: boolean; message: string }>(res);

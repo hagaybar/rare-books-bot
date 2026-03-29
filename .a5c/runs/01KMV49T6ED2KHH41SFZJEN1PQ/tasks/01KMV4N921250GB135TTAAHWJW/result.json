@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV4N921250GB135TTAAHWJW",
+  "taskId": "apply-tier1",
+  "invocationKey": "agent-role-enrichment:S000004:apply-tier1",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/normalization/apply_wikidata_roles.py",
+      "data/normalization/tier1_role_changes.jsonl"
+    ],
+    "processed": 916,
+    "resultsFile": "data/normalization/tier1_role_changes.jsonl",
+    "rolesAssigned": 1419
+  },
+  "startedAt": "2026-03-28T21:15:13.382Z",
+  "finishedAt": "2026-03-28T21:15:13.382Z",
+  "value": {
+    "artifacts": [
+      "scripts/normalization/apply_wikidata_roles.py",
+      "data/normalization/tier1_role_changes.jsonl"
+    ],
+    "processed": 916,
+    "resultsFile": "data/normalization/tier1_role_changes.jsonl",
+    "rolesAssigned": 1419
+  }
+}

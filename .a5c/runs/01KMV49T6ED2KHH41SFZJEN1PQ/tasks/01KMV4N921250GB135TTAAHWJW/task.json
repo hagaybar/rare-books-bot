@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV4N921250GB135TTAAHWJW",
+  "taskId": "apply-tier1",
+  "invocationKey": "agent-role-enrichment:S000004:apply-tier1",
+  "stepId": "S000004",
+  "kind": "agent",
+  "title": "Tier 1: Apply cached Wikidata occupations to agents with unknown roles",
+  "inputs": {
+    "dbPath": "data/index/bibliographic.db",
+    "mappingFile": "data/normalization/occupation_role_map.json",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

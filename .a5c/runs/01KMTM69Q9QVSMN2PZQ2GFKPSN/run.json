@@ -1,0 +1,14 @@
+{
+  "runId": "01KMTM69Q9QVSMN2PZQ2GFKPSN",
+  "request": "auth-plan-a",
+  "processId": "auth-plan-a",
+  "entrypoint": {
+    "importPath": "../../processes/auth-plan-a.js",
+    "exportName": "process"
+  },
+  "processPath": "../../processes/auth-plan-a.js",
+  "layoutVersion": "2026.01-storage-preview",
+  "createdAt": "2026-03-28T16:24:46.590Z",
+  "prompt": "Auth Plan A core backend. YOLO.",
+  "completionProof": "c605c1ac59356bd4b32567c177e7f58d"
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTMNWRC2A0A7G4PCHB7M2FQ",
+  "taskId": "auth-agent",
+  "invocationKey": "auth-plan-a:S000006:auth-agent",
+  "stepId": "S000006",
+  "kind": "agent",
+  "title": "Task 7: Auth endpoint tests",
+  "io": {
+    "inputJsonPath": "tasks/01KMTMNWRC2A0A7G4PCHB7M2FQ/input.json",
+    "outputJsonPath": "tasks/01KMTMNWRC2A0A7G4PCHB7M2FQ/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-a-core.md — Task 7. Create tests/app/test_auth.py with tests for: login success, login wrong password, guest session, /me endpoint, /me without auth, admin list users, non-admin cannot list users. Use tmp_path + monkeypatch to isolate auth DB. Use EXACT test code from plan.\n\nRun: poetry run pytest tests/app/test_auth.py -v\nAll tests must pass.\n\nCommit and push: git add tests/app/test_auth.py && git commit -m \"feat: add auth endpoint tests\" && git push origin feature/auth-security",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 7: Auth endpoint tests",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run pytest tests/app/test_auth.py -v 2>&1 | tail -15"
+  }
+}

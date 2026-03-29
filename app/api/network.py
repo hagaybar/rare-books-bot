@@ -4,8 +4,9 @@ import logging
 import sqlite3
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.api.auth_deps import require_role
 from app.api.network_models import (
     AgentConnection,
     AgentDetail,
@@ -17,7 +18,11 @@ from app.api.network_models import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/network", tags=["network"])
+router = APIRouter(
+    prefix="/network",
+    tags=["network"],
+    dependencies=[Depends(require_role("guest"))],
+)
 
 DB_PATH = Path("data/index/bibliographic.db")
 

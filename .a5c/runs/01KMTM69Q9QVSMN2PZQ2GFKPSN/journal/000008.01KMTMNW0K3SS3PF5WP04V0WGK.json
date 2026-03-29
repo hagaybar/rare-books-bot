@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T16:33:16.819Z",
+  "data": {
+    "effectId": "01KMTMNW078RS9NPZXVTQWZKQP",
+    "invocationKey": "auth-plan-a:S000004:auth-agent",
+    "invocationHash": "377ca20808dffa10608dc1c63f19859c36dd219530fc30ffc2317019266b89ae",
+    "stepId": "S000004",
+    "taskId": "auth-agent",
+    "kind": "agent",
+    "label": "Task 5: Mount auth router + protect existing endpoints",
+    "taskDefRef": "tasks/01KMTMNW078RS9NPZXVTQWZKQP/task.json"
+  },
+  "checksum": "cdf8313146300132189600dc29b42605531a3f398c3c254dafe2ed35ea0bcc72"
+}

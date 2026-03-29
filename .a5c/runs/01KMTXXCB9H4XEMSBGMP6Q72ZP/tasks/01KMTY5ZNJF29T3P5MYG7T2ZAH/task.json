@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTY5ZNJF29T3P5MYG7T2ZAH",
+  "taskId": "stream-agent",
+  "invocationKey": "streaming-chat:S000002:stream-agent",
+  "stepId": "S000002",
+  "kind": "agent",
+  "title": "Task 2: Frontend — WebSocket chat + streaming message rendering",
+  "io": {
+    "inputJsonPath": "tasks/01KMTY5ZNJF29T3P5MYG7T2ZAH/input.json",
+    "outputJsonPath": "tasks/01KMTY5ZNJF29T3P5MYG7T2ZAH/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/specs/2026-03-28-streaming-chat-design.md completely. Implement frontend streaming.\n\nWorking directory: /home/hagaybar/projects/rare-books-bot\nBranch: feature/auth-security\n\n### 1. Switch Chat.tsx to WebSocket\n\nThe chat page currently uses HTTP POST (fetch('/chat')). Switch to WebSocket for the primary flow:\n\nIn frontend/src/pages/Chat.tsx:\n- On send, open WebSocket to ws://localhost:8000/ws/chat (or use existing connection)\n- Send the message JSON\n- Handle incoming messages by type:\n  - \"session_created\" → store session_id\n  - \"thinking\" → update thinking state\n  - \"stream_start\" → switch to streaming mode\n  - \"stream_chunk\" → append text to current message\n  - \"complete\" → finalize message, store full response\n  - \"error\" → show error\n\n### 2. Create ThinkingBlock component\n\nCreate frontend/src/components/chat/ThinkingBlock.tsx:\n\n```tsx\ninterface Props {\n  steps: string[];       // accumulated thinking messages\n  isActive: boolean;     // still thinking?\n  isCollapsed: boolean;  // user collapsed it?\n  onToggle: () => void;\n}\n```\n\nWhen active (thinking in progress):\n- Show a box with muted blue/gray background, subtle pulse animation\n- Display the latest thinking text\n- Small 💭 icon\n\nWhen complete (collapsed):\n- Show \"💭 Show reasoning (N steps)\" toggle\n- Click expands to show all steps as a numbered list\n\nWhen complete (expanded):\n- Show all thinking steps as a list\n- Click collapses\n\n### 3. Update MessageBubble for streaming\n\nIn frontend/src/components/chat/MessageBubble.tsx:\n- Add a streaming prop or detect streaming state\n- When streaming: show text as it arrives, with blinking cursor at end\n- The cursor is a CSS animation: a small vertical bar that blinks\n\n### 4. Message state machine\n\nEach assistant message has a state:\n- THINKING: showing thinking block, collecting steps\n- STREAMING: narrator text streaming in\n- COMPLETE: full response rendered\n\nTrack this in the chat component state or in each message object.\n\n### 5. WebSocket URL\n\nUse the same host as the page, with ws:// or wss:// protocol:\n```typescript\nconst wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}${window.location.host}/ws/chat`;\n```\n\nOr for dev with Vite proxy, the WebSocket proxy should already be configured (check vite.config.ts for /ws).\n\nVerify: cd frontend && npx tsc --noEmit && npm run build\nCommit: git add frontend/src/ && git commit -m \"feat: WebSocket streaming chat with thinking mode UI\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 2: Frontend — WebSocket chat + streaming message rendering",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit && npm run build 2>&1 | tail -5"
+  }
+}

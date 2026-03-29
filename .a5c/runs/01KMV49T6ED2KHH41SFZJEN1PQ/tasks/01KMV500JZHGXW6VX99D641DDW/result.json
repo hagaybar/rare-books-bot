@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV500JZHGXW6VX99D641DDW",
+  "taskId": "apply-tier2",
+  "invocationKey": "agent-role-enrichment:S000006:apply-tier2",
+  "status": "ok",
+  "result": {
+    "artifacts": [
+      "scripts/normalization/fetch_tier2_occupations.py",
+      "data/normalization/tier2_role_changes.jsonl"
+    ],
+    "errors": 0,
+    "processed": 305,
+    "resultsFile": "data/normalization/tier2_role_changes.jsonl",
+    "rolesAssigned": 63,
+    "wikidataFound": 112
+  },
+  "startedAt": "2026-03-28T21:48:41.865Z",
+  "finishedAt": "2026-03-28T21:48:41.865Z",
+  "value": {
+    "artifacts": [
+      "scripts/normalization/fetch_tier2_occupations.py",
+      "data/normalization/tier2_role_changes.jsonl"
+    ],
+    "errors": 0,
+    "processed": 305,
+    "resultsFile": "data/normalization/tier2_role_changes.jsonl",
+    "rolesAssigned": 63,
+    "wikidataFound": 112
+  }
+}

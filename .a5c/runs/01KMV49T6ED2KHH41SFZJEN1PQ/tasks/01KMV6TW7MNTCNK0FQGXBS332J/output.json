@@ -1,0 +1,6 @@
+{
+  "agentsSearched": 8,
+  "rolesFound": 8,
+  "resultsFile": "data/normalization/tier3_web_search_results.json",
+  "artifacts": ["data/normalization/tier3_web_search_results.json"]
+}

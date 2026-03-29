@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV4MSS87XVXRT3GHMQC69YN",
+  "taskId": "__sdk.breakpoint",
+  "invocationKey": "agent-role-enrichment:S000003:__sdk.breakpoint",
+  "stepId": "S000003",
+  "kind": "breakpoint",
+  "title": "breakpoint",
+  "metadata": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "mappingFile": "data/normalization/occupation_role_map.json",
+        "sampleMappings": [
+          {
+            "confidence": 0.95,
+            "occupation": "printer",
+            "role_norm": "printer"
+          },
+          {
+            "confidence": 0.95,
+            "occupation": "engraver",
+            "role_norm": "engraver"
+          },
+          {
+            "confidence": 0.8,
+            "occupation": "poet",
+            "role_norm": "author"
+          },
+          {
+            "confidence": 0.7,
+            "occupation": "rabbi",
+            "role_norm": "author"
+          },
+          {
+            "confidence": 0.9,
+            "occupation": "xylographer",
+            "role_norm": "wood_engraver"
+          }
+        ]
+      },
+      "question": "Occupation → role_norm mapping created with 332 entries. The mapping file is at data/normalization/occupation_role_map.json. Review the mapping before applying to the database?",
+      "title": "Review Occupation → Role Mapping"
+    },
+    "requestedAt": "2026-03-28T21:12:18.984Z"
+  },
+  "inputs": {
+    "label": "breakpoint",
+    "payload": {
+      "context": {
+        "mappingFile": "data/normalization/occupation_role_map.json",
+        "sampleMappings": [
+          {
+            "confidence": 0.95,
+            "occupation": "printer",
+            "role_norm": "printer"
+          },
+          {
+            "confidence": 0.95,
+            "occupation": "engraver",
+            "role_norm": "engraver"
+          },
+          {
+            "confidence": 0.8,
+            "occupation": "poet",
+            "role_norm": "author"
+          },
+          {
+            "confidence": 0.7,
+            "occupation": "rabbi",
+            "role_norm": "author"
+          },
+          {
+            "confidence": 0.9,
+            "occupation": "xylographer",
+            "role_norm": "wood_engraver"
+          }
+        ]
+      },
+      "question": "Occupation → role_norm mapping created with 332 entries. The mapping file is at data/normalization/occupation_role_map.json. Review the mapping before applying to the database?",
+      "title": "Review Occupation → Role Mapping"
+    },
+    "requestedAt": "2026-03-28T21:12:18.984Z"
+  }
+}

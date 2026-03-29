@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV6TW7MNTCNK0FQGXBS332J",
+  "taskId": "apply-tier3-search",
+  "invocationKey": "agent-role-enrichment:S000008:apply-tier3-search",
+  "status": "ok",
+  "result": {
+    "agentsSearched": 8,
+    "artifacts": [
+      "data/normalization/tier3_web_search_results.json"
+    ],
+    "resultsFile": "data/normalization/tier3_web_search_results.json",
+    "rolesFound": 8
+  },
+  "startedAt": "2026-03-28T21:53:59.291Z",
+  "finishedAt": "2026-03-28T21:53:59.291Z",
+  "value": {
+    "agentsSearched": 8,
+    "artifacts": [
+      "data/normalization/tier3_web_search_results.json"
+    ],
+    "resultsFile": "data/normalization/tier3_web_search_results.json",
+    "rolesFound": 8
+  }
+}

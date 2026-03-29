@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMTMXRGZCEYZQBTV5KE4FSMX",
+  "taskId": "authb-agent",
+  "invocationKey": "auth-plan-b:S000001:authb-agent",
+  "status": "ok",
+  "result": {
+    "status": "completed"
+  },
+  "startedAt": "2026-03-28T16:44:26.949Z",
+  "finishedAt": "2026-03-28T16:44:26.949Z",
+  "value": {
+    "status": "completed"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:07:53.289Z",
+  "data": {
+    "effectId": "01KMV4CP9WFK4T5QCN2XGYACTW",
+    "invocationKey": "agent-role-enrichment:S000002:build-occupation-mapping",
+    "invocationHash": "1bb3b85ec6ab9c8cb3e622c1844e100da829e0757d9fbc80c52e494065f5da9a",
+    "stepId": "S000002",
+    "taskId": "build-occupation-mapping",
+    "kind": "agent",
+    "label": "Build Wikidata occupation to role_norm mapping table",
+    "taskDefRef": "tasks/01KMV4CP9WFK4T5QCN2XGYACTW/task.json"
+  },
+  "checksum": "75db57273fffa7a00721105fe62163b07bf5f2cddb0b3e24b0dbdeb9e577c499"
+}

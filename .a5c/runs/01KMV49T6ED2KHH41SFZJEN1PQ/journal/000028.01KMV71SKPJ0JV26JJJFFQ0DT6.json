@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:54:21.943Z",
+  "data": {
+    "effectId": "01KMV71SKA9NKTHGT491W155G5",
+    "invocationKey": "agent-role-enrichment:S000010:apply-tier3-results",
+    "invocationHash": "283043848af8bf568496d7c6a832103468fbf541758b382dc89ed7f8f6e03f20",
+    "stepId": "S000010",
+    "taskId": "apply-tier3-results",
+    "kind": "agent",
+    "label": "Apply approved Tier 3 web search results to database",
+    "taskDefRef": "tasks/01KMV71SKA9NKTHGT491W155G5/task.json"
+  },
+  "checksum": "0c1e24062f6d08d66dadb3e2c1561a4a52d3b886876999a033a3ce893e0345ac"
+}

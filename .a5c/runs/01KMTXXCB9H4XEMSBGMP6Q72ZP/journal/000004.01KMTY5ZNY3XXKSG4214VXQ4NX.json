@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T19:19:22.046Z",
+  "data": {
+    "effectId": "01KMTY5ZNJF29T3P5MYG7T2ZAH",
+    "invocationKey": "streaming-chat:S000002:stream-agent",
+    "invocationHash": "ca2b87e1d78373810cd458c296b7cccbbaedda4eb2ad027e82fe840c99ed7f20",
+    "stepId": "S000002",
+    "taskId": "stream-agent",
+    "kind": "agent",
+    "label": "Task 2: Frontend — WebSocket chat + streaming message rendering",
+    "taskDefRef": "tasks/01KMTY5ZNJF29T3P5MYG7T2ZAH/task.json"
+  },
+  "checksum": "1b9efa98c49bf6925703d21ea399c07faf3e211f127e69cf4938e2ef83185ecc"
+}

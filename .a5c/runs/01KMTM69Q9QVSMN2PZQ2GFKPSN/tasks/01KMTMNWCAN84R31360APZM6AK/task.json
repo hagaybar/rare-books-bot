@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTMNWCAN84R31360APZM6AK",
+  "taskId": "auth-agent",
+  "invocationKey": "auth-plan-a:S000005:auth-agent",
+  "stepId": "S000005",
+  "kind": "agent",
+  "title": "Task 6: CLI create-user command",
+  "io": {
+    "inputJsonPath": "tasks/01KMTMNWCAN84R31360APZM6AK/input.json",
+    "outputJsonPath": "tasks/01KMTMNWCAN84R31360APZM6AK/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-a-core.md — Task 6. Add create-user command to app/cli.py using Typer. Takes username and password as arguments, --role as option (default admin). Calls init_auth_db() then create_user().\n\nTest: poetry run python -m app.cli create-user testadmin testpass123 --role admin\nVerify: poetry run python -c \"from app.api.auth_db import get_auth_db; c=get_auth_db(); print([dict(r)['username'] for r in c.execute('SELECT username FROM users').fetchall()])\"\n\nCommit: git add app/cli.py && git commit -m \"feat: add create-user CLI command for admin bootstrapping\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 6: CLI create-user command",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -m app.cli create-user clitest clipass12345 --role full 2>&1 | head -3"
+  }
+}

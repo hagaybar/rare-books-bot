@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMV77RSJ1PBFH64TK5VTR3WD",
+  "taskId": "run-tests",
+  "invocationKey": "agent-role-enrichment:S000012:run-tests",
+  "stepId": "S000012",
+  "kind": "shell",
+  "title": "Run existing test suite to check for regressions",
+  "inputs": {
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+  }
+}

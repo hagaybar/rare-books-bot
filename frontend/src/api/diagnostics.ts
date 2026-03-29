@@ -15,6 +15,7 @@ import type {
   TableRowsResponse,
   LabelItem,
 } from '../types/diagnostics.ts';
+import { authenticatedFetch } from './auth';
 
 const BASE = '/diagnostics';
 
@@ -31,7 +32,7 @@ export async function runQuery(
   queryText: string,
   limit: number = 50,
 ): Promise<QueryRunResponse> {
-  const res = await fetch(`${BASE}/query-run`, {
+  const res = await authenticatedFetch(`${BASE}/query-run`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query_text: queryText, limit }),
@@ -48,7 +49,7 @@ export async function getQueryRuns(
     limit: String(limit),
     offset: String(offset),
   });
-  const res = await fetch(`${BASE}/query-runs?${params.toString()}`);
+  const res = await authenticatedFetch(`${BASE}/query-runs?${params.toString()}`);
   return handleResponse<QueryRunsResponse>(res);
 }
 
@@ -57,7 +58,7 @@ export async function submitLabels(
   runId: number,
   labels: LabelItem[],
 ): Promise<LabelsResponse> {
-  const res = await fetch(`${BASE}/labels`, {
+  const res = await authenticatedFetch(`${BASE}/labels`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ run_id: runId, labels }),
@@ -67,19 +68,19 @@ export async function submitLabels(
 
 /** B8: Retrieve labels for a specific run. */
 export async function getLabels(runId: number): Promise<RunLabelsResponse> {
-  const res = await fetch(`${BASE}/labels/${String(runId)}`);
+  const res = await authenticatedFetch(`${BASE}/labels/${String(runId)}`);
   return handleResponse<RunLabelsResponse>(res);
 }
 
 /** B9: Export the gold set as JSON. */
 export async function exportGoldSet(): Promise<GoldSetResponse> {
-  const res = await fetch(`${BASE}/gold-set/export`);
+  const res = await authenticatedFetch(`${BASE}/gold-set/export`);
   return handleResponse<GoldSetResponse>(res);
 }
 
 /** B10: Run regression tests against the gold set. */
 export async function runRegression(): Promise<RegressionResponse> {
-  const res = await fetch(`${BASE}/gold-set/regression`, {
+  const res = await authenticatedFetch(`${BASE}/gold-set/regression`, {
     method: 'POST',
   });
   return handleResponse<RegressionResponse>(res);
@@ -87,7 +88,7 @@ export async function runRegression(): Promise<RegressionResponse> {
 
 /** B11: List all database tables with row counts and columns. */
 export async function getTables(): Promise<TablesResponse> {
-  const res = await fetch(`${BASE}/tables`);
+  const res = await authenticatedFetch(`${BASE}/tables`);
   return handleResponse<TablesResponse>(res);
 }
 
@@ -103,7 +104,7 @@ export async function getTableRows(
     offset: String(offset),
   });
   if (search) params.set('search', search);
-  const res = await fetch(
+  const res = await authenticatedFetch(
     `${BASE}/tables/${encodeURIComponent(tableName)}/rows?${params.toString()}`,
   );
   return handleResponse<TableRowsResponse>(res);

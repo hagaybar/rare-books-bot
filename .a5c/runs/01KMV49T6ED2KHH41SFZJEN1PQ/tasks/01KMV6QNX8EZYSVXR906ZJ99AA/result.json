@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "2026.01.results-v1",
+  "effectId": "01KMV6QNX8EZYSVXR906ZJ99AA",
+  "taskId": "verify-tier",
+  "invocationKey": "agent-role-enrichment:S000007:verify-tier",
+  "status": "ok",
+  "result": {
+    "artifacts": [],
+    "issues": [],
+    "stats": {
+      "remaining_other_unknown": 729,
+      "spot_checks": "3/3 passed",
+      "tier2_changes": 63,
+      "tier2_distinct_agents": 21,
+      "total_wikidata_enriched": 681
+    },
+    "verified": true
+  },
+  "startedAt": "2026-03-28T21:50:26.596Z",
+  "finishedAt": "2026-03-28T21:50:26.596Z",
+  "value": {
+    "artifacts": [],
+    "issues": [],
+    "stats": {
+      "remaining_other_unknown": 729,
+      "spot_checks": "3/3 passed",
+      "tier2_changes": 63,
+      "tier2_distinct_agents": 21,
+      "total_wikidata_enriched": 681
+    },
+    "verified": true
+  }
+}

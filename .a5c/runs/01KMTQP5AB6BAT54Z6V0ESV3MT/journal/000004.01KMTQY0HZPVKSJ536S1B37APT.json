@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T17:30:09.343Z",
+  "data": {
+    "effectId": "01KMTQY0HHXVEBB83F0YNZXX5F",
+    "invocationKey": "auth-plan-c:S000002:authc-agent",
+    "invocationHash": "21cffbf3a9583503ab7ee8816bc4187bfa2d451f9fb8d5e111268beb3a97e8f3",
+    "stepId": "S000002",
+    "taskId": "authc-agent",
+    "kind": "agent",
+    "label": "Task 2: Wire security into chat endpoint",
+    "taskDefRef": "tasks/01KMTQY0HHXVEBB83F0YNZXX5F/task.json"
+  },
+  "checksum": "16a61b99171c1a680d05a160c58a74da3e3b44744c7249f7d3d852dd79ea5925"
+}

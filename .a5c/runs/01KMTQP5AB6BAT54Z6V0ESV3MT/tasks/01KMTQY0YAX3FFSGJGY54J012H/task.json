@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTQY0YAX3FFSGJGY54J012H",
+  "taskId": "authc-agent",
+  "invocationKey": "auth-plan-c:S000003:authc-agent",
+  "stepId": "S000003",
+  "kind": "agent",
+  "title": "Task 3: Admin kill switch + audit purge + frontend",
+  "io": {
+    "inputJsonPath": "tasks/01KMTQY0YAX3FFSGJGY54J012H/input.json",
+    "outputJsonPath": "tasks/01KMTQY0YAX3FFSGJGY54J012H/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-c-hardening.md — Task 3. Three parts:\n\n1. In app/api/auth_routes.py: add GET /settings/chat-status and POST /settings/chat-toggle endpoints (admin only). Uses is_chat_enabled/set_chat_enabled from security.py.\n\n2. In app/api/auth_db.py: add purge_audit_log(days) function. In app/cli.py: add purge-audit command.\n\n3. In frontend/src/pages/admin/Users.tsx: add a kill switch section above the users table. Shows current chat status, toggle button (red \"Disable Chat\" / green \"Enable Chat\"). Use React Query for fetching status, useMutation for toggling. Add toast notification.\n\nVerify: cd frontend && npx tsc --noEmit && npm run build\nCommit and push: git add app/api/ app/cli.py frontend/src/ && git commit -m \"feat: kill switch UI, audit purge, complete security hardening\" && git push origin feature/auth-security",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 3: Admin kill switch + audit purge + frontend",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot/frontend && npx tsc --noEmit && npm run build 2>&1 | tail -5"
+  }
+}

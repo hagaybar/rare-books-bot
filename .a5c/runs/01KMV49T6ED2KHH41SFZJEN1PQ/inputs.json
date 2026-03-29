@@ -1,0 +1,6 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "dbPath": "data/index/bibliographic.db",
+  "enrichmentCachePath": "data/enrichment/cache.db",
+  "tier3MinFrequency": 3
+}

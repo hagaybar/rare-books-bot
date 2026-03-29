@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "2026.01.tasks-v1",
+  "effectId": "01KMTMNW078RS9NPZXVTQWZKQP",
+  "taskId": "auth-agent",
+  "invocationKey": "auth-plan-a:S000004:auth-agent",
+  "stepId": "S000004",
+  "kind": "agent",
+  "title": "Task 5: Mount auth router + protect existing endpoints",
+  "io": {
+    "inputJsonPath": "tasks/01KMTMNW078RS9NPZXVTQWZKQP/input.json",
+    "outputJsonPath": "tasks/01KMTMNW078RS9NPZXVTQWZKQP/output.json"
+  },
+  "inputs": {
+    "description": "Read docs/superpowers/plans/2026-03-28-auth-plan-a-core.md — Task 5.\n\nIn app/api/main.py:\n1. Import and mount auth router: from app.api.auth_routes import router as auth_router; app.include_router(auth_router)\n2. Import init_auth_db and call on startup: add @app.on_event(\"startup\") handler that calls init_auth_db()\n3. Update CORS: read CORS_ORIGIN from env var, default to [\"*\"] for dev\n\nFor protecting existing endpoints, add Depends(require_role(...)) to the key endpoints:\n- The /chat POST endpoint needs Depends(require_role(\"limited\"))\n- The /ws/chat WebSocket needs JWT validation from cookies at connection\n- The /network/* endpoints need Depends(require_role(\"guest\"))\n- The /metadata/enrichment/* public endpoints need Depends(require_role(\"guest\"))\n- The /metadata/coverage, /metadata/issues, /metadata/corrections, /metadata/agent/chat endpoints need Depends(require_role(\"full\"))\n- The /diagnostics/* endpoints need Depends(require_role(\"full\"))\n- The /health endpoint stays public (no auth)\n\nIMPORTANT: Be careful not to break existing functionality. Add the dependencies as additional parameters to existing endpoint functions. If an endpoint is in a separate router file (metadata.py, network.py, diagnostics.py), import require_role there and add to the specific endpoints.\n\nTest: Start the server (poetry run uvicorn app.api.main:app --port 8765) and verify:\n  curl -s http://localhost:8765/health — should return 200 (public)\n  curl -s http://localhost:8765/auth/guest -X POST — should return 200 with cookie\n  curl -s http://localhost:8765/network/map?connection_types=none&limit=1 — should return 401 (no cookie)\n\nKill the server after testing.\n\nCommit: git add app/api/ && git commit -m \"feat: mount auth router, protect existing endpoints with role deps\"",
+    "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+    "taskName": "Task 5: Mount auth router + protect existing endpoints",
+    "testCommand": "cd /home/hagaybar/projects/rare-books-bot && poetry run python -c \"from app.api.main import app; print(f'App routes: {len(app.routes)}')\""
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T17:30:09.750Z",
+  "data": {
+    "effectId": "01KMTQY0YAX3FFSGJGY54J012H",
+    "invocationKey": "auth-plan-c:S000003:authc-agent",
+    "invocationHash": "048e1d52965793ca359231c3d61afb7e282f792b628fcd720bd5ae2654643c5c",
+    "stepId": "S000003",
+    "taskId": "authc-agent",
+    "kind": "agent",
+    "label": "Task 3: Admin kill switch + audit purge + frontend",
+    "taskDefRef": "tasks/01KMTQY0YAX3FFSGJGY54J012H/task.json"
+  },
+  "checksum": "040d7541e48112b58f6eeecc4224d1c8e5a17697055ba72c7b36fbdea5606b7b"
+}

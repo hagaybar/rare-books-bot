@@ -1,0 +1,15 @@
+{
+  "type": "EFFECT_REQUESTED",
+  "recordedAt": "2026-03-28T21:18:26.412Z",
+  "data": {
+    "effectId": "01KMV500JZHGXW6VX99D641DDW",
+    "invocationKey": "agent-role-enrichment:S000006:apply-tier2",
+    "invocationHash": "799ace03bdae24d7baf369eb979d11ccc73763f0d6d7dee9a3ebd5c6e055bc02",
+    "stepId": "S000006",
+    "taskId": "apply-tier2",
+    "kind": "agent",
+    "label": "Tier 2: Re-fetch Wikidata/VIAF for agents with authority URIs but no occupations",
+    "taskDefRef": "tasks/01KMV500JZHGXW6VX99D641DDW/task.json"
+  },
+  "checksum": "2936dbe13fd7ad327b60b354c6cef9b9c24d2fce6b53a8f1984d3c0d8634e1d9"
+}
