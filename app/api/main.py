@@ -58,7 +58,7 @@ from scripts.metadata.interaction_logger import interaction_logger
 logger = LoggerManager.get_logger(__name__)
 
 # Initialize rate limiter (30 requests per minute per IP)
-limiter = Limiter(key_func=get_remote_address, default_limits=["30/minute"])
+limiter = Limiter(key_func=get_remote_address)
 
 # Global state (initialized during lifespan startup)
 session_store: Optional[SessionStore] = None
