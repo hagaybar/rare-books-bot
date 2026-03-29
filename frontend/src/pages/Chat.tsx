@@ -52,6 +52,11 @@ function nextId(): string {
 function getWsUrl(): string {
   const loc = window.location;
   const protocol = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+  // In dev mode (Vite on :5173/:5174), connect directly to backend on :8000
+  // to avoid proxy issues. In production (same origin), use loc.host.
+  if (loc.port === '5173' || loc.port === '5174') {
+    return `${protocol}//${loc.hostname}:8000/ws/chat`;
+  }
   return `${protocol}//${loc.host}/ws/chat`;
 }
 
