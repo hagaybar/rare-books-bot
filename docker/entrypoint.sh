@@ -42,5 +42,5 @@ else
     echo "[entrypoint] ADMIN_EMAIL/ADMIN_PASSWORD not set. Skipping admin seed."
 fi
 
-echo "[entrypoint] Launching supervisord..."
-exec supervisord -c /etc/supervisord.conf
+echo "[entrypoint] Launching uvicorn..."
+exec uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --workers 2

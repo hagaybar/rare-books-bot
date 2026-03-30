@@ -15,7 +15,8 @@ from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -1022,3 +1023,19 @@ async def websocket_chat(websocket: WebSocket):
             await websocket.close()
         except Exception:
             pass
+
+
+# ---------------------------------------------------------------------------
+# Static file serving (React SPA) — must be LAST (catch-all)
+# ---------------------------------------------------------------------------
+_frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+if _frontend_dir.is_dir():
+    app.mount("/assets", StaticFiles(directory=_frontend_dir / "assets"), name="static-assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        """Serve React SPA — static files if they exist, otherwise index.html."""
+        file_path = _frontend_dir / full_path
+        if file_path.is_file():
+            return FileResponse(file_path)
+        return FileResponse(_frontend_dir / "index.html")

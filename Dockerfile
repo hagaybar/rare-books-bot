@@ -10,14 +10,12 @@ COPY frontend/ ./
 RUN npm run build
 
 # ==============================================================
-# Stage 2: Python runtime + nginx + supervisord
+# Stage 2: Python runtime
 # ==============================================================
 FROM python:3.12-slim
 
-# Install system dependencies
+# Install minimal system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx \
-    supervisor \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -40,17 +38,12 @@ COPY scripts/ scripts/
 # Copy frontend build from stage 1
 COPY --from=frontend-builder /build/frontend/dist frontend/dist/
 
-# Copy Docker config files
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/supervisord.conf /etc/supervisord.conf
+# Copy entrypoint
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Remove default nginx site
-RUN rm -f /etc/nginx/sites-enabled/default
-
-# Expose HTTP and HTTPS
-EXPOSE 80 443
+# Expose uvicorn port
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

@@ -4,11 +4,10 @@ set -euo pipefail
 # =============================================================================
 # Configuration — UPDATE THESE before first use
 # =============================================================================
-SERVER_USER="TODO_SET_ME"          # e.g., "ubuntu" or "opc"
-SERVER_HOST="TODO_SET_ME"          # e.g., "129.146.xx.xx"
-SSH_KEY="TODO_SET_ME"              # e.g., "~/.ssh/oracle_a1.pem"
-SSL_CERT_FILE="cert.pem"          # Filename in ~/rare-books-certs/
-SSL_KEY_FILE="key.pem"            # Filename in ~/rare-books-certs/
+SERVER_USER="rarebooks"
+SERVER_HOST="151.145.90.19"
+SSH_KEY="~/.ssh/rarebooks_a1"
+HOST_PORT=8001                    # Port exposed to host nginx
 
 # Derived
 SSH_CMD="ssh -i $SSH_KEY $SERVER_USER@$SERVER_HOST"
@@ -142,13 +141,10 @@ docker run -d \
     --restart unless-stopped \
     --env-file ~/rare-books.env \
     -v $REMOTE_DATA:/app/data \
-    -v ~/rare-books-certs/$SSL_CERT_FILE:/etc/ssl/certs/rare-books/cert.pem:ro \
-    -v ~/rare-books-certs/$SSL_KEY_FILE:/etc/ssl/certs/rare-books/key.pem:ro \
-    -p 80:80 \
-    -p 443:443 \
+    -p $HOST_PORT:8000 \
     $IMAGE_NAME:$GIT_SHA
 
-echo "Container started with image $IMAGE_NAME:$GIT_SHA"
+echo "Container started with image $IMAGE_NAME:$GIT_SHA on port $HOST_PORT"
 REMOTE_SCRIPT
 }
 
@@ -173,10 +169,7 @@ docker run -d \
     --restart unless-stopped \
     --env-file ~/rare-books.env \
     -v $REMOTE_DATA:/app/data \
-    -v ~/rare-books-certs/$SSL_CERT_FILE:/etc/ssl/certs/rare-books/cert.pem:ro \
-    -v ~/rare-books-certs/$SSL_KEY_FILE:/etc/ssl/certs/rare-books/key.pem:ro \
-    -p 80:80 \
-    -p 443:443 \
+    -p $HOST_PORT:8000 \
     $IMAGE_NAME:\$PREV_TAG
 
 echo "Rolled back to $IMAGE_NAME:\$PREV_TAG"
