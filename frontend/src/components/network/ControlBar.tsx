@@ -30,7 +30,11 @@ const ROLES = [
   { value: 'translator', label: 'Translator' },
 ];
 
-export default function ControlBar() {
+interface ControlBarProps {
+  mobile?: boolean;
+}
+
+export default function ControlBar({ mobile }: ControlBarProps) {
   const {
     connectionTypes,
     toggleConnectionType,
@@ -42,6 +46,98 @@ export default function ControlBar() {
     setColorBy,
   } = useNetworkStore();
 
+  // Mobile: stacked vertical layout
+  if (mobile) {
+    return (
+      <div className="space-y-4">
+        {/* Color by */}
+        <div>
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">
+            Color by
+          </label>
+          <select
+            value={colorBy}
+            onChange={(e) => setColorBy(e.target.value as ColorByMode)}
+            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+          >
+            <option value="century">Life Period</option>
+            <option value="role">Role</option>
+            <option value="occupation">Occupation</option>
+          </select>
+        </div>
+
+        {/* Century + Role side by side */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">
+              Century
+            </label>
+            <select
+              value={century ?? ''}
+              onChange={(e) => setCentury(e.target.value ? Number(e.target.value) : null)}
+              className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+            >
+              {CENTURIES.map((c) => (
+                <option key={c.label} value={c.value ?? ''}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">
+              Role
+            </label>
+            <select
+              value={role ?? ''}
+              onChange={(e) => setRole(e.target.value || null)}
+              className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+            >
+              {ROLES.map((r) => (
+                <option key={r.label} value={r.value ?? ''}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Connection types */}
+        <div>
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-2">
+            Connections
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {(Object.entries(CONNECTION_TYPE_CONFIG) as [ConnectionType, typeof CONNECTION_TYPE_CONFIG[ConnectionType]][]).map(
+              ([type, config]) => {
+                const active = connectionTypes.includes(type);
+                const [r, g, b] = config.color;
+                return (
+                  <button
+                    key={type}
+                    onClick={() => toggleConnectionType(type)}
+                    className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                      active
+                        ? 'text-white border-transparent'
+                        : 'text-gray-500 border-gray-300 bg-white'
+                    }`}
+                    style={active ? { backgroundColor: `rgb(${r},${g},${b})` } : undefined}
+                  >
+                    {config.label}
+                  </button>
+                );
+              }
+            )}
+          </div>
+        </div>
+
+        {/* Agent count slider */}
+        <AgentSlider mobile />
+      </div>
+    );
+  }
+
+  // Desktop: horizontal layout (unchanged)
   return (
     <div className="px-4 py-3 bg-white border-b flex flex-wrap items-center gap-4">
       {/* Color by */}
@@ -143,13 +239,36 @@ export default function ControlBar() {
   );
 }
 
-function AgentSlider() {
+function AgentSlider({ mobile }: { mobile?: boolean }) {
   const { agentLimit, setAgentLimit } = useNetworkStore();
   const [localValue, setLocalValue] = useState(agentLimit);
   const debouncedSet = useDebouncedCallback(setAgentLimit, 300);
 
   // Sync local value when store changes externally (e.g., reset)
   useEffect(() => { setLocalValue(agentLimit); }, [agentLimit]);
+
+  if (mobile) {
+    return (
+      <div>
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">
+          Agents: {localValue}
+        </label>
+        <input
+          type="range"
+          min={50}
+          max={500}
+          step={10}
+          value={localValue}
+          onChange={(e) => {
+            const val = Number(e.target.value);
+            setLocalValue(val);
+            debouncedSet(val);
+          }}
+          className="w-full"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">

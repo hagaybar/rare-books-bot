@@ -248,7 +248,7 @@ export default function Sidebar() {
   return (
     <aside
       className={`${
-        sidebarCollapsed ? 'w-16 max-md:hidden' : 'w-64'
+        sidebarCollapsed ? 'w-16' : 'w-64'
       } bg-gray-900 text-gray-300 flex flex-col min-h-screen transition-all duration-200 shrink-0`}
     >
       {/* Header */}

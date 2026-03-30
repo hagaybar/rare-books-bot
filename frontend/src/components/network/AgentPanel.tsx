@@ -6,9 +6,10 @@ interface Props {
   agent: AgentDetail;
   onClose: () => void;
   onAgentClick: (agentNorm: string) => void;
+  mobile?: boolean;
 }
 
-export default function AgentPanel({ agent, onClose, onAgentClick }: Props) {
+export default function AgentPanel({ agent, onClose, onAgentClick, mobile }: Props) {
   const [expandedSummary, setExpandedSummary] = useState(false);
 
   const years =
@@ -27,18 +28,23 @@ export default function AgentPanel({ agent, onClose, onAgentClick }: Props) {
   );
 
   const summaryText = agent.wikipedia_summary ?? '';
+  const summaryLimit = mobile ? 300 : 500;
   const truncatedSummary =
-    summaryText.length > 500 && !expandedSummary
-      ? summaryText.slice(0, 500) + '...'
+    summaryText.length > summaryLimit && !expandedSummary
+      ? summaryText.slice(0, summaryLimit) + '...'
       : summaryText;
 
+  const containerClass = mobile
+    ? 'bg-white'
+    : 'w-80 bg-white border-l shadow-lg overflow-y-auto flex-shrink-0';
+
   return (
-    <div className="w-80 bg-white border-l shadow-lg overflow-y-auto flex-shrink-0">
+    <div className={containerClass}>
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className={`${mobile ? 'px-4 pt-1 pb-3' : 'p-4'} border-b`}>
         <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="min-w-0 flex-1">
+            <h2 className={`${mobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 truncate`}>
               {agent.display_name}
             </h2>
             {years && (
@@ -47,28 +53,30 @@ export default function AgentPanel({ agent, onClose, onAgentClick }: Props) {
               </p>
             )}
             {agent.occupations.length > 0 && (
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-gray-400 mt-0.5">
                 {agent.occupations.join(', ')}
               </p>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
-          >
-            &times;
-          </button>
+          {!mobile && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-2"
+            >
+              &times;
+            </button>
+          )}
         </div>
       </div>
 
       {/* Wikipedia Summary */}
       {summaryText && (
-        <div className="p-4 border-b">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Wikipedia</h3>
+        <div className={`${mobile ? 'px-4 py-3' : 'p-4'} border-b`}>
+          <h3 className="text-sm font-medium text-gray-700 mb-1">Wikipedia</h3>
           <p className="text-sm text-gray-600 leading-relaxed">
             {truncatedSummary}
           </p>
-          {summaryText.length > 500 && (
+          {summaryText.length > summaryLimit && (
             <button
               onClick={() => setExpandedSummary(!expandedSummary)}
               className="text-xs text-blue-500 hover:text-blue-700 mt-1"
@@ -80,7 +88,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick }: Props) {
       )}
 
       {/* Connections */}
-      <div className="p-4 border-b">
+      <div className={`${mobile ? 'px-4 py-3' : 'p-4'} border-b`}>
         <h3 className="text-sm font-medium text-gray-700 mb-2">
           Connections ({agent.connections.length})
         </h3>
@@ -88,6 +96,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick }: Props) {
           const config =
             CONNECTION_TYPE_CONFIG[type as keyof typeof CONNECTION_TYPE_CONFIG];
           const [r, g, b] = config?.color ?? [156, 163, 175];
+          const displayLimit = mobile ? 10 : 20;
           return (
             <div key={type} className="mb-3">
               <div className="flex items-center gap-2 mb-1">
@@ -99,19 +108,19 @@ export default function AgentPanel({ agent, onClose, onAgentClick }: Props) {
                   {config?.label ?? type}
                 </span>
               </div>
-              {conns.slice(0, 20).map((conn) => (
+              {conns.slice(0, displayLimit).map((conn) => (
                 <button
                   key={`${conn.agent_norm}-${type}`}
                   onClick={() => onAgentClick(conn.agent_norm)}
-                  className="block w-full text-left px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded truncate"
+                  className={`block w-full text-left px-2 ${mobile ? 'py-1.5' : 'py-1'} text-sm text-blue-600 hover:bg-blue-50 rounded truncate`}
                 >
                   {conn.relationship ? `${conn.relationship}: ` : ''}
                   {conn.display_name}
                 </button>
               ))}
-              {conns.length > 20 && (
+              {conns.length > displayLimit && (
                 <p className="text-xs text-gray-400 px-2">
-                  +{conns.length - 20} more
+                  +{conns.length - displayLimit} more
                 </p>
               )}
             </div>
@@ -123,7 +132,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick }: Props) {
       </div>
 
       {/* Catalog */}
-      <div className="p-4">
+      <div className={`${mobile ? 'px-4 py-3' : 'p-4'}`}>
         <h3 className="text-sm font-medium text-gray-700 mb-2">In Catalog</h3>
         <p className="text-sm text-gray-600 mb-2">
           {agent.record_count} record{agent.record_count !== 1 ? 's' : ''}

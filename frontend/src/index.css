@@ -28,6 +28,13 @@
   text-decoration: underline;
 }
 
+/* Hide scrollbar for horizontal chip scrolling (mobile filter chips) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Safe area padding for devices with home indicators */
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
 /* Blinking cursor for streaming chat responses */
 @keyframes blink-cursor {
   0%, 100% { opacity: 1; }
