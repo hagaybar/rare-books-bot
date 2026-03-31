@@ -93,7 +93,7 @@ class MetadataField(str, Enum):
 def _get_db_path() -> Path:
     """Resolve the bibliographic database path from environment."""
     return Path(
-        os.environ.get("BIBLIOGRAPHIC_DB_PATH", "data/index/bibliographic.db")
+        os.environ.get("BIBLIOGRAPHIC_DB_PATH", "data/index/bibliographic.db").strip()
     )
 
 
