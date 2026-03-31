@@ -26,6 +26,9 @@ class ChatRequest(BaseModel):
     context: Dict[str, Any] = Field(
         default_factory=dict, description="Additional context for the query"
     )
+    token_saving: bool = Field(
+        True, description="Use lean prompt builder to reduce token usage"
+    )
 
 
 class ChatResponseAPI(BaseModel):

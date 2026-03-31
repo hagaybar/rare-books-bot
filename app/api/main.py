@@ -659,7 +659,10 @@ async def _run_scholar_pipeline(
         "Scholar pipeline: narrating response",
         extra={"session_id": session.session_id},
     )
-    scholar_response = await narrate(chat_request.message, execution_result)
+    scholar_response = await narrate(
+        chat_request.message, execution_result,
+        token_saving=chat_request.token_saving,
+    )
 
     logger.info(
         "Scholar pipeline: narration complete",
@@ -815,6 +818,7 @@ async def websocket_chat(websocket: WebSocket):
         data = await websocket.receive_json()
         message = data.get("message")
         session_id = data.get("session_id")
+        token_saving = data.get("token_saving", True)
 
         if not message:
             await websocket.send_json({"type": "error", "message": "Message is required"})
@@ -950,7 +954,8 @@ async def websocket_chat(websocket: WebSocket):
             })
 
         scholar_response = await narrate_streaming(
-            message, execution_result, chunk_callback=_stream_chunk
+            message, execution_result, chunk_callback=_stream_chunk,
+            token_saving=token_saving,
         )
 
         # ---- Post-response security: Output validation ----

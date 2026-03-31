@@ -75,6 +75,7 @@ export default function Chat() {
   const [error, setError] = useState<string | null>(null);
   const [primoUrls, setPrimoUrls] = useState<Record<string, string>>({});
   const [restoredSessionId, setRestoredSessionId] = useState<string | null>(null);
+  const [tokenSaving, setTokenSaving] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -226,6 +227,7 @@ export default function Chat() {
           ws.send(JSON.stringify({
             message: text,
             session_id: sessionId,
+            token_saving: tokenSaving,
           }));
         };
 
@@ -404,7 +406,7 @@ export default function Chat() {
         };
       });
     },
-    [sessionId, setSessionId, updateStreamingMessage],
+    [sessionId, setSessionId, updateStreamingMessage, tokenSaving],
   );
 
   // ------------------------------------------------------------------
@@ -413,7 +415,7 @@ export default function Chat() {
 
   const sendViaHttp = useCallback(
     async (text: string) => {
-      const apiResponse = await sendChatMessage(text, sessionId);
+      const apiResponse = await sendChatMessage(text, sessionId, tokenSaving);
 
       if (!apiResponse.success || !apiResponse.response) {
         throw new Error(apiResponse.error ?? 'Unknown error from server');
@@ -451,7 +453,7 @@ export default function Chat() {
         }
       }
     },
-    [sessionId, setSessionId],
+    [sessionId, setSessionId, tokenSaving],
   );
 
   // ------------------------------------------------------------------
@@ -707,6 +709,10 @@ export default function Chat() {
                   )}
                 </div>
               )}
+              <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer mb-1">
+                <input type="checkbox" checked={!tokenSaving} onChange={(e) => setTokenSaving(!e.target.checked)} className="w-3 h-3" />
+                No token saving
+              </label>
               <div className="flex items-end gap-2">
                 <div className="flex-1 relative">
                   <textarea

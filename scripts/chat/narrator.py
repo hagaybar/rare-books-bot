@@ -110,6 +110,7 @@ async def narrate(
     execution_result: ExecutionResult,
     model: str = "gpt-4.1",
     api_key: Optional[str] = None,
+    token_saving: bool = True,
 ) -> ScholarResponse:
     """Compose a scholarly response from verified execution results.
 
@@ -125,12 +126,17 @@ async def narrate(
         execution_result: Verified output from the executor (Stage 2).
         model: OpenAI model to use (default: gpt-4o).
         api_key: OpenAI API key (or use OPENAI_API_KEY env var).
+        token_saving: If True, use lean prompt builder to reduce token
+            usage. If False, use the full prompt builder.
 
     Returns:
         ScholarResponse with narrative, followups, and grounding.
     """
     try:
-        response = await _call_llm(query, execution_result, model, api_key)
+        response = await _call_llm(
+            query, execution_result, model, api_key,
+            token_saving=token_saving,
+        )
         # Always pass through grounding from executor (narrator doesn't modify it)
         response.grounding = execution_result.grounding
         return response
@@ -145,6 +151,7 @@ async def narrate_streaming(
     chunk_callback: Callable[[str], Awaitable[None]],
     model: str = "gpt-4.1",
     api_key: Optional[str] = None,
+    token_saving: bool = True,
 ) -> ScholarResponse:
     """Stream a scholarly narrative, forwarding text chunks via callback.
 
@@ -162,6 +169,8 @@ async def narrate_streaming(
         chunk_callback: Async callable invoked with each text chunk.
         model: OpenAI model to use.
         api_key: OpenAI API key (or use OPENAI_API_KEY env var).
+        token_saving: If True, use lean prompt builder to reduce token
+            usage. If False, use the full prompt builder.
 
     Returns:
         ScholarResponse with the full narrative, grounding from executor,
@@ -169,7 +178,8 @@ async def narrate_streaming(
     """
     try:
         narrative = await _stream_llm(
-            query, execution_result, chunk_callback, model, api_key
+            query, execution_result, chunk_callback, model, api_key,
+            token_saving=token_saving,
         )
         response = ScholarResponse(
             narrative=narrative,
@@ -197,6 +207,7 @@ async def _call_llm(
     execution_result: ExecutionResult,
     model: str = "gpt-4.1",
     api_key: Optional[str] = None,
+    token_saving: bool = True,
 ) -> ScholarResponse:
     """Call OpenAI with the narrator persona and verified data.
 
@@ -208,6 +219,7 @@ async def _call_llm(
         execution_result: Verified execution result.
         model: OpenAI model name.
         api_key: OpenAI API key override.
+        token_saving: If True, use lean prompt builder.
 
     Returns:
         ScholarResponse parsed from LLM output.
@@ -220,7 +232,10 @@ async def _call_llm(
         raise ValueError("OPENAI_API_KEY not set and no api_key provided")
 
     client = OpenAI(api_key=resolved_key)
-    user_prompt = _build_narrator_prompt(query, execution_result)
+    if token_saving:
+        user_prompt = build_lean_narrator_prompt(query, execution_result)
+    else:
+        user_prompt = _build_narrator_prompt(query, execution_result)
 
     resp = client.responses.parse(
         model=model,
@@ -231,13 +246,25 @@ async def _call_llm(
         text_format=NarratorResponseLLM,
     )
 
+    # Count agent profiles actually included in the prompt
+    if token_saving:
+        agent_profile_count = len(_select_agent_profiles(execution_result, query))
+    else:
+        agent_profile_count = len(execution_result.grounding.agents) if execution_result.grounding else 0
+
     log_llm_call(
         call_type="narrator",
         model=model,
         system_prompt=NARRATOR_SYSTEM_PROMPT,
         user_prompt=user_prompt,
         response=resp,
-        extra_metadata={"query": query},
+        extra_metadata={
+            "query": query,
+            "token_saving_mode": "lean" if token_saving else "full",
+            "prompt_char_count": len(user_prompt),
+            "record_count": len(execution_result.grounding.records) if execution_result.grounding else 0,
+            "agent_profile_count": agent_profile_count,
+        },
     )
 
     llm_output: NarratorResponseLLM = resp.output_parsed
@@ -257,6 +284,7 @@ async def _stream_llm(
     chunk_callback: Callable[[str], Awaitable[None]],
     model: str = "gpt-4.1",
     api_key: Optional[str] = None,
+    token_saving: bool = True,
 ) -> str:
     """Stream the narrator LLM response, forwarding text chunks.
 
@@ -273,6 +301,7 @@ async def _stream_llm(
         chunk_callback: Async callable invoked with each text delta.
         model: OpenAI model name.
         api_key: OpenAI API key override.
+        token_saving: If True, use lean prompt builder.
 
     Returns:
         The full assembled narrative text.
@@ -285,7 +314,10 @@ async def _stream_llm(
         raise ValueError("OPENAI_API_KEY not set and no api_key provided")
 
     client = OpenAI(api_key=resolved_key)
-    user_prompt = _build_narrator_prompt(query, execution_result)
+    if token_saving:
+        user_prompt = build_lean_narrator_prompt(query, execution_result)
+    else:
+        user_prompt = _build_narrator_prompt(query, execution_result)
 
     # Use plain text mode (no structured output) for streamable narrative
     streaming_system = (
@@ -393,7 +425,304 @@ def describe_filters(plan) -> str:
 
 
 # =============================================================================
-# Prompt builder
+# Lean prompt builder (token-optimized)
+# =============================================================================
+
+
+def _has_mixed_languages(records: list[RecordSummary]) -> bool:
+    """Check whether the result set contains more than one language."""
+    langs = {r.language for r in records if r.language}
+    return len(langs) > 1
+
+
+def _query_mentions_subject(query: str) -> bool:
+    """Check if the query mentions a topic/subject keyword."""
+    lower = query.lower()
+    topic_signals = [
+        "about", "subject", "topic", "on ", "regarding",
+        "concerning", "related to", "dealing with",
+    ]
+    return any(signal in lower for signal in topic_signals)
+
+
+_PRINTER_PUBLISHER_ROLES = frozenset({
+    "printer", "publisher", "bookseller", "engraver",
+    "typographer", "prt", "pbl", "bsl",
+})
+
+_AUTHOR_EDITOR_ROLES = frozenset({
+    "author", "editor", "compiler", "translator",
+    "commentator", "aut", "edt", "com", "trl",
+})
+
+
+def _select_relevant_agents(agents: list[str], limit: int = 2) -> list[str]:
+    """Select up to *limit* agents from a record, preferring printer/publisher roles.
+
+    Since ``RecordSummary.agents`` is a flat list of agent-name strings
+    (no role metadata), we use a heuristic: the DB typically stores
+    agents in MARC field order (1XX before 7XX), but we cannot
+    distinguish roles here. Return the first *limit* agents as-is;
+    the real role-based filtering happens at the agent-profile level.
+    """
+    return agents[:limit]
+
+
+def _select_agent_profiles(
+    result: ExecutionResult,
+    query: str,
+) -> list[AgentSummary]:
+    """Select 0-3 agent profiles for the lean prompt.
+
+    Selection logic (deterministic, no LLM):
+      a) If a step had action "resolve_agent" or "enrich", include that agent.
+      b) If an agent appears in 3+ records in the result set, include them.
+      c) If the query mentions "printer"/"publisher"/"author" and an agent
+         matches, include them.
+      d) Otherwise include ZERO agent profiles.
+
+    Returns at most 3 profiles.
+    """
+    all_agents = result.grounding.agents
+    if not all_agents:
+        return []
+
+    agent_by_name: dict[str, AgentSummary] = {
+        a.canonical_name.lower(): a for a in all_agents
+    }
+
+    selected_names: set[str] = set()
+
+    # (a) Agents from resolve_agent / enrich steps
+    for step in result.steps_completed:
+        if step.action in ("resolve_agent", "enrich"):
+            if hasattr(step.data, "matched_values"):
+                # ResolvedEntity
+                for val in step.data.matched_values:
+                    if val.lower() in agent_by_name:
+                        selected_names.add(val.lower())
+                if hasattr(step.data, "query_name"):
+                    qn = step.data.query_name.lower()
+                    if qn in agent_by_name:
+                        selected_names.add(qn)
+            elif hasattr(step.data, "agents"):
+                # EnrichmentBundle
+                for a in step.data.agents:
+                    if a.canonical_name.lower() in agent_by_name:
+                        selected_names.add(a.canonical_name.lower())
+
+    # (b) Agents appearing in 3+ records
+    records = result.grounding.records
+    if records:
+        from collections import Counter
+        agent_counts: Counter = Counter()
+        for rec in records:
+            for agent_name in rec.agents:
+                agent_counts[agent_name.lower()] += 1
+        for name, count in agent_counts.items():
+            if count >= 3 and name in agent_by_name:
+                selected_names.add(name)
+
+    # (c) Query mentions role keywords
+    lower_query = query.lower()
+    role_keywords = {
+        "printer", "publisher", "bookseller", "author", "editor",
+        "translator", "compiler",
+    }
+    query_has_role = any(kw in lower_query for kw in role_keywords)
+    if query_has_role:
+        for a in all_agents:
+            occupations_lower = [o.lower() for o in a.occupations]
+            name_lower = a.canonical_name.lower()
+            # Check if agent's occupation matches a query keyword
+            if any(kw in occ for kw in role_keywords for occ in occupations_lower):
+                selected_names.add(name_lower)
+            # Check if agent name appears in query
+            if name_lower in lower_query:
+                selected_names.add(name_lower)
+
+    # (d) If nothing selected, return empty
+    if not selected_names:
+        return []
+
+    # Collect and cap at 3
+    selected: list[AgentSummary] = []
+    for name in selected_names:
+        if name in agent_by_name and len(selected) < 3:
+            selected.append(agent_by_name[name])
+
+    return selected
+
+
+def _format_lean_agent(agent: AgentSummary) -> str:
+    """Format a single agent profile for the lean prompt.
+
+    Includes: canonical_name, birth/death years, description,
+    record_count, ONE link (Wikipedia preferred).
+    """
+    parts = [f"  - {agent.canonical_name}"]
+
+    life_parts: list[str] = []
+    if agent.birth_year:
+        life_parts.append(f"b. {agent.birth_year}")
+    if agent.death_year:
+        life_parts.append(f"d. {agent.death_year}")
+    if life_parts:
+        parts.append(f"    Dates: {', '.join(life_parts)}")
+
+    if agent.description:
+        parts.append(f"    Description: {agent.description}")
+
+    parts.append(f"    Records in collection: {agent.record_count}")
+
+    # ONE link, Wikipedia preferred
+    if agent.links:
+        wiki_link = next(
+            (lnk for lnk in agent.links if lnk.source == "wikipedia"),
+            None,
+        )
+        best_link = wiki_link or agent.links[0]
+        parts.append(f"    Link: [{best_link.label}]({best_link.url})")
+
+    return "\n".join(parts)
+
+
+def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
+    """Assemble a token-optimized user prompt with verified data.
+
+    Compared to ``_build_narrator_prompt()``, this version:
+    - Drops full agent lists, full subject lists, source_steps, place field
+    - Includes language only when mixed across records
+    - Includes up to 2 agents per record (role-relevant)
+    - Includes up to 2 subjects per record only if query mentions a subject
+    - Selects 0-3 agent profiles total (not all)
+    - Caps aggregations to top 5 per field and drops single-value fields
+    - Drops the AVAILABLE LINKS section entirely
+
+    Args:
+        query: The original user query.
+        result: ExecutionResult from the executor.
+
+    Returns:
+        Formatted prompt string for the narrator LLM call.
+    """
+    sections: list[str] = []
+
+    # --- Query ---
+    sections.append(f"USER QUERY: {query}")
+    sections.append("")
+
+    # --- Scholarly directives ---
+    if result.directives:
+        sections.append("SCHOLARLY DIRECTIVES:")
+        for d in result.directives:
+            line = f"  - {d.directive}"
+            if d.params:
+                params_str = ", ".join(f"{k}={v}" for k, v in d.params.items())
+                line += f" ({params_str})"
+            if d.label:
+                line += f"  [{d.label}]"
+            sections.append(line)
+        sections.append("")
+
+    # --- Records ---
+    records = result.grounding.records
+    mixed_langs = _has_mixed_languages(records) if records else False
+    include_subjects = _query_mentions_subject(query)
+
+    if records:
+        sections.append(f"COLLECTION RECORDS ({len(records)} found):")
+        for rec in records:
+            parts = [f"  - [{rec.mms_id}] {rec.title}"]
+            if rec.date_display:
+                parts.append(f"    Date: {rec.date_display}")
+            if rec.publisher:
+                parts.append(f"    Publisher: {rec.publisher}")
+            if mixed_langs and rec.language:
+                parts.append(f"    Language: {rec.language}")
+            if rec.agents:
+                selected = _select_relevant_agents(rec.agents, limit=2)
+                if selected:
+                    parts.append(f"    Agents: {', '.join(selected)}")
+            if include_subjects and rec.subjects:
+                selected_subj = rec.subjects[:2]
+                if selected_subj:
+                    parts.append(f"    Subjects: {', '.join(selected_subj)}")
+            if rec.primo_url:
+                parts.append(f"    Catalog link: {rec.primo_url}")
+            sections.append("\n".join(parts))
+        sections.append("")
+    else:
+        sections.append("COLLECTION RECORDS: None found.")
+        sections.append("")
+
+    # --- Agent profiles (0-3 selected) ---
+    selected_agents = _select_agent_profiles(result, query)
+    if selected_agents:
+        sections.append("AGENT PROFILES:")
+        for agent in selected_agents:
+            sections.append(_format_lean_agent(agent))
+        sections.append("")
+
+    # --- Aggregations (top 5 per field, drop single-value fields) ---
+    aggregations = result.grounding.aggregations
+    if aggregations:
+        agg_lines: list[str] = []
+        for field, facets in aggregations.items():
+            # Drop fields with only 1 value
+            if len(facets) <= 1:
+                continue
+            field_lines = [f"  {field}:"]
+            for facet in facets[:5]:
+                if isinstance(facet, dict):
+                    field_lines.append(
+                        f"    - {facet.get('value', '?')}: {facet.get('count', '?')}"
+                    )
+                else:
+                    field_lines.append(f"    - {facet}")
+            agg_lines.extend(field_lines)
+        if agg_lines:
+            sections.append("AGGREGATION RESULTS:")
+            sections.extend(agg_lines)
+            sections.append("")
+
+    # --- Empty / failed steps ---
+    empty_steps = [
+        s for s in result.steps_completed
+        if s.status in ("empty", "error")
+    ]
+    if empty_steps:
+        sections.append("STEPS WITH NO RESULTS:")
+        for s in empty_steps:
+            msg = s.error_message or "no results"
+            sections.append(f"  - Step {s.step_index} ({s.label}): {s.status} -- {msg}")
+        sections.append("")
+
+    # --- Truncation notice ---
+    if result.truncated:
+        sections.append(
+            "NOTE: Results were truncated. The total count cited in step "
+            "results is accurate, but only a subset of records is shown above."
+        )
+        sections.append("")
+
+    # --- Session context ---
+    if result.session_context and result.session_context.previous_messages:
+        sections.append("CONVERSATION CONTEXT (recent messages):")
+        for msg in result.session_context.previous_messages[-5:]:
+            sections.append(f"  {msg.role.upper()}: {msg.content[:200]}")
+        sections.append("")
+
+    sections.append(
+        "Compose a scholarly response following the evidence rules. "
+        "Include exact counts and weave links naturally into the text."
+    )
+
+    return "\n".join(sections)
+
+
+# =============================================================================
+# Full prompt builder (original, non-optimized)
 # =============================================================================
 
 

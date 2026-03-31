@@ -46,10 +46,14 @@ export async function fetchRecentChats(): Promise<RecentChat[]> {
 export async function sendChatMessage(
   message: string,
   sessionId?: string | null,
+  tokenSaving?: boolean,
 ): Promise<ChatResponseAPI> {
   const body: Record<string, unknown> = { message };
   if (sessionId) {
     body.session_id = sessionId;
+  }
+  if (tokenSaving != null) {
+    body.token_saving = tokenSaving;
   }
 
   const res = await authenticatedFetch('/chat', {
