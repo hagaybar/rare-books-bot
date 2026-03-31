@@ -336,25 +336,36 @@ async def _stream_llm(
     )
 
     full_text: list[str] = []
+    response_obj = None
     for event in stream:
-        # The Responses API streaming emits events with different types.
         # Text deltas arrive as response.output_text.delta events.
         if event.type == "response.output_text.delta":
             delta = event.delta
             if delta:
                 full_text.append(delta)
                 await chunk_callback(delta)
+        elif event.type == "response.completed":
+            response_obj = event.response
 
     narrative = "".join(full_text)
 
-    logger.info(
-        "Narrator streaming completed",
-        extra={
-            "model": model,
-            "narrative_length": len(narrative),
-            "query": query[:100],
-        },
-    )
+    # Log with token usage (same as _call_llm for comparison)
+    if response_obj:
+        log_llm_call(
+            call_type="narrator_streaming",
+            model=model,
+            system_prompt=streaming_system,
+            user_prompt=user_prompt,
+            response=response_obj,
+            extra_metadata={
+                "token_saving_mode": "lean" if token_saving else "full",
+                "prompt_char_count": len(user_prompt),
+                "record_count": len(execution_result.grounding.records) if execution_result.grounding else 0,
+                "agent_profile_count": len(_select_agent_profiles(execution_result)) if token_saving else (len(execution_result.grounding.agents) if execution_result.grounding else 0),
+            },
+        )
+    else:
+        logger.warning("Narrator streaming completed without response object — no usage logged")
 
     return narrative
 
