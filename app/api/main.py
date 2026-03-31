@@ -152,8 +152,9 @@ async def add_security_headers(request: Request, call_next):
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https://*.wikimedia.org https://*.wikipedia.org https://tiles.openfreemap.org https://*.openstreetmap.org; "
-        "connect-src 'self' ws: wss: https://api.openai.com; "
+        "connect-src 'self' ws: wss: https://api.openai.com https://tiles.openfreemap.org https://*.openfreemap.org; "
         "font-src 'self'; "
+        "worker-src 'self' blob:; "
         "frame-ancestors 'none'"
     )
     return response
