@@ -157,11 +157,19 @@ export default function MessageBubble({
           </div>
         )}
 
-        {/* Main message text -- streaming or complete */}
-        {/* During thinking-only state with no text yet, skip the bubble */}
-        {!message.clarificationNeeded && (isStreaming || (isStreamComplete && message.content)) && (
+        {/* Main message text -- thinking, streaming, or complete */}
+        {!message.clarificationNeeded && (isThinking || isStreaming || (isStreamComplete && message.content)) && (
         <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 text-sm text-gray-800 leading-relaxed shadow-sm">
-          {isStreaming ? (
+          {isThinking ? (
+            /* Thinking: show blinking cursor as typing indicator */
+            <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+              <span
+                className="inline-block w-[2px] h-[1em] bg-gray-400 align-text-bottom"
+                style={{ animation: 'blink-cursor 1s step-end infinite' }}
+                aria-hidden="true"
+              />
+            </div>
+          ) : isStreaming ? (
             /* Streaming: show text so far with blinking cursor */
             <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
               <ReactMarkdown>{message.content}</ReactMarkdown>

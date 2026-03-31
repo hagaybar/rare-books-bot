@@ -65,7 +65,7 @@ function getWsUrl(): string {
 // ---------------------------------------------------------------------------
 
 export default function Chat() {
-  const { sessionId, setSessionId } = useAppStore();
+  const { sessionId, setSessionId, clearSession } = useAppStore();
   const user = useAuthStore((s) => s.user);
   const [searchParams] = useSearchParams();
 
@@ -82,6 +82,49 @@ export default function Chat() {
   const wsRef = useRef<WebSocket | null>(null);
   /** ID of the assistant message being streamed. */
   const streamingMsgIdRef = useRef<string | null>(null);
+
+  // ------------------------------------------------------------------
+  // Restore session messages from the backend
+  // ------------------------------------------------------------------
+
+  const restoreSession = useCallback(
+    async (targetSessionId: string) => {
+      if (targetSessionId === restoredSessionId) return;
+      try {
+        const res = await authenticatedFetch(`/sessions/${targetSessionId}`);
+        if (res.status === 404 || res.status === 403) {
+          // Session expired, deleted, or belongs to another user -- start fresh
+          clearSession();
+          setRestoredSessionId(null);
+          return;
+        }
+        if (!res.ok) return;
+        const data = await res.json();
+        const restored: ChatMessage[] = (data.messages || []).map(
+          (msg: { role: string; content: string; timestamp: string }, i: number) => ({
+            id: `restored-${i}`,
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            candidateSet: null,
+            suggestedFollowups: [],
+            clarificationNeeded: null,
+            phase: null,
+            confidence: null,
+            metadata: {},
+            timestamp: new Date(msg.timestamp),
+          }),
+        );
+        setRestoredSessionId(targetSessionId);
+        setSessionId(targetSessionId);
+        if (restored.length > 0) {
+          setMessages(restored);
+        }
+      } catch {
+        // Session load failed silently -- user can still start fresh
+      }
+    },
+    [restoredSessionId, setSessionId, clearSession],
+  );
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -103,42 +146,13 @@ export default function Chat() {
     };
   }, []);
 
-  // Restore session from URL ?session=XYZ parameter
+  // Restore session: URL param takes priority, then localStorage (via store)
   useEffect(() => {
     const urlSessionId = searchParams.get('session');
-    if (!urlSessionId || urlSessionId === restoredSessionId) return;
-
-    setRestoredSessionId(urlSessionId);
-    setSessionId(urlSessionId);
-
-    // Load session messages from the backend
-    (async () => {
-      try {
-        const res = await authenticatedFetch(`/sessions/${urlSessionId}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const restored: ChatMessage[] = (data.messages || []).map(
-          (msg: { role: string; content: string; timestamp: string }, i: number) => ({
-            id: `restored-${i}`,
-            role: msg.role as 'user' | 'assistant',
-            content: msg.content,
-            candidateSet: null,
-            suggestedFollowups: [],
-            clarificationNeeded: null,
-            phase: null,
-            confidence: null,
-            metadata: {},
-            timestamp: new Date(msg.timestamp),
-          }),
-        );
-        if (restored.length > 0) {
-          setMessages(restored);
-        }
-      } catch {
-        // Session load failed silently -- user can still start fresh
-      }
-    })();
-  }, [searchParams, restoredSessionId, setSessionId]);
+    const targetSessionId = urlSessionId ?? sessionId;
+    if (!targetSessionId || targetSessionId === restoredSessionId) return;
+    restoreSession(targetSessionId);
+  }, [searchParams, sessionId, restoredSessionId, restoreSession]);
 
   // ------------------------------------------------------------------
   // Update the streaming assistant message in-place
@@ -518,6 +532,19 @@ export default function Chat() {
   };
 
   // ------------------------------------------------------------------
+  // New Chat handler: clear session and start fresh
+  // ------------------------------------------------------------------
+
+  const handleNewChat = useCallback(() => {
+    clearSession();
+    setMessages([]);
+    setRestoredSessionId(null);
+    setPrimoUrls({});
+    setError(null);
+    inputRef.current?.focus();
+  }, [clearSession]);
+
+  // ------------------------------------------------------------------
   // Derived state: check if we are in streaming mode (WS active)
   // ------------------------------------------------------------------
 
@@ -531,6 +558,27 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
+      {/* New Chat button -- shown when there is an active conversation */}
+      {!isEmpty && (
+        <div className="border-b border-gray-200 bg-white px-4 py-2 flex justify-end">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+              text-gray-600 bg-gray-100 rounded-lg
+              hover:bg-gray-200 hover:text-gray-800
+              disabled:opacity-50 disabled:cursor-not-allowed
+              transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            New Chat
+          </button>
+        </div>
+      )}
+
       {/* Scrollable messages area */}
       <div className="flex-1 overflow-y-auto">
         {isEmpty ? (

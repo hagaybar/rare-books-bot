@@ -21,11 +21,11 @@ export default function ThinkingBlock({
 }: ThinkingBlockProps) {
   const [expanded, setExpanded] = useState(!defaultCollapsed);
 
-  if (steps.length === 0) return null;
+  if (steps.length === 0 && !isActive) return null;
 
   // ---- Active state: show latest step with pulse animation ----
   if (isActive) {
-    const latestStep = steps[steps.length - 1];
+    const latestStep = steps.length > 0 ? steps[steps.length - 1] : 'Thinking\u2026';
     return (
       <div className="flex justify-start">
         <div className="max-w-[75%] px-4 py-3 rounded-2xl rounded-bl-md bg-gray-100 border border-gray-200 shadow-sm animate-pulse">
