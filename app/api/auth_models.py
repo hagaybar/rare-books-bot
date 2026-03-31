@@ -22,6 +22,10 @@ class UserInfo(BaseModel):
     is_active: bool = True
     token_limit: int | None = None
     tokens_used_this_month: int | None = None
+    input_tokens_this_month: int = 0
+    output_tokens_this_month: int = 0
+    cost_usd_this_month: float = 0.0
+    model: str = ""
 
 
 def _validate_password_complexity(v: str) -> str:
@@ -70,4 +74,7 @@ class UserListItem(BaseModel):
     is_active: bool
     last_login: str | None
     tokens_used_this_month: int = 0
+    input_tokens_this_month: int = 0
+    output_tokens_this_month: int = 0
+    cost_usd_this_month: float = 0.0
     token_limit: int = 50000

@@ -10,6 +10,10 @@ export interface AuthUser {
   is_active?: boolean;
   token_limit?: number | null;
   tokens_used_this_month?: number | null;
+  input_tokens_this_month?: number;
+  output_tokens_this_month?: number;
+  cost_usd_this_month?: number;
+  model?: string;
 }
 
 export async function loginApi(
@@ -93,6 +97,9 @@ export interface UserListItem {
   is_active: boolean;
   last_login: string | null;
   tokens_used_this_month: number;
+  input_tokens_this_month: number;
+  output_tokens_this_month: number;
+  cost_usd_this_month: number;
   token_limit: number;
 }
 

@@ -526,8 +526,9 @@ async def chat(request: Request, chat_request: ChatRequest, _user=Depends(requir
         # Security check 7: Token recording
         # Read actual token usage accumulated by LLM logger during pipeline
         tokens_used = token_accumulator.get()
+        token_breakdown = token_accumulator.get_breakdown()
         if tokens_used > 0:
-            record_token_usage(user_id, tokens_used)
+            record_token_usage(user_id, tokens_used, **token_breakdown)
 
         # Security check 8: Audit log
         audit_log(
@@ -983,8 +984,9 @@ async def websocket_chat(websocket: WebSocket):
         # ---- Post-response security: Token recording + audit ----
         # Read actual token usage accumulated by LLM logger during pipeline
         tokens_used = token_accumulator.get()
+        token_breakdown = token_accumulator.get_breakdown()
         if tokens_used > 0:
-            record_token_usage(ws_user_id, tokens_used)
+            record_token_usage(ws_user_id, tokens_used, **token_breakdown)
 
         from app.api.auth_service import audit_log
         audit_log(

@@ -336,23 +336,42 @@ class _TokenAccumulator:
         token_accumulator.reset()   # at start of request
         # ... pipeline runs, log_llm_call auto-accumulates ...
         total = token_accumulator.get()  # at end of request
+        breakdown = token_accumulator.get_breakdown()  # {input, output, cost, model}
     """
 
     def __init__(self) -> None:
         self._local = threading.local()
 
     def reset(self) -> None:
-        """Reset the counter to 0. Call at the start of each request."""
+        """Reset all counters to 0. Call at the start of each request."""
         self._local.total = 0
+        self._local.input_tokens = 0
+        self._local.output_tokens = 0
+        self._local.cost_usd = 0.0
+        self._local.model = ""
 
-    def add(self, tokens: int) -> None:
+    def add(self, tokens: int, input_tokens: int = 0, output_tokens: int = 0,
+            cost_usd: float = 0.0, model: str = "") -> None:
         """Add tokens to the running total."""
-        current = getattr(self._local, "total", 0)
-        self._local.total = current + tokens
+        self._local.total = getattr(self._local, "total", 0) + tokens
+        self._local.input_tokens = getattr(self._local, "input_tokens", 0) + input_tokens
+        self._local.output_tokens = getattr(self._local, "output_tokens", 0) + output_tokens
+        self._local.cost_usd = getattr(self._local, "cost_usd", 0.0) + cost_usd
+        if model:
+            self._local.model = model  # last model used
 
     def get(self) -> int:
         """Return the accumulated token count since last reset."""
         return getattr(self._local, "total", 0)
+
+    def get_breakdown(self) -> dict:
+        """Return full breakdown: input, output, cost, model."""
+        return {
+            "input_tokens": getattr(self._local, "input_tokens", 0),
+            "output_tokens": getattr(self._local, "output_tokens", 0),
+            "cost_usd": getattr(self._local, "cost_usd", 0.0),
+            "model": getattr(self._local, "model", ""),
+        }
 
 
 token_accumulator = _TokenAccumulator()
@@ -391,7 +410,14 @@ def log_llm_call(
         extra_metadata=extra_metadata,
     )
     # Accumulate tokens for the current request
-    total = entry.get("usage", {}).get("total_tokens", 0)
+    usage = entry.get("usage", {})
+    total = usage.get("total_tokens", 0)
     if total > 0:
-        token_accumulator.add(total)
+        token_accumulator.add(
+            total,
+            input_tokens=usage.get("input_tokens", 0),
+            output_tokens=usage.get("output_tokens", 0),
+            cost_usd=entry.get("cost_usd", 0.0),
+            model=model,
+        )
     return entry

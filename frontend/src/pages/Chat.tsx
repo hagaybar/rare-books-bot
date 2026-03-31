@@ -695,10 +695,16 @@ export default function Chat() {
             </div>
           ) : (
             <>
-              {/* Quota badge for limited users */}
-              {user?.role === 'limited' && user.token_limit != null && (
+              {/* Token usage badge */}
+              {user && user.tokens_used_this_month != null && user.tokens_used_this_month > 0 && (
                 <div className="text-xs text-gray-400 text-center mb-1">
-                  Tokens: {user.tokens_used_this_month ?? 0} / {user.token_limit}
+                  {user.input_tokens_this_month?.toLocaleString() ?? 0} in / {user.output_tokens_this_month?.toLocaleString() ?? 0} out
+                  {user.cost_usd_this_month != null && user.cost_usd_this_month > 0 && (
+                    <span> &middot; ${user.cost_usd_this_month.toFixed(4)}</span>
+                  )}
+                  {user.role === 'limited' && user.token_limit != null && (
+                    <span> &middot; {user.tokens_used_this_month.toLocaleString()} / {user.token_limit.toLocaleString()}</span>
+                  )}
                 </div>
               )}
               <div className="flex items-end gap-2">

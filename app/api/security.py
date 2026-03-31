@@ -11,18 +11,32 @@ logger = logging.getLogger(__name__)
 
 # --- Token tracking + Quota ---
 
-def record_token_usage(user_id: int, tokens: int) -> None:
-    """Record tokens used for a chat request."""
+def record_token_usage(
+    user_id: int,
+    tokens: int,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
+    cost_usd: float = 0.0,
+    model: str = "",
+) -> None:
+    """Record tokens used for a chat request with input/output breakdown."""
     if not isinstance(user_id, int):
         return  # Guest users — no tracking
     month = datetime.now().strftime("%Y-%m")
     conn = get_auth_db()
     try:
         conn.execute(
-            """INSERT INTO token_usage (user_id, month, tokens_used)
-               VALUES (?, ?, ?)
-               ON CONFLICT(user_id, month) DO UPDATE SET tokens_used = tokens_used + ?""",
-            (user_id, month, tokens, tokens),
+            """INSERT INTO token_usage (user_id, month, tokens_used,
+                   input_tokens, output_tokens, cost_usd, model)
+               VALUES (?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(user_id, month) DO UPDATE SET
+                   tokens_used = tokens_used + ?,
+                   input_tokens = input_tokens + ?,
+                   output_tokens = output_tokens + ?,
+                   cost_usd = cost_usd + ?,
+                   model = ?""",
+            (user_id, month, tokens, input_tokens, output_tokens, cost_usd, model,
+             tokens, input_tokens, output_tokens, cost_usd, model),
         )
         conn.commit()
     finally:

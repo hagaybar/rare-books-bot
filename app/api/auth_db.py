@@ -32,6 +32,10 @@ CREATE TABLE IF NOT EXISTS token_usage (
     user_id INTEGER NOT NULL REFERENCES users(id),
     month TEXT NOT NULL,
     tokens_used INTEGER DEFAULT 0,
+    input_tokens INTEGER DEFAULT 0,
+    output_tokens INTEGER DEFAULT 0,
+    cost_usd REAL DEFAULT 0.0,
+    model TEXT DEFAULT '',
     UNIQUE(user_id, month)
 );
 
@@ -60,11 +64,32 @@ INITIAL_SETTINGS = {
 }
 
 
+def _migrate_token_usage(conn: sqlite3.Connection) -> None:
+    """Add input/output/cost columns to token_usage if missing.
+
+    For existing rows, split tokens_used evenly between input and output.
+    """
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(token_usage)").fetchall()}
+    if "input_tokens" in cols:
+        return  # Already migrated
+    conn.execute("ALTER TABLE token_usage ADD COLUMN input_tokens INTEGER DEFAULT 0")
+    conn.execute("ALTER TABLE token_usage ADD COLUMN output_tokens INTEGER DEFAULT 0")
+    conn.execute("ALTER TABLE token_usage ADD COLUMN cost_usd REAL DEFAULT 0.0")
+    conn.execute("ALTER TABLE token_usage ADD COLUMN model TEXT DEFAULT ''")
+    # Backfill existing data: split total evenly
+    conn.execute(
+        "UPDATE token_usage SET input_tokens = tokens_used / 2, "
+        "output_tokens = tokens_used - tokens_used / 2"
+    )
+    conn.commit()
+
+
 def init_auth_db() -> None:
     """Initialize auth database with schema and default settings."""
     AUTH_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(AUTH_DB_PATH))
     conn.executescript(SCHEMA)
+    _migrate_token_usage(conn)
     for key, value in INITIAL_SETTINGS.items():
         conn.execute(
             "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)",

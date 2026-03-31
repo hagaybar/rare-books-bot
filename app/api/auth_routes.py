@@ -131,7 +131,8 @@ async def get_me(user=Depends(get_current_user)):
         from datetime import datetime
         month = datetime.now().strftime("%Y-%m")
         usage = conn.execute(
-            "SELECT tokens_used FROM token_usage WHERE user_id = ? AND month = ?",
+            "SELECT tokens_used, input_tokens, output_tokens, cost_usd, model "
+            "FROM token_usage WHERE user_id = ? AND month = ?",
             (user_id, month),
         ).fetchone()
         return UserInfo(
@@ -141,6 +142,10 @@ async def get_me(user=Depends(get_current_user)):
             is_active=bool(row["is_active"]),
             token_limit=row["token_limit"],
             tokens_used_this_month=usage["tokens_used"] if usage else 0,
+            input_tokens_this_month=usage["input_tokens"] if usage else 0,
+            output_tokens_this_month=usage["output_tokens"] if usage else 0,
+            cost_usd_this_month=usage["cost_usd"] if usage else 0.0,
+            model=usage["model"] if usage else "",
         )
     finally:
         conn.close()
@@ -155,7 +160,11 @@ async def list_users(admin=Depends(require_role("admin"))):
         from datetime import datetime
         month = datetime.now().strftime("%Y-%m")
         rows = conn.execute(
-            """SELECT u.*, COALESCE(tu.tokens_used, 0) as tokens_used_this_month
+            """SELECT u.*,
+                      COALESCE(tu.tokens_used, 0) as tokens_used_this_month,
+                      COALESCE(tu.input_tokens, 0) as input_tokens_this_month,
+                      COALESCE(tu.output_tokens, 0) as output_tokens_this_month,
+                      COALESCE(tu.cost_usd, 0.0) as cost_usd_this_month
                FROM users u
                LEFT JOIN token_usage tu ON tu.user_id = u.id AND tu.month = ?
                ORDER BY u.id""",
@@ -165,6 +174,9 @@ async def list_users(admin=Depends(require_role("admin"))):
             id=r["id"], username=r["username"], role=r["role"],
             is_active=bool(r["is_active"]), last_login=r["last_login"],
             tokens_used_this_month=r["tokens_used_this_month"],
+            input_tokens_this_month=r["input_tokens_this_month"],
+            output_tokens_this_month=r["output_tokens_this_month"],
+            cost_usd_this_month=r["cost_usd_this_month"],
             token_limit=r["token_limit"],
         ) for r in rows]
     finally:

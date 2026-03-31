@@ -136,11 +136,15 @@ docker stop $CONTAINER_NAME 2>/dev/null || true
 docker rm $CONTAINER_NAME 2>/dev/null || true
 
 # Start new container
+# Ensure logs directory exists
+mkdir -p $REMOTE_DATA/logs
+
 docker run -d \
     --name $CONTAINER_NAME \
     --restart unless-stopped \
     --env-file ~/rare-books.env \
     -v $REMOTE_DATA:/app/data \
+    -v $REMOTE_DATA/logs:/app/logs \
     -p $HOST_PORT:8000 \
     $IMAGE_NAME:$GIT_SHA
 
