@@ -349,23 +349,29 @@ async def _stream_llm(
 
     narrative = "".join(full_text)
 
-    # Log with token usage (same as _call_llm for comparison)
-    if response_obj:
-        log_llm_call(
-            call_type="narrator_streaming",
-            model=model,
-            system_prompt=streaming_system,
-            user_prompt=user_prompt,
-            response=response_obj,
-            extra_metadata={
-                "token_saving_mode": "lean" if token_saving else "full",
-                "prompt_char_count": len(user_prompt),
-                "record_count": len(execution_result.grounding.records) if execution_result.grounding else 0,
-                "agent_profile_count": len(_select_agent_profiles(execution_result, query)) if token_saving else (len(execution_result.grounding.agents) if execution_result.grounding else 0),
-            },
-        )
-    else:
-        logger.warning("Narrator streaming completed without response object — no usage logged")
+    # Log with token usage (same as _call_llm for comparison).
+    # Wrapped in try/except: logging failures must never crash the narrator
+    # after a successful stream -- the narrative has already been sent to
+    # the client chunk-by-chunk, so we must return it regardless.
+    try:
+        if response_obj:
+            log_llm_call(
+                call_type="narrator_streaming",
+                model=model,
+                system_prompt=streaming_system,
+                user_prompt=user_prompt,
+                response=response_obj,
+                extra_metadata={
+                    "token_saving_mode": "lean" if token_saving else "full",
+                    "prompt_char_count": len(user_prompt),
+                    "record_count": len(execution_result.grounding.records) if execution_result.grounding else 0,
+                    "agent_profile_count": len(_select_agent_profiles(execution_result, query)) if token_saving else (len(execution_result.grounding.agents) if execution_result.grounding else 0),
+                },
+            )
+        else:
+            logger.warning("Narrator streaming completed without response object — no usage logged")
+    except Exception:
+        logger.exception("Failed to log narrator streaming call — narrative was still produced")
 
     return narrative
 

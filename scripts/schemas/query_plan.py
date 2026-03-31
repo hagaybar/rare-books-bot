@@ -54,7 +54,15 @@ class Filter(BaseModel):
 
     @model_validator(mode='after')
     def validate_filter(self):
-        """Validate filter based on operation type."""
+        """Validate filter based on operation type.
+
+        Note: ``$step_N`` references are stored as plain strings even for
+        IN operations.  The executor resolves them at execution time.  We
+        therefore allow a string value for IN when it matches a step ref.
+        """
+        import re
+        _step_ref = re.compile(r"^\$step_\d+$")
+
         if self.op == FilterOp.RANGE:
             if self.start is None or self.end is None:
                 raise ValueError("RANGE operation requires both start and end")
@@ -70,10 +78,15 @@ class Filter(BaseModel):
         elif self.op == FilterOp.IN:
             if self.value is None:
                 raise ValueError("IN operation requires value")
-            if not isinstance(self.value, list):
+            # Allow string values that are $step_N references (resolved at execution time)
+            if isinstance(self.value, str):
+                if not _step_ref.match(self.value):
+                    raise ValueError("IN operation requires value to be a list")
+            elif isinstance(self.value, list):
+                if not all(isinstance(v, str) for v in self.value):
+                    raise ValueError("IN operation requires all values to be strings")
+            else:
                 raise ValueError("IN operation requires value to be a list")
-            if not all(isinstance(v, str) for v in self.value):
-                raise ValueError("IN operation requires all values to be strings")
 
         return self
 

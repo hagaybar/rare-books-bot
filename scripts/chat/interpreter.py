@@ -436,16 +436,43 @@ def _convert_filter_dict(f: dict) -> Filter:
     The filter ``value`` may be a ``$step_N`` reference string, which is
     kept as-is (the executor resolves it at execution time).
 
+    Handles common LLM mistakes:
+    - IN filter with a plain string value -> wraps in a list
+    - EQUALS/CONTAINS filter with a list value -> converts to IN
+
     Args:
         f: Raw filter dictionary from the LLM output.
 
     Returns:
         Typed Filter object.
     """
+    op_str = f.get("op", "EQUALS")
+    value = f.get("value")
+
+    # Fix: LLM sometimes emits IN with a single string instead of a list.
+    # Coerce to a list rather than letting the validator reject the whole step.
+    if op_str == "IN" and isinstance(value, str):
+        # Preserve $step_N references as-is (executor resolves them)
+        if not _STEP_REF_RE.match(value):
+            logger.warning(
+                "IN filter got string value %r instead of list — wrapping in list",
+                value,
+            )
+            value = [value]
+
+    # Fix: LLM sometimes emits EQUALS/CONTAINS with a list value.
+    # Promote to IN so the validator accepts it.
+    if op_str in ("EQUALS", "CONTAINS") and isinstance(value, list):
+        logger.warning(
+            "%s filter got list value — promoting op to IN",
+            op_str,
+        )
+        op_str = "IN"
+
     return Filter(
         field=FilterField(f["field"]),
-        op=FilterOp(f["op"]),
-        value=f.get("value"),
+        op=FilterOp(op_str),
+        value=value,
         start=f.get("start"),
         end=f.get("end"),
         negate=f.get("negate", False),

@@ -977,10 +977,15 @@ async def websocket_chat(websocket: WebSocket):
             },
         )
 
-        store.add_message(
-            session_id,
-            Message(role="assistant", content=narrative),
-        )
+        # Save session message BEFORE sending "complete", but don't let
+        # a session-store failure prevent the client from receiving results.
+        try:
+            store.add_message(
+                session_id,
+                Message(role="assistant", content=narrative),
+            )
+        except Exception:
+            logger.exception("Failed to save assistant message to session store")
 
         await websocket.send_json({
             "type": "complete",
@@ -988,23 +993,29 @@ async def websocket_chat(websocket: WebSocket):
         })
 
         # ---- Post-response security: Token recording + audit ----
-        # Read actual token usage accumulated by LLM logger during pipeline
-        tokens_used = token_accumulator.get()
-        token_breakdown = token_accumulator.get_breakdown()
-        if tokens_used > 0:
-            record_token_usage(ws_user_id, tokens_used, **token_breakdown)
+        # These run AFTER the "complete" message has been sent. Failures
+        # here must not propagate to the outer except which would send an
+        # "error" message on top of the already-sent "complete", confusing
+        # the client and making the query appear "stuck" or duplicated.
+        try:
+            tokens_used = token_accumulator.get()
+            token_breakdown = token_accumulator.get_breakdown()
+            if tokens_used > 0:
+                record_token_usage(ws_user_id, tokens_used, **token_breakdown)
 
-        from app.api.auth_service import audit_log
-        audit_log(
-            "chat_query_ws",
-            user_id=ws_user_id,
-            username=payload.get("username", "unknown"),
-            details=json.dumps({
-                "query": message[:200],
-                "tokens": tokens_used,
-                "session_id": session_id,
-            }),
-        )
+            from app.api.auth_service import audit_log
+            audit_log(
+                "chat_query_ws",
+                user_id=ws_user_id,
+                username=payload.get("username", "unknown"),
+                details=json.dumps({
+                    "query": message[:200],
+                    "tokens": tokens_used,
+                    "session_id": session_id,
+                }),
+            )
+        except Exception:
+            logger.exception("Post-complete bookkeeping failed (client already received response)")
 
         logger.info(
             "WebSocket scholar pipeline completed",

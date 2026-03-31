@@ -158,7 +158,7 @@ export default function MessageBubble({
         )}
 
         {/* Main message text -- thinking, streaming, or complete */}
-        {!message.clarificationNeeded && (isThinking || isStreaming || (isStreamComplete && message.content)) && (
+        {!message.clarificationNeeded && (isThinking || isStreaming || isStreamComplete) && (
         <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 text-sm text-gray-800 leading-relaxed shadow-sm">
           {isThinking ? (
             /* Thinking: show blinking cursor as typing indicator */
@@ -179,10 +179,15 @@ export default function MessageBubble({
                 aria-hidden="true"
               />
             </div>
-          ) : (
-            /* Complete: normal render */
+          ) : cleanedContent ? (
+            /* Complete with content: normal render */
             <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
               <ReactMarkdown>{cleanedContent}</ReactMarkdown>
+            </div>
+          ) : (
+            /* Complete but empty content: show fallback */
+            <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+              <p className="text-gray-400 italic">No response text available.</p>
             </div>
           )}
 

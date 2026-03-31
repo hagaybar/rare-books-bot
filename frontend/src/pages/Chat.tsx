@@ -113,6 +113,7 @@ export default function Chat() {
             confidence: null,
             metadata: {},
             timestamp: new Date(msg.timestamp),
+            streamingState: 'complete' as StreamingState,
           }),
         );
         setRestoredSessionId(targetSessionId);
@@ -220,7 +221,10 @@ export default function Chat() {
             ws.close();
             reject(new Error('WebSocket connection timeout'));
           }
-        }, 5000);
+        }, 15_000);
+
+        /** Response timeout -- fires if no 'complete' arrives within 60s of open. */
+        let responseTimeout: ReturnType<typeof setTimeout> | null = null;
 
         ws.onopen = () => {
           clearTimeout(connectionTimeout);
@@ -229,6 +233,22 @@ export default function Chat() {
             session_id: sessionId,
             token_saving: tokenSaving,
           }));
+
+          // Start response timeout -- if the server never sends 'complete',
+          // finalize so the UI doesn't stay stuck indefinitely.
+          responseTimeout = setTimeout(() => {
+            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+              updateStreamingMessage((prev) => ({
+                ...prev,
+                streamingState: 'complete',
+                content: prev.content || 'The server took too long to respond. Please try again.',
+              }));
+              streamingMsgIdRef.current = null;
+              ws.close();
+              wsRef.current = null;
+              resolve();
+            }
+          }, 60_000);
         };
 
         ws.onmessage = (event) => {
@@ -314,6 +334,7 @@ export default function Chat() {
             }
 
             case 'complete': {
+              if (responseTimeout) clearTimeout(responseTimeout);
               const resp = data.response as ChatResponse | undefined;
               if (resp) {
                 // Persist session ID from the complete response
@@ -347,6 +368,14 @@ export default function Chat() {
                       // Primo URL resolution is non-critical
                     });
                 }
+              } else {
+                // 'complete' arrived but with no response payload -- finalize
+                // with whatever content was streamed so far.
+                updateStreamingMessage((prev) => ({
+                  ...prev,
+                  streamingState: 'complete',
+                  content: prev.content || 'Response completed.',
+                }));
               }
 
               streamingMsgIdRef.current = null;
@@ -357,7 +386,15 @@ export default function Chat() {
             }
 
             case 'error': {
+              if (responseTimeout) clearTimeout(responseTimeout);
               const errorMessage = data.message as string ?? 'Unknown WebSocket error';
+              // Finalize the streaming message with an error indication
+              // instead of leaving it stuck in thinking/streaming state.
+              updateStreamingMessage((prev) => ({
+                ...prev,
+                streamingState: 'complete',
+                content: prev.content || `Error: ${errorMessage}`,
+              }));
               streamingMsgIdRef.current = null;
               ws.close();
               wsRef.current = null;
@@ -373,21 +410,38 @@ export default function Chat() {
 
         ws.onerror = () => {
           clearTimeout(connectionTimeout);
-          streamingMsgIdRef.current = null;
+          if (responseTimeout) clearTimeout(responseTimeout);
           wsRef.current = null;
-          // Remove the placeholder assistant message
-          setMessages((prev) => prev.filter((m) => m.id !== assistantMsgId));
+          // Only remove the placeholder if we never received any content.
+          // If content was already streamed, finalize it instead of deleting.
+          if (streamingMsgIdRef.current === assistantMsgId) {
+            setMessages((prev) => {
+              const existing = prev.find((m) => m.id === assistantMsgId);
+              if (existing && existing.content) {
+                // Content was partially streamed -- keep and finalize
+                return prev.map((m) =>
+                  m.id === assistantMsgId
+                    ? { ...m, streamingState: 'complete' as StreamingState }
+                    : m,
+                );
+              }
+              // No content received -- remove the empty placeholder
+              return prev.filter((m) => m.id !== assistantMsgId);
+            });
+            streamingMsgIdRef.current = null;
+          }
           reject(new Error('WebSocket connection failed'));
         };
 
         ws.onclose = (event) => {
           clearTimeout(connectionTimeout);
+          if (responseTimeout) clearTimeout(responseTimeout);
           wsRef.current = null;
           // If the connection closed before we got a complete message,
           // finalize whatever we have
           if (streamingMsgIdRef.current === assistantMsgId) {
-            // Abnormal close -- mark as complete with whatever text we have
             if (!event.wasClean) {
+              // Abnormal close -- mark as complete with whatever text we have
               updateStreamingMessage((prev) => ({
                 ...prev,
                 streamingState: 'complete',
@@ -395,9 +449,11 @@ export default function Chat() {
               }));
             } else {
               // Clean close but no complete message received; finalize
+              // with fallback content so the bubble renders.
               updateStreamingMessage((prev) => ({
                 ...prev,
                 streamingState: 'complete',
+                content: prev.content || 'Response completed.',
               }));
             }
             streamingMsgIdRef.current = null;
