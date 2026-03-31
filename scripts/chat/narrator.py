@@ -361,7 +361,7 @@ async def _stream_llm(
                 "token_saving_mode": "lean" if token_saving else "full",
                 "prompt_char_count": len(user_prompt),
                 "record_count": len(execution_result.grounding.records) if execution_result.grounding else 0,
-                "agent_profile_count": len(_select_agent_profiles(execution_result)) if token_saving else (len(execution_result.grounding.agents) if execution_result.grounding else 0),
+                "agent_profile_count": len(_select_agent_profiles(execution_result, query)) if token_saving else (len(execution_result.grounding.agents) if execution_result.grounding else 0),
             },
         )
     else:
