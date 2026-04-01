@@ -131,8 +131,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -149,7 +149,7 @@ async def add_security_headers(request: Request, call_next):
     # Content-Security-Policy: allow self + OpenFreeMap tiles + Wikidata/Wikipedia images
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "script-src 'self' 'unsafe-inline'; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https://*.wikimedia.org https://*.wikipedia.org https://tiles.openfreemap.org https://*.openstreetmap.org; "
         "connect-src 'self' ws: wss: https://api.openai.com https://tiles.openfreemap.org https://*.openfreemap.org; "
@@ -312,7 +312,7 @@ def get_db_path() -> Path:
 
 
 @app.get("/health", response_model=HealthResponse)
-async def health_check():
+def health_check():
     """Health check endpoint.
 
     Returns:
@@ -361,7 +361,7 @@ async def health_check():
 
 
 @app.get("/health/extended", response_model=HealthExtendedResponse)
-async def health_extended(_user=Depends(require_role("full"))):
+def health_extended(_user=Depends(require_role("full"))):
     """Extended health check with database file details.
 
     Returns file sizes and modification times for the bibliographic
@@ -870,6 +870,10 @@ async def websocket_chat(websocket: WebSocket):
                 })
                 await websocket.close()
                 return
+            if session and hasattr(session, 'user_id') and str(session.user_id) != str(ws_user_id):
+                await websocket.send_json({"type": "error", "message": "Session belongs to another user"})
+                await websocket.close(code=4003, reason="Access denied")
+                return
         else:
             session = store.create_session(user_id=str(ws_user_id) if ws_user_id else None)
             session_id = session.session_id
@@ -1054,7 +1058,9 @@ if _frontend_dir.is_dir():
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
         """Serve React SPA — static files if they exist, otherwise index.html."""
-        file_path = _frontend_dir / full_path
+        file_path = (_frontend_dir / full_path).resolve()
+        if not str(file_path).startswith(str(_frontend_dir.resolve())):
+            return FileResponse(_frontend_dir / "index.html")
         if file_path.is_file():
             return FileResponse(file_path)
         return FileResponse(_frontend_dir / "index.html")

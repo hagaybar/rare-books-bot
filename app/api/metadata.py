@@ -254,25 +254,26 @@ async def get_issues(
 
     try:
         conn = sqlite3.connect(str(db))
+        try:
+            # Total count for pagination metadata
+            count_sql = (
+                f"SELECT COUNT(*) FROM {table} "
+                f"WHERE {conf_col} IS NOT NULL AND {conf_col} <= ?"
+            )
+            total = conn.execute(count_sql, (max_confidence,)).fetchone()[0]
 
-        # Total count for pagination metadata
-        count_sql = (
-            f"SELECT COUNT(*) FROM {table} "
-            f"WHERE {conf_col} IS NOT NULL AND {conf_col} <= ?"
-        )
-        total = conn.execute(count_sql, (max_confidence,)).fetchone()[0]
-
-        # Fetch the page — JOIN with records to get mms_id
-        data_sql = (
-            f"SELECT r.mms_id, t.{raw_col}, t.{norm_col}, t.{conf_col}, t.{method_col} "
-            f"FROM {table} t "
-            f"JOIN records r ON t.record_id = r.id "
-            f"WHERE t.{conf_col} IS NOT NULL AND t.{conf_col} <= ? "
-            f"ORDER BY t.{conf_col} ASC "
-            f"LIMIT ? OFFSET ?"
-        )
-        rows = conn.execute(data_sql, (max_confidence, limit, offset)).fetchall()
-        conn.close()
+            # Fetch the page — JOIN with records to get mms_id
+            data_sql = (
+                f"SELECT r.mms_id, t.{raw_col}, t.{norm_col}, t.{conf_col}, t.{method_col} "
+                f"FROM {table} t "
+                f"JOIN records r ON t.record_id = r.id "
+                f"WHERE t.{conf_col} IS NOT NULL AND t.{conf_col} <= ? "
+                f"ORDER BY t.{conf_col} ASC "
+                f"LIMIT ? OFFSET ?"
+            )
+            rows = conn.execute(data_sql, (max_confidence, limit, offset)).fetchall()
+        finally:
+            conn.close()
     except FileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -553,13 +554,15 @@ def _count_affected_records(field: str, raw_value: str, db_path: Path) -> int:
     table, raw_col, conf_col = _AFFECTED_QUERY_MAP[field]
     try:
         conn = sqlite3.connect(str(db_path))
-        sql = (
-            f"SELECT COUNT(*) FROM {table} "
-            f"WHERE {raw_col} = ? AND ({conf_col} IS NULL OR {conf_col} <= 0.80)"
-        )
-        count = conn.execute(sql, (raw_value,)).fetchone()[0]
-        conn.close()
-        return count
+        try:
+            sql = (
+                f"SELECT COUNT(*) FROM {table} "
+                f"WHERE {raw_col} = ? AND ({conf_col} IS NULL OR {conf_col} <= 0.80)"
+            )
+            count = conn.execute(sql, (raw_value,)).fetchone()[0]
+            return count
+        finally:
+            conn.close()
     except Exception:
         return 0
 
@@ -1700,10 +1703,12 @@ def delete_publisher_variant(publisher_id: int, variant_id: int):
 
     try:
         conn = sqlite3.connect(str(db))
-        conn.execute("PRAGMA foreign_keys = ON")
-        conn.execute("DELETE FROM publisher_variants WHERE id = ? AND authority_id = ?", (variant_id, publisher_id))
-        conn.commit()
-        conn.close()
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            conn.execute("DELETE FROM publisher_variants WHERE id = ? AND authority_id = ?", (variant_id, publisher_id))
+            conn.commit()
+        finally:
+            conn.close()
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -1739,21 +1744,22 @@ def match_preview(
 
     try:
         conn = sqlite3.connect(str(db))
-        # Check if imprints table exists
-        table_check = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='imprints'"
-        ).fetchone()
-        if not table_check:
-            conn.close()
-            return MatchPreviewResponse(variant_form=variant_form, matching_imprints=0)
+        try:
+            # Check if imprints table exists
+            table_check = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='imprints'"
+            ).fetchone()
+            if not table_check:
+                return MatchPreviewResponse(variant_form=variant_form, matching_imprints=0)
 
-        # Use LIKE for flexible matching (case-insensitive by default in SQLite)
-        row = conn.execute(
-            "SELECT COUNT(*) FROM imprints WHERE publisher_norm LIKE ?",
-            (f"%{variant_form.lower()}%",),
-        ).fetchone()
-        count = row[0] if row else 0
-        conn.close()
+            # Use LIKE for flexible matching (case-insensitive by default in SQLite)
+            row = conn.execute(
+                "SELECT COUNT(*) FROM imprints WHERE publisher_norm LIKE ?",
+                (f"%{variant_form.lower()}%",),
+            ).fetchone()
+            count = row[0] if row else 0
+        finally:
+            conn.close()
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

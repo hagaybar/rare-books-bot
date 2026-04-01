@@ -46,6 +46,12 @@ from scripts.chat.plan_models import (
 
 logger = logging.getLogger(__name__)
 
+# Confidence thresholds
+CONFIDENCE_HIGH = 0.95
+CONFIDENCE_ALIAS_MATCH = 0.90
+CONFIDENCE_MEDIUM = 0.80
+CONFIDENCE_LOW = 0.70
+
 # Regex for $step_N references
 _STEP_REF_RE = re.compile(r"^\$step_(\d+)$")
 
@@ -473,9 +479,9 @@ def _handle_resolve_agent(
                             matched_canonical.append(canonical)
                         match_method = "alias_token"
 
-        confidence = 0.95 if match_method == "alias_exact" else (
-            0.90 if match_method == "canonical_exact" else (
-                0.70 if match_method == "alias_token" else 0.0
+        confidence = CONFIDENCE_HIGH if match_method == "alias_exact" else (
+            CONFIDENCE_ALIAS_MATCH if match_method == "canonical_exact" else (
+                CONFIDENCE_LOW if match_method == "alias_token" else 0.0
             )
         )
 
@@ -585,9 +591,9 @@ def _handle_resolve_publisher(
                             matched_canonical.append(canonical)
                         match_method = "variant_token"
 
-        confidence = 0.95 if match_method == "variant_exact" else (
-            0.90 if match_method == "canonical_exact" else (
-                0.70 if match_method == "variant_token" else 0.0
+        confidence = CONFIDENCE_HIGH if match_method == "variant_exact" else (
+            CONFIDENCE_ALIAS_MATCH if match_method == "canonical_exact" else (
+                CONFIDENCE_LOW if match_method == "variant_token" else 0.0
             )
         )
 
@@ -652,14 +658,17 @@ def _handle_retrieve(
             # Find the param key used by build_where_clause for this filter
             param_key = f"filter_{filter_idx}_{f.field.value}"
             if param_key in sql_params:
-                # Replace LOWER(col) = LOWER(:param) with LOWER(col) IN (...)
+                # Replace LOWER(col) = LOWER(:param) with LOWER(col) IN (LOWER(:mv_N), ...)
                 old_cond = f"LOWER(:{param_key})"
-                values_sql = ", ".join(f"LOWER('{v}')" for v in all_values)
+                mv_keys = [f"mv_{filter_idx}_{i}" for i in range(len(all_values))]
+                multi_placeholders = ", ".join(f"LOWER(:{k})" for k in mv_keys)
                 where_clause = where_clause.replace(
                     f"= {old_cond}",
-                    f"IN ({values_sql})"
+                    f"IN ({multi_placeholders})"
                 )
                 del sql_params[param_key]
+                for k, v in zip(mv_keys, all_values):
+                    sql_params[k] = v
 
         select_columns = build_select_columns(needed_joins)
         join_clauses = build_join_clauses(needed_joins)
@@ -674,8 +683,11 @@ def _handle_retrieve(
                     total_count=0,
                     filters_applied=[f.model_dump() for f in resolved_filters],
                 )
-            placeholders = ",".join(f"'{mms}'" for mms in scope_ids)
-            scope_clause = f" AND r.mms_id IN ({placeholders})"
+            scope_keys = [f"scope_{i}" for i in range(len(scope_ids))]
+            scope_placeholders = ",".join(f":{k}" for k in scope_keys)
+            scope_clause = f" AND r.mms_id IN ({scope_placeholders})"
+            for k, mms in zip(scope_keys, scope_ids):
+                sql_params[k] = mms
 
         sql = (
             f"SELECT DISTINCT r.mms_id"
