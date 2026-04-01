@@ -704,6 +704,12 @@ cd frontend && npm run build                # production build
 # QA regression:
 python -m app.cli regression --gold data/qa/gold.json --db data/index/bibliographic.db
 
+# Deploy to production (cenlib-rare-books.nurdillo.com):
+./deploy.sh                     # code only (rsync + docker build + restart)
+./deploy.sh --update-db         # code + copy bibliographic.db to server
+./deploy.sh --db-only           # copy bibliographic.db without rebuilding container
+./deploy.sh --rollback          # restart container with previous image tag
+
 # Test API endpoints:
 curl http://localhost:8000/health           # health check
 curl -X POST http://localhost:8000/chat \
@@ -768,6 +774,48 @@ pytest tests/app/test_api.py -v --run-integration
 **Flow diagram**: `.a5c/processes/full-ingestion-pipeline.diagram.md`
 
 **Safety**: Auto-backup before destructive ops. `seed_test_db.py` refuses production DB path. MARC XML is in git.
+
+## Production Deployment
+
+**Domain**: `https://cenlib-rare-books.nurdillo.com`
+**Server**: `151.145.90.19` (Ubuntu 22.04, ARM64)
+**Stack**: Docker container (Python 3.12 + Node 20 multi-stage build) behind host nginx reverse proxy
+
+### Infrastructure
+
+| Component | Details |
+|-----------|---------|
+| SSH access | `ssh -i ~/.ssh/rarebooks_a1 rarebooks@151.145.90.19` |
+| Container | `rare-books` on port 8001, proxied by host nginx |
+| Data volume | `~/rare-books-data` mounted to `/app/data` (SQLite DBs, logs) |
+| Env file | `~/rare-books.env` (OPENAI_API_KEY, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD) |
+| Deploy script | `./deploy.sh` at repo root |
+| Dockerfile | Multi-stage: Node 20 builds frontend, Python 3.12 runs API (2 uvicorn workers) |
+| Nginx configs | `docker/cenlib-rare-books.conf` (host), `docker/nginx.conf` (reference) |
+| Entrypoint | `docker/entrypoint.sh` (creates data dirs, seeds admin user on first run) |
+| Docs | `docs/deployment.md` (full setup guide) |
+
+### Deploy Commands
+
+```bash
+./deploy.sh                 # Code only: rsync → docker build → restart → health check
+./deploy.sh --update-db     # Code + copy local bibliographic.db to server
+./deploy.sh --db-only       # Copy DB only (no rebuild). Restart container to pick up.
+./deploy.sh --rollback      # Revert to previous Docker image tag
+```
+
+### Post-Deploy Checks
+
+```bash
+# Health check
+ssh -i ~/.ssh/rarebooks_a1 rarebooks@151.145.90.19 "curl -sf http://127.0.0.1:8000/health"
+
+# View logs
+ssh -i ~/.ssh/rarebooks_a1 rarebooks@151.145.90.19 "docker logs rare-books --tail 50"
+
+# Restart without rebuild
+ssh -i ~/.ssh/rarebooks_a1 rarebooks@151.145.90.19 "docker restart rare-books"
+```
 
 ## Key Architecture Notes
 
