@@ -25,6 +25,9 @@ from app.api.auth_deps import require_role
 from app.api.auth_routes import router as auth_router
 from app.api.diagnostics import router as diagnostics_router
 from app.api.metadata import router as metadata_router
+from app.api.metadata_corrections import router as corrections_router
+from app.api.metadata_enrichment import router as enrichment_router
+from app.api.metadata_publishers import router as publishers_router
 from app.api.network import router as network_router
 from app.api.models import ChatRequest, ChatResponseAPI, HealthExtendedResponse, HealthResponse
 from app.api.security import (
@@ -267,8 +270,11 @@ async def log_metadata_interactions(request: Request, call_next):
 # Register auth router (no auth required on auth endpoints themselves)
 app.include_router(auth_router)
 
-# Register metadata quality router (auth enforced via middleware above)
+# Register metadata quality routers (auth enforced via middleware above)
 app.include_router(metadata_router)
+app.include_router(corrections_router)
+app.include_router(enrichment_router)
+app.include_router(publishers_router)
 
 # Register diagnostics router (auth enforced via router-level dependency)
 app.include_router(diagnostics_router)

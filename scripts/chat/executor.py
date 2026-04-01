@@ -1228,29 +1228,78 @@ def _collect_grounding(
         records: List[RecordSummary] = []
         links: List[GroundingLink] = []
 
+        # Batch-fetch all data in 5 queries instead of 5*N
+        placeholders = ",".join("?" for _ in all_mms)
+
+        # Titles: keep first main title per mms_id
+        titles_map: Dict[str, str] = {}
+        title_rows = conn.execute(
+            f"""SELECT r.mms_id, t.value FROM titles t
+                JOIN records r ON t.record_id = r.id
+                WHERE r.mms_id IN ({placeholders}) AND t.title_type = 'main'""",
+            all_mms,
+        ).fetchall()
+        for row in title_rows:
+            if row["mms_id"] not in titles_map:
+                titles_map[row["mms_id"]] = row["value"]
+
+        # Imprints: keep first (lowest occurrence) per mms_id
+        imprints_map: Dict[str, sqlite3.Row] = {}
+        imp_rows = conn.execute(
+            f"""SELECT r.mms_id, i.date_start, i.date_end, i.date_label,
+                       i.place_norm, i.place_display,
+                       i.publisher_norm, i.publisher_display
+                FROM imprints i
+                JOIN records r ON i.record_id = r.id
+                WHERE r.mms_id IN ({placeholders})
+                ORDER BY i.occurrence ASC""",
+            all_mms,
+        ).fetchall()
+        for row in imp_rows:
+            if row["mms_id"] not in imprints_map:
+                imprints_map[row["mms_id"]] = row
+
+        # Languages: keep first per mms_id
+        languages_map: Dict[str, str] = {}
+        lang_rows = conn.execute(
+            f"""SELECT r.mms_id, l.code FROM languages l
+                JOIN records r ON l.record_id = r.id
+                WHERE r.mms_id IN ({placeholders})""",
+            all_mms,
+        ).fetchall()
+        for row in lang_rows:
+            if row["mms_id"] not in languages_map:
+                languages_map[row["mms_id"]] = row["code"]
+
+        # Agents: collect distinct agent_norm per mms_id
+        agents_map: Dict[str, List[str]] = {}
+        agent_rows = conn.execute(
+            f"""SELECT DISTINCT r.mms_id, a.agent_norm FROM agents a
+                JOIN records r ON a.record_id = r.id
+                WHERE r.mms_id IN ({placeholders})""",
+            all_mms,
+        ).fetchall()
+        for row in agent_rows:
+            if row["agent_norm"]:
+                agents_map.setdefault(row["mms_id"], []).append(row["agent_norm"])
+
+        # Subjects: collect distinct values per mms_id
+        subjects_map: Dict[str, List[str]] = {}
+        subj_rows = conn.execute(
+            f"""SELECT DISTINCT r.mms_id, s.value FROM subjects s
+                JOIN records r ON s.record_id = r.id
+                WHERE r.mms_id IN ({placeholders})""",
+            all_mms,
+        ).fetchall()
+        for row in subj_rows:
+            if row["value"]:
+                subjects_map.setdefault(row["mms_id"], []).append(row["value"])
+
+        # Assemble RecordSummary objects from batch results
         for mms_id in all_mms:
-            # Get title
-            title_row = conn.execute(
-                """SELECT t.value FROM titles t
-                   JOIN records r ON t.record_id = r.id
-                   WHERE r.mms_id = ? AND t.title_type = 'main'
-                   LIMIT 1""",
-                (mms_id,),
-            ).fetchone()
-            title = title_row["value"] if title_row else ""
+            title = titles_map.get(mms_id, "")
 
-            # Get imprint info
-            imp_row = conn.execute(
-                """SELECT i.date_start, i.date_end, i.date_label,
-                          i.place_norm, i.place_display,
-                          i.publisher_norm, i.publisher_display
-                   FROM imprints i
-                   JOIN records r ON i.record_id = r.id
-                   WHERE r.mms_id = ?
-                   ORDER BY i.occurrence ASC LIMIT 1""",
-                (mms_id,),
-            ).fetchone()
-
+            imp_row = imprints_map.get(mms_id)
             date_display = None
             place = None
             publisher = None
@@ -1261,34 +1310,11 @@ def _collect_grounding(
                 place = imp_row["place_display"] or imp_row["place_norm"]
                 publisher = imp_row["publisher_display"] or imp_row["publisher_norm"]
 
-            # Get language
-            lang_row = conn.execute(
-                """SELECT l.code FROM languages l
-                   JOIN records r ON l.record_id = r.id
-                   WHERE r.mms_id = ? LIMIT 1""",
-                (mms_id,),
-            ).fetchone()
-            language = lang_row["code"] if lang_row else None
+            language = languages_map.get(mms_id)
+            agents = agents_map.get(mms_id, [])
+            subjects = subjects_map.get(mms_id, [])
 
-            # Get agents
-            agent_rows = conn.execute(
-                """SELECT DISTINCT a.agent_norm FROM agents a
-                   JOIN records r ON a.record_id = r.id
-                   WHERE r.mms_id = ?""",
-                (mms_id,),
-            ).fetchall()
-            agents = [r["agent_norm"] for r in agent_rows if r["agent_norm"]]
-
-            # Get subjects
-            subj_rows = conn.execute(
-                """SELECT DISTINCT s.value FROM subjects s
-                   JOIN records r ON s.record_id = r.id
-                   WHERE r.mms_id = ?""",
-                (mms_id,),
-            ).fetchall()
-            subjects = [r["value"] for r in subj_rows if r["value"]]
-
-            # Generate Primo URL
+            # Generate Primo URL (pure function, no DB query)
             primo_url = generate_primo_url(mms_id)
 
             records.append(RecordSummary(

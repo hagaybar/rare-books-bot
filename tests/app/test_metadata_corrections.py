@@ -14,7 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.main import app
-from app.api import metadata as metadata_mod
+from app.api import metadata_corrections as metadata_mod
 
 
 @pytest.fixture(autouse=True)
