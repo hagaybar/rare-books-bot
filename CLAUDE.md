@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. When inspecting files, never read large files in full. Always use bounded operations:
 2. search first (rg/grep), then view small excerpts (offset/limit, sed -n, head, tail).
 3. Any command that may return large output must include a hard cap (e.g., | head -n 50).
-4. If a tool returns an error about size/limits, do not retry the same approach. Switch strategy (search → narrow excerpt → proceed).
+4. If a tool returns an error about size/limits, do not retry the same approach. Switch strategy (search -> narrow excerpt -> proceed).
 
 ## Project Mission
 
@@ -17,80 +17,19 @@ Build a bibliographic discovery system for rare books where **MARC XML is the so
 
 ## Answer Contract (Non-Negotiable)
 
-Every response—even internal ones—must be grounded in:
+Every response--even internal ones--must be grounded in:
 1. **QueryPlan** (structured JSON)
 2. **CandidateSet** (record IDs that match)
 3. **Evidence** (which MARC fields/subfields caused inclusion)
-4. **Normalized mapping** (raw → normalized) with confidence scores
+4. **Normalized mapping** (raw -> normalized) with confidence scores
 
 **No narrative or interpretation is allowed before CandidateSet exists.**
-
-## Development Priorities (POC)
-
-1. Parse MARC XML → CanonicalRecord JSONL (raw values always preserved)
-2. Build SQLite index for fielded queries (not embeddings-first)
-3. Implement normalization v1:
-   - Dates → `date_start`/`date_end` (+ normalization method, confidence)
-   - Place/publisher/agent string normalization (rule-based, reversible)
-4. Implement QueryPlan compiler:
-   - Natural language query → JSON plan (LLM-assisted is acceptable)
-   - Plan → SQL → CandidateSet + explain output
-5. "Complex questions" run ONLY over CandidateSet + evidence
-   - Web enrichment is optional; must be cached with citations + confidence
 
 ## Data Model Rules
 
 - **Preserve raw MARC values always** (no destructive normalization)
 - Normalized fields must be **reversible**: store raw alongside normalized
 - If uncertain: store `null`/range + **explicit reason**; never invent data
-
-## Data Normalization Pipeline
-
-The M2 normalization layer enriches M1 canonical records with normalized fields for querying and analysis:
-
-### Place Normalization
-- **Input:** Raw place strings from M1 imprints (e.g., "Paris :", "אמשטרדם", "[Berlin]")
-- **Mapping:** `data/normalization/place_aliases/place_alias_map.json` (production, version-controlled)
-- **Process:** Alias map lookup; unmatched values are tagged as `missing`
-- **Output:** Canonical English keys (e.g., "paris", "amsterdam", "berlin") with confidence scores
-- **Confidence:** 0.95 (place_alias_map match) or tagged `missing` (no match)
-- **Methods in production:** `place_alias_map`, `missing` (no base_clean method for places)
-- **Documentation:** `docs/pipelines/place_normalization.md`
-
-### Publisher Normalization
-- **Input:** Raw publisher strings from M1 imprints (e.g., "C. Fosset,", "Elsevier:")
-- **Process:** Same cleaning pipeline as place normalization
-- **Output:** Canonical keys with confidence scores
-- **Confidence:** 0.80 (base) or 0.95 (with optional alias map)
-
-### Date Normalization
-- **Input:** Raw date strings from M1 imprints (e.g., "[1680]", "c. 1650", "1500-1599")
-- **Rules:** 6 deterministic patterns (exact, bracketed, circa ±5 years, range, embedded, unparsed)
-- **Output:** Start/end years with method tag and confidence
-- **Confidence:** 0.95-0.99 (high certainty), 0.80-0.85 (medium), 0.0 (unparsed)
-- **Specification:** `docs/specs/m2_normalization_spec.md`
-
-### Key Files
-```
-data/normalization/place_aliases/
-├── place_alias_map.json         # Production mapping (tracked in git)
-├── place_alias_cache.jsonl      # LLM cache (gitignored)
-└── place_alias_proposed.csv     # Human review file (gitignored)
-```
-
-### Usage Example
-```bash
-# Generate place alias map (one-time, LLM-assisted)
-python scripts/normalization/generate_place_alias_map.py \
-  --input data/frequency/places_freq.csv \
-  --output data/normalization/place_aliases/place_alias_map.json
-
-# Enrich M1 records with M2 normalization
-python -m scripts.marc.m2_normalize \
-  data/canonical/records.jsonl \
-  data/m2/records_m1m2.jsonl \
-  data/normalization/place_aliases/place_alias_map.json
-```
 
 ## Code Style
 
@@ -101,728 +40,78 @@ python -m scripts.marc.m2_normalize \
 
 ## Available Skills
 
-This project has specialized skills in `.claude/skills/` that extend Claude's capabilities:
-
-### python-dev-expert
-Python development best practices aligned with this project's requirements:
-- Single-purpose functions (<50 lines, one responsibility)
-- Deterministic, testable code with dependency injection
-- Type hints and comprehensive docstrings
-- Composition over inheritance
-- Extract logic after 3rd duplication (DRY principle)
-
-**Use for**: Writing new Python code, refactoring, architectural decisions, code reviews
-
-### git-expert
-Git and GitHub workflow management:
-- Granular commits with clear messages
-- Safe operations (never destructive without explicit request)
-- Branch management and PR creation
-
-**Use for**: Committing changes, creating PRs, managing git workflow
-
-**Note**: Claude should proactively use these skills when relevant rather than waiting for explicit invocation.
+- **python-dev-expert**: Python best practices (small functions, type hints, testable, DRY)
+- **git-expert**: Git/GitHub workflow (commits, branches, PRs)
+- **marc-ingest**: Full MARC XML ingestion pipeline rebuild (7 phases)
 
 ## Directory Conventions
 
 ```
-data/
-  marc_source/                # raw MARC XML files
-  canonical/                  # canonical JSONL (one record per line)
-  index/                      # SQLite database for fielded queries
-  runs/<run_id>/              # per-run artifacts: plan, SQL, candidate set, logs
-```
-
-## Stable Interfaces (Contracts)
-
-```python
-parse_marc_xml(path: Path) -> Iterable[CanonicalRecord]
-normalize_record(record: CanonicalRecord) -> NormalizedRecord  # raw + norm + confidence
-compile_query(nl_query: str) -> QueryPlan  # JSON schema validated
-execute_plan(plan: QueryPlan, sqlite_db: Path) -> CandidateSet + Evidence
-```
-
-## LLM Usage Rules
-
-- LLM is a **planner/explainer**, not the authority
-- LLM output must be validated against a JSON schema (using OpenAI Responses API for structured output)
-- If schema validation fails: return empty plan with error in debug, don't retry (fail-closed pattern)
-
-### Query Planning (M4/M5)
-
-The query compiler now uses **LLM-based parsing** via OpenAI's Responses API:
-
-- **Implementation**: `scripts/query/llm_compiler.py`
-- **Model**: gpt-4o (default, configurable)
-- **Schema enforcement**: Pydantic models via OpenAI Responses API (`client.responses.parse()`)
-- **Caching**: JSONL cache at `data/query_plan_cache.jsonl` (query_text → QueryPlan)
-- **API key**: Set `OPENAI_API_KEY` environment variable
-
-**Pattern**:
-```python
-from scripts.query.compile import compile_query
-
-# With API key in environment
-plan = compile_query("books published by Oxford between 1500 and 1599")
-
-# Or pass explicitly
-plan = compile_query("...", api_key="sk-...", model="gpt-4o")
-```
-
-**Cache behavior**:
-- Cache hits return immediately (no API call)
-- Cache misses call LLM and write to cache
-- Cache is append-only JSONL for inspection and debugging
-
-## Acceptance Tests (POC)
-
-Must support queries like:
-- "All books published by X between 1500 and 1599"
-- "All books printed in Paris in the 16th century"
-- "Books on topic X" (subject headings / 6XX fields)
-
-Output must include CandidateSet + evidence fields used.
-
-## QA Tool Architecture
-
-**Status**: Integrated into unified React UI and diagnostics API
-
-**Purpose**: Quality assurance infrastructure for M4 query pipeline development, providing systematic labeling, issue tracking, and regression testing capabilities.
-
-### Components
-
-**React Query Debugger** (`/diagnostics/query`):
-- Interactive query testing and labeling via the unified React UI
-- Session management for organizing QA work
-- Visual result inspection with evidence and confidence scores
-- Issue tagging with predefined categories (parser errors, normalization issues, etc.)
-
-**Diagnostics API** (`app/api/diagnostics.py`):
-- REST endpoints for query execution, run storage, labeling, gold set export, and regression testing
-- Endpoints: `POST /diagnostics/query-run`, `GET /diagnostics/query-runs`, `POST /diagnostics/labels`, `GET /diagnostics/labels/{run_id}`, `GET /diagnostics/gold-set/export`, `POST /diagnostics/gold-set/regression`, `GET /diagnostics/tables`, `GET /diagnostics/tables/{table_name}/rows`
-
-**Database Explorer** (`/diagnostics/db`):
-- Interactive table browser for inspecting bibliographic.db tables
-
-**QA Database** (`data/qa/qa.db`):
-- Separate SQLite database (isolated from production `bibliographic.db`)
-- Tables: `qa_queries`, `qa_candidate_labels`, `qa_query_gold`
-- Stores query runs, candidate labels (TP/FP/FN/UNK), and gold set metadata
-- Database operations: `scripts/qa/db.py`
-
-**Regression Framework**:
-- Gold set export to `data/qa/gold.json` (expected includes/excludes per query)
-- CLI regression runner: `python -m app.cli regression --gold data/qa/gold.json --db data/index/bibliographic.db`
-- Exit codes for CI integration (0 = pass, 1 = fail)
-
-### Usage
-
-**Run regression tests** (for CI or manual validation):
-```bash
-poetry run python -m app.cli regression \
-  --gold data/qa/gold.json \
-  --db data/index/bibliographic.db
-```
-
-**Workflow**:
-1. Run query in React Query Debugger (`/diagnostics/query`) -> review results
-2. Label candidates as TP/FP/FN -> tag issues
-3. Find missing records (FN) via Database Explorer (`/diagnostics/db`)
-4. Export gold set when queries are validated
-5. Run regression tests to prevent quality regressions
-
-## Project Structure
-
-- **`app/`**: CLI interface (using Typer) and FastAPI backend (`app/api/`)
-- **`scripts/`**: Core library organized by function (MARC parsing, normalization, query compilation, metadata agents, QA)
-- **`frontend/`**: Unified React SPA with 9 screens across 4 tiers (Primary, Operator, Diagnostics, Admin)
-- **`tests/`**: Pytest suite
-- **`archive/`**: Reference materials (retired Streamlit UIs, RAG template docs)
-
-## Session Management
-
-Multi-turn conversation support with persistent state:
-
-**Location**: `scripts/chat/session_store.py`
-**Database**: `data/chat/sessions.db`
-**Models**: `scripts/chat/models.py` (ChatSession, Message, ChatResponse)
-
-**Key Operations**:
-- Create session: `store.create_session(user_id)`
-- Add message: `store.add_message(session_id, message)`
-- Retrieve session: `store.get_session(session_id)`
-- Expire old: `store.expire_old_sessions(max_age_hours=24)`
-
-**CLI Commands**:
-```bash
-# Create new session
-python -m app.cli chat-init [--user-id USER_ID]
-
-# Query with session tracking
-python -m app.cli query "books by Oxford" --session-id <SESSION_ID>
-
-# View session history
-python -m app.cli chat-history <SESSION_ID>
-
-# Cleanup old sessions
-python -m app.cli chat-cleanup [--max-age-hours 24]
-```
-
-See `docs/session_management_usage.md` for full documentation.
-
-## Response Formatting (Chatbot)
-
-Natural language response formatting for conversational interfaces:
-
-**Location**: `scripts/chat/formatter.py`
-**Purpose**: Transform CandidateSet results into natural language chat responses
-
-**Key Functions**:
-- `format_for_chat(candidate_set) -> str` - Main formatting function
-  - Converts CandidateSet to conversational response with evidence
-  - Handles zero results with helpful suggestions
-  - Supports max_candidates limit and evidence toggle
-- `format_summary(candidate_set) -> str` - Brief one-line summary
-- `generate_followups(candidate_set, query_text) -> List[str]` - Context-aware suggestions
-- `format_evidence(evidence_list) -> str` - Evidence as readable bullet points
-
-**Features**:
-- Natural language summaries: "Found X books matching your query"
-- Evidence formatted as bullet points with confidence scores
-- Context-aware follow-up question suggestions
-- Zero-results handling with broadening suggestions
-- Multi-result formatting with detail limits
-
-**Integration**:
-- Used by API layer (`app/api/main.py`) to format responses
-- Automatically generates suggested_followups for ChatResponse
-- Provides evidence citations in readable format
-
-**Example Output**:
-```
-Found 2 books matching your query.
-Query: "books published by Oxford between 1500 and 1599"
-
-Showing details for 2 of 2 results:
-
-1. Record: 990001234
-   Match: publisher_norm='oxford' AND year_range overlaps 1500-1599
-   Evidence:
-     • publisher_norm matches 'oxford' (confidence: 95%) [marc:264$b[0]]
-     • date_start is 1550 (matches range) (confidence: 99%) [marc:264$c[0]]
-
-2. Record: 990005678
-   ...
-```
-
-## Clarification Flow (Chatbot)
-
-Ambiguity detection and clarification prompts for improved query success:
-
-**Location**: `scripts/chat/clarification.py`
-**Purpose**: Detect ambiguous or vague queries and guide users toward more specific searches
-
-**Key Functions**:
-- `detect_ambiguous_query(plan, result_count) -> (bool, reason)` - Detect ambiguity
-- `generate_clarification_message(plan, reason) -> str` - Create helpful prompt
-- `suggest_refinements(plan) -> List[str]` - Specific refinement suggestions
-- `should_ask_for_clarification(plan, result_count) -> bool` - Main entry point
-
-**Ambiguity Detection Criteria**:
-- **Empty filters**: Query has no specific filters (e.g., "books")
-- **Low confidence**: Filters have confidence < 0.7 (uncertain interpretation)
-- **Broad date range**: Date range > 200 years (e.g., 1400-1800)
-- **Vague queries**: Single-word subject/title searches without context
-- **Zero results**: No matches found (may indicate misunderstanding)
-
-**Integration with API** (`app/api/main.py`):
-- Checks ambiguity after query compilation (before execution)
-- Returns early with clarification_needed if ambiguous
-- Checks again after execution (for zero results)
-- Sets clarification_needed field in ChatResponse
-
-**Clarification Messages**:
-- Context-specific guidance based on reason code
-- Suggests missing filters (date, place, publisher, subject)
-- Provides examples and rephrasing hints
-- Recommends broadening for zero results
-
-**Example Flow**:
-```
-User: "books"
-↓ Compile query
-QueryPlan: { filters: [] }  # Empty filters
-↓ Detect ambiguity
-Reason: "empty_filters"
-↓ Generate clarification
-Response: {
-  message: "I need some clarification to search effectively.",
-  clarification_needed: "I need more details to search effectively. Could you specify:
-    • What topic or subject are you interested in?
-    • A specific publisher, author, or printer?
-    • A time period or date range?
-    • A place of publication?"
-}
-```
-
-**Features**:
-- Detects 5 types of ambiguity (empty, low confidence, broad date, vague, zero results)
-- Context-aware suggestions (suggests missing filters)
-- Prioritizes specificity (narrow date ranges, specific terms)
-- Graceful zero-results handling (broadening suggestions)
-
-## Streaming Responses (WebSocket)
-
-Real-time streaming for progressive query results and better UX:
-
-**Location**: `app/api/main.py` (`@app.websocket("/ws/chat")`)
-**Purpose**: Stream progress messages and batch results for real-time feedback
-
-**WebSocket Protocol**:
-1. Client connects to `ws://localhost:8000/ws/chat`
-2. Client sends JSON: `{"message": "query", "session_id": "optional-id"}`
-3. Server streams messages:
-   - `{"type": "session_created", "session_id": "..."}` (if new session)
-   - `{"type": "progress", "message": "Compiling query..."}`
-   - `{"type": "progress", "message": "Executing query with N filters..."}`
-   - `{"type": "progress", "message": "Found X results. Formatting response..."}`
-   - `{"type": "batch", "candidates": [...], "batch_num": 1, "total_batches": 3, ...}`
-   - `{"type": "complete", "response": ChatResponse}`
-4. Connection closes after complete message
-
-**Message Types**:
-- **session_created**: New session was created (includes session_id)
-- **progress**: Status update during query execution
-- **batch**: Result batch with up to 10 candidates
-- **complete**: Final response with full ChatResponse object
-- **error**: Error occurred (connection closes after)
-
-**Batch Structure**:
-```json
-{
-  "type": "batch",
-  "candidates": [...],  // Array of up to 10 Candidate objects
-  "batch_num": 1,       // Current batch number (1-indexed)
-  "total_batches": 3,   // Total number of batches
-  "start_idx": 0,       // Start index in full results
-  "end_idx": 10         // End index in full results
-}
-```
-
-**Features**:
-- Progressive result streaming (batches of 10)
-- Real-time progress updates during execution
-- Session creation and reuse
-- Clarification detection (same as HTTP endpoint)
-- Error handling with graceful connection closure
-
-**Example Client Code (JavaScript)**:
-```javascript
-const ws = new WebSocket('ws://localhost:8000/ws/chat');
-
-ws.onopen = () => {
-  ws.send(JSON.stringify({
-    message: "books published by Oxford",
-    session_id: existingSessionId  // optional
-  }));
-};
-
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-
-  if (data.type === 'progress') {
-    console.log('Progress:', data.message);
-  } else if (data.type === 'batch') {
-    console.log(`Batch ${data.batch_num}/${data.total_batches}:`, data.candidates);
-  } else if (data.type === 'complete') {
-    console.log('Complete:', data.response);
-  }
-};
-```
-
-**Testing**:
-```bash
-# Run WebSocket tests (4 tests, all passing)
-pytest tests/app/test_api.py -k websocket -v
-
-# Test with wscat (install: npm install -g wscat)
-wscat -c ws://localhost:8000/ws/chat
-> {"message": "books by Oxford"}
-```
-
-**Comparison with HTTP /chat**:
-- **HTTP**: Single request/response, simpler client, no streaming
-- **WebSocket**: Progressive streaming, real-time feedback, better UX for slow queries
-
-## Testing the Chatbot (M6)
-
-The chatbot API is ready for testing with all essential components implemented:
-
-**Prerequisites**:
-1. Ensure dependencies installed: `poetry install`
-2. Set OpenAI API key: `export OPENAI_API_KEY="sk-..."`
-3. Ensure bibliographic database exists at `data/index/bibliographic.db`
-
-**Starting the Server**:
-```bash
-# Development mode (auto-reload on code changes)
-uvicorn app.api.main:app --reload
-
-# Server starts at http://localhost:8000
-# API docs available at http://localhost:8000/docs
-```
-
-**Test 1: Health Check**
-```bash
-curl http://localhost:8000/health
-
-# Expected response:
-# {
-#   "status": "healthy",
-#   "database_connected": true,
-#   "session_store_ok": true
-# }
-```
-
-**Test 2: HTTP Chat Endpoint (Simple)**
-```bash
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "books published by Oxford between 1500 and 1599"}'
-
-# Response includes:
-# - session_id (save for multi-turn conversations)
-# - message (natural language response)
-# - candidate_set (matched records with evidence)
-# - followup_questions (suggested refinements)
-```
-
-**Test 3: Multi-Turn Conversation**
-```bash
-# First query creates session
-RESPONSE=$(curl -s -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "books about History"}')
-
-SESSION_ID=$(echo $RESPONSE | jq -r '.response.session_id')
-
-# Second query uses same session
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d "{\"message\": \"only from Paris\", \"session_id\": \"$SESSION_ID\"}"
-```
-
-**Test 4: WebSocket Streaming (Real-Time)**
-```bash
-# Install wscat: npm install -g wscat
-wscat -c ws://localhost:8000/ws/chat
-
-# Send query:
-> {"message": "books by Oxford"}
-
-# Watch streaming messages:
-# - session_created (with session_id)
-# - progress messages ("Compiling query...", "Executing...", "Found X results...")
-# - batch messages (groups of 10 candidates)
-# - complete message (final response)
-```
-
-**Test 5: Ambiguity Detection**
-```bash
-# Vague query triggers clarification
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "books"}'
-
-# Response includes:
-# - clarification_needed: true
-# - message: helpful guidance on refining the query
-```
-
-**Interactive API Documentation**:
-- Navigate to http://localhost:8000/docs
-- Try all endpoints interactively with Swagger UI
-- View request/response schemas
-- Test rate limiting (10 requests/minute per IP)
-
-**Current Implementation Status**:
-- ✅ Session Management (CB-001) - Multi-turn conversations
-- ✅ API Layer (CB-002) - HTTP REST endpoints
-- ✅ Response Formatting (CB-003) - Natural language responses
-- ✅ Clarification Flow (CB-004) - Ambiguity detection
-- ✅ Streaming Responses (CB-005) - WebSocket progressive streaming
-- ✅ Basic Rate Limiting (CB-006) - 10 req/min for /chat endpoint
-- ⏸️ Authentication (CB-007) - Postponed for initial testing
-- ⏸️ Performance Metrics (CB-008) - Postponed for initial testing
-- ⏸️ Multi-User Isolation (CB-009) - Postponed for initial testing
-
-**What's Working**:
-- Natural language query compilation (via OpenAI)
-- SQL query execution against bibliographic database
-- Evidence-based responses with MARC field citations
-- Formatted responses with follow-up suggestions
-- Session-based conversation history
-- Real-time streaming with progress updates
-- Clarification prompts for ambiguous queries
-
-**Next Steps for Production**:
-- Add authentication and user management (when needed)
-- Implement performance metrics and monitoring (when scaling)
-- Add comprehensive error handling and logging
-- Deploy to production environment
-- Implement user-based rate limiting (vs IP-based)
-
-## Metadata Co-pilot Workbench
-
-Agent-driven HITL (Human-In-The-Loop) system for improving bibliographic metadata quality.
-
-### Architecture
-
-```
-React Frontend ──REST API──> FastAPI Backend ──> Grounding Layer + Specialist Agents + Action Layer
-```
-
-- **Backend**: `app/api/metadata.py` - 12 REST endpoints for coverage, issues, corrections, agent chat, publisher authorities
-- **Agents**: `scripts/metadata/agents/` - 4 specialist agents (Place, Date, Publisher, Name)
-- **Frontend**: `frontend/` - Unified React SPA with 9 screens: Chat, Coverage, Workbench, Agent Chat, Review, Query Debugger, DB Explorer, Publishers, Health
-- **Feedback Loop**: `scripts/metadata/feedback_loop.py` - approve → alias map → re-normalize → coverage update
-
-### API Endpoints
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | /metadata/coverage | Coverage stats per field |
-| GET | /metadata/issues | Low-confidence records (paginated) |
-| GET | /metadata/unmapped | Unmapped values by frequency |
-| GET | /metadata/clusters | Gap clusters |
-| GET | /metadata/methods | Method distribution |
-| POST | /metadata/corrections | Submit correction |
-| POST | /metadata/corrections/batch | Batch corrections |
-| GET | /metadata/corrections/history | Correction audit trail |
-| POST | /metadata/primo-urls | Batch Primo URLs |
-| GET | /metadata/records/{mms_id}/primo | Single Primo URL |
-| POST | /metadata/agent/chat | Agent conversation |
-| GET | /metadata/publishers | Publisher authority records |
-
-### Specialist Agents
-
-| Agent | File | Domain |
-|-------|------|--------|
-| PlaceAgent | `scripts/metadata/agents/place_agent.py` | Latin toponyms, Hebrew names, country codes |
-| DateAgent | `scripts/metadata/agents/date_agent.py` | Hebrew calendar, Latin conventions |
-| PublisherAgent | `scripts/metadata/agents/publisher_agent.py` | Printer dynasties, Latin variants |
-| NameAgent | `scripts/metadata/agents/name_agent.py` | VIAF/NLI authority, name forms |
-
-### Quick Start
-
-```bash
-# Start API server
-uvicorn app.api.main:app --reload
-
-# Start React frontend (separate terminal)
-cd frontend && npm run dev
-
-# Run metadata tests
-poetry run python -m pytest tests/scripts/metadata/ -v
-poetry run python -m pytest tests/integration/ -v
-
-# Run coverage audit
-poetry run python -m scripts.metadata.audit data/index/bibliographic.db --output data/metadata/baseline_audit.json
-
-# Apply a correction via CLI
-poetry run python -m scripts.metadata.feedback_loop --field place --raw "Lugduni Batavorum" --canonical leiden --db data/index/bibliographic.db
-```
-
-## Publisher Authority Records
-
-Internal publisher identification system for the rare books collection.
-
-### Tables
-- `publisher_authorities` -- canonical publisher identities (227 records: 202 unresearched, 18 printing houses, 3 bibliophile societies, 2 unknown markers, 1 modern publisher, 1 private press)
-- `publisher_variants` -- name forms linking to authorities (265 variants across Latin, Hebrew, and other scripts)
-
-### Key Properties
-- Every authority has at least one variant; every variant references a valid authority
-- Confidence scores are always set (never null), range 0.0-1.0
-- Missing-marker records (e.g. publisher unknown, privatdruck) are flagged with `is_missing_marker = 1`
-- 834 imprints are currently matchable via variant forms
-
-### API Endpoint
-- `GET /metadata/publishers` -- list all publisher authorities with variant counts and imprint counts
-  - Optional query parameter: `type` (e.g., `printing_house`, `unresearched`)
-
-### Usage
-```python
-from scripts.metadata.publisher_authority import PublisherAuthorityStore
-store = PublisherAuthorityStore(Path("data/index/bibliographic.db"))
-authority = store.search_by_variant("ex officina elzeviriana")
-```
-
-### Testing
-```bash
-# Unit tests (in-memory DB)
-poetry run python -m pytest tests/scripts/metadata/test_publisher_authority.py -v
-
-# Integration tests (real DB)
-poetry run python -m pytest tests/integration/test_publisher_authority.py -v
+data/              # marc_source/, canonical/, index/, runs/, qa/, chat/
+docs/current/      # 9 topic files -- single source of truth per area
+docs/history/      # Historical journal -- audits, reports, plans, specs
+docs/superpowers/  # Skill output targets (specs/, plans/)
+docs/testing/      # Manual testing guide
+audits/            # Project-audit skill output target
+scripts/           # Core library
+frontend/          # React SPA
+app/               # CLI + FastAPI
+.a5c/              # Babysitter processes and runs
 ```
 
 ## Common Commands
 
 ```bash
-# Install dependencies
-poetry install
-
-# Set up environment (for LLM query planning)
-export OPENAI_API_KEY="sk-..."  # Required for query compilation
-
-# Run tests
-pytest                          # all tests
-pytest tests/path/to/test.py    # specific test file
-pytest -k "test_name"           # specific test by name
-pytest -m "not legacy_chunker"  # skip legacy chunker tests
-pytest --run-integration        # run integration tests (requires OPENAI_API_KEY)
-
-# Code quality
-ruff check .                    # linting
-ruff format .                   # formatting
-pylint scripts/                 # additional linting
-
-# MARC pipeline commands:
-python -m app.cli parse <marc_xml_path>      # parse MARC XML to JSONL
-python -m app.cli index <canonical_dir>      # build SQLite index
-python -m app.cli query "<nl_query>"         # execute query (requires OPENAI_API_KEY)
-
-# API server commands:
-uvicorn app.api.main:app --reload           # start development server (http://localhost:8000)
-uvicorn app.api.main:app --host 0.0.0.0 --port 8000  # production server
-
-# React frontend:
-cd frontend && npm run dev                  # start development server (http://localhost:5173)
-cd frontend && npm run build                # production build
-
-# QA regression:
-python -m app.cli regression --gold data/qa/gold.json --db data/index/bibliographic.db
-
-# Deploy to production (cenlib-rare-books.nurdillo.com):
-./deploy.sh                     # code only (rsync + docker build + restart)
-./deploy.sh --update-db         # code + copy bibliographic.db to server
-./deploy.sh --db-only           # copy bibliographic.db without rebuilding container
-./deploy.sh --rollback          # restart container with previous image tag
-
-# Test API endpoints:
-curl http://localhost:8000/health           # health check
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "books by Oxford"}'       # chat query (creates new session)
+poetry install                    # dependencies
+pytest                            # all tests
+pytest -k "test_name"             # specific test
+ruff check . && ruff format .     # lint + format
+uvicorn app.api.main:app --reload # dev server
+cd frontend && npm run dev        # frontend dev
+./deploy.sh                       # deploy to production
+python -m app.cli query "..."     # run a query
 ```
 
-## API Layer (M6 Chatbot)
+## Topic Registry
 
-The FastAPI application in `app/api/` provides the HTTP interface for the conversational chatbot:
+Detailed documentation lives in `docs/current/`. Consult these files for implementation details.
 
-**Endpoints:**
-- `POST /chat` - Send natural language query, get results
-  - Request: `{message: str, session_id?: str, context?: dict}`
-  - Response: `{success: bool, response: ChatResponse, error?: str}`
-  - Creates new session if `session_id` not provided
-  - Automatically routes through M4 query pipeline (compile + execute)
+| Topic | File | Covers |
+|-------|------|--------|
+| Normalization | docs/current/normalization-pipeline.md | M2 dates/places/publishers, alias maps |
+| Query Engine | docs/current/query-engine.md | M4 LLM compiler, SQL execution, stable interfaces |
+| Chatbot API | docs/current/chatbot-api.md | /chat endpoint, sessions, formatting, clarification |
+| Streaming | docs/current/streaming.md | WebSocket protocol, message types, testing |
+| QA Framework | docs/current/qa-framework.md | Diagnostics, gold sets, regression testing |
+| Metadata | docs/current/metadata-workbench.md | Agents, corrections, publisher authorities |
+| Deployment | docs/current/deployment.md | Docker, nginx, deploy.sh, SSH access |
+| Ingestion | docs/current/ingestion-pipeline.md | MARC XML -> bibliographic.db pipeline |
+| Architecture | docs/current/architecture.md | Project structure, key classes, model index |
 
-- `GET /health` - Health check for monitoring
-  - Returns: `{status: str, database_connected: bool, session_store_ok: bool}`
+## Documentation Maintenance Protocol
 
-- `GET /sessions/{session_id}` - Get session details and message history
-- `DELETE /sessions/{session_id}` - Expire a session
+### On Every Code Change
+When you modify code that affects behavior documented in `docs/current/`:
+1. Update the relevant topic file in `docs/current/`
+2. Set `Last verified: YYYY-MM-DD` in the file header
+3. If no topic file exists for the area changed, create one and add it to the Topic Registry table above
 
-**Configuration (environment variables):**
-- `SESSIONS_DB_PATH` - Path to sessions.db (default: `data/chat/sessions.db`)
-- `BIBLIOGRAPHIC_DB_PATH` - Path to bibliographic.db (default: `data/index/bibliographic.db`)
-- `OPENAI_API_KEY` - Required for query compilation
+### On Every New Feature or Architectural Change
+1. Update `docs/current/architecture.md` if project structure changed
+2. Update the Topic Registry in this file if a new topic was added
+3. Update `Common Commands` in this file if new CLI commands were added
 
-**Testing:**
-```bash
-# Run API tests (unit tests, no API key needed)
-pytest tests/app/test_api.py -v
+### After Superpowers Brainstorming/Planning
+- New specs land in `docs/superpowers/specs/` (skill default)
+- New plans land in `docs/superpowers/plans/` (skill default)
+- After implementation is complete: move the spec/plan to `docs/history/specs/` or `docs/history/plans/` and add a line to `docs/history/INDEX.md`
 
-# Run integration tests (requires OPENAI_API_KEY)
-pytest tests/app/test_api.py -v --run-integration
-```
+### After Project Audits
+- New audits land in `audits/YYYY-MM-DD-<name>/` (skill default)
+- After action items are resolved: move the audit directory to `docs/history/audits/` and add a line to `docs/history/INDEX.md`
 
-## Full Ingestion Pipeline
-
-**Purpose**: Rebuild `bibliographic.db` from MARC XML through all stages — parsing, normalization, QA audit, authorities, Wikidata/Wikipedia enrichment, and network tables.
-
-**When to use**: After re-exporting MARC XML from Alma, after data corruption, or when alias maps have been updated.
-
-**Source file**: `data/marc_source/rare_books_with_lod.xml` (tracked in git — public bibliographic data from the Sourasky Central Library, Tel Aviv University). LOD export with `$0` authority URIs for Wikidata enrichment.
-
-**Run via slash command**:
-```
-/marc-ingest                              # Interactive — with QA review breakpoints
-/marc-ingest --yolo                       # Non-interactive — auto-approve everything
-/marc-ingest --skip-enrichment            # Fast core-only rebuild (~2 min)
-```
-
-**Or run directly via babysitter**:
-```
-/babysitter:call Execute .a5c/processes/full-ingestion-pipeline.js with inputs from .a5c/processes/full-ingestion-pipeline-inputs.json
-```
-
-**7 phases**: (1) Backup + M1→M2→M3 core rebuild, (2) QA audit & normalization corrections, (3) Agent/publisher authorities, (4) Wikidata enrichment, (5) Wikipedia 3 passes, (6) Network tables, (7) Final verification.
-
-**Process docs**: `.a5c/processes/full-ingestion-pipeline.process.md`
-**Flow diagram**: `.a5c/processes/full-ingestion-pipeline.diagram.md`
-
-**Safety**: Auto-backup before destructive ops. `seed_test_db.py` refuses production DB path. MARC XML is in git.
-
-## Production Deployment
-
-**Domain**: `https://cenlib-rare-books.nurdillo.com`
-**Server**: `151.145.90.19` (Ubuntu 22.04, ARM64)
-**Stack**: Docker container (Python 3.12 + Node 20 multi-stage build) behind host nginx reverse proxy
-
-### Infrastructure
-
-| Component | Details |
-|-----------|---------|
-| SSH access | `ssh -i ~/.ssh/rarebooks_a1 rarebooks@151.145.90.19` |
-| Container | `rare-books` on port 8001, proxied by host nginx |
-| Data volume | `~/rare-books-data` mounted to `/app/data` (SQLite DBs, logs) |
-| Env file | `~/rare-books.env` (OPENAI_API_KEY, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD) |
-| Deploy script | `./deploy.sh` at repo root |
-| Dockerfile | Multi-stage: Node 20 builds frontend, Python 3.12 runs API (2 uvicorn workers) |
-| Nginx configs | `docker/cenlib-rare-books.conf` (host), `docker/nginx.conf` (reference) |
-| Entrypoint | `docker/entrypoint.sh` (creates data dirs, seeds admin user on first run) |
-| Docs | `docs/deployment.md` (full setup guide) |
-
-### Deploy Commands
-
-```bash
-./deploy.sh                 # Code only: rsync → docker build → restart → health check
-./deploy.sh --update-db     # Code + copy local bibliographic.db to server
-./deploy.sh --db-only       # Copy DB only (no rebuild). Restart container to pick up.
-./deploy.sh --rollback      # Revert to previous Docker image tag
-```
-
-### Post-Deploy Checks
-
-```bash
-# Health check
-ssh -i ~/.ssh/rarebooks_a1 rarebooks@151.145.90.19 "curl -sf http://127.0.0.1:8000/health"
-
-# View logs
-ssh -i ~/.ssh/rarebooks_a1 rarebooks@151.145.90.19 "docker logs rare-books --tail 50"
-
-# Restart without rebuild
-ssh -i ~/.ssh/rarebooks_a1 rarebooks@151.145.90.19 "docker restart rare-books"
-```
-
-## Key Architecture Notes
-
-- **ProjectManager** (`scripts/core/project_manager.py`): Central class for managing project config, paths, and logging
-- **TaskPaths** (`scripts/utils/task_paths.py`): Handles per-run artifact paths
-- **LoggerManager** (`scripts/utils/logger.py`): Structured JSON logging per project/task/run
-- **Modular design**: Each component (ingestion, chunking, embeddings, etc.) has a base interface and pluggable implementations
+### Staleness Rule
+If you read a `docs/current/` file and notice it contradicts the code, fix the doc immediately -- don't proceed with stale information.
 
 ## What's Different from the Template
 
