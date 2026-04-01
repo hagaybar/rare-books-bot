@@ -1,0 +1,5 @@
+{
+  "branch": "claude/improve-mobile-navigation-rXthV",
+  "target": "main",
+  "deployScript": "./deploy.sh"
+}
