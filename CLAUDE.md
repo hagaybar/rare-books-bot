@@ -43,6 +43,8 @@ Every response--even internal ones--must be grounded in:
 - **python-dev-expert**: Python best practices (small functions, type hints, testable, DRY)
 - **git-expert**: Git/GitHub workflow (commits, branches, PRs)
 - **marc-ingest**: Full MARC XML ingestion pipeline rebuild (7 phases)
+- **babysitter**: Orchestrate complex multi-step workflows (processes, agents, quality gates)
+- **superpowers**: Brainstorming, planning, TDD, debugging, verification, code review
 
 ## Directory Conventions
 
