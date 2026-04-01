@@ -265,6 +265,7 @@ export default function Chat() {
             case 'session_created': {
               const newSessionId = data.session_id as string;
               if (newSessionId) {
+                setRestoredSessionId(newSessionId);
                 setSessionId(newSessionId);
               }
               break;
