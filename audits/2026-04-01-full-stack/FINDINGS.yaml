@@ -1,0 +1,130 @@
+findings:
+  - id: SEC-001
+    severity: P0
+    area: security
+    title: SQL injection in executor query builder
+    description: MMS IDs and filter values concatenated into SQL strings with f-strings instead of parameterized queries
+    evidence:
+      - file: scripts/chat/executor.py
+        lines: [657, 677]
+        note: "placeholders = ','.join(f\"'{mms}'\" for mms in scope_ids)"
+    invariant: All user-influenced values must use parameterized queries
+    acceptance: No f-string or .format() SQL with external values; rg confirms zero instances
+
+  - id: SEC-002
+    severity: P0
+    area: security
+    title: Path traversal in SPA file serving
+    description: catch-all route serves files without validating path stays within frontend/dist/
+    evidence:
+      - file: app/api/main.py
+        lines: [1054, 1060]
+        note: "file_path = _frontend_dir / full_path; no resolve() or prefix check"
+    invariant: Resolved file path must start with _frontend_dir
+    acceptance: "GET /../../etc/passwd returns 404"
+
+  - id: PERF-002
+    severity: P0
+    area: performance
+    title: Database connection leaks in metadata.py error paths
+    description: 21 instances where sqlite3.connect() is not closed if an exception occurs
+    evidence:
+      - file: app/api/metadata.py
+        lines: [255, 328, 1701, 1747]
+        note: conn.close() only in happy path, not in except blocks
+    invariant: All database connections must be closed in finally blocks
+    acceptance: grep shows all sqlite3.connect() have matching try/finally
+
+  - id: PERF-001
+    severity: P1
+    area: performance
+    title: N+1 query pattern in grounding collection
+    description: 5 separate queries per MMS ID when building RecordSummary objects
+    evidence:
+      - file: scripts/chat/executor.py
+        lines: [1219, 1277]
+        note: "for mms_id in all_mms: 5x conn.execute()"
+    invariant: Grounding collection should use batch queries
+    acceptance: Single query with JOINs replaces per-record loop
+
+  - id: SEC-003
+    severity: P1
+    area: security
+    title: WebSocket session ownership not validated
+    description: WebSocket handler accepts any session_id without checking user ownership
+    evidence:
+      - file: app/api/main.py
+        lines: [864, 879]
+        note: REST endpoint checks ownership at line 728; WebSocket does not
+    invariant: Session access requires ownership verification
+    acceptance: Foreign session_id returns 4003 close code
+
+  - id: SEC-004
+    severity: P1
+    area: security
+    title: CORS allows all methods and headers
+    evidence:
+      - file: app/api/main.py
+        lines: [128, 136]
+    invariant: CORS restricted to needed methods and headers
+    acceptance: allow_methods and allow_headers are explicit lists
+
+  - id: SEC-005
+    severity: P2
+    area: security
+    title: CSP allows unsafe-eval
+    evidence:
+      - file: app/api/main.py
+        line: 152
+    invariant: No unsafe-eval in production CSP
+    acceptance: script-src does not contain unsafe-eval
+
+  - id: PERF-003
+    severity: P2
+    area: performance
+    title: Synchronous blocking calls in async endpoints
+    evidence:
+      - file: app/api/main.py
+        lines: [315, 360]
+    invariant: Async endpoints must not block the event loop
+    acceptance: Blocking I/O wrapped in run_in_executor or endpoint made sync
+
+  - id: HEALTH-001
+    severity: P3
+    area: maintainability
+    title: metadata.py violates SRP at 2186 lines
+    evidence:
+      - file: app/api/metadata.py
+        note: 40+ endpoints mixing HTTP, DB queries, business logic
+    invariant: Modules under 500 lines with single responsibility
+    acceptance: Split into 4-5 focused modules
+
+  - id: HEALTH-002
+    severity: P3
+    area: maintainability
+    title: 8 Pydantic model files without clear boundaries
+    evidence:
+      - files: [scripts/chat/models.py, scripts/chat/plan_models.py, scripts/schemas/query_plan.py, app/api/models.py, app/api/auth_models.py, app/api/metadata_models.py, scripts/enrichment/models.py, scripts/query/models.py]
+    invariant: Shared domain concepts defined once
+    acceptance: No duplicate model definitions across files
+
+  - id: HEALTH-003
+    severity: P3
+    area: maintainability
+    title: Hardcoded confidence thresholds as magic numbers
+    evidence:
+      - file: scripts/chat/executor.py
+        lines: [476, 588]
+      - file: app/api/metadata.py
+        lines: [558, 999]
+    invariant: Thresholds defined as named constants
+    acceptance: No bare float literals for confidence scoring
+
+  - id: HEALTH-004
+    severity: P2
+    area: performance
+    title: Frontend bundle not code-split
+    evidence:
+      - note: "Single 1.7MB JS bundle; MapLibre GL (~1MB) loaded on every page"
+    invariant: Route-level code splitting for large dependencies
+    acceptance: MapLibre lazy-loaded only on /network route
