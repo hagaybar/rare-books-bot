@@ -284,7 +284,13 @@ function UserRow({
           {user.role === 'limited' ? user.token_limit : '--'}
         </td>
         <td className="px-4 py-3 text-sm text-gray-600 tabular-nums">
-          {user.tokens_used_this_month}
+          {user.input_tokens_this_month.toLocaleString()}
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-600 tabular-nums">
+          {user.output_tokens_this_month.toLocaleString()}
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-600 tabular-nums">
+          ${user.cost_usd_this_month.toFixed(4)}
         </td>
         <td className="px-4 py-3 text-sm text-gray-500">
           {formatDate(user.last_login)}
@@ -377,7 +383,13 @@ function UserRow({
           )}
         </td>
         <td className="px-4 py-3 text-sm text-gray-600 tabular-nums">
-          {user.tokens_used_this_month}
+          {user.input_tokens_this_month.toLocaleString()}
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-600 tabular-nums">
+          {user.output_tokens_this_month.toLocaleString()}
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-600 tabular-nums">
+          ${user.cost_usd_this_month.toFixed(4)}
         </td>
         <td className="px-4 py-3 text-sm text-gray-500">
           {formatDate(user.last_login)}
@@ -412,7 +424,7 @@ function UserRow({
       {/* Password reset row */}
       {showPasswordReset && (
         <tr className="border-b border-indigo-100 bg-indigo-50/30">
-          <td colSpan={7} className="px-4 py-3">
+          <td colSpan={9} className="px-4 py-3">
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium text-gray-700">
                 New password for {user.username}:
@@ -586,7 +598,13 @@ export default function Users() {
                   Token Limit
                 </th>
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Tokens Used
+                  Input Tokens
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Output Tokens
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Cost (USD)
                 </th>
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Last Login
@@ -607,7 +625,7 @@ export default function Users() {
               {users.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={9}
                     className="px-4 py-12 text-center text-gray-400"
                   >
                     No users found.

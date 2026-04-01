@@ -157,18 +157,16 @@ async def get_me(user=Depends(get_current_user)):
 async def list_users(admin=Depends(require_role("admin"))):
     conn = get_auth_db()
     try:
-        from datetime import datetime
-        month = datetime.now().strftime("%Y-%m")
         rows = conn.execute(
             """SELECT u.*,
-                      COALESCE(tu.tokens_used, 0) as tokens_used_this_month,
-                      COALESCE(tu.input_tokens, 0) as input_tokens_this_month,
-                      COALESCE(tu.output_tokens, 0) as output_tokens_this_month,
-                      COALESCE(tu.cost_usd, 0.0) as cost_usd_this_month
+                      COALESCE(SUM(tu.tokens_used), 0) as tokens_used_this_month,
+                      COALESCE(SUM(tu.input_tokens), 0) as input_tokens_this_month,
+                      COALESCE(SUM(tu.output_tokens), 0) as output_tokens_this_month,
+                      COALESCE(SUM(tu.cost_usd), 0.0) as cost_usd_this_month
                FROM users u
-               LEFT JOIN token_usage tu ON tu.user_id = u.id AND tu.month = ?
+               LEFT JOIN token_usage tu ON tu.user_id = u.id
+               GROUP BY u.id
                ORDER BY u.id""",
-            (month,),
         ).fetchall()
         return [UserListItem(
             id=r["id"], username=r["username"], role=r["role"],
