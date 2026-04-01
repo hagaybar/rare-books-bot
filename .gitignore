@@ -163,3 +163,6 @@ frontend/.a5c/
 
 # Superpowers brainstorming artifacts
 .superpowers/
+
+# Babysitter run artifacts (ephemeral per-session state)
+.a5c/runs/
