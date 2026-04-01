@@ -38,7 +38,7 @@ User Query  →  Interpret (LLM)  →  Execute (SQL)  →  Narrate (LLM)
 
 ## The Collection
 
-Currently configured for the **Sourasky Central Library rare books collection** at Tel Aviv University — 114 bibliographic records spanning Hebrew, Latin, Italian, and other language traditions from the 15th through 18th centuries. The system is designed to work with any MARC XML export.
+Currently configured for the **Sourasky Central Library rare books collection** at Tel Aviv University — nearly 2,800 bibliographic records in 39 languages (Hebrew, Latin, German, Italian, French, Arabic, Yiddish, Ladino, and more) spanning the 13th century to the present, published across 350+ cities worldwide. The system is designed to work with any MARC XML export.
 
 ## Capabilities
 
@@ -56,7 +56,7 @@ Currently configured for the **Sourasky Central Library rare books collection** 
 
 ### Prerequisites
 
-- Python 3.12+
+- Python 3.11+ (tested on 3.12)
 - Node.js 20+
 - [Poetry](https://python-poetry.org/) for Python dependency management
 - An OpenAI API key (for query interpretation and narration)
@@ -87,11 +87,17 @@ uvicorn app.api.main:app --reload        # http://localhost:8000
 cd frontend && npm run dev               # http://localhost:5173
 ```
 
-The MARC XML source file is included in the repository (`data/marc_source/`). To rebuild the database from scratch:
+The MARC XML source file is included in the repository (`data/marc_source/`). To rebuild the database from scratch, use the ingestion pipeline skill:
 
 ```bash
-python -m app.cli parse data/marc_source/rare_books_with_lod.xml
-python -m app.cli index data/canonical/
+/marc-ingest              # Interactive 7-phase rebuild
+```
+
+Or run the stages manually:
+
+```bash
+python -m app.cli parse-marc data/marc_source/rare_books_with_lod.xml
+python -m app.cli query "books printed in Venice"
 ```
 
 ### Running Tests
