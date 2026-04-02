@@ -21,7 +21,7 @@ dependencies = [
     "pydantic>=2.10.5,<3.0.0",        # Data models with validation
 
     # LLM client (for M4/M5 query planning)
-    "litellm>=1.73.0,<2.0.0",         # LLM API client (completer.py)
+    "litellm>=1.81.9,<2.0.0",         # LLM API client (completer.py)
     "openai>=1.58.1,<2.0.0",          # OpenAI Responses API for structured output
 
     # Data manipulation (optional, may be useful)
