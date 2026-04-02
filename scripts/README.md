@@ -96,7 +96,7 @@ LLM-generated answer (grounded in evidence)
 
 ## Development Workflow
 
-See `plan.mf` in project root for milestone roadmap (M0-M5).
+See `docs/history/misc/plan.mf` for the original milestone roadmap (M0-M5).
 
 ### Milestones
 

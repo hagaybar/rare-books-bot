@@ -87,18 +87,13 @@ uvicorn app.api.main:app --reload        # http://localhost:8000
 cd frontend && npm run dev               # http://localhost:5173
 ```
 
-The MARC XML source file is included in the repository (`data/marc_source/`). To rebuild the database from scratch, use the ingestion pipeline skill:
+The MARC XML source file is included in the repository (`data/marc_source/`). To rebuild the database from scratch, use the ingestion pipeline:
 
 ```bash
-/marc-ingest              # Interactive 7-phase rebuild
+/marc-ingest              # Interactive 7-phase rebuild (recommended)
 ```
 
-Or run the stages manually:
-
-```bash
-python -m app.cli parse-marc data/marc_source/rare_books_with_lod.xml
-python -m app.cli query "books printed in Venice"
-```
+This runs all stages: parse → normalize → index → QA audit → authorities → enrichment → verification. See `docs/current/ingestion-pipeline.md` for details.
 
 ### Running Tests
 
