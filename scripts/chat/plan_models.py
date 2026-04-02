@@ -371,6 +371,7 @@ class ExecutionResult(BaseModel):
     original_query: str
     session_context: SessionContext | None = None
     truncated: bool = False
+    total_record_count: int = 0
 
 
 # ============================================================================

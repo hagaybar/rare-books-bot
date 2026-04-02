@@ -105,7 +105,7 @@ def execute_plan(
         step_results[step_idx] = step_result
 
     # Collect grounding data from all step results
-    grounding, was_truncated = _collect_grounding(step_results, db_path)
+    grounding, was_truncated, total_records = _collect_grounding(step_results, db_path)
 
     # Build ordered list of step results
     steps_completed = [step_results[i] for i in execution_order]
@@ -117,6 +117,7 @@ def execute_plan(
         original_query=original_query,
         session_context=session_context,
         truncated=was_truncated,
+        total_record_count=total_records,
     )
 
 
@@ -1170,7 +1171,7 @@ _MAX_GROUNDING_RECORDS = 30
 def _collect_grounding(
     step_results: Dict[int, StepResult],
     db_path: Path,
-) -> tuple[GroundingData, bool]:
+) -> tuple[GroundingData, bool, int]:
     """Sweep all step results and collect records, agents, links.
 
     - Deduplicates records across retrieve steps (merges source_steps).
@@ -1214,13 +1215,14 @@ def _collect_grounding(
             agents=agent_summaries,
             aggregations=aggregations,
             links=[lnk for a in agent_summaries for lnk in a.links],
-        ), False
+        ), False, 0
 
     # 4. Build RecordSummary for each mms_id from DB
     all_mms = list(mms_to_steps.keys())
 
     # Truncate if needed
-    truncated = len(all_mms) > _MAX_GROUNDING_RECORDS
+    total_record_count = len(all_mms)
+    truncated = total_record_count > _MAX_GROUNDING_RECORDS
     if truncated:
         all_mms = all_mms[:_MAX_GROUNDING_RECORDS]
 
@@ -1473,6 +1475,6 @@ def _collect_grounding(
             agents=agent_summaries,
             aggregations=aggregations,
             links=links,
-        ), truncated
+        ), truncated, total_record_count
     finally:
         conn.close()
