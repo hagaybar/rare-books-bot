@@ -1,5 +1,5 @@
 # Architecture
-> Last verified: 2026-04-01
+> Last verified: 2026-04-02
 > Source of truth for: Project structure, core modules, data model index, and key architectural patterns
 
 ## Project Structure
@@ -53,6 +53,14 @@ scripts/                      # Core library organized by function
     task_paths.py             # Per-run artifact paths
     logger.py                 # Structured JSON logging
   shared_models.py            # Cross-module models (ExternalLink)
+  models/                     # LLM model configuration
+    config.py                 # JSON-driven model selection per pipeline stage
+    llm_client.py             # Thin litellm wrapper for structured/streaming completions
+  eval/                       # Batch evaluation framework
+    run_eval.py               # CLI entry point for model comparison runs
+    judge.py                  # Response quality judging
+    query_set.py              # Benchmark query loading
+    report.py                 # Evaluation report generation
 
 frontend/                     # Unified React SPA
   src/
@@ -89,6 +97,7 @@ data/                         # Runtime data (mostly gitignored)
   chat/                       # Session database
   qa/                         # QA database and gold sets
   runs/<run_id>/              # Per-run artifacts: plan, SQL, candidate set, logs
+  eval/                       # Model config, benchmark queries, evaluation runs
 
 archive/                      # Reference materials (retired UIs, template docs)
 ```
@@ -246,6 +255,20 @@ LLM-facing variants: `ExecutionStepLLM`, `ScholarlyDirectiveLLM`, `Interpretatio
 | `app/api/auth_models.py` | 6 | 0 | 6 |
 | `app/api/metadata_models.py` | 33 | 0 | 33 |
 | **Total** | **110** | **7** | **117** |
+
+---
+
+## Model Configuration
+
+The model config system decouples LLM model selection from pipeline code, allowing per-stage model assignment and batch evaluation.
+
+| File | Purpose |
+|------|---------|
+| `scripts/models/config.py` | JSON-driven model selection per pipeline stage (interpreter, narrator, etc.) |
+| `scripts/models/llm_client.py` | Thin litellm wrapper for structured and streaming completions |
+| `data/eval/model-config.json` | Active model configuration (maps stage names to model IDs) |
+
+The evaluation framework (`scripts/eval/`) supports batch comparison of models across pipeline stages using benchmark queries from `data/eval/queries.json`.
 
 ---
 
