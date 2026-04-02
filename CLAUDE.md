@@ -89,6 +89,7 @@ Detailed documentation lives in `docs/current/`. Consult these files for impleme
 | Deployment | docs/current/deployment.md | Docker, nginx, deploy.sh, SSH access |
 | Ingestion | docs/current/ingestion-pipeline.md | MARC XML -> bibliographic.db pipeline |
 | Architecture | docs/current/architecture.md | Project structure, key classes, model index |
+| Data Model | docs/current/data-model.md | End-to-end data flow, schemas, strengths/weaknesses |
 
 ## Documentation Maintenance Protocol
 
