@@ -26,6 +26,7 @@ from scripts.chat.plan_models import (
     StepResult,
 )
 from scripts.schemas.query_plan import Filter, FilterField, FilterOp
+from tests.app.conftest import make_test_token
 
 
 # =============================================================================
@@ -106,6 +107,14 @@ _DB_SCHEMA = """
         script TEXT, language TEXT, is_primary INTEGER,
         priority INTEGER, notes TEXT, created_at TEXT
     );
+    CREATE TABLE physical_descriptions (
+        id INTEGER PRIMARY KEY, record_id INTEGER,
+        value TEXT, source TEXT
+    );
+    CREATE TABLE notes (
+        id INTEGER PRIMARY KEY, record_id INTEGER,
+        tag TEXT, value TEXT, source TEXT
+    );
 """
 
 _SEED_DATA = """
@@ -173,7 +182,7 @@ def client(tmp_path, bib_db):
     }):
         # Disable rate limiter to avoid 429s when tests share the app singleton
         main_module.limiter.enabled = False
-        with TestClient(app) as c:
+        with TestClient(app, cookies={"access_token": make_test_token()}) as c:
             yield c
         main_module.limiter.enabled = True
 
@@ -432,15 +441,20 @@ class TestWebSocketPipeline:
     """WebSocket handler routes through the three-stage pipeline."""
 
     def test_ws_basic_pipeline(self, client):
-        """WebSocket streams progress + complete through the pipeline."""
+        """WebSocket streams thinking + stream_chunk + complete through the pipeline."""
         plan = _make_retrieval_plan()
         narrator_response = _make_narrator_response(
             narrative="Found Venice books via WebSocket."
         )
 
+        async def _fake_narrate_streaming(query, execution_result, *, chunk_callback=None, token_saving=True):
+            if chunk_callback:
+                await chunk_callback("Found Venice books via WebSocket.")
+            return narrator_response
+
         with (
             patch("app.api.main.interpret", new_callable=AsyncMock, return_value=plan),
-            patch("app.api.main.narrate", new_callable=AsyncMock, return_value=narrator_response),
+            patch("app.api.main.narrate_streaming", new_callable=AsyncMock, side_effect=_fake_narrate_streaming),
         ):
             with client.websocket_connect("/ws/chat") as ws:
                 ws.send_json({"message": "books from Venice"})
@@ -452,10 +466,10 @@ class TestWebSocketPipeline:
                     if msg["type"] in ("complete", "error"):
                         break
 
-        # Should have progress messages and a complete message
+        # Should have thinking messages and a complete message
         types = [m["type"] for m in messages]
         assert "session_created" in types
-        assert "progress" in types
+        assert "thinking" in types
         assert "complete" in types
 
         complete_msg = next(m for m in messages if m["type"] == "complete")

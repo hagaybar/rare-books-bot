@@ -120,7 +120,9 @@ def _make_proposals() -> List[ProposedMapping]:
 # Fixtures
 # ---------------------------------------------------------------------------
 
-client = TestClient(app)
+from tests.app.conftest import make_test_token
+
+client = TestClient(app, cookies={"access_token": make_test_token()})
 
 
 @pytest.fixture(autouse=True)

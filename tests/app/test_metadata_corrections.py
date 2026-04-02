@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 
 from app.api.main import app
 from app.api import metadata_corrections as metadata_mod
+from tests.app.conftest import make_test_token
 
 
 @pytest.fixture(autouse=True)
@@ -43,8 +44,8 @@ def _isolate_paths(tmp_path):
 
 @pytest.fixture
 def client():
-    """Provide a test client."""
-    return TestClient(app)
+    """Provide a test client with auth token."""
+    return TestClient(app, cookies={"access_token": make_test_token()})
 
 
 # ---------------------------------------------------------------------------

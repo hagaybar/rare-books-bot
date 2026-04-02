@@ -33,18 +33,19 @@ from typing import Any, Dict, Optional
 from scripts.utils.logger import LoggerManager
 
 
-# Pricing per 1M tokens (as of January 2025)
-# Update these when OpenAI changes pricing
-PRICING_PER_1M_TOKENS = {
-    "gpt-4.1": {"input": 2.00, "output": 8.00},
-    "gpt-4.1-mini": {"input": 0.40, "output": 1.60},
-    "gpt-4.1-nano": {"input": 0.10, "output": 0.40},
-    "gpt-4o": {"input": 2.50, "output": 10.00},
-    "gpt-4o-mini": {"input": 0.15, "output": 0.60},
-    "gpt-4-turbo": {"input": 10.00, "output": 30.00},
-    "gpt-4": {"input": 30.00, "output": 60.00},
-    "gpt-3.5-turbo": {"input": 0.50, "output": 1.50},
-}
+# DEPRECATED: Previously used for manual cost calculation.
+# Now using litellm.completion_cost() which maintains its own pricing database.
+# Kept as reference for models litellm may not yet support.
+# PRICING_PER_1M_TOKENS = {
+#     "gpt-4.1": {"input": 2.00, "output": 8.00},
+#     "gpt-4.1-mini": {"input": 0.40, "output": 1.60},
+#     "gpt-4.1-nano": {"input": 0.10, "output": 0.40},
+#     "gpt-4o": {"input": 2.50, "output": 10.00},
+#     "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+#     "gpt-4-turbo": {"input": 10.00, "output": 30.00},
+#     "gpt-4": {"input": 30.00, "output": 60.00},
+#     "gpt-3.5-turbo": {"input": 0.50, "output": 1.50},
+# }
 
 # Default log file path
 DEFAULT_LLM_LOG_PATH = Path("logs/llm_calls.jsonl")
@@ -89,23 +90,39 @@ class LLMLogger:
             use_json=False,
         )
 
-    def _calculate_cost(self, model: str, input_tokens: int, output_tokens: int) -> float:
-        """Calculate estimated cost in USD.
+    def _calculate_cost(self, model: str, input_tokens: int, output_tokens: int,
+                        response: Any = None) -> float:
+        """Calculate estimated cost in USD using litellm's pricing data.
+
+        Falls back to zero if litellm doesn't have pricing for the model.
 
         Args:
             model: Model name (e.g., "gpt-4o")
             input_tokens: Number of input tokens
             output_tokens: Number of output tokens
+            response: Optional LLM response object for most accurate pricing
 
         Returns:
             Estimated cost in USD
         """
-        pricing = PRICING_PER_1M_TOKENS.get(model, {"input": 0, "output": 0})
-        cost = (
-            (input_tokens * pricing["input"] / 1_000_000) +
-            (output_tokens * pricing["output"] / 1_000_000)
-        )
-        return round(cost, 6)
+        if response is not None:
+            try:
+                import litellm
+                return round(litellm.completion_cost(completion_response=response), 6)
+            except Exception:
+                pass
+
+        # Fallback: try litellm's per-token cost
+        try:
+            import litellm
+            input_cost, output_cost = litellm.cost_per_token(
+                model=model,
+                prompt_tokens=input_tokens,
+                completion_tokens=output_tokens,
+            )
+            return round(input_cost + output_cost, 6)
+        except Exception:
+            return 0.0
 
     def _truncate(self, text: str, max_length: int) -> str:
         """Truncate text with ellipsis if too long.
@@ -154,7 +171,7 @@ class LLMLogger:
         total_tokens = input_tokens + output_tokens
 
         # Calculate cost
-        cost_usd = self._calculate_cost(model, input_tokens, output_tokens)
+        cost_usd = self._calculate_cost(model, input_tokens, output_tokens, response=response)
 
         # Build log entry
         log_entry = {

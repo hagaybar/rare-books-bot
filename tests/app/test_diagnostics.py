@@ -27,7 +27,9 @@ from fastapi.testclient import TestClient
 from app.api.main import app
 
 
-client = TestClient(app, raise_server_exceptions=False)
+from tests.app.conftest import make_test_token
+
+client = TestClient(app, raise_server_exceptions=False, cookies={"access_token": make_test_token()})
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +99,36 @@ def tmp_bib_db(tmp_path):
             id INTEGER PRIMARY KEY,
             authority_id INTEGER,
             source TEXT
+        );
+        CREATE TABLE agent_authorities (
+            id INTEGER PRIMARY KEY,
+            canonical_name TEXT
+        );
+        CREATE TABLE agent_aliases (
+            id INTEGER PRIMARY KEY,
+            authority_id INTEGER,
+            alias_form TEXT
+        );
+        CREATE TABLE wikipedia_cache (
+            id INTEGER PRIMARY KEY,
+            wikidata_id TEXT,
+            summary_extract TEXT
+        );
+        CREATE TABLE wikipedia_connections (
+            id INTEGER PRIMARY KEY,
+            source_wikidata_id TEXT,
+            target_wikidata_id TEXT
+        );
+        CREATE TABLE network_edges (
+            id INTEGER PRIMARY KEY,
+            source_agent_norm TEXT,
+            target_agent_norm TEXT,
+            connection_type TEXT
+        );
+        CREATE TABLE network_agents (
+            id INTEGER PRIMARY KEY,
+            agent_norm TEXT,
+            display_name TEXT
         );
 
         INSERT INTO records (id, mms_id) VALUES (1, '990001');

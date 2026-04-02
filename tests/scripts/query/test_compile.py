@@ -1,10 +1,6 @@
 """Tests for query compiler module.
 
-After LLM migration, this file tests the compile module's public interface:
-- compile_query (now delegated to llm_compiler)
-- write_plan_to_file (utility function)
-- compute_plan_hash (utility function)
-
+After litellm migration, tests mock structured_completion instead of OpenAI.
 Detailed LLM compiler tests are in test_llm_compiler.py.
 """
 
@@ -12,7 +8,7 @@ import pytest
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, AsyncMock
 
 from scripts.query.compile import (
     compile_query,
@@ -23,34 +19,48 @@ from scripts.query.exceptions import QueryCompilationError
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
 
 
-class TestCompileQuery:
-    """Tests for compile_query function (now LLM-based)."""
+def _make_mock_llm_result(plan: QueryPlan):
+    """Build a mock LLMResult returned by structured_completion."""
+    from scripts.query.llm_compiler import QueryPlanLLM
 
-    @patch('scripts.query.llm_compiler.OpenAI')
+    llm_plan = QueryPlanLLM(
+        version=plan.version,
+        query_text=plan.query_text,
+        filters=plan.filters,
+        soft_filters=plan.soft_filters,
+        limit=plan.limit,
+    )
+
+    mock_result = Mock()
+    mock_result.parsed = llm_plan
+    mock_result.raw_content = plan.model_dump_json()
+    mock_result.model = "gpt-4o"
+    mock_result.input_tokens = 100
+    mock_result.output_tokens = 50
+    mock_result.cost_usd = 0.001
+    mock_result.latency_ms = 500
+    return mock_result
+
+
+class TestCompileQuery:
+    """Tests for compile_query function (now LLM-based via litellm)."""
+
+    @patch('scripts.query.llm_compiler.structured_completion', new_callable=AsyncMock)
     @patch('scripts.query.llm_compiler.load_cache')
     @patch('scripts.query.llm_compiler.write_cache_entry')
-    def test_compile_query_basic(self, mock_write_cache, mock_load_cache, mock_openai_class, tmp_path):
+    def test_compile_query_basic(self, mock_write_cache, mock_load_cache, mock_structured, tmp_path):
         """Should compile query using LLM."""
         # Mock empty cache
         mock_load_cache.return_value = {}
 
-        # Mock OpenAI client
-        mock_client = Mock()
-        mock_openai_class.return_value = mock_client
-
-        # Mock LLM response with usage stats (required for llm_logger)
-        mock_response = Mock()
-        mock_response.usage = Mock()
-        mock_response.usage.input_tokens = 100
-        mock_response.usage.output_tokens = 50
-        mock_plan = QueryPlan(
+        # Mock LLM response
+        plan_data = QueryPlan(
             query_text="books published by Oxford",
             filters=[
                 Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="oxford")
             ]
         )
-        mock_response.output_parsed = mock_plan
-        mock_client.responses.parse.return_value = mock_response
+        mock_structured.return_value = _make_mock_llm_result(plan_data)
 
         # Call compile_query
         plan = compile_query("books published by Oxford", api_key="test-key")
@@ -89,31 +99,28 @@ class TestCompileQuery:
         assert plan.debug.get("cache_hit") is True
 
     @patch('scripts.query.llm_compiler.load_cache')
-    def test_compile_query_missing_api_key(self, mock_load_cache):
-        """Should raise error if API key not provided."""
+    @patch('scripts.query.llm_compiler.call_model', new_callable=AsyncMock)
+    def test_compile_query_missing_api_key(self, mock_call_model, mock_load_cache):
+        """Should raise error if LLM auth fails."""
+        import litellm
         mock_load_cache.return_value = {}  # Empty cache, no cache hit
-        with patch.dict('os.environ', {}, clear=True):
-            with pytest.raises(QueryCompilationError, match="OpenAI API key"):
-                compile_query("test query")
+        mock_call_model.side_effect = litellm.AuthenticationError(
+            message="No API key",
+            llm_provider="openai",
+            model="gpt-4o",
+        )
+        with pytest.raises(QueryCompilationError):
+            compile_query("test query")
 
-    @patch('scripts.query.llm_compiler.OpenAI')
+    @patch('scripts.query.llm_compiler.structured_completion', new_callable=AsyncMock)
     @patch('scripts.query.llm_compiler.load_cache')
     @patch('scripts.query.llm_compiler.write_cache_entry')
-    def test_compile_query_with_limit(self, mock_write_cache, mock_load_cache, mock_openai_class):
+    def test_compile_query_with_limit(self, mock_write_cache, mock_load_cache, mock_structured):
         """Should apply limit parameter to plan."""
         mock_load_cache.return_value = {}
 
-        mock_client = Mock()
-        mock_openai_class.return_value = mock_client
-
-        # Mock LLM response with usage stats (required for llm_logger)
-        mock_response = Mock()
-        mock_response.usage = Mock()
-        mock_response.usage.input_tokens = 100
-        mock_response.usage.output_tokens = 50
-        mock_plan = QueryPlan(query_text="test", filters=[])
-        mock_response.output_parsed = mock_plan
-        mock_client.responses.parse.return_value = mock_response
+        plan_data = QueryPlan(query_text="test", filters=[])
+        mock_structured.return_value = _make_mock_llm_result(plan_data)
 
         plan = compile_query("test", limit=50, api_key="test-key")
 
@@ -248,8 +255,7 @@ class TestComputePlanHash:
 class TestBackwardCompatibility:
     """Tests for backward compatibility with existing code."""
 
-    @patch('scripts.query.llm_compiler.load_cache')
-    def test_imports_work(self, mock_load_cache):
+    def test_imports_work(self):
         """Should be able to import functions from compile module."""
         # These imports should work
         from scripts.query.compile import compile_query, write_plan_to_file, compute_plan_hash
@@ -258,24 +264,15 @@ class TestBackwardCompatibility:
         assert callable(write_plan_to_file)
         assert callable(compute_plan_hash)
 
-    @patch('scripts.query.llm_compiler.OpenAI')
+    @patch('scripts.query.llm_compiler.structured_completion', new_callable=AsyncMock)
     @patch('scripts.query.llm_compiler.load_cache')
     @patch('scripts.query.llm_compiler.write_cache_entry')
-    def test_compile_query_signature(self, mock_write_cache, mock_load_cache, mock_openai_class):
+    def test_compile_query_signature(self, mock_write_cache, mock_load_cache, mock_structured):
         """Should accept same parameters as before (with api_key added)."""
         mock_load_cache.return_value = {}
 
-        mock_client = Mock()
-        mock_openai_class.return_value = mock_client
-
-        # Mock LLM response with usage stats (required for llm_logger)
-        mock_response = Mock()
-        mock_response.usage = Mock()
-        mock_response.usage.input_tokens = 100
-        mock_response.usage.output_tokens = 50
-        mock_plan = QueryPlan(query_text="test query", filters=[])
-        mock_response.output_parsed = mock_plan
-        mock_client.responses.parse.return_value = mock_response
+        plan_data = QueryPlan(query_text="test query", filters=[])
+        mock_structured.return_value = _make_mock_llm_result(plan_data)
 
         # Should accept query_text and limit
         plan = compile_query("test query", limit=100, api_key="test-key")

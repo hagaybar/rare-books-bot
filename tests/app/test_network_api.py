@@ -16,6 +16,7 @@ def mock_db(tmp_path):
             agent_norm TEXT PRIMARY KEY, display_name TEXT NOT NULL,
             place_norm TEXT, lat REAL, lon REAL,
             birth_year INTEGER, death_year INTEGER, occupations TEXT,
+            primary_role TEXT,
             has_wikipedia INTEGER DEFAULT 0, record_count INTEGER DEFAULT 0,
             connection_count INTEGER DEFAULT 0
         );
@@ -46,10 +47,10 @@ def mock_db(tmp_path):
 
         INSERT INTO network_agents VALUES
             ('smith, john', 'John Smith', 'amsterdam', 52.37, 4.90,
-             1500, 1570, '["author"]', 1, 5, 10);
+             1500, 1570, '["author"]', 'author', 1, 5, 10);
         INSERT INTO network_agents VALUES
             ('jones, mary', 'Mary Jones', 'venice', 45.44, 12.32,
-             1480, 1550, '["printer"]', 0, 3, 5);
+             1480, 1550, '["printer"]', 'printer', 0, 3, 5);
         INSERT INTO network_edges VALUES
             ('smith, john', 'jones, mary', 'teacher_student', 0.85,
              'teacher of', 0, NULL);
@@ -67,13 +68,14 @@ def mock_db(tmp_path):
 
 @pytest.fixture
 def client(mock_db):
-    """Create test client with mocked DB path."""
+    """Create test client with mocked DB path and auth token."""
     import app.api.network as network_mod
     from app.api.main import app
+    from tests.app.conftest import make_test_token
 
     original_path = network_mod.DB_PATH
     network_mod.DB_PATH = mock_db
-    client = TestClient(app)
+    client = TestClient(app, cookies={"access_token": make_test_token()})
     yield client
     network_mod.DB_PATH = original_path
 

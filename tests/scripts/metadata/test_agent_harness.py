@@ -1,13 +1,13 @@
 """Tests for the shared agent harness.
 
 Uses in-memory SQLite databases and temporary files to test both the
-GroundingLayer (deterministic) and ReasoningLayer (with mocked OpenAI client).
+GroundingLayer (deterministic) and ReasoningLayer (with mocked litellm calls).
 """
 
 import json
 import sqlite3
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -240,7 +240,7 @@ def db_path(tmp_path: Path) -> Path:
     )
     _insert_agent(
         conn, rid2,
-        agent_raw="Molière",
+        agent_raw="Moliere",
         agent_norm="moliere",
         agent_confidence=0.90,
         authority_uri="http://viaf.org/viaf/789",
@@ -286,6 +286,32 @@ def grounding(db_path: Path, alias_map_dir: Path) -> GroundingLayer:
 def cache_path(tmp_path: Path) -> Path:
     """Return path for a temporary LLM cache file."""
     return tmp_path / "llm_cache.jsonl"
+
+
+# ---------------------------------------------------------------------------
+# Mock helpers for litellm-based calls
+# ---------------------------------------------------------------------------
+
+def _make_mock_structured_result(canonical_value: str, confidence: float, reasoning: str):
+    """Build a mock LLMResult for structured_completion."""
+    mock_parsed = Mock()
+    mock_parsed.canonical_value = canonical_value
+    mock_parsed.confidence = confidence
+    mock_parsed.reasoning = reasoning
+
+    mock_result = Mock()
+    mock_result.parsed = mock_parsed
+    mock_result.raw_content = json.dumps({
+        "canonical_value": canonical_value,
+        "confidence": confidence,
+        "reasoning": reasoning,
+    })
+    mock_result.model = "gpt-4o"
+    mock_result.input_tokens = 100
+    mock_result.output_tokens = 50
+    mock_result.cost_usd = 0.001
+    mock_result.latency_ms = 500
+    return mock_result
 
 
 # ---------------------------------------------------------------------------
@@ -481,36 +507,20 @@ class TestGroundingLayerEmptyDB:
 # ReasoningLayer tests
 # ---------------------------------------------------------------------------
 
-def _make_mock_completion(content_json: dict) -> MagicMock:
-    """Build a mock OpenAI ChatCompletion response."""
-    mock_message = MagicMock()
-    mock_message.content = json.dumps(content_json)
-    mock_choice = MagicMock()
-    mock_choice.message = mock_message
-    mock_response = MagicMock()
-    mock_response.choices = [mock_choice]
-    return mock_response
-
 
 class TestReasoningLayerCache:
     """Tests for cache hit/miss behavior."""
 
+    @patch('scripts.metadata.agent_harness.structured_completion', new_callable=AsyncMock)
     def test_cache_miss_calls_llm(
-        self, grounding: GroundingLayer, cache_path: Path
+        self, mock_structured, grounding: GroundingLayer, cache_path: Path
     ):
-        """On cache miss, should call OpenAI API and cache result."""
+        """On cache miss, should call litellm API and cache result."""
         layer = ReasoningLayer(grounding, cache_path, api_key="test-key")
 
-        llm_response = {
-            "canonical_value": "leiden",
-            "confidence": 0.95,
-            "reasoning": "Lugduni Batavorum is the Latin name for Leiden.",
-        }
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_completion(llm_response)
+        mock_structured.return_value = _make_mock_structured_result(
+            "leiden", 0.95, "Lugduni Batavorum is the Latin name for Leiden."
         )
-        layer.client = mock_client
 
         result = layer.propose_mapping("Lugduni Batavorum", "place")
 
@@ -519,7 +529,7 @@ class TestReasoningLayerCache:
         assert result.field == "place"
         assert "Leiden" in result.reasoning
         # Verify API was called
-        mock_client.chat.completions.create.assert_called_once()
+        mock_structured.assert_called_once()
         # Verify cache file was written
         assert cache_path.exists()
         cache_content = cache_path.read_text(encoding="utf-8").strip()
@@ -548,7 +558,7 @@ class TestReasoningLayerCache:
         )
 
         layer = ReasoningLayer(grounding, cache_path, api_key="test-key")
-        # No client set -- would fail if LLM was called
+        # No mock set -- would fail if LLM was called
         result = layer.propose_mapping("Amstelodami", "place")
 
         assert result.canonical_value == "amsterdam"
@@ -575,8 +585,13 @@ class TestReasoningLayerCache:
         self, grounding: GroundingLayer, cache_path: Path
     ):
         """Malformed JSON lines in cache should be skipped gracefully."""
+        valid_entry = (
+            '{"field": "place", "raw_value": "ok",'
+            ' "result": {"canonical_value": "valid",'
+            ' "confidence": 0.9, "reasoning": "ok"}}'
+        )
         lines = [
-            '{"field": "place", "raw_value": "ok", "result": {"canonical_value": "valid", "confidence": 0.9, "reasoning": "ok"}}',
+            valid_entry,
             "this is not json",
             '{"missing_field": true}',
         ]
@@ -631,22 +646,16 @@ class TestReasoningLayerPromptConstruction:
 class TestReasoningLayerProposedMapping:
     """Tests for propose_mapping response parsing."""
 
+    @patch('scripts.metadata.agent_harness.structured_completion', new_callable=AsyncMock)
     def test_mapping_with_evidence_sources(
-        self, grounding: GroundingLayer, cache_path: Path
+        self, mock_structured, grounding: GroundingLayer, cache_path: Path
     ):
         """Evidence dict keys should become evidence_sources."""
         layer = ReasoningLayer(grounding, cache_path, api_key="test-key")
 
-        llm_response = {
-            "canonical_value": "leiden",
-            "confidence": 0.95,
-            "reasoning": "Dutch city.",
-        }
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_completion(llm_response)
+        mock_structured.return_value = _make_mock_structured_result(
+            "leiden", 0.95, "Dutch city."
         )
-        layer.client = mock_client
 
         evidence = {"country_code": "ne", "marc_source": "008/15-17"}
         result = layer.propose_mapping(
@@ -655,22 +664,16 @@ class TestReasoningLayerProposedMapping:
 
         assert set(result.evidence_sources) == {"country_code", "marc_source"}
 
+    @patch('scripts.metadata.agent_harness.structured_completion', new_callable=AsyncMock)
     def test_mapping_low_confidence_response(
-        self, grounding: GroundingLayer, cache_path: Path
+        self, mock_structured, grounding: GroundingLayer, cache_path: Path
     ):
         """Low-confidence LLM response should be preserved."""
         layer = ReasoningLayer(grounding, cache_path, api_key="test-key")
 
-        llm_response = {
-            "canonical_value": "",
-            "confidence": 0.3,
-            "reasoning": "Cannot determine the canonical form.",
-        }
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_completion(llm_response)
+        mock_structured.return_value = _make_mock_structured_result(
+            "", 0.3, "Cannot determine the canonical form."
         )
-        layer.client = mock_client
 
         result = layer.propose_mapping("???", "place")
         assert result.confidence == 0.3
@@ -680,20 +683,13 @@ class TestReasoningLayerProposedMapping:
 class TestReasoningLayerExplainAndSuggest:
     """Tests for explain_cluster and suggest_investigation."""
 
+    @patch('scripts.metadata.agent_harness.plain_completion', new_callable=AsyncMock)
     def test_explain_cluster(
-        self, grounding: GroundingLayer, cache_path: Path
+        self, mock_plain, grounding: GroundingLayer, cache_path: Path
     ):
         """explain_cluster should call LLM and return string."""
         layer = ReasoningLayer(grounding, cache_path, api_key="test-key")
-        mock_client = MagicMock()
-        mock_msg = MagicMock()
-        mock_msg.content = "These are all Latin place names for Dutch cities."
-        mock_choice = MagicMock()
-        mock_choice.message = mock_msg
-        mock_resp = MagicMock()
-        mock_resp.choices = [mock_choice]
-        mock_client.chat.completions.create.return_value = mock_resp
-        layer.client = mock_client
+        mock_plain.return_value = "These are all Latin place names for Dutch cities."
 
         explanation = layer.explain_cluster(
             "latin_place_names",
@@ -701,22 +697,15 @@ class TestReasoningLayerExplainAndSuggest:
             "place",
         )
         assert "Latin" in explanation
-        mock_client.chat.completions.create.assert_called_once()
+        mock_plain.assert_called_once()
 
+    @patch('scripts.metadata.agent_harness.plain_completion', new_callable=AsyncMock)
     def test_suggest_investigation(
-        self, grounding: GroundingLayer, cache_path: Path
+        self, mock_plain, grounding: GroundingLayer, cache_path: Path
     ):
         """suggest_investigation should call LLM and return string."""
         layer = ReasoningLayer(grounding, cache_path, api_key="test-key")
-        mock_client = MagicMock()
-        mock_msg = MagicMock()
-        mock_msg.content = "1. Check VIAF authority files.\n2. Cross-reference country codes."
-        mock_choice = MagicMock()
-        mock_choice.message = mock_msg
-        mock_resp = MagicMock()
-        mock_resp.choices = [mock_choice]
-        mock_client.chat.completions.create.return_value = mock_resp
-        layer.client = mock_client
+        mock_plain.return_value = "1. Check VIAF authority files.\n2. Cross-reference country codes."
 
         suggestions = layer.suggest_investigation(
             "latin_place_names",
@@ -729,15 +718,20 @@ class TestReasoningLayerExplainAndSuggest:
 class TestReasoningLayerNoApiKey:
     """Tests for missing API key handling."""
 
-    def test_no_api_key_raises_on_llm_call(
-        self, grounding: GroundingLayer, cache_path: Path
+    @patch('scripts.metadata.agent_harness.structured_completion', new_callable=AsyncMock)
+    def test_no_api_key_llm_error_propagates(
+        self, mock_structured, grounding: GroundingLayer, cache_path: Path
     ):
-        """Should raise RuntimeError when no API key is available."""
-        # Clear env var to ensure no fallback
-        with patch.dict("os.environ", {}, clear=True):
-            layer = ReasoningLayer(grounding, cache_path, api_key=None)
-            with pytest.raises(RuntimeError, match="No OpenAI API key"):
-                layer.propose_mapping("test", "place")
+        """With litellm, auth errors propagate from the provider."""
+        import litellm
+        mock_structured.side_effect = litellm.AuthenticationError(
+            message="No API key",
+            llm_provider="openai",
+            model="gpt-4o",
+        )
+        layer = ReasoningLayer(grounding, cache_path, api_key=None)
+        with pytest.raises(litellm.AuthenticationError):
+            layer.propose_mapping("test", "place")
 
 
 # ---------------------------------------------------------------------------
@@ -776,25 +770,18 @@ class TestAgentHarness:
         count = harness.count_affected_records("Lugduni Batavorum", "place")
         assert count == 2
 
+    @patch('scripts.metadata.agent_harness.structured_completion', new_callable=AsyncMock)
     def test_harness_reasoning_delegates(
-        self, db_path: Path, alias_map_dir: Path, cache_path: Path
+        self, mock_structured, db_path: Path, alias_map_dir: Path, cache_path: Path
     ):
         """AgentHarness should delegate reasoning methods correctly."""
         harness = AgentHarness(
             db_path, alias_map_dir, cache_path=cache_path, api_key="test-key"
         )
 
-        # Mock the OpenAI client on the reasoning layer
-        llm_response = {
-            "canonical_value": "leiden",
-            "confidence": 0.95,
-            "reasoning": "Latin for Leiden.",
-        }
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = (
-            _make_mock_completion(llm_response)
+        mock_structured.return_value = _make_mock_structured_result(
+            "leiden", 0.95, "Latin for Leiden."
         )
-        harness.reasoning.client = mock_client
 
         result = harness.propose_mapping("Lugduni Batavorum", "place")
         assert result.canonical_value == "leiden"

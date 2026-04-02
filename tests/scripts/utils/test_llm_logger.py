@@ -49,25 +49,50 @@ class TestLLMLogger:
 
         assert log_path.parent.exists()
 
-    def test_calculate_cost_gpt4o(self):
-        """Test cost calculation for gpt-4o model."""
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_calculate_cost_with_response(self, mock_completion_cost):
+        """Test cost calculation using litellm.completion_cost() with response object."""
+        logger = LLMLogger()
+        mock_resp = MagicMock()
+
+        cost = logger._calculate_cost("gpt-4o", 1000, 500, response=mock_resp)
+
+        assert cost == 0.0075
+        mock_completion_cost.assert_called_once_with(completion_response=mock_resp)
+
+    @patch("litellm.cost_per_token", return_value=(0.0025, 0.005))
+    def test_calculate_cost_without_response_uses_cost_per_token(self, mock_cost_per_token):
+        """Test cost calculation falls back to litellm.cost_per_token() without response."""
         logger = LLMLogger()
 
-        # 1000 input tokens, 500 output tokens
-        # gpt-4o: $2.50/1M input, $10.00/1M output
-        # Expected: (1000 * 2.50 / 1_000_000) + (500 * 10.00 / 1_000_000)
-        #         = 0.0025 + 0.005 = 0.0075
         cost = logger._calculate_cost("gpt-4o", 1000, 500)
 
         assert cost == 0.0075
+        mock_cost_per_token.assert_called_once_with(
+            model="gpt-4o", prompt_tokens=1000, completion_tokens=500,
+        )
 
-    def test_calculate_cost_unknown_model(self):
-        """Test cost calculation for unknown model returns 0."""
+    @patch("litellm.cost_per_token", side_effect=Exception("Unknown model"))
+    def test_calculate_cost_unknown_model(self, mock_cost_per_token):
+        """Test cost calculation for unknown model returns 0 when litellm raises."""
         logger = LLMLogger()
 
         cost = logger._calculate_cost("unknown-model", 1000, 500)
 
         assert cost == 0.0
+
+    @patch("litellm.completion_cost", side_effect=Exception("No pricing"))
+    @patch("litellm.cost_per_token", return_value=(0.0025, 0.005))
+    def test_calculate_cost_response_fallback(self, mock_cost_per_token, mock_completion_cost):
+        """Test that when completion_cost fails with response, falls back to cost_per_token."""
+        logger = LLMLogger()
+        mock_resp = MagicMock()
+
+        cost = logger._calculate_cost("gpt-4o", 1000, 500, response=mock_resp)
+
+        assert cost == 0.0075
+        mock_completion_cost.assert_called_once()
+        mock_cost_per_token.assert_called_once()
 
     def test_truncate_short_text(self):
         """Test truncate doesn't modify short text."""
@@ -86,7 +111,8 @@ class TestLLMLogger:
         assert result == "this is a ..."
         assert len(result) == 13  # 10 + 3 for "..."
 
-    def test_log_call_writes_to_file(self, temp_log_path, mock_response):
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_log_call_writes_to_file(self, mock_cc, temp_log_path, mock_response):
         """Test that log_call writes entry to JSONL file."""
         logger = LLMLogger(log_path=temp_log_path)
 
@@ -112,7 +138,8 @@ class TestLLMLogger:
         assert entry["usage"]["total_tokens"] == 1500
         assert entry["cost_usd"] == 0.0075
 
-    def test_log_call_full_prompts(self, temp_log_path, mock_response):
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_log_call_full_prompts(self, mock_cc, temp_log_path, mock_response):
         """Test that log_call captures full prompts when enabled."""
         logger = LLMLogger(log_path=temp_log_path, log_full_prompts=True)
 
@@ -133,7 +160,8 @@ class TestLLMLogger:
         assert entry["prompts"]["system"] == system_prompt
         assert entry["prompts"]["user"] == user_prompt
 
-    def test_log_call_preview_prompts(self, temp_log_path, mock_response):
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_log_call_preview_prompts(self, mock_cc, temp_log_path, mock_response):
         """Test that log_call captures prompt previews when full prompts disabled."""
         logger = LLMLogger(
             log_path=temp_log_path,
@@ -160,7 +188,8 @@ class TestLLMLogger:
         assert entry["prompts"]["system_preview"].endswith("...")
         assert "system" not in entry["prompts"]
 
-    def test_log_call_with_session_id(self, temp_log_path, mock_response):
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_log_call_with_session_id(self, mock_cc, temp_log_path, mock_response):
         """Test that log_call captures session_id."""
         logger = LLMLogger(log_path=temp_log_path)
 
@@ -178,7 +207,8 @@ class TestLLMLogger:
 
         assert entry["session_id"] == "session-123"
 
-    def test_log_call_with_extra_metadata(self, temp_log_path, mock_response):
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_log_call_with_extra_metadata(self, mock_cc, temp_log_path, mock_response):
         """Test that log_call captures extra metadata."""
         logger = LLMLogger(log_path=temp_log_path)
 
@@ -197,7 +227,9 @@ class TestLLMLogger:
         assert entry["metadata"]["query_text"] == "test query"
         assert entry["metadata"]["filter_count"] == 3
 
-    def test_log_call_without_usage(self, temp_log_path, mock_response_no_usage):
+    @patch("litellm.completion_cost", side_effect=Exception("No usage"))
+    @patch("litellm.cost_per_token", side_effect=Exception("No usage"))
+    def test_log_call_without_usage(self, mock_cpt, mock_cc, temp_log_path, mock_response_no_usage):
         """Test that log_call handles response without usage stats."""
         logger = LLMLogger(log_path=temp_log_path)
 
@@ -216,7 +248,8 @@ class TestLLMLogger:
         assert entry["usage"]["output_tokens"] == 0
         assert entry["cost_usd"] == 0.0
 
-    def test_log_call_returns_entry(self, temp_log_path, mock_response):
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_log_call_returns_entry(self, mock_cc, temp_log_path, mock_response):
         """Test that log_call returns the log entry."""
         logger = LLMLogger(log_path=temp_log_path)
 
@@ -245,7 +278,8 @@ class TestGetSessionCosts:
         assert result["total_tokens"] == 0
         assert result["call_count"] == 0
 
-    def test_get_session_costs_with_entries(self, temp_log_path, mock_response):
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_get_session_costs_with_entries(self, mock_cc, temp_log_path, mock_response):
         """Test get_session_costs sums up session entries."""
         logger = LLMLogger(log_path=temp_log_path)
 
@@ -297,7 +331,8 @@ class TestGetSummary:
         assert result["call_count"] == 0
         assert result["by_type"] == {}
 
-    def test_get_summary_groups_by_type(self, temp_log_path, mock_response):
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_get_summary_groups_by_type(self, mock_cc, temp_log_path, mock_response):
         """Test get_summary groups by call type."""
         logger = LLMLogger(log_path=temp_log_path)
 

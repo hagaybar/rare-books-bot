@@ -15,6 +15,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.main import app
+from tests.app.conftest import make_test_token
 
 
 @pytest.fixture(scope="function")
@@ -70,7 +71,7 @@ def client(test_sessions_db, test_db_path, monkeypatch):
     main_module.db_path = None
 
     # Create test client (triggers startup event)
-    with TestClient(app) as test_client:
+    with TestClient(app, cookies={"access_token": make_test_token()}) as test_client:
         yield test_client
 
 
@@ -85,8 +86,12 @@ def test_health_check(client):
     assert "session_store_ok" in data
 
 
+@pytest.mark.integration
 def test_chat_creates_new_session(client):
-    """Test /chat endpoint creates new session if session_id not provided."""
+    """Test /chat endpoint creates new session if session_id not provided.
+
+    Requires working LLM backend (litellm).
+    """
     response = client.post(
         "/chat", json={"message": "books published by Oxford between 1500 and 1599"}
     )
@@ -165,8 +170,12 @@ def test_chat_with_empty_message(client):
     assert response.status_code == 422  # Validation error
 
 
+@pytest.mark.integration
 def test_get_session(client):
-    """Test GET /sessions/{session_id} returns session details."""
+    """Test GET /sessions/{session_id} returns session details.
+
+    Requires working LLM backend (creates session via /chat).
+    """
     # Create a session first
     response1 = client.post("/chat", json={"message": "test query"})
     session_id = response1.json()["response"]["session_id"]
@@ -188,8 +197,12 @@ def test_get_nonexistent_session(client):
     assert response.status_code == 404
 
 
+@pytest.mark.integration
 def test_expire_session(client):
-    """Test DELETE /sessions/{session_id} expires session."""
+    """Test DELETE /sessions/{session_id} expires session.
+
+    Requires working LLM backend (creates session via /chat).
+    """
     # Create a session first
     response1 = client.post("/chat", json={"message": "test query"})
     session_id = response1.json()["response"]["session_id"]
@@ -213,8 +226,12 @@ def test_expire_nonexistent_session(client):
     assert response.status_code == 404
 
 
+@pytest.mark.integration
 def test_chat_with_context(client):
-    """Test /chat endpoint accepts and stores context."""
+    """Test /chat endpoint accepts and stores context.
+
+    Requires working LLM backend.
+    """
     response = client.post(
         "/chat",
         json={
@@ -234,8 +251,12 @@ def test_chat_with_context(client):
     assert session_data["context"]["user_preference"] == "concise_results"
 
 
+@pytest.mark.integration
 def test_websocket_creates_session(client):
-    """Test WebSocket endpoint creates new session."""
+    """Test WebSocket endpoint creates new session.
+
+    Requires working LLM backend.
+    """
     with client.websocket_connect("/ws/chat") as websocket:
         # Send message without session_id
         websocket.send_json({"message": "books"})
@@ -259,8 +280,12 @@ def test_websocket_creates_session(client):
         assert any("Interpreting" in m["message"] for m in progress_msgs)
 
 
+@pytest.mark.integration
 def test_websocket_with_existing_session(client):
-    """Test WebSocket endpoint uses existing session."""
+    """Test WebSocket endpoint uses existing session.
+
+    Requires working LLM backend (creates session via /chat).
+    """
     # Create session via HTTP first
     response = client.post("/chat", json={"message": "test"})
     session_id = response.json()["response"]["session_id"]

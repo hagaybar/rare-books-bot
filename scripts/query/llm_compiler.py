@@ -1,29 +1,33 @@
 """LLM-based Query Compiler - Natural Language → QueryPlan.
 
-Uses OpenAI's Responses API with Pydantic schema enforcement for structured output.
+Uses litellm via structured_completion for structured output.
 Implements JSONL caching to minimize API calls and cost.
+
+NOTE: This compiler is deprecated in favour of the scholar pipeline
+(scripts/chat/interpreter.py). It remains functional for the legacy
+CLI path and subject-hint retry logic.
 """
 
-import os
+import asyncio
 import json
 from pathlib import Path
 from typing import Optional
 from datetime import datetime, timezone
 
-from openai import OpenAI, AuthenticationError, RateLimitError, APITimeoutError, APIError
+import litellm
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 from scripts.schemas import QueryPlan, Filter
 from scripts.query.exceptions import QueryCompilationError
-from scripts.utils.llm_logger import log_llm_call
+from scripts.models.llm_client import structured_completion
 
 
 class QueryPlanLLM(BaseModel):
     """QueryPlan model for LLM generation (without debug field).
 
-    This is the model sent to OpenAI's Responses API. The debug field
+    This is the model sent to the LLM. The debug field
     is added programmatically after generation, so we exclude it here
-    to avoid OpenAI's strict schema validation requirements.
+    to avoid strict schema validation requirements.
     """
     model_config = ConfigDict(extra='forbid')
 
@@ -214,12 +218,32 @@ def build_user_prompt(query_text: str) -> str:
     return f"Parse this query into a QueryPlan:\n\n{query_text}"
 
 
-def call_model(client: OpenAI, model: str, query_text: str) -> QueryPlan:
-    """Call OpenAI Responses API with structured output.
+def _run_async(coro):
+    """Run an async coroutine from synchronous code.
+
+    Handles the case where an event loop may or may not already be running.
+    """
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        # We're inside an already-running loop (e.g. FastAPI, Jupyter).
+        # Create a new thread to run the coroutine.
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(asyncio.run, coro)
+            return future.result()
+    else:
+        return asyncio.run(coro)
+
+
+async def call_model(model: str, query_text: str) -> QueryPlan:
+    """Call LLM via litellm with structured output.
 
     Args:
-        client: OpenAI client instance
-        model: Model to use (e.g., "gpt-4o")
+        model: LiteLLM model string (e.g., "gpt-4o")
         query_text: Natural language query
 
     Returns:
@@ -229,34 +253,24 @@ def call_model(client: OpenAI, model: str, query_text: str) -> QueryPlan:
         Exception: If API call fails
     """
     user_prompt = build_user_prompt(query_text)
-    resp = client.responses.parse(
-        model=model,
-        input=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        text_format=QueryPlanLLM,
-    )
 
-    # Log the LLM call with full details
-    log_llm_call(
-        call_type="query_compilation",
+    result = await structured_completion(
         model=model,
-        system_prompt=SYSTEM_PROMPT,
-        user_prompt=user_prompt,
-        response=resp,
+        system=SYSTEM_PROMPT,
+        user=user_prompt,
+        response_schema=QueryPlanLLM,
+        call_type="query_compilation",
         extra_metadata={"query_text": query_text},
     )
 
-    # Convert QueryPlanLLM to QueryPlan (adds debug field)
-    llm_plan = resp.output_parsed
+    llm_plan = result.parsed
     return QueryPlan(
         version=llm_plan.version,
         query_text=llm_plan.query_text,
         filters=llm_plan.filters,
         soft_filters=llm_plan.soft_filters,
         limit=llm_plan.limit,
-        debug={}  # Will be populated by caller
+        debug={},
     )
 
 
@@ -276,7 +290,7 @@ def compile_query_with_subject_hints(
         query_text: Original natural language query
         subject_hints: Top N subjects from database (e.g., ["History", "Philosophy", ...])
         original_plan: The plan that returned zero results
-        api_key: OpenAI API key (or use OPENAI_API_KEY env var)
+        api_key: Unused, kept for backward compatibility
         model: Model to use (default: gpt-4o)
 
     Returns:
@@ -307,19 +321,19 @@ Re-parse the query and map the user's subject term to the CLOSEST SEMANTIC MATCH
 Original filters for reference: {[f.model_dump() for f in original_plan.filters]}
 """
 
-    # Get API key
-    api_key_to_use = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key_to_use:
-        raise QueryCompilationError.from_missing_api_key()
-
-    # Initialize OpenAI client
-    client = OpenAI(api_key=api_key_to_use)
-
     # Call LLM with enhanced prompt
     try:
-        plan = call_model(client, model, enhanced_prompt)
-    except (AuthenticationError, RateLimitError, APITimeoutError, APIError) as e:
+        plan = _run_async(call_model(model, enhanced_prompt))
+    except litellm.AuthenticationError as e:
         raise QueryCompilationError.from_api_error(e)
+    except litellm.RateLimitError as e:
+        raise QueryCompilationError.from_api_error(e)
+    except litellm.Timeout as e:
+        raise QueryCompilationError.from_api_error(e)
+    except litellm.APIError as e:
+        raise QueryCompilationError.from_api_error(e)
+    except QueryCompilationError:
+        raise
     except Exception as e:
         raise QueryCompilationError.from_invalid_response(e)
 
@@ -391,16 +405,14 @@ def compile_query_llm(
     Args:
         query_text: Natural language query
         limit: Optional result limit
-        api_key: OpenAI API key (or use OPENAI_API_KEY env var)
+        api_key: Unused, kept for backward compatibility
         model: Model to use (default: gpt-4o)
 
     Returns:
         Validated QueryPlan (from cache or LLM)
 
     Raises:
-        QueryCompilationError: If API key is missing, API call fails,
-            or response is invalid. Error message includes specific
-            guidance for troubleshooting.
+        QueryCompilationError: If API call fails or response is invalid.
     """
     # Check cache first
     cache = load_cache()
@@ -417,31 +429,20 @@ def compile_query_llm(
             # Cache entry invalid, fall through to LLM
             pass
 
-    # Get API key
-    api_key_to_use = api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key_to_use:
-        raise QueryCompilationError.from_missing_api_key()
-
-    # Initialize OpenAI client
-    client = OpenAI(api_key=api_key_to_use)
-
     # Call LLM with proper error handling
     try:
-        plan = call_model(client, model, query_text)
-    except AuthenticationError as e:
-        # Invalid or expired API key
+        plan = _run_async(call_model(model, query_text))
+    except litellm.AuthenticationError as e:
         raise QueryCompilationError.from_api_error(e)
-    except RateLimitError as e:
-        # Rate limiting
+    except litellm.RateLimitError as e:
         raise QueryCompilationError.from_api_error(e)
-    except APITimeoutError as e:
-        # Timeout
+    except litellm.Timeout as e:
         raise QueryCompilationError.from_api_error(e)
-    except APIError as e:
-        # Other OpenAI API errors
+    except litellm.APIError as e:
         raise QueryCompilationError.from_api_error(e)
+    except QueryCompilationError:
+        raise
     except Exception as e:
-        # Unexpected errors (e.g., Pydantic validation failure, JSON parsing)
         raise QueryCompilationError.from_invalid_response(e)
 
     # Apply limit if provided

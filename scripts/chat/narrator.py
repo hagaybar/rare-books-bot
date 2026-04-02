@@ -11,10 +11,10 @@ Provides two modes:
 Replaces: formatter.py, narrative_agent.py, thematic_context.py
 """
 import logging
-import os
 from typing import Awaitable, Callable, Optional
 
-from openai import OpenAI
+from scripts.models.llm_client import structured_completion, streaming_completion
+from scripts.models.config import load_config, get_model
 
 from scripts.chat.plan_models import (
     ExecutionResult,
@@ -26,7 +26,6 @@ from scripts.chat.plan_models import (
     ScholarlyDirective,
     StepResult,
 )
-from scripts.utils.llm_logger import log_llm_call
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +123,7 @@ class StreamingMetaLLM(BaseModel):
 async def narrate(
     query: str,
     execution_result: ExecutionResult,
-    model: str = "gpt-4.1",
+    model: Optional[str] = None,
     api_key: Optional[str] = None,
     token_saving: bool = True,
 ) -> ScholarResponse:
@@ -140,14 +139,17 @@ async def narrate(
     Args:
         query: The original user query.
         execution_result: Verified output from the executor (Stage 2).
-        model: OpenAI model to use (default: gpt-4o).
-        api_key: OpenAI API key (or use OPENAI_API_KEY env var).
+        model: LiteLLM model string. If None, uses model-config.json default.
+        api_key: Unused, retained for backward compatibility.
         token_saving: If True, use lean prompt builder to reduce token
             usage. If False, use the full prompt builder.
 
     Returns:
         ScholarResponse with narrative, followups, and grounding.
     """
+    if model is None:
+        config = load_config()
+        model = get_model(config, "narrator")
     try:
         response = await _call_llm(
             query, execution_result, model, api_key,
@@ -165,16 +167,15 @@ async def narrate_streaming(
     query: str,
     execution_result: ExecutionResult,
     chunk_callback: Callable[[str], Awaitable[None]],
-    model: str = "gpt-4.1",
+    model: Optional[str] = None,
     api_key: Optional[str] = None,
     token_saving: bool = True,
 ) -> ScholarResponse:
     """Stream a scholarly narrative, forwarding text chunks via callback.
 
-    Uses the OpenAI Responses API in streaming mode (without structured
-    output) so that narrative text can be forwarded to the client
-    incrementally.  After streaming completes, assembles and returns
-    the full ScholarResponse.
+    Uses litellm in streaming mode (without structured output) so that
+    narrative text can be forwarded to the client incrementally.  After
+    streaming completes, assembles and returns the full ScholarResponse.
 
     On LLM failure, falls back to the deterministic summary (same as
     ``narrate()``), sending it as a single chunk.
@@ -183,8 +184,8 @@ async def narrate_streaming(
         query: The original user query.
         execution_result: Verified output from the executor (Stage 2).
         chunk_callback: Async callable invoked with each text chunk.
-        model: OpenAI model to use.
-        api_key: OpenAI API key (or use OPENAI_API_KEY env var).
+        model: LiteLLM model string. If None, uses model-config.json default.
+        api_key: Unused, retained for backward compatibility.
         token_saving: If True, use lean prompt builder to reduce token
             usage. If False, use the full prompt builder.
 
@@ -192,13 +193,16 @@ async def narrate_streaming(
         ScholarResponse with the full narrative, grounding from executor,
         and default followups/confidence.
     """
+    if model is None:
+        config = load_config()
+        model = get_model(config, "narrator")
     try:
         narrative = await _stream_llm(
             query, execution_result, chunk_callback, model, api_key,
             token_saving=token_saving,
         )
         # Post-streaming: extract followups and confidence via lightweight call
-        followups, confidence = _extract_streaming_meta(query, narrative, api_key)
+        followups, confidence = await _extract_streaming_meta(query, narrative, api_key)
         response = ScholarResponse(
             narrative=narrative,
             suggested_followups=followups,
@@ -215,39 +219,34 @@ async def narrate_streaming(
         return fallback
 
 
-def _extract_streaming_meta(
+async def _extract_streaming_meta(
     query: str,
     narrative: str,
     api_key: Optional[str] = None,
 ) -> tuple[list[str], float]:
     """Extract followups and confidence after streaming completes.
 
-    Makes a lightweight structured-output call with gpt-4.1-nano to get
+    Makes a lightweight structured-output call via litellm to get
     real followup suggestions and confidence instead of hardcoded defaults.
+    Uses the meta_extraction model from model-config.json.
     Falls back to defaults on any failure.
     """
     try:
-        resolved_key = api_key or os.getenv("OPENAI_API_KEY")
-        if not resolved_key:
-            return [], 0.85
+        config = load_config()
+        meta_model = get_model(config, "meta_extraction")
 
-        client = OpenAI(api_key=resolved_key)
-        resp = client.responses.parse(
-            model="gpt-4.1-nano",
-            input=[
-                {"role": "system", "content": (
-                    "Given a user query and the scholarly response that was generated, "
-                    "suggest 2-4 follow-up questions the user might ask next, and "
-                    "rate the response quality from 0.0 to 1.0."
-                )},
-                {"role": "user", "content": (
-                    f"Query: {query}\n\n"
-                    f"Response (first 500 chars): {narrative[:500]}"
-                )},
-            ],
-            text_format=StreamingMetaLLM,
+        result = await structured_completion(
+            model=meta_model,
+            system=(
+                "Given a user query and the scholarly response that was generated, "
+                "suggest 2-4 follow-up questions the user might ask next, and "
+                "rate the response quality from 0.0 to 1.0."
+            ),
+            user=f"Query: {query}\n\nResponse (first 500 chars): {narrative[:500]}",
+            response_schema=StreamingMetaLLM,
+            call_type="narrator_meta",
         )
-        meta: StreamingMetaLLM = resp.output_parsed
+        meta: StreamingMetaLLM = result.parsed
         return meta.suggested_followups, meta.confidence
     except Exception:
         logger.debug("Post-streaming meta extraction failed; using defaults")
@@ -266,16 +265,13 @@ async def _call_llm(
     api_key: Optional[str] = None,
     token_saving: bool = True,
 ) -> ScholarResponse:
-    """Call OpenAI with the narrator persona and verified data.
-
-    Uses the Responses API with Pydantic schema enforcement,
-    following the same pattern as intent_agent.py.
+    """Call LLM via litellm with the narrator persona and verified data.
 
     Args:
         query: The original user query.
         execution_result: Verified execution result.
-        model: OpenAI model name.
-        api_key: OpenAI API key override.
+        model: LiteLLM model string.
+        api_key: Unused, retained for backward compatibility.
         token_saving: If True, use lean prompt builder.
 
     Returns:
@@ -284,53 +280,29 @@ async def _call_llm(
     Raises:
         Exception: On any API or parsing failure (caught by narrate()).
     """
-    resolved_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not resolved_key:
-        raise ValueError("OPENAI_API_KEY not set and no api_key provided")
-
-    client = OpenAI(api_key=resolved_key)
     if token_saving:
         user_prompt = build_lean_narrator_prompt(query, execution_result)
     else:
         user_prompt = _build_narrator_prompt(query, execution_result)
 
-    resp = client.responses.parse(
+    result = await structured_completion(
         model=model,
-        input=[
-            {"role": "system", "content": NARRATOR_SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        text_format=NarratorResponseLLM,
-    )
-
-    # Count agent profiles actually included in the prompt
-    if token_saving:
-        agent_profile_count = len(_select_agent_profiles(execution_result, query))
-    else:
-        agent_profile_count = len(execution_result.grounding.agents) if execution_result.grounding else 0
-
-    log_llm_call(
+        system=NARRATOR_SYSTEM_PROMPT,
+        user=user_prompt,
+        response_schema=NarratorResponseLLM,
         call_type="narrator",
-        model=model,
-        system_prompt=NARRATOR_SYSTEM_PROMPT,
-        user_prompt=user_prompt,
-        response=resp,
         extra_metadata={
-            "query": query,
-            "token_saving_mode": "lean" if token_saving else "full",
-            "prompt_char_count": len(user_prompt),
-            "record_count": len(execution_result.grounding.records) if execution_result.grounding else 0,
-            "agent_profile_count": agent_profile_count,
+            "query_text": query,
+            "token_saving": token_saving,
         },
     )
 
-    llm_output: NarratorResponseLLM = resp.output_parsed
-
+    llm_resp: NarratorResponseLLM = result.parsed
     return ScholarResponse(
-        narrative=llm_output.narrative,
-        suggested_followups=llm_output.suggested_followups,
-        grounding=GroundingData(),  # placeholder; narrate() overwrites with executor's
-        confidence=llm_output.confidence,
+        narrative=llm_resp.narrative,
+        suggested_followups=llm_resp.suggested_followups,
+        grounding=GroundingData(records=[], agents=[], aggregations={}, links=[]),
+        confidence=llm_resp.confidence,
         metadata={"model": model},
     )
 
@@ -343,21 +315,14 @@ async def _stream_llm(
     api_key: Optional[str] = None,
     token_saving: bool = True,
 ) -> str:
-    """Stream the narrator LLM response, forwarding text chunks.
-
-    Uses the Responses API in streaming mode without structured output
-    so that narrative text can be forwarded to the client incrementally.
-
-    The system prompt is augmented to request plain markdown only
-    (no JSON wrapping), since structured output is incompatible with
-    readable text streaming.
+    """Stream the narrator LLM response via litellm, forwarding text chunks.
 
     Args:
         query: The original user query.
         execution_result: Verified execution result.
         chunk_callback: Async callable invoked with each text delta.
-        model: OpenAI model name.
-        api_key: OpenAI API key override.
+        model: LiteLLM model string.
+        api_key: Unused, retained for backward compatibility.
         token_saving: If True, use lean prompt builder.
 
     Returns:
@@ -366,71 +331,29 @@ async def _stream_llm(
     Raises:
         Exception: On any API failure (caught by narrate_streaming()).
     """
-    resolved_key = api_key or os.getenv("OPENAI_API_KEY")
-    if not resolved_key:
-        raise ValueError("OPENAI_API_KEY not set and no api_key provided")
-
-    client = OpenAI(api_key=resolved_key)
     if token_saving:
         user_prompt = build_lean_narrator_prompt(query, execution_result)
     else:
         user_prompt = _build_narrator_prompt(query, execution_result)
 
-    # Use plain text mode (no structured output) for streamable narrative
     streaming_system = (
         NARRATOR_SYSTEM_PROMPT
         + "\n\nRespond with ONLY the scholarly narrative in markdown. "
         "Do not wrap in JSON or add metadata fields."
     )
 
-    stream = client.responses.create(
-        model=model,
-        input=[
-            {"role": "system", "content": streaming_system},
-            {"role": "user", "content": user_prompt},
-        ],
-        stream=True,
-    )
-
     full_text: list[str] = []
-    response_obj = None
-    for event in stream:
-        # Text deltas arrive as response.output_text.delta events.
-        if event.type == "response.output_text.delta":
-            delta = event.delta
-            if delta:
-                full_text.append(delta)
-                await chunk_callback(delta)
-        elif event.type == "response.completed":
-            response_obj = event.response
+    async for chunk in streaming_completion(
+        model=model,
+        system=streaming_system,
+        user=user_prompt,
+        call_type="narrator_streaming",
+        extra_metadata={"query_text": query, "token_saving": token_saving},
+    ):
+        full_text.append(chunk)
+        await chunk_callback(chunk)
 
-    narrative = "".join(full_text)
-
-    # Log with token usage (same as _call_llm for comparison).
-    # Wrapped in try/except: logging failures must never crash the narrator
-    # after a successful stream -- the narrative has already been sent to
-    # the client chunk-by-chunk, so we must return it regardless.
-    try:
-        if response_obj:
-            log_llm_call(
-                call_type="narrator_streaming",
-                model=model,
-                system_prompt=streaming_system,
-                user_prompt=user_prompt,
-                response=response_obj,
-                extra_metadata={
-                    "token_saving_mode": "lean" if token_saving else "full",
-                    "prompt_char_count": len(user_prompt),
-                    "record_count": len(execution_result.grounding.records) if execution_result.grounding else 0,
-                    "agent_profile_count": len(_select_agent_profiles(execution_result, query)) if token_saving else (len(execution_result.grounding.agents) if execution_result.grounding else 0),
-                },
-            )
-        else:
-            logger.warning("Narrator streaming completed without response object — no usage logged")
-    except Exception:
-        logger.exception("Failed to log narrator streaming call — narrative was still produced")
-
-    return narrative
+    return "".join(full_text)
 
 
 # =============================================================================

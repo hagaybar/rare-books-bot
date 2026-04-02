@@ -14,10 +14,11 @@ from pathlib import Path
 
 import pytest
 
-# Skip entire module if no API key
+# Skip entire module unless explicitly opted in via RUN_SCHOLAR_EVIDENCE=1.
+# These are expensive integration tests that make real LLM calls via litellm.
 pytestmark = pytest.mark.skipif(
-    not os.environ.get("OPENAI_API_KEY"),
-    reason="Requires OPENAI_API_KEY",
+    not os.environ.get("RUN_SCHOLAR_EVIDENCE"),
+    reason="Requires RUN_SCHOLAR_EVIDENCE=1 (expensive LLM integration tests)",
 )
 
 HISTORIAN_QUERIES = [

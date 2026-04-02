@@ -2,18 +2,42 @@
 
 Provides the foundation for all specialist metadata agents with two layers:
 - GroundingLayer: Deterministic queries against M3 database and alias maps (no LLM)
-- ReasoningLayer: LLM-assisted mapping proposals with strict prompts and caching
+- ReasoningLayer: LLM-assisted mapping proposals via litellm with caching
 
 All LLM output is cached, validated, and requires human review before production use.
 """
 
+import asyncio
 import json
-import os
 import sqlite3
 from dataclasses import dataclass, field as dc_field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
+
+from pydantic import BaseModel
+
+from scripts.models.llm_client import plain_completion, structured_completion
+
+
+# ---------------------------------------------------------------------------
+# Async-to-sync bridge (same pattern as llm_compiler.py)
+# ---------------------------------------------------------------------------
+
+def _run_async(coro):
+    """Run an async coroutine from synchronous code."""
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(asyncio.run, coro)
+            return future.result()
+    else:
+        return asyncio.run(coro)
 
 
 # ---------------------------------------------------------------------------
@@ -43,6 +67,13 @@ class ProposedMapping:
     reasoning: str
     evidence_sources: List[str] = dc_field(default_factory=list)
     field: str = ""
+
+
+class _ProposedMappingLLM(BaseModel):
+    """Pydantic model for structured LLM output in propose_mapping."""
+    canonical_value: str
+    confidence: float
+    reasoning: str
 
 
 # ---------------------------------------------------------------------------
@@ -329,6 +360,7 @@ class ReasoningLayer:
     """LLM-assisted reasoning for metadata normalization.
 
     All calls are cached. Results are proposals, not authoritative mappings.
+    Uses litellm via the shared llm_client module.
     """
 
     def __init__(
@@ -343,14 +375,12 @@ class ReasoningLayer:
         Args:
             grounding: GroundingLayer instance for context.
             cache_path: Path to JSONL cache file.
-            model: OpenAI model name (default gpt-4o).
-            api_key: OpenAI API key. Falls back to OPENAI_API_KEY env var.
+            model: LiteLLM model string (default gpt-4o).
+            api_key: Unused, kept for backward compatibility.
         """
         self.grounding = grounding
         self.cache_path = cache_path
         self.model = model
-        self._api_key = api_key
-        self.client = None  # Lazy init
         self._cache: Dict[str, ProposedMapping] = {}
         self._load_cache()
 
@@ -402,19 +432,6 @@ class ReasoningLayer:
         """Deterministic cache key from field + raw_value."""
         return f"{field}::{raw_value}"
 
-    def _get_client(self):
-        """Lazy-initialize OpenAI client."""
-        if self.client is None:
-            from openai import OpenAI
-
-            api_key = self._api_key or os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                raise RuntimeError(
-                    "No OpenAI API key. Set OPENAI_API_KEY or pass api_key."
-                )
-            self.client = OpenAI(api_key=api_key)
-        return self.client
-
     def _build_vocabulary_context(self, field: str, max_entries: int = 50) -> str:
         """Build vocabulary context string from existing alias map."""
         alias_map = self.grounding.query_alias_map(field)
@@ -463,25 +480,22 @@ class ReasoningLayer:
 
         # 2. Build prompt
         system_prompt = self._build_system_prompt(field, raw_value, evidence)
+        user_prompt = f'Normalize this {field} value: "{raw_value}"'
 
-        # 3. Call OpenAI API
-        client = self._get_client()
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": f'Normalize this {field} value: "{raw_value}"',
-                },
-            ],
-            temperature=0.1,
-            response_format={"type": "json_object"},
+        # 3. Call LLM via litellm structured_completion
+        result = _run_async(
+            structured_completion(
+                model=self.model,
+                system=system_prompt,
+                user=user_prompt,
+                response_schema=_ProposedMappingLLM,
+                call_type="agent_propose_mapping",
+                extra_metadata={"field": field, "raw_value": raw_value},
+            )
         )
 
-        # 4. Parse response
-        content = response.choices[0].message.content
-        parsed = json.loads(content)
+        # 4. Convert to ProposedMapping
+        parsed = result.parsed
 
         evidence_sources = []
         if evidence:
@@ -489,9 +503,9 @@ class ReasoningLayer:
 
         mapping = ProposedMapping(
             raw_value=raw_value,
-            canonical_value=parsed.get("canonical_value", ""),
-            confidence=float(parsed.get("confidence", 0.0)),
-            reasoning=parsed.get("reasoning", ""),
+            canonical_value=parsed.canonical_value,
+            confidence=parsed.confidence,
+            reasoning=parsed.reasoning,
             evidence_sources=evidence_sources,
             field=field,
         )
@@ -515,18 +529,21 @@ class ReasoningLayer:
         Returns:
             Explanation string.
         """
-        client = self._get_client()
         prompt = _EXPLAIN_CLUSTER_PROMPT.format(
             field=field,
             cluster_type=cluster_type,
             values=json.dumps(values[:20], ensure_ascii=False),
         )
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3,
+        return _run_async(
+            plain_completion(
+                model=self.model,
+                system="You are a bibliographic metadata specialist.",
+                user=prompt,
+                call_type="agent_explain_cluster",
+                temperature=0.3,
+                extra_metadata={"field": field, "cluster_type": cluster_type},
+            )
         )
-        return response.choices[0].message.content.strip()
 
     def suggest_investigation(
         self, cluster_type: str, values: List[str], field: str
@@ -541,18 +558,21 @@ class ReasoningLayer:
         Returns:
             Suggestions string.
         """
-        client = self._get_client()
         prompt = _SUGGEST_INVESTIGATION_PROMPT.format(
             field=field,
             cluster_type=cluster_type,
             values=json.dumps(values[:20], ensure_ascii=False),
         )
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3,
+        return _run_async(
+            plain_completion(
+                model=self.model,
+                system="You are a bibliographic metadata specialist.",
+                user=prompt,
+                call_type="agent_suggest_investigation",
+                temperature=0.3,
+                extra_metadata={"field": field, "cluster_type": cluster_type},
+            )
         )
-        return response.choices[0].message.content.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -582,8 +602,8 @@ class AgentHarness:
             alias_map_dir: Path to normalization alias directory.
             cache_path: Path to JSONL LLM cache (default:
                         data/metadata/agent_llm_cache.jsonl).
-            api_key: OpenAI API key (falls back to env var).
-            model: OpenAI model name.
+            api_key: Unused, kept for backward compatibility.
+            model: LiteLLM model string.
         """
         self.grounding = GroundingLayer(db_path, alias_map_dir)
         cache = cache_path or Path("data/metadata/agent_llm_cache.jsonl")

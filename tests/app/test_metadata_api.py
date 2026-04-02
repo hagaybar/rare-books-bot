@@ -34,6 +34,7 @@ from scripts.metadata.audit import (
     MethodBreakdown,
 )
 from scripts.metadata.clustering import Cluster, ClusterValue
+from tests.app.conftest import make_test_token
 
 
 # ---------------------------------------------------------------------------
@@ -174,8 +175,8 @@ def _make_cluster(
 
 @pytest.fixture
 def client():
-    """Provide a test client."""
-    return TestClient(app)
+    """Provide a test client with auth token."""
+    return TestClient(app, cookies={"access_token": make_test_token()})
 
 
 @pytest.fixture

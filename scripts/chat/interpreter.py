@@ -15,11 +15,8 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 from typing import Optional
-
-from openai import OpenAI
 
 from scripts.chat.plan_models import (
     # Typed plan models
@@ -40,8 +37,9 @@ from scripts.chat.plan_models import (
     InterpretationPlanLLM,
     ExecutionStepLLM,
 )
+from scripts.models.config import load_config, get_model
+from scripts.models.llm_client import structured_completion
 from scripts.schemas.query_plan import Filter, FilterField, FilterOp
-from scripts.utils.llm_logger import log_llm_call
 
 logger = logging.getLogger(__name__)
 
@@ -379,7 +377,7 @@ async def _call_llm(
     model: str,
     api_key: Optional[str],
 ) -> InterpretationPlan:
-    """Call OpenAI Responses API and convert to typed InterpretationPlan.
+    """Call LLM via litellm and convert to typed InterpretationPlan.
 
     Uses ``InterpretationPlanLLM`` as the structured output schema,
     then converts via ``_convert_llm_plan()``.
@@ -387,41 +385,27 @@ async def _call_llm(
     Args:
         query: User query text.
         session_context: Optional session context.
-        model: OpenAI model name.
-        api_key: OpenAI API key (falls back to env var).
+        model: LiteLLM model string (e.g., "gpt-4.1", "anthropic/claude-sonnet-4-6").
+        api_key: Optional API key (unused — litellm reads keys from env).
 
     Returns:
         Typed InterpretationPlan.
 
     Raises:
-        RuntimeError: If the API key is missing or the LLM call fails.
+        RuntimeError: If the LLM call fails.
     """
-    key = api_key or os.getenv("OPENAI_API_KEY")
-    if not key:
-        raise RuntimeError("OPENAI_API_KEY is required for the interpreter")
-
-    client = OpenAI(api_key=key)
     user_prompt = _build_user_prompt(query, session_context)
 
-    resp = client.responses.parse(
+    result = await structured_completion(
         model=model,
-        input=[
-            {"role": "system", "content": INTERPRETER_SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        text_format=InterpretationPlanLLM,
-    )
-
-    log_llm_call(
+        system=INTERPRETER_SYSTEM_PROMPT,
+        user=user_prompt,
+        response_schema=InterpretationPlanLLM,
         call_type="scholar_interpreter",
-        model=model,
-        system_prompt=INTERPRETER_SYSTEM_PROMPT,
-        user_prompt=user_prompt,
-        response=resp,
         extra_metadata={"query_text": query},
     )
 
-    llm_plan: InterpretationPlanLLM = resp.output_parsed
+    llm_plan: InterpretationPlanLLM = result.parsed
     return _convert_llm_plan(llm_plan)
 
 
@@ -859,7 +843,7 @@ def _validate_step_refs(plan: InterpretationPlan) -> None:
 async def interpret(
     query: str,
     session_context: Optional[SessionContext] = None,
-    model: str = "gpt-4.1",
+    model: Optional[str] = None,
     api_key: Optional[str] = None,
 ) -> InterpretationPlan:
     """Interpret a user query into an execution plan.
@@ -871,8 +855,8 @@ async def interpret(
     Args:
         query: User's natural language query.
         session_context: Optional context from prior conversation turns.
-        model: OpenAI model to use (default: gpt-4o).
-        api_key: OpenAI API key (falls back to OPENAI_API_KEY env var).
+        model: LiteLLM model string. If None, reads from model config.
+        api_key: Optional API key (unused — litellm reads keys from env).
 
     Returns:
         Validated InterpretationPlan.
@@ -881,6 +865,9 @@ async def interpret(
         ValueError: If the plan contains invalid step references.
         RuntimeError: If the LLM call fails.
     """
+    if model is None:
+        config = load_config()
+        model = get_model(config, "interpreter")
     plan = await _call_llm(query, session_context, model, api_key)
     _validate_step_refs(plan)
     return plan

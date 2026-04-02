@@ -6,7 +6,6 @@ go through this module, making model switching a config change.
 
 from __future__ import annotations
 
-import json
 import logging
 import time
 from dataclasses import dataclass
@@ -115,6 +114,55 @@ async def structured_completion(
         latency_ms=latency_ms,
         response=resp,
     )
+
+
+async def plain_completion(
+    model: str,
+    system: str,
+    user: str,
+    call_type: str = "unknown",
+    temperature: float = 0.3,
+    extra_metadata: Optional[dict] = None,
+) -> str:
+    """Run a plain-text (non-structured) completion via litellm.
+
+    Returns the full response text. Use this for open-ended LLM calls that
+    don't require a Pydantic schema (e.g., explanations, suggestions).
+
+    Args:
+        model: LiteLLM model string (e.g., "gpt-4.1", "anthropic/claude-sonnet-4-6")
+        system: System prompt
+        user: User prompt
+        call_type: Label for logging
+        temperature: Sampling temperature (default 0.3)
+        extra_metadata: Additional metadata for the log entry
+
+    Returns:
+        The full response text as a string.
+    """
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]
+
+    resp = await litellm.acompletion(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+    )
+
+    content = resp.choices[0].message.content
+
+    log_llm_call(
+        call_type=call_type,
+        model=model,
+        system_prompt=system,
+        user_prompt=user,
+        response=resp,
+        extra_metadata=extra_metadata,
+    )
+
+    return content.strip() if content else ""
 
 
 async def streaming_completion(
