@@ -1,0 +1,8 @@
+{
+  "specPath": "docs/superpowers/specs/2026-04-02-data-quality-scorecard-design.md",
+  "dbPath": "data/index/bibliographic.db",
+  "archiveDir": "data/archive/data-quality-2026-04-02",
+  "qaDir": "data/qa",
+  "fixScriptsDir": "scripts/qa/fixes",
+  "checksScript": "scripts/qa/data_quality_checks.py"
+}

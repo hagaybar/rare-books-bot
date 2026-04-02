@@ -90,6 +90,7 @@ Detailed documentation lives in `docs/current/`. Consult these files for impleme
 | Ingestion | docs/current/ingestion-pipeline.md | MARC XML -> bibliographic.db pipeline |
 | Architecture | docs/current/architecture.md | Project structure, key classes, model index |
 | Data Model | docs/current/data-model.md | End-to-end data flow, schemas, strengths/weaknesses |
+| Data Quality | docs/current/data-quality.md | Quality checks, fix scripts, sampling protocol, remediation |
 
 ## Documentation Maintenance Protocol
 
