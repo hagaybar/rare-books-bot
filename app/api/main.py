@@ -50,8 +50,11 @@ from scripts.chat.interpreter import interpret
 from scripts.chat.executor import execute_plan as execute_scholar_plan
 from scripts.chat.narrator import narrate, narrate_streaming, describe_filters
 from scripts.chat.plan_models import (
+    ExecutionResult,
+    RecordSet,
     SessionContext,
 )
+from scripts.schemas.candidate_set import CandidateSet, Candidate, Evidence
 
 from scripts.utils.logger import LoggerManager
 from scripts.utils.llm_logger import token_accumulator
@@ -68,6 +71,68 @@ limiter = Limiter(key_func=get_remote_address)
 session_store: Optional[SessionStore] = None
 db_path: Optional[Path] = None
 enrichment_service: Optional[EnrichmentService] = None
+
+
+def _build_candidate_set(
+    execution_result: ExecutionResult,
+    query_text: str,
+) -> CandidateSet:
+    """Build a CandidateSet from the scholar pipeline's ExecutionResult.
+
+    Maps GroundingData.records → Candidate objects so the Answer Contract
+    (CandidateSet + Evidence) is satisfied even through the new pipeline.
+    """
+    from hashlib import sha256
+    from datetime import datetime, timezone
+
+    # Collect filters from retrieve steps for evidence
+    filters_by_step: dict[int, list[dict]] = {}
+    for sr in execution_result.steps_completed:
+        if sr.action == "retrieve" and isinstance(sr.data, RecordSet):
+            filters_by_step[sr.step_index] = sr.data.filters_applied
+
+    candidates = []
+    for rec in execution_result.grounding.records:
+        evidence_items = []
+        for step_idx in rec.source_steps:
+            for f in filters_by_step.get(step_idx, []):
+                field = f.get("field", "")
+                evidence_items.append(Evidence(
+                    field=field,
+                    value=getattr(rec, field, None) if hasattr(rec, field) else None,
+                    operator=f.get("op", "MATCH"),
+                    matched_against=f.get("value") or f.get("start"),
+                    source=f"db.imprints.{field}" if field else "scholar_pipeline",
+                    confidence=f.get("confidence"),
+                ))
+
+        candidates.append(Candidate(
+            record_id=rec.mms_id,
+            match_rationale=f"Matched via scholar pipeline retrieve step(s) {rec.source_steps}",
+            evidence=evidence_items,
+            title=rec.title,
+            author=rec.agents[0] if rec.agents else None,
+            date_start=None,
+            place_norm=rec.place,
+            publisher=rec.publisher,
+            subjects=rec.subjects[:3],
+        ))
+
+    plan_json = json.dumps(
+        [sr.data.filters_applied for sr in execution_result.steps_completed
+         if sr.action == "retrieve" and isinstance(sr.data, RecordSet)],
+        sort_keys=True,
+    )
+
+    return CandidateSet(
+        query_text=query_text,
+        plan_hash=sha256(plan_json.encode()).hexdigest(),
+        sql="(scholar pipeline — multi-step execution)",
+        sql_parameters={},
+        generated_at=datetime.now(timezone.utc).isoformat(),
+        candidates=candidates,
+        total_count=len(candidates),
+    )
 
 
 @asynccontextmanager
@@ -682,7 +747,7 @@ async def _run_scholar_pipeline(
     # ---- Map ScholarResponse -> ChatResponse for API compatibility ----
     response = ChatResponse(
         message=scholar_response.narrative,
-        candidate_set=None,  # Grounding replaces candidate_set in the new pipeline
+        candidate_set=_build_candidate_set(execution_result, chat_request.message),
         suggested_followups=scholar_response.suggested_followups,
         clarification_needed=None,
         session_id=session.session_id,
@@ -974,7 +1039,7 @@ async def websocket_chat(websocket: WebSocket):
         # ---- Map to ChatResponse ----
         response = ChatResponse(
             message=narrative,
-            candidate_set=None,
+            candidate_set=_build_candidate_set(execution_result, message),
             suggested_followups=scholar_response.suggested_followups,
             clarification_needed=None,
             session_id=session_id,
