@@ -328,6 +328,8 @@ class RecordSummary(BaseModel):
     language: str | None = None
     agents: list[str] = Field(default_factory=list)
     subjects: list[str] = Field(default_factory=list)
+    physical_description: str | None = None
+    notes: list[str] = Field(default_factory=list)
     primo_url: str = ""
     source_steps: list[int] = Field(default_factory=list)
 

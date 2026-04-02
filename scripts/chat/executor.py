@@ -1296,6 +1296,35 @@ def _collect_grounding(
             if row["value"]:
                 subjects_map.setdefault(row["mms_id"], []).append(row["value"])
 
+        # Physical descriptions: first per mms_id
+        phys_map: Dict[str, str] = {}
+        phys_rows = conn.execute(
+            f"""SELECT r.mms_id, p.value FROM physical_descriptions p
+                JOIN records r ON p.record_id = r.id
+                WHERE r.mms_id IN ({placeholders})""",
+            all_mms,
+        ).fetchall()
+        for row in phys_rows:
+            if row["mms_id"] not in phys_map and row["value"]:
+                phys_map[row["mms_id"]] = row["value"]
+
+        # Notes: collect scholarly notes (500 general, 520 summary) per mms_id
+        # Skip 590 (shelf marks) and 505 (contents) to limit token usage
+        notes_map: Dict[str, List[str]] = {}
+        note_rows = conn.execute(
+            f"""SELECT r.mms_id, n.value, n.tag FROM notes n
+                JOIN records r ON n.record_id = r.id
+                WHERE r.mms_id IN ({placeholders})
+                AND n.tag IN ('500', '520')
+                ORDER BY r.mms_id, CASE n.tag WHEN '520' THEN 0 ELSE 1 END""",
+            all_mms,
+        ).fetchall()
+        for row in note_rows:
+            if row["value"]:
+                lst = notes_map.setdefault(row["mms_id"], [])
+                if len(lst) < 3:  # cap at 3 notes per record
+                    lst.append(row["value"][:200])  # truncate long notes
+
         # Assemble RecordSummary objects from batch results
         for mms_id in all_mms:
             title = titles_map.get(mms_id, "")
@@ -1327,6 +1356,8 @@ def _collect_grounding(
                 language=language,
                 agents=agents,
                 subjects=subjects,
+                physical_description=phys_map.get(mms_id),
+                notes=notes_map.get(mms_id, []),
                 primo_url=primo_url,
                 source_steps=mms_to_steps.get(mms_id, []),
             ))
