@@ -187,6 +187,7 @@ def create_database(db_path: Path, schema_path: Path) -> sqlite3.Connection:
 
     # Create database and execute schema
     conn = sqlite3.connect(str(db_path))
+    conn.execute("PRAGMA foreign_keys = ON")
 
     with open(schema_path, 'r', encoding='utf-8') as f:
         schema_sql = f.read()

@@ -47,6 +47,7 @@ def connect_db(db_path: Path) -> sqlite3.Connection:
         Database connection with row_factory set
     """
     conn = sqlite3.connect(str(db_path))
+    conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     return conn
 

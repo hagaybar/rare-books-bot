@@ -84,8 +84,8 @@ def fetch_display_info(
             if title:
                 # Truncate long titles for display
                 result[mms_id]["title"] = title[:100] + "..." if len(title) > 100 else title
-    except Exception:
-        pass  # Continue even if title fetch fails
+    except Exception as e:
+        logger.warning("fetch_display_info: title query failed: %s", e)
 
     # Fetch primary author (first agent with author/creator role)
     # Prefer 100 field (main author) or role_norm = 'author'
@@ -106,8 +106,8 @@ def fetch_display_info(
             if author:
                 # Truncate long author names for display
                 result[mms_id]["author"] = author[:80] + "..." if len(author) > 80 else author
-    except Exception:
-        pass  # Continue even if author fetch fails
+    except Exception as e:
+        logger.warning("fetch_display_info: author query failed: %s", e)
 
     # Fetch imprint info (date, place, publisher)
     imprint_sql = f"""
@@ -131,8 +131,8 @@ def fetch_display_info(
                     # Truncate long publisher names
                     pub = row[5]
                     result[mms_id]["publisher"] = (pub[:60] + "...") if len(pub) > 60 else pub
-    except Exception:
-        pass  # Continue even if imprint fetch fails
+    except Exception as e:
+        logger.warning("fetch_display_info: imprint query failed: %s", e)
 
     # Fetch first 3 subjects per record
     # Use a window function to limit subjects per record
@@ -161,8 +161,8 @@ def fetch_display_info(
         for mms_id, subjects in subjects_by_mms.items():
             if mms_id in result:
                 result[mms_id]["subjects"] = subjects
-    except Exception:
-        pass  # Continue even if subjects fetch fails
+    except Exception as e:
+        logger.warning("fetch_display_info: subjects query failed: %s", e)
 
     # Fetch description from notes (prefer 520 summary, fallback to 500)
     # MARC 520 = Summary note, MARC 500 = General note
@@ -187,8 +187,8 @@ def fetch_display_info(
                 desc = note_value[:200] + "..." if len(note_value) > 200 else note_value
                 result[mms_id]["description"] = desc
                 described_records.add(mms_id)
-    except Exception:
-        pass  # Continue even if notes fetch fails
+    except Exception as e:
+        logger.warning("fetch_display_info: notes query failed: %s", e)
 
     return result
 

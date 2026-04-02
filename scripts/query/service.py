@@ -315,6 +315,7 @@ class QueryService:
         limit = options.facet_limit
 
         conn = sqlite3.connect(str(self.db_path))
+        conn.execute("PRAGMA foreign_keys = ON")
         conn.row_factory = sqlite3.Row
 
         try:

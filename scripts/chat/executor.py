@@ -403,6 +403,7 @@ def _fix_wikipedia_url(url: str, wikidata_id: Optional[str] = None) -> str:
 def _get_conn(db_path: Path) -> sqlite3.Connection:
     """Open a SQLite connection with row_factory."""
     conn = sqlite3.connect(str(db_path))
+    conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     return conn
 

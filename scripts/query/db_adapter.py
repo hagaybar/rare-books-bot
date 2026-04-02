@@ -80,6 +80,7 @@ def get_connection(db_path: Path) -> sqlite3.Connection:
     global _schema_validated
 
     conn = sqlite3.connect(str(db_path))
+    conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
 
     if not _schema_validated:
