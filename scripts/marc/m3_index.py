@@ -261,6 +261,11 @@ def index_record(conn: sqlite3.Connection, record: dict, source_file: str, line_
     # Insert imprints (M1 + M2)
     m2_data = record.get('m2', {})
     imprints_norm = m2_data.get('imprints_norm', [])
+    m1_imprint_count = len(record.get('imprints', []))
+    if imprints_norm and len(imprints_norm) != m1_imprint_count:
+        print(f"  ⚠ M1/M2 imprint count mismatch for {mms_id}: "
+              f"M1={m1_imprint_count}, M2={len(imprints_norm)}. "
+              f"Normalization may be misaligned.")
 
     for i, imprint in enumerate(record.get('imprints', [])):
         # M1 raw values

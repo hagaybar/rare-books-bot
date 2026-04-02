@@ -1,6 +1,6 @@
 # Data Model
 
-> Last verified: 2026-04-02
+> Last verified: 2026-04-02 (weaknesses review completed)
 > Source of truth for: End-to-end data flow from MARC XML ingestion through chat user interface, including all intermediate schemas, transformations, and database structures
 
 ## 1. Overview
@@ -1110,45 +1110,26 @@ At every stage the raw value `"apud C. Plantinum,"` is preserved alongside the n
 
 ## 14. Weaknesses
 
-### HIGH severity
+### Resolved
 
-1. **Foreign keys not enforced in m3_index.py or db_adapter.py.** Neither `scripts/marc/m3_index.py` nor `scripts/query/db_adapter.py` execute `PRAGMA foreign_keys = ON`. While the schema declares FK constraints with CASCADE DELETE, SQLite does not enforce them unless the pragma is explicitly set on each connection. Orphaned rows can accumulate silently.
+1. ~~**Foreign keys not enforced in m3_index.py or db_adapter.py.**~~ **FIXED** — `PRAGMA foreign_keys = ON` added to m3_index.py, db_adapter.py, service.py, m3_query.py, executor.py.
 
-2. **Silent exception swallowing in `fetch_display_info`.** `scripts/query/execute.py:fetch_display_info()` has 5 bare `except Exception: pass` blocks (lines 87, 109, 134, 164, 190). SQL errors, schema mismatches, and type errors are silently discarded, making bugs invisible. Candidates may display with missing metadata and no indication of failure.
+2. ~~**Silent exception swallowing in `fetch_display_info`.**~~ **FIXED** — 5 bare `except Exception: pass` blocks replaced with `logger.warning()` calls.
 
-### MEDIUM severity
+3. ~~**CandidateSet always None in scholar pipeline.**~~ **FIXED** — `_build_candidate_set()` in app/api/main.py builds CandidateSet from ExecutionResult for both HTTP and WebSocket paths.
 
-3. **CandidateSet always None in scholar pipeline.** In `app/api/main.py`, the `ChatResponse.candidate_set` is hardcoded to `None` (lines 685, 977) because the scholar pipeline uses `GroundingData` instead. This disconnects the Answer Contract requirement that every response include a CandidateSet. Frontend code must dig into `metadata.grounding` to find results.
+4. ~~**RecordSummary omits physical description and notes.**~~ **FIXED** — Added `physical_description` and `notes` fields to RecordSummary. Executor batch-fetches MARC 300 (physical), 500 (general notes), and 520 (summary) — capped at 3 notes per record, 200 chars each.
 
-4. **RecordSummary omits physical description and notes.** `RecordSummary` in `plan_models.py` lacks fields for physical_description and notes, even though these are stored in M3. The narrator cannot reference physical format or provenance notes.
+5. ~~**Grounding truncation at 30 records loses total count.**~~ **FIXED** — Added `total_record_count: int` to ExecutionResult, set before truncation.
 
-5. **Network tables not in m3_schema.sql (inline DROP+CREATE).** `network_edges` and `network_agents` are created by `scripts/network/build_network_tables.py` using inline `DROP TABLE IF EXISTS` + `CREATE TABLE`, bypassing the centralized schema file. Schema drift is possible.
+6. ~~**M2 normalization alignment depends on array index matching.**~~ **FIXED** — Warning logged when M1 imprint count differs from M2 imprints_norm count during indexing.
 
-6. **Grounding truncation at 30 records loses total count.** `_MAX_GROUNDING_RECORDS = 30` in `scripts/chat/executor.py` truncates grounding records. While `ExecutionResult.truncated` is set to `True`, the total record count across all steps is not propagated to the narrator, which may understate results.
+7. ~~**Streaming mode hardcodes confidence=0.85 and empty followups.**~~ **FIXED** — Post-streaming call via gpt-4.1-nano extracts real followups and confidence. Falls back to defaults on failure.
 
-7. **M2 normalization alignment depends on array index matching.** `M2Enrichment.imprints_norm` is documented as "parallel to M1 imprints array" but alignment is by positional index only. An off-by-one error or missing imprint would silently misalign all subsequent normalizations.
+### Open (accepted risk)
 
-### LOW severity
+8. **Network tables not in m3_schema.sql (inline DROP+CREATE).** Cosmetic — network tables are computed/derived data. Accepted.
 
-8. **No composite indexes for common multi-filter queries.** The schema has individual indexes on `place_norm`, `publisher_norm`, and `(date_start, date_end)` but no composite index for common combined queries (e.g., place+date or publisher+date).
+9. **No composite indexes for common multi-filter queries.** Not needed at current scale (~2,800 records). Revisit if collection grows 10x+.
 
-9. **Streaming mode hardcodes confidence=0.85 and empty followups.** `narrate_streaming()` in `scripts/chat/narrator.py` (line 188) returns `confidence=0.85` and `suggested_followups=[]` as fixed values because the streaming API cannot use structured output. Non-streaming mode uses LLM-assessed values.
-
-10. **No imprint-level agent association.** The `agents` and `imprints` tables are both linked to `records` but not to each other. For records with multiple imprints from different printers, it is impossible to determine which agent is associated with which imprint.
-
----
-
-## 15. Recommendations
-
-| # | Addresses | Recommendation |
-|---|-----------|----------------|
-| 1 | Weakness 1 | Add `conn.execute("PRAGMA foreign_keys = ON")` to `m3_index.py` after DB creation and to `db_adapter.py` connection factory. Add a one-time migration to detect and clean orphaned rows. |
-| 2 | Weakness 2 | Replace bare `except Exception: pass` blocks in `fetch_display_info` with specific exception handling that logs warnings. Consider returning partial results with explicit `None` sentinels for failed fields. |
-| 3 | Weakness 3 | Build a `CandidateSet` from `GroundingData.records` in the API layer before returning `ChatResponse`, or formally deprecate `candidate_set` in favor of `metadata.grounding` and update the Answer Contract. |
-| 4 | Weakness 4 | Add optional `physical_description: str | None` and `notes: list[str]` fields to `RecordSummary`. Populate them in `_collect_grounding()` alongside existing fields. |
-| 5 | Weakness 5 | Move network table DDL into `m3_schema.sql` (or a companion `network_schema.sql`) and have `build_network_tables.py` read from the schema file. |
-| 6 | Weakness 6 | Propagate total record counts from `RecordSet.total_count` into `GroundingData` so the narrator can report "showing 30 of 150 records". |
-| 7 | Weakness 7 | Add an `imprint_index` field to `ImprintNormalization` and validate alignment explicitly during M2 normalization, failing loudly on mismatch. |
-| 8 | Weakness 8 | Create composite indexes for the two most common multi-filter patterns: `(place_norm, date_start, date_end)` and `(publisher_norm, date_start, date_end)`. |
-| 9 | Weakness 9 | After streaming completes, make a lightweight structured-output call to extract followups and confidence, or parse them from the streamed narrative. |
-| 10 | Weakness 10 | Consider adding an optional `imprint_id` foreign key to the `agents` table for rare books with multi-imprint provenance. |
+10. **No imprint-level agent association.** MARC agent fields (100/700) are record-level, not imprint-level. Would require inference logic. Deferred — most records have a single imprint.

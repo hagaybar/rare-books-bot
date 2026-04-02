@@ -100,6 +100,22 @@ class NarratorResponseLLM(BaseModel):
     )
 
 
+class StreamingMetaLLM(BaseModel):
+    """Lightweight model for post-streaming followup/confidence extraction."""
+    model_config = ConfigDict(extra="forbid")
+
+    suggested_followups: list[str] = Field(
+        default_factory=list,
+        description="2-4 suggested follow-up questions based on the response",
+    )
+    confidence: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Confidence in response quality (0.0-1.0)",
+    )
+
+
 # =============================================================================
 # Public API
 # =============================================================================
@@ -181,11 +197,13 @@ async def narrate_streaming(
             query, execution_result, chunk_callback, model, api_key,
             token_saving=token_saving,
         )
+        # Post-streaming: extract followups and confidence via lightweight call
+        followups, confidence = _extract_streaming_meta(query, narrative, api_key)
         response = ScholarResponse(
             narrative=narrative,
-            suggested_followups=[],
+            suggested_followups=followups,
             grounding=execution_result.grounding,
-            confidence=0.85,
+            confidence=confidence,
             metadata={"model": model, "streamed": True},
         )
         return response
@@ -195,6 +213,45 @@ async def narrate_streaming(
         # Send the fallback narrative as a single chunk
         await chunk_callback(fallback.narrative)
         return fallback
+
+
+def _extract_streaming_meta(
+    query: str,
+    narrative: str,
+    api_key: Optional[str] = None,
+) -> tuple[list[str], float]:
+    """Extract followups and confidence after streaming completes.
+
+    Makes a lightweight structured-output call with gpt-4.1-nano to get
+    real followup suggestions and confidence instead of hardcoded defaults.
+    Falls back to defaults on any failure.
+    """
+    try:
+        resolved_key = api_key or os.getenv("OPENAI_API_KEY")
+        if not resolved_key:
+            return [], 0.85
+
+        client = OpenAI(api_key=resolved_key)
+        resp = client.responses.parse(
+            model="gpt-4.1-nano",
+            input=[
+                {"role": "system", "content": (
+                    "Given a user query and the scholarly response that was generated, "
+                    "suggest 2-4 follow-up questions the user might ask next, and "
+                    "rate the response quality from 0.0 to 1.0."
+                )},
+                {"role": "user", "content": (
+                    f"Query: {query}\n\n"
+                    f"Response (first 500 chars): {narrative[:500]}"
+                )},
+            ],
+            text_format=StreamingMetaLLM,
+        )
+        meta: StreamingMetaLLM = resp.output_parsed
+        return meta.suggested_followups, meta.confidence
+    except Exception:
+        logger.debug("Post-streaming meta extraction failed; using defaults")
+        return [], 0.85
 
 
 # =============================================================================
