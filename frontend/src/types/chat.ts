@@ -150,3 +150,45 @@ export interface ChatMessage {
   streamingState?: StreamingState;
   thinkingSteps?: string[];
 }
+
+// ---------------------------------------------------------------------------
+// Compare Mode Types
+// ---------------------------------------------------------------------------
+
+export interface ModelPair {
+  interpreter: string;
+  narrator: string;
+}
+
+export interface CompareRequest {
+  message: string;
+  configs: ModelPair[];
+  session_id?: string;
+  token_saving: boolean;
+}
+
+export interface ComparisonMetrics {
+  latency_ms: number;
+  cost_usd: number;
+  tokens: { input: number; output: number };
+}
+
+export interface ComparisonResult {
+  config: ModelPair;
+  response: ChatResponse | null;
+  metrics: ComparisonMetrics;
+  error: string | null;
+}
+
+export interface CompareResponse {
+  comparisons: ComparisonResult[];
+}
+
+/** Available models for selection in compare mode. */
+export const AVAILABLE_MODELS = [
+  'gpt-4.1',
+  'gpt-4.1-mini',
+  'gpt-4.1-nano',
+  'gpt-5-mini',
+  'gpt-5.4',
+] as const;

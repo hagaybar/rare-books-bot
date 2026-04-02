@@ -79,3 +79,42 @@ class HealthExtendedResponse(BaseModel):
     db_last_modified: Optional[str] = Field(None, description="ISO-8601 timestamp of last DB modification")
     qa_db_exists: bool = Field(..., description="Whether QA database exists")
     qa_db_size_bytes: int = Field(0, description="QA database file size in bytes")
+
+
+class ModelPair(BaseModel):
+    """A specific interpreter + narrator model configuration."""
+    interpreter: str = Field(..., description="Model for interpreter stage")
+    narrator: str = Field(..., description="Model for narrator stage")
+
+
+class CompareRequest(BaseModel):
+    """Request to /chat/compare endpoint."""
+    message: str = Field(..., min_length=1, description="User's query")
+    configs: list[ModelPair] = Field(
+        ...,
+        min_length=1,
+        max_length=3,
+        description="Model configurations to compare (max 3)",
+    )
+    session_id: Optional[str] = Field(None, description="Optional session ID")
+    token_saving: bool = Field(True, description="Use lean prompt builder")
+
+
+class ComparisonMetrics(BaseModel):
+    """Metrics for a single comparison result."""
+    latency_ms: int
+    cost_usd: float
+    tokens: Dict[str, int]  # {"input": N, "output": N}
+
+
+class ComparisonResult(BaseModel):
+    """One model configuration's result."""
+    config: ModelPair
+    response: Optional[ChatResponse]
+    metrics: ComparisonMetrics
+    error: Optional[str] = None
+
+
+class CompareResponse(BaseModel):
+    """Response from /chat/compare endpoint."""
+    comparisons: list[ComparisonResult]

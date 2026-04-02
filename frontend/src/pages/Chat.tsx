@@ -19,8 +19,10 @@ import { sendChatMessage, fetchPrimoUrls } from '../api/chat';
 import { authenticatedFetch } from '../api/auth';
 import { useAppStore } from '../stores/appStore';
 import { useAuthStore } from '../stores/authStore';
+import { getRoleLevel } from '../components/AuthGuard';
 import MessageBubble from '../components/chat/MessageBubble';
 import FollowUpChips from '../components/chat/FollowUpChips';
+import CompareMode from '../components/CompareMode';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -76,6 +78,10 @@ export default function Chat() {
   const [primoUrls, setPrimoUrls] = useState<Record<string, string>>({});
   const [restoredSessionId, setRestoredSessionId] = useState<string | null>(null);
   const [tokenSaving, setTokenSaving] = useState(true);
+  const [compareMode, setCompareMode] = useState(false);
+
+  // Compare mode is available to admin users only
+  const canCompare = user ? getRoleLevel(user.role) >= getRoleLevel('admin') : false;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -615,26 +621,73 @@ export default function Chat() {
 
   const isEmpty = messages.length === 0;
 
-  return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* New Chat button -- shown when there is an active conversation */}
-      {!isEmpty && (
-        <div className="border-b border-gray-200 bg-white px-4 py-2 flex justify-end">
+  // ---- Compare mode: render CompareMode instead of normal chat ----
+  if (compareMode && canCompare) {
+    return (
+      <div className="flex flex-col h-screen bg-gray-50">
+        {/* Compare mode header with back toggle */}
+        <div className="border-b border-gray-200 bg-white px-4 py-2 flex items-center justify-between">
           <button
             type="button"
-            onClick={handleNewChat}
-            disabled={loading}
+            onClick={() => setCompareMode(false)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
               text-gray-600 bg-gray-100 rounded-lg
-              hover:bg-gray-200 hover:text-gray-800
-              disabled:opacity-50 disabled:cursor-not-allowed
-              transition-colors"
+              hover:bg-gray-200 hover:text-gray-800 transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
-            New Chat
+            Back to Chat
           </button>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <CompareMode />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Top bar -- shown when there is an active conversation, or when compare toggle is available */}
+      {(!isEmpty || canCompare) && (
+        <div className="border-b border-gray-200 bg-white px-4 py-2 flex items-center justify-between">
+          <div>
+            {/* Compare toggle -- admin only */}
+            {canCompare && (
+              <button
+                type="button"
+                onClick={() => setCompareMode(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                  text-blue-600 bg-blue-50 rounded-lg
+                  hover:bg-blue-100 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                </svg>
+                Compare
+              </button>
+            )}
+          </div>
+          <div>
+            {!isEmpty && (
+              <button
+                type="button"
+                onClick={handleNewChat}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                  text-gray-600 bg-gray-100 rounded-lg
+                  hover:bg-gray-200 hover:text-gray-800
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                New Chat
+              </button>
+            )}
+          </div>
         </div>
       )}
 

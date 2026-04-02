@@ -29,7 +29,15 @@ from app.api.metadata_corrections import router as corrections_router
 from app.api.metadata_enrichment import router as enrichment_router
 from app.api.metadata_publishers import router as publishers_router
 from app.api.network import router as network_router
-from app.api.models import ChatRequest, ChatResponseAPI, HealthExtendedResponse, HealthResponse
+from app.api.compare import run_comparison
+from app.api.models import (
+    ChatRequest,
+    ChatResponseAPI,
+    CompareRequest,
+    CompareResponse,
+    HealthExtendedResponse,
+    HealthResponse,
+)
 from app.api.security import (
     is_chat_enabled,
     validate_input,
@@ -767,6 +775,33 @@ async def _run_scholar_pipeline(
     )
 
     return ChatResponseAPI(success=True, response=response, error=None)
+
+
+@app.post("/chat/compare", response_model=CompareResponse)
+@limiter.limit("10/minute")
+async def chat_compare(
+    request: Request,
+    compare_request: CompareRequest,
+    _user=Depends(require_role("full")),  # Admin/full only
+):
+    """Compare multiple model configurations side-by-side.
+
+    Runs the same query through up to 3 different interpreter+narrator
+    model configurations in parallel and returns metrics (latency, cost,
+    token counts) alongside each response.
+
+    Rate limited to 10 requests per minute per IP address.
+    Requires 'full' role or higher.
+
+    Args:
+        request: FastAPI Request object (for rate limiting)
+        compare_request: CompareRequest with message and model configs
+
+    Returns:
+        CompareResponse with per-config results and metrics
+    """
+    bib_db = get_db_path()
+    return await run_comparison(compare_request, str(bib_db))
 
 
 @app.get("/sessions/{session_id}")
