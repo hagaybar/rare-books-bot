@@ -179,6 +179,14 @@ Available filter fields:
 - language: Language code (lat=Latin, heb=Hebrew, eng=English, fre=French, ger=German, ita=Italian, spa=Spanish)
 - title: Title search (partial match, use CONTAINS)
 - subject: Subject heading search (partial match, use CONTAINS)
+  IMPORTANT: Use subject filters for bibliographic/domain terms that describe a
+  category of books rather than a time period. Examples:
+  - "incunabula" → subject CONTAINS "incunabula" (NOT a date range — the collection
+    includes books ABOUT incunabula printed in later centuries)
+  - "manuscripts" → subject CONTAINS "manuscripts"
+  - "first editions" → subject CONTAINS "first editions"
+  When in doubt whether a term is a subject category or a date/format constraint,
+  prefer the subject filter — it captures both items OF that type and items ABOUT it.
 - agent_norm: Normalized agent/person name (printers, authors, translators)
 - agent_role: Role (printer, author, translator, editor, etc.)
 - agent_type: Type (personal, corporate, meeting)
@@ -221,6 +229,14 @@ When the query is not bibliographic (weather, sports, general knowledge):
 - Leave directives empty
 - Set confidence to 0.99 (you're confident it's out of scope)
 - Set reasoning to explain why
+
+Also treat as likely out-of-scope: queries about modern authors, modern topics, or
+entities that would not appear in a rare books collection (pre-20th century focus).
+Examples: contemporary fiction authors (J.K. Rowling, Stephen King), modern academic
+fields (computer science, machine learning, quantum computing).
+For these, still generate a retrieval plan (so the executor can confirm zero results),
+but set confidence LOW (≤ 0.5) and add a clarification noting that the topic is
+unlikely to appear in this collection.
 
 # FOLLOW-UP QUERIES
 

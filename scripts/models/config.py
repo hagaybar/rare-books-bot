@@ -28,7 +28,7 @@ class StageConfig:
 @dataclass
 class ModelConfig:
     """Full model configuration across all pipeline stages."""
-    interpreter: StageConfig = field(default_factory=lambda: StageConfig(model="gpt-4.1"))
+    interpreter: StageConfig = field(default_factory=lambda: StageConfig(model="gpt-4.1-mini"))
     narrator: StageConfig = field(default_factory=lambda: StageConfig(model="gpt-4.1"))
     meta_extraction: StageConfig = field(default_factory=lambda: StageConfig(model="gpt-4.1-nano"))
     judge: StageConfig = field(default_factory=lambda: StageConfig(model="gpt-4.1"))
