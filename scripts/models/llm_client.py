@@ -59,11 +59,19 @@ def pydantic_to_response_format(schema: Type[BaseModel]) -> dict:
 
 
 def _enforce_strict_objects(schema: dict) -> None:
-    """Recursively add 'additionalProperties: false' to all object types."""
+    """Recursively enforce OpenAI strict-mode requirements on all object types.
+
+    - additionalProperties: false on every object
+    - required: must list ALL properties (OpenAI strict mode rejects schemas
+      where a property key exists but isn't in required)
+    """
     if not isinstance(schema, dict):
         return
     if schema.get("type") == "object":
         schema["additionalProperties"] = False
+        props = schema.get("properties", {})
+        if props:
+            schema["required"] = sorted(props.keys())
     for key in ("properties", "items", "allOf", "anyOf", "oneOf"):
         val = schema.get(key)
         if isinstance(val, dict):
