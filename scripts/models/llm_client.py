@@ -20,6 +20,11 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
+# Per-call metrics collection for compare mode. Each structured_completion()
+# appends a dict with {input_tokens, output_tokens, cost_usd, model}.
+# Compare endpoint clears and reads this between pipeline stages.
+_call_metrics: list[dict] = []
+
 
 @dataclass
 class LLMResult:
@@ -137,6 +142,14 @@ async def structured_completion(
         response=resp,
         extra_metadata=extra_metadata,
     )
+
+    # Append to per-call metrics for compare mode
+    _call_metrics.append({
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "cost_usd": cost,
+        "model": model,
+    })
 
     return LLMResult(
         parsed=parsed,

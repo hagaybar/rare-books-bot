@@ -164,10 +164,17 @@ class LLMLogger:
         """
         timestamp = datetime.now(timezone.utc).isoformat()
 
-        # Extract usage from response
+        # Extract usage from response (supports both OpenAI Responses API
+        # field names and Chat Completions / litellm field names)
         usage = getattr(response, 'usage', None)
-        input_tokens = getattr(usage, 'input_tokens', 0) if usage else 0
-        output_tokens = getattr(usage, 'output_tokens', 0) if usage else 0
+        input_tokens = (
+            getattr(usage, 'input_tokens', 0)
+            or getattr(usage, 'prompt_tokens', 0)
+        ) if usage else 0
+        output_tokens = (
+            getattr(usage, 'output_tokens', 0)
+            or getattr(usage, 'completion_tokens', 0)
+        ) if usage else 0
         total_tokens = input_tokens + output_tokens
 
         # Calculate cost
