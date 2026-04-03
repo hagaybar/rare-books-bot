@@ -38,16 +38,42 @@ def pydantic_to_response_format(schema: Type[BaseModel]) -> dict:
     """Convert a Pydantic model to a JSON schema dict for litellm response_format.
 
     This explicit conversion is more reliable across providers than passing
-    the Pydantic class directly.
+    the Pydantic class directly. Recursively adds 'additionalProperties: false'
+    to all object types, which OpenAI's strict mode requires.
     """
+    json_schema = schema.model_json_schema()
+    _enforce_strict_objects(json_schema)
+    # Resolve $defs references inline — strict mode needs additionalProperties
+    # on every object, including those in $defs
+    if "$defs" in json_schema:
+        for def_schema in json_schema["$defs"].values():
+            _enforce_strict_objects(def_schema)
     return {
         "type": "json_schema",
         "json_schema": {
-            "schema": schema.model_json_schema(),
+            "schema": json_schema,
             "name": schema.__name__,
             "strict": True,
         },
     }
+
+
+def _enforce_strict_objects(schema: dict) -> None:
+    """Recursively add 'additionalProperties: false' to all object types."""
+    if not isinstance(schema, dict):
+        return
+    if schema.get("type") == "object":
+        schema["additionalProperties"] = False
+    for key in ("properties", "items", "allOf", "anyOf", "oneOf"):
+        val = schema.get(key)
+        if isinstance(val, dict):
+            for sub in val.values():
+                if isinstance(sub, dict):
+                    _enforce_strict_objects(sub)
+        elif isinstance(val, list):
+            for item in val:
+                if isinstance(item, dict):
+                    _enforce_strict_objects(item)
 
 
 async def structured_completion(
