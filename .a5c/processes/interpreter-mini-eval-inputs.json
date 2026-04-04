@@ -1,0 +1,4 @@
+{
+  "model": "gpt-4.1-mini",
+  "dbPath": "data/index/bibliographic.db"
+}

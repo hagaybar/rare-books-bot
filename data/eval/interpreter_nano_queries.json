@@ -1,0 +1,132 @@
+[
+  {
+    "id": "q_is01",
+    "query": "Show me books published by the Insel Verlag",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "category": "in_scope",
+    "expected_filters": {"publisher": "insel verlag"},
+    "expected_record_count": 16,
+    "notes": "Single publisher filter. Insel Verlag is a known German literary publisher with exactly 16 records in the collection."
+  },
+  {
+    "id": "q_is02",
+    "query": "What was printed in Basel?",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "category": "in_scope",
+    "expected_filters": {"place": "basel"},
+    "expected_record_count": 45,
+    "notes": "Single place filter. Basel is a significant early printing center with 45 records in the collection."
+  },
+  {
+    "id": "q_is03",
+    "query": "Latin books from the sixteenth century",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "category": "in_scope",
+    "expected_filters": {"language": "lat", "date_start": 1500, "date_end": 1600},
+    "expected_record_count": 74,
+    "notes": "Two-filter combination: language (lat) + date range (1500-1600). Latin is the second most common language (505 records). The interpreter must parse 'sixteenth century' into 1500-1600."
+  },
+  {
+    "id": "q_is04",
+    "query": "Books illustrated by Ludwig Schwerin",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "category": "in_scope",
+    "expected_filters": {"agent": "schwerin, ludwig", "role": "illustrator"},
+    "expected_record_count": 10,
+    "notes": "Agent + role filter. Schwerin appears as illustrator (10), artist (11), and printmaker (10). The query specifically asks for 'illustrated' so the interpreter should use the illustrator role."
+  },
+  {
+    "id": "q_is05",
+    "query": "Tell me about Josephus Flavius and his works in this collection",
+    "intent": "entity_exploration",
+    "difficulty": "moderate",
+    "category": "in_scope",
+    "expected_filters": {"agent": "josephus, flavius"},
+    "expected_record_count": 21,
+    "notes": "Entity exploration for a major historical author. Josephus Flavius has 21 records as author. The interpreter should retrieve all records and provide overview information."
+  },
+  {
+    "id": "q_is06",
+    "query": "Which cities have the most books in the collection?",
+    "intent": "analytical",
+    "difficulty": "moderate",
+    "category": "in_scope",
+    "expected_filters": {"aggregation": "place_norm"},
+    "expected_record_count": 2796,
+    "notes": "Analytical distribution query. Expects aggregation by place_norm. Top cities: Paris (356), London (230), Amsterdam (196), Venice (164), Berlin (123). Collection spans 366 distinct places."
+  },
+  {
+    "id": "q_is07",
+    "query": "Hebrew books printed in Amsterdam between 1600 and 1800",
+    "intent": "retrieval",
+    "difficulty": "complex",
+    "category": "in_scope",
+    "expected_filters": {"language": "heb", "place": "amsterdam", "date_start": 1600, "date_end": 1800},
+    "expected_record_count": 112,
+    "notes": "Complex three-filter query: language + place + date range. Amsterdam was a major center of Hebrew printing in the 17th-18th centuries. Tests interpreter ability to combine multiple structured filters."
+  },
+  {
+    "id": "q_is08",
+    "query": "I am interested in incunabula. What do you have?",
+    "intent": "curation",
+    "difficulty": "moderate",
+    "category": "in_scope",
+    "expected_filters": {"subject": "Incunabula"},
+    "expected_record_count": 34,
+    "notes": "Curation query about incunabula (books printed before 1501). Collection has 34 records with incunabula-related subjects including facsimiles, specimens, and bibliographies."
+  },
+  {
+    "id": "q_oos01",
+    "query": "Do you have any books about machine learning or computer science?",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "category": "out_of_scope",
+    "expected_filters": {"subject": "computer science"},
+    "expected_record_count": 0,
+    "notes": "Out-of-scope: modern computer science topics do not exist in a rare books collection. Zero records match 'computer' in subjects. The interpreter should recognize this is outside the collection scope and respond accordingly."
+  },
+  {
+    "id": "q_oos02",
+    "query": "What books by J.K. Rowling are in the collection?",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "category": "out_of_scope",
+    "expected_filters": {"agent": "rowling, j.k."},
+    "expected_record_count": 0,
+    "notes": "Out-of-scope: J.K. Rowling is a modern author (b. 1965) with zero records in this rare books collection. Tests whether the system gracefully handles queries for absent modern authors."
+  },
+  {
+    "id": "q_amb01",
+    "query": "Show me the really old books",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "category": "ambiguous",
+    "expected_filters": {"date_end": "?"},
+    "expected_record_count": null,
+    "notes": "Ambiguous temporal reference. 'Really old' has no precise meaning -- could mean pre-1500 (incunabula era), pre-1600, or something else. The collection spans 1400-2025. The interpreter should either ask for clarification or make its threshold explicit."
+  },
+  {
+    "id": "q_amb02",
+    "query": "What do you have by Moses?",
+    "intent": "entity_exploration",
+    "difficulty": "moderate",
+    "category": "ambiguous",
+    "expected_filters": {"agent": "moses"},
+    "expected_record_count": null,
+    "notes": "Ambiguous entity reference. 'Moses' could refer to: Moses Mendelssohn (12 records), Moses Bensabat Amzalak (9 records), Maimonides/Moses ben Maimon (7 records), or the biblical Moses as a subject. The interpreter should ask which Moses is intended or present all options."
+  },
+  {
+    "id": "q_amb03",
+    "query": "Tell me about the Venice books",
+    "intent": "overview",
+    "difficulty": "moderate",
+    "category": "ambiguous",
+    "expected_filters": {"place": "venice"},
+    "expected_record_count": null,
+    "notes": "Unclear intent. Could be: (a) retrieval of all 164 Venice imprints, (b) overview/analytical summary of Venice printing activity, (c) exploration of specific Venice printers (Bomberg, Bragadin, Aldine, Vendramin). The interpreter must decide on intent or ask for clarification."
+  }
+]

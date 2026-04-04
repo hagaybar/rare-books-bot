@@ -1,0 +1,259 @@
+[
+  {
+    "id": "q_is01",
+    "query": "Show me books published by the Insel Verlag",
+    "category": "in_scope",
+    "interpreter_score": 3,
+    "filters_produced": {
+      "action": "resolve_publisher then retrieve",
+      "field": "publisher",
+      "op": "EQUALS",
+      "value": "$step_0 (resolved from 'Insel Verlag')"
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN imprints i ON r.id = i.record_id WHERE LOWER(i.publisher_norm) LIKE '%insel verlag%'",
+    "actual_count": 16,
+    "expected_count": 16,
+    "assessment": "Perfect. The interpreter correctly identified this as a publisher retrieval, used resolve_publisher to normalize the name, and the filter would match exactly 16 records as expected.",
+    "issues": []
+  },
+  {
+    "id": "q_is02",
+    "query": "What was printed in Basel?",
+    "category": "in_scope",
+    "interpreter_score": 3,
+    "filters_produced": {
+      "action": "retrieve",
+      "field": "imprint_place",
+      "op": "EQUALS",
+      "value": "basel"
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN imprints i ON r.id = i.record_id WHERE LOWER(i.place_norm) = 'basel'",
+    "actual_count": 45,
+    "expected_count": 45,
+    "assessment": "Perfect. Single place filter correctly applied using imprint_place field with lowercase normalized value 'basel'. Matches the expected 45 records exactly.",
+    "issues": []
+  },
+  {
+    "id": "q_is03",
+    "query": "Latin books from the sixteenth century",
+    "category": "in_scope",
+    "interpreter_score": 2,
+    "filters_produced": {
+      "action": "retrieve",
+      "filters": [
+        {"field": "language", "op": "EQUALS", "value": "lat"},
+        {"field": "year", "op": "RANGE", "start": 1501, "end": 1600}
+      ]
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN languages l ON r.id = l.record_id JOIN imprints i ON r.id = i.record_id WHERE l.code = 'lat' AND i.date_start >= 1501 AND i.date_end <= 1600",
+    "actual_count": 73,
+    "expected_count": 74,
+    "assessment": "Good. Language filter is correct. The interpreter used 1501-1600 for the sixteenth century range, while the expected spec uses 1500-1600. Both approaches are defensible (historians debate whether 1500 is 15th or 16th century), but the 1-record difference (73 vs 74) is minor. The reasoning explicitly states '1501-1600' showing deliberate choice.",
+    "issues": [
+      "Date range start: 1501 vs expected 1500 -- minor boundary disagreement on 'sixteenth century' definition"
+    ]
+  },
+  {
+    "id": "q_is04",
+    "query": "Books illustrated by Ludwig Schwerin",
+    "category": "in_scope",
+    "interpreter_score": 1,
+    "filters_produced": {
+      "action": "resolve_agent then retrieve then enrich",
+      "field": "agent_norm",
+      "op": "EQUALS",
+      "value": "$step_0 (resolved from 'Ludwig Schwerin')",
+      "role_filter": "MISSING"
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN agents a ON r.id = a.record_id WHERE LOWER(a.agent_norm) LIKE '%schwerin%ludwig%'",
+    "actual_count": 17,
+    "expected_count": 10,
+    "assessment": "Partial. The interpreter correctly identified Schwerin as an agent and included resolve_agent, but critically failed to add a role filter for 'illustrator'. The query specifically asks for 'illustrated by', yet the retrieve step filters only on agent_norm without constraining role_norm='illustrator'. This returns 17 records (all Schwerin roles) instead of the expected 10 (illustrator only). Also picks up fred schwerin records.",
+    "issues": [
+      "Missing role_norm='illustrator' filter despite query explicitly asking for 'illustrated by'",
+      "Would return 17 records instead of expected 10, including artist, author, and printmaker roles",
+      "agent_norm search may also match 'schwerin, fred' if resolve_agent is not precise"
+    ]
+  },
+  {
+    "id": "q_is05",
+    "query": "Tell me about Josephus Flavius and his works in this collection",
+    "category": "in_scope",
+    "interpreter_score": 1,
+    "filters_produced": {
+      "action": "resolve_agent only",
+      "agent_name": "Josephus Flavius",
+      "variants": ["Josephus Flavius", "\u05d9\u05d5\u05b9\u05e1\u05b5\u05e4\u05d5\u05e1 \u05e4\u05b0\u05dc\u05b7\u05d5\u05d5\u05b4\u05d9\u05bc\u05d5\u05b9\u05e1", "I\u014ds\u0113pos Phl\u0101b\u00edos"],
+      "retrieve_step": "MISSING"
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT record_id) FROM agents WHERE agent_norm = 'josephus, flavius'",
+    "actual_count": 21,
+    "expected_count": 21,
+    "assessment": "Partial. The interpreter correctly identified this as an entity_exploration intent and initiated resolve_agent with good multilingual variants. However, the execution plan is incomplete: it only has 1 step (resolve_agent) with no subsequent retrieve step to actually fetch the records. A complete plan would need a retrieve step referencing $step_0. The agent resolution would find the correct 21 records if a retrieve step existed.",
+    "issues": [
+      "Missing retrieve step -- plan only resolves the agent but never retrieves associated records",
+      "Plan has num_steps=1 but entity exploration requires at minimum resolve + retrieve"
+    ]
+  },
+  {
+    "id": "q_is06",
+    "query": "Which cities have the most books in the collection?",
+    "category": "in_scope",
+    "interpreter_score": 3,
+    "filters_produced": {
+      "action": "aggregate",
+      "field": "imprint_place",
+      "scope": "full_collection",
+      "limit": 10
+    },
+    "sql_equivalent": "SELECT i.place_norm, COUNT(DISTINCT r.id) as cnt FROM records r JOIN imprints i ON r.id = i.record_id WHERE i.place_norm IS NOT NULL GROUP BY i.place_norm ORDER BY cnt DESC LIMIT 10",
+    "actual_count": 2753,
+    "expected_count": 2796,
+    "assessment": "Perfect. The interpreter correctly identified this as an analytical query requiring aggregation by imprint_place. The action type 'aggregate' is appropriate, and the top-10 limit is sensible. The field 'imprint_place' maps correctly to place_norm. The 2753 count reflects records with place data (vs 2796 total), which is the correct denominator for this aggregation.",
+    "issues": []
+  },
+  {
+    "id": "q_is07",
+    "query": "Hebrew books printed in Amsterdam between 1600 and 1800",
+    "category": "in_scope",
+    "interpreter_score": 2,
+    "filters_produced": {
+      "action": "resolve_publisher then retrieve",
+      "filters": [
+        {"field": "imprint_place", "op": "EQUALS", "value": "$step_0 (resolved Amsterdam)"},
+        {"field": "language", "op": "EQUALS", "value": "heb"},
+        {"field": "year", "op": "RANGE", "start": 1600, "end": 1799}
+      ]
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN languages l ON r.id = l.record_id JOIN imprints i ON r.id = i.record_id WHERE l.code = 'heb' AND LOWER(i.place_norm) = 'amsterdam' AND i.date_start >= 1600 AND i.date_end <= 1799",
+    "actual_count": 112,
+    "expected_count": 112,
+    "assessment": "Good. All three filters are correct and produce the expected 112 records. Two minor issues: (1) the interpreter uses resolve_publisher for a place name ('Amsterdam'), which is the wrong resolution action -- should be resolve_place or no resolution needed; (2) the date range ends at 1799 instead of 1800, but this happens to produce the same count since no Hebrew Amsterdam books have date_start=1800.",
+    "issues": [
+      "Used resolve_publisher action for a place name (Amsterdam) -- semantic mismatch, should be resolve_place or direct value",
+      "Date range end 1799 vs expected 1800 -- 'between 1600 and 1800' arguably includes 1800, though no records are affected"
+    ]
+  },
+  {
+    "id": "q_is08",
+    "query": "I am interested in incunabula. What do you have?",
+    "category": "in_scope",
+    "interpreter_score": 1,
+    "filters_produced": {
+      "action": "retrieve",
+      "filters": [
+        {"field": "year", "op": "RANGE", "start": 1401, "end": 1500}
+      ]
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN imprints i ON r.id = i.record_id WHERE i.date_start >= 1401 AND i.date_end <= 1500",
+    "actual_count": 7,
+    "expected_count": 34,
+    "assessment": "Partial. The interpreter interpreted 'incunabula' as a date range (1401-1500), which is a valid conceptual understanding (incunabula = books printed before 1501). However, the expected approach uses a subject filter for 'Incunabula', which matches 34 records -- including books ABOUT incunabula (bibliographies, facsimiles, catalogs) that were published after 1500. The date-based approach only finds 7 records actually printed in 1401-1500, missing the 27 records about incunabula published later. The collection's incunabula subject headings cover a broader concept than just pre-1501 imprints.",
+    "issues": [
+      "Used date range filter instead of subject filter -- finds only 7 records vs expected 34",
+      "Missed that 'incunabula' in this collection is primarily a subject tag covering bibliographies, facsimiles, and catalogs about incunabula, not just actual pre-1501 books",
+      "The approach is conceptually valid but produces significantly wrong results for this specific collection"
+    ]
+  },
+  {
+    "id": "q_oos01",
+    "query": "Do you have any books about machine learning or computer science?",
+    "category": "out_of_scope",
+    "interpreter_score": 2,
+    "filters_produced": {
+      "action": "retrieve",
+      "filters": [
+        {"field": "subject", "op": "CONTAINS", "value": "machine learning"},
+        {"field": "subject", "op": "CONTAINS", "value": "computer science"}
+      ],
+      "clarification": "The query is very broad. Would you like to narrow by publication date, language, specific subfield, or author?"
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN subjects s ON r.id = s.record_id WHERE LOWER(s.value) LIKE '%machine learning%' OR LOWER(s.value) LIKE '%computer science%'",
+    "actual_count": 0,
+    "expected_count": 0,
+    "assessment": "Good but not ideal. The filters would correctly return 0 results (no machine learning or computer science subjects in the rare books collection). The interpreter did provide a clarification, which is positive. However, the confidence is 0.85 which is relatively high for an out-of-scope query -- the interpreter should have recognized that modern CS topics are inherently outside a rare books collection and set lower confidence. It also did not explicitly flag the query as out-of-scope.",
+    "issues": [
+      "Confidence 0.85 is too high for an out-of-scope query about modern topics in a rare books collection",
+      "Did not explicitly recognize query as out-of-scope for the collection",
+      "Clarification suggests narrowing rather than informing user these topics don't exist in the collection"
+    ]
+  },
+  {
+    "id": "q_oos02",
+    "query": "What books by J.K. Rowling are in the collection?",
+    "category": "out_of_scope",
+    "interpreter_score": 1,
+    "filters_produced": {
+      "action": "resolve_agent then retrieve",
+      "agent_name": "J.K. Rowling",
+      "variants": ["J.K. Rowling", "Rowling, J.K."],
+      "field": "agent_norm",
+      "op": "EQUALS"
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN agents a ON r.id = a.record_id WHERE LOWER(a.agent_norm) LIKE '%rowling%'",
+    "actual_count": 0,
+    "expected_count": 0,
+    "assessment": "Partial. The filters would correctly return 0 results, but the interpreter treated this as a normal retrieval with high confidence (0.92) and no clarification. J.K. Rowling is a contemporary author (b. 1965) who has no place in a rare books collection. The interpreter should have flagged this as out-of-scope or set much lower confidence. A confidence of 0.92 with no clarification suggests the interpreter confidently expects to find Rowling in a rare books collection.",
+    "issues": [
+      "Confidence 0.92 is far too high for a modern author query against a rare books collection",
+      "No clarification provided -- should inform user this author is outside the collection scope",
+      "Did not recognize J.K. Rowling as a contemporary author incompatible with a rare books collection"
+    ]
+  },
+  {
+    "id": "q_amb01",
+    "query": "Show me the really old books",
+    "category": "ambiguous",
+    "interpreter_score": 3,
+    "filters_produced": {
+      "action": "retrieve",
+      "filters": [
+        {"field": "year", "op": "RANGE", "start": 1401, "end": 1600}
+      ],
+      "clarification": "The query is vague; please specify a particular century, region, language, subject, or author for more precise results."
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN imprints i ON r.id = i.record_id WHERE i.date_start >= 1401 AND i.date_end <= 1600",
+    "actual_count": 222,
+    "expected_count": null,
+    "assessment": "Perfect. The interpreter correctly identified the ambiguity, provided a clarification asking for specifics, and made a reasonable default interpretation (15th-16th century = 1401-1600). The confidence was set to 0.85 reflecting the vagueness. The date range choice is sensible for 'really old' in a rare books collection spanning 1400-2025.",
+    "issues": []
+  },
+  {
+    "id": "q_amb02",
+    "query": "What do you have by Moses?",
+    "category": "ambiguous",
+    "interpreter_score": 3,
+    "filters_produced": {
+      "action": "resolve_agent",
+      "agent_name": "Moses",
+      "variants": [],
+      "clarification": "The query 'What do you have by Moses?' is quite broad and could refer to any individual named Moses or works about Moses. Please specify if you mean a particular Moses (e.g., Moses Maimonides, Moses the prophet) or a work authored by someone named Moses."
+    },
+    "sql_equivalent": "SELECT DISTINCT a.agent_norm, COUNT(DISTINCT r.id) as cnt FROM records r JOIN agents a ON r.id = a.record_id WHERE LOWER(a.agent_norm) LIKE '%moses%' GROUP BY a.agent_norm ORDER BY cnt DESC",
+    "actual_count": 28,
+    "expected_count": null,
+    "assessment": "Perfect. The interpreter correctly identified the ambiguity (confidence 0.70), recognized that 'Moses' could refer to multiple agents, and provided an excellent clarification mentioning Moses Maimonides as an example. The resolve_agent action is the right first step. The database confirms 4 distinct Moses agents: Mendelssohn (11), Amzalak (9), Maimonides (7), and Foa (1) totaling 28 records.",
+    "issues": []
+  },
+  {
+    "id": "q_amb03",
+    "query": "Tell me about the Venice books",
+    "category": "ambiguous",
+    "interpreter_score": 2,
+    "filters_produced": {
+      "action": "retrieve",
+      "filters": [
+        {"field": "imprint_place", "op": "EQUALS", "value": "venice"}
+      ],
+      "clarification": "The query 'Tell me about the Venice books' is quite broad. Please specify if you are interested in a particular subject, time period, language, or author to narrow the search."
+    },
+    "sql_equivalent": "SELECT COUNT(DISTINCT r.id) FROM records r JOIN imprints i ON r.id = i.record_id WHERE LOWER(i.place_norm) = 'venice'",
+    "actual_count": 164,
+    "expected_count": null,
+    "assessment": "Good. The interpreter provided a clarification (positive) and made a reasonable default interpretation of retrieving all Venice imprints. However, the intent was classified as 'retrieval' while the query spec says 'overview' -- 'Tell me about' suggests wanting an analytical overview rather than a flat record list. An aggregate or overview action would have been more appropriate, possibly summarizing Venice printing activity by era, printer, or language.",
+    "issues": [
+      "Intent classified as 'retrieval' instead of 'overview' -- 'Tell me about' suggests analytical summary",
+      "A flat retrieve of 164 records may not serve the user well without aggregation or curation"
+    ]
+  }
+]

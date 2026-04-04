@@ -1,0 +1,413 @@
+[
+  {
+    "id": "q_is01",
+    "query": "Show me books published by the Insel Verlag",
+    "category": "in_scope",
+    "success": true,
+    "latency_s": 3.02,
+    "intents": [
+      "retrieval"
+    ],
+    "confidence": 0.9,
+    "clarification": null,
+    "reasoning": "The user requests a list of books published by 'Insel Verlag', which is a clear bibliographic query focusing on publisher. The plan first resolves the publisher to ensure the correct entity, then retrieves the books published by it.",
+    "num_steps": 2,
+    "steps": [
+      {
+        "action": "resolve_publisher",
+        "params": {
+          "name": "insel verlag",
+          "variants": []
+        }
+      },
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.PUBLISHER: 'publisher'> op=<FilterOp.EQUALS: 'EQUALS'> value='$step_0' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_is02",
+    "query": "What was printed in Basel?",
+    "category": "in_scope",
+    "success": true,
+    "latency_s": 2.74,
+    "intents": [
+      "retrieval",
+      "overview"
+    ],
+    "confidence": 0.9,
+    "clarification": null,
+    "reasoning": "The query asks about what was printed in Basel, which is an imprint place. This suggests a retrieval of records filtered by the imprint place Basel to overview the items printed there. No language or date limitation is specified, so the query is broad but specific to place, fitting retrieval and overview intents.",
+    "num_steps": 1,
+    "steps": [
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.IMPRINT_PLACE: 'imprint_place'> op=<FilterOp.EQUALS: 'EQUALS'> value='basel' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_is03",
+    "query": "Latin books from the sixteenth century",
+    "category": "in_scope",
+    "success": true,
+    "latency_s": 2.88,
+    "intents": [
+      "retrieval"
+    ],
+    "confidence": 0.95,
+    "clarification": null,
+    "reasoning": "The user requests books in Latin language from the 16th century, which implies a bibliographic retrieval filtered by language (Latin) and publication year range (1501-1600).",
+    "num_steps": 1,
+    "steps": [
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.LANGUAGE: 'language'> op=<FilterOp.EQUALS: 'EQUALS'> value='lat' start=None end=None negate=False confidence=None notes=None",
+            "field=<FilterField.YEAR: 'year'> op=<FilterOp.RANGE: 'RANGE'> value=None start=1501 end=1600 negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_is04",
+    "query": "Books illustrated by Ludwig Schwerin",
+    "category": "in_scope",
+    "success": true,
+    "latency_s": 4.14,
+    "intents": [
+      "retrieval",
+      "entity_exploration"
+    ],
+    "confidence": 0.9,
+    "clarification": null,
+    "reasoning": "The user requests books that feature illustrations by Ludwig Schwerin, indicating interest in retrieving works involving this artist. To address this, the plan includes resolving Ludwig Schwerin as an agent (illustrator/artist) to identify the correct entity in the database and then retrieving books connected to him by role. An entity exploration intent is included to potentially provide biographical context about Schwerin if requested later. Since the user specifically wants books illustrated by him, the retrieval targets works where Schwerin is credited as illustrator or in a related role.",
+    "num_steps": 2,
+    "steps": [
+      {
+        "action": "resolve_agent",
+        "params": {
+          "name": "Ludwig Schwerin",
+          "variants": []
+        }
+      },
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.AGENT_NORM: 'agent_norm'> op=<FilterOp.EQUALS: 'EQUALS'> value='$step_0' start=None end=None negate=False confidence=None notes=None",
+            "field=<FilterField.AGENT_ROLE: 'agent_role'> op=<FilterOp.EQUALS: 'EQUALS'> value='illustrator' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_is05",
+    "query": "Tell me about Josephus Flavius and his works in this collection",
+    "category": "in_scope",
+    "success": true,
+    "latency_s": 5.04,
+    "intents": [
+      "entity_exploration",
+      "retrieval"
+    ],
+    "confidence": 0.95,
+    "clarification": null,
+    "reasoning": "The user requests information about Josephus Flavius, a historical figure, and his works in this collection. This requires resolving the agent (Josephus Flavius) in the authority files, retrieving works associated with him, and providing scholarly context about him and his works.",
+    "num_steps": 3,
+    "steps": [
+      {
+        "action": "resolve_agent",
+        "params": {
+          "name": "Josephus Flavius",
+          "variants": [
+            "Flavius, Josephus",
+            "\u05d9\u05d5\u05e1\u05e3 \u05e4\u05dc\u05d0\u05d1\u05d9\u05d5\u05e1",
+            "Josephus"
+          ]
+        }
+      },
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.AGENT_NORM: 'agent_norm'> op=<FilterOp.EQUALS: 'EQUALS'> value='$step_0' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      },
+      {
+        "action": "enrich",
+        "params": {
+          "targets": "$step_0",
+          "fields": [
+            "bio",
+            "links"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_is06",
+    "query": "Which cities have the most books in the collection?",
+    "category": "in_scope",
+    "success": true,
+    "latency_s": 2.95,
+    "intents": [
+      "analytical",
+      "retrieval"
+    ],
+    "confidence": 0.95,
+    "clarification": null,
+    "reasoning": "The user wants to know which cities (imprint places) have the most books in the collection. This calls for an aggregation of the collection by the imprint_place field to count the number of books per city. The query is straightforward without any restrictive filters, so we aggregate over the full collection.",
+    "num_steps": 1,
+    "steps": [
+      {
+        "action": "aggregate",
+        "params": {
+          "field": "imprint_place",
+          "scope": "full_collection",
+          "limit": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_is07",
+    "query": "Hebrew books printed in Amsterdam between 1600 and 1800",
+    "category": "in_scope",
+    "success": true,
+    "latency_s": 4.49,
+    "intents": [
+      "retrieval"
+    ],
+    "confidence": 0.95,
+    "clarification": null,
+    "reasoning": "The user requests Hebrew books printed in Amsterdam between 1600 and 1800, which is a clear bibliographic query specifying language, place, and date range. This calls for a retrieval filtered by imprint_place, language, and year range.",
+    "num_steps": 1,
+    "steps": [
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.LANGUAGE: 'language'> op=<FilterOp.EQUALS: 'EQUALS'> value='heb' start=None end=None negate=False confidence=None notes=None",
+            "field=<FilterField.IMPRINT_PLACE: 'imprint_place'> op=<FilterOp.EQUALS: 'EQUALS'> value='amsterdam' start=None end=None negate=False confidence=None notes=None",
+            "field=<FilterField.YEAR: 'year'> op=<FilterOp.RANGE: 'RANGE'> value=None start=1600 end=1800 negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_is08",
+    "query": "I am interested in incunabula. What do you have?",
+    "category": "in_scope",
+    "success": true,
+    "latency_s": 3.73,
+    "intents": [
+      "retrieval",
+      "overview"
+    ],
+    "confidence": 0.95,
+    "clarification": null,
+    "reasoning": "The user is interested in incunabula, which are books printed before 1501, typically from the very beginning of printing history. The query is general, asking what is available in the collection on this subject. Thus, the plan is to retrieve all items dated 1450 to 1500 (common incunabula range) to show what is in the collection, with an overview intent to summarize the findings.",
+    "num_steps": 1,
+    "steps": [
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.YEAR: 'year'> op=<FilterOp.RANGE: 'RANGE'> value=None start=1450 end=1500 negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_oos01",
+    "query": "Do you have any books about machine learning or computer science?",
+    "category": "out_of_scope",
+    "success": true,
+    "latency_s": 4.32,
+    "intents": [
+      "retrieval",
+      "topical"
+    ],
+    "confidence": 0.9,
+    "clarification": null,
+    "reasoning": "The user queries about books on the topics of machine learning or computer science, which are subject-based bibliographic queries. The system will retrieve works containing 'machine learning' or 'computer science' as subjects. Both topics are included as an OR condition. Since no time period, language, or place is specified, a broad search across the collection is appropriate.",
+    "num_steps": 2,
+    "steps": [
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.SUBJECT: 'subject'> op=<FilterOp.CONTAINS: 'CONTAINS'> value='machine learning' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      },
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.SUBJECT: 'subject'> op=<FilterOp.CONTAINS: 'CONTAINS'> value='computer science' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_oos02",
+    "query": "What books by J.K. Rowling are in the collection?",
+    "category": "out_of_scope",
+    "success": true,
+    "latency_s": 3.71,
+    "intents": [
+      "retrieval",
+      "entity_exploration"
+    ],
+    "confidence": 0.95,
+    "clarification": null,
+    "reasoning": "The user asks for books by J.K. Rowling in the collection, which requires resolving the agent 'J.K. Rowling' to identify the correct authority record for retrieval, then retrieving all works by her. This is primarily a retrieval intent with some entity exploration to correctly identify the author.",
+    "num_steps": 2,
+    "steps": [
+      {
+        "action": "resolve_agent",
+        "params": {
+          "name": "J.K. Rowling",
+          "variants": [
+            "Rowling, J.K.",
+            "Joanne Rowling"
+          ]
+        }
+      },
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.AGENT_NORM: 'agent_norm'> op=<FilterOp.EQUALS: 'EQUALS'> value='$step_0' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_amb01",
+    "query": "Show me the really old books",
+    "category": "ambiguous",
+    "success": true,
+    "latency_s": 5.03,
+    "intents": [
+      "retrieval"
+    ],
+    "confidence": 0.8,
+    "clarification": "I interpret 'really old books' as books printed in the 15th century. If you mean a different period or want manuscripts instead of printed books, please specify.",
+    "reasoning": "The user's query 'Show me the really old books' indicates interest in books from an early historical period. The query is somewhat vague, but 'really old' generally suggests the earliest centuries in the collection, such as 15th or 16th century. I will interpret it as seeking books from the earliest century covered by the collection, probably 15th century (1401-1500) as the oldest significant printed books.",
+    "num_steps": 1,
+    "steps": [
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.YEAR: 'year'> op=<FilterOp.RANGE: 'RANGE'> value=None start=1401 end=1500 negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_amb02",
+    "query": "What do you have by Moses?",
+    "category": "ambiguous",
+    "success": true,
+    "latency_s": 5.87,
+    "intents": [
+      "retrieval",
+      "entity_exploration"
+    ],
+    "confidence": 0.75,
+    "clarification": "The name 'Moses' could refer to multiple historical or religious figures. Could you please specify which Moses you mean? For example, Moses the biblical figure, Moses Maimonides, or another Moses.",
+    "reasoning": "The query 'What do you have by Moses?' is ambiguous because 'Moses' is a common name and could refer to multiple historical or religious figures. The system should first attempt to resolve 'Moses' as an agent to identify known variants and then retrieve records associated with that resolved entity. Additionally, given the ambiguity, a clarification may be beneficial to specify which Moses is meant (e.g., Moses from the Bible, Moses Maimonides, etc.). The plan includes resolving Moses as an agent, retrieving works attributed to him, and enriching with biographical data if available.",
+    "num_steps": 3,
+    "steps": [
+      {
+        "action": "resolve_agent",
+        "params": {
+          "name": "Moses",
+          "variants": [
+            "Moshe",
+            "\u05de\u05e9\u05d4"
+          ]
+        }
+      },
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.AGENT_NORM: 'agent_norm'> op=<FilterOp.EQUALS: 'EQUALS'> value='$step_0' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      },
+      {
+        "action": "enrich",
+        "params": {
+          "targets": "$step_0",
+          "fields": [
+            "bio",
+            "links"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "q_amb03",
+    "query": "Tell me about the Venice books",
+    "category": "ambiguous",
+    "success": true,
+    "latency_s": 3.5,
+    "intents": [
+      "overview",
+      "topical"
+    ],
+    "confidence": 0.8,
+    "clarification": null,
+    "reasoning": "The query asks for information about 'the Venice books', which is a vague term but likely refers to books printed in Venice or significant books associated with Venice in the collection. To address this, I will retrieve books from the Venice imprint place to provide an overview of the collection's holdings related to Venice printing. This will help illustrate the scope and significance of Venetian books. The query is broad but focused enough to do a targeted retrieval by print location.",
+    "num_steps": 1,
+    "steps": [
+      {
+        "action": "retrieve",
+        "params": {
+          "filters": [
+            "field=<FilterField.IMPRINT_PLACE: 'imprint_place'> op=<FilterOp.EQUALS: 'EQUALS'> value='venice' start=None end=None negate=False confidence=None notes=None"
+          ],
+          "scope": "full_collection"
+        }
+      }
+    ]
+  }
+]
