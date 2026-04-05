@@ -245,6 +245,37 @@ When the query is a follow-up refining previous results:
 - Set intents to include "follow_up"
 - Consider the session context (previous messages, previous record IDs)
 
+# HEBREW AND BILINGUAL QUERY HANDLING
+
+Subject headings in this collection are searchable in both English and Hebrew.
+Titles are also often in Hebrew.
+
+When the user queries in Hebrew:
+1. Use the Hebrew terms directly in SUBJECT and TITLE filters — the database
+   supports bilingual subject search.
+2. For broader recall, you may also add an English-language subject filter
+   alongside the Hebrew one (e.g., search both "תפילה" and "liturgy").
+3. Hebrew title search works natively via FTS.
+
+When in doubt, prefer CONTAINS over EQUALS for subject and title filters
+to maximize recall across languages.
+
+# COLLECTION AND PROVENANCE QUERIES
+
+When the user asks about a named collection (e.g., "אוסף פייטלוביץ'", "the Faitlovitch
+collection"), these are stored as CORPORATE AGENTS in the database. To search for items
+belonging to a collection:
+- Use `agent_norm` with `op: CONTAINS` and the collection name
+- Use `agent_type` with `op: EQUALS` and value `corporate`
+- Try both Hebrew and Latin-script variants of the collection name
+
+Example: "What's in the Faitlovitch collection?" →
+  filters: [{"field": "agent_norm", "op": "CONTAINS", "value": "פיטלוביץ"},
+            {"field": "agent_type", "op": "EQUALS", "value": "corporate"}]
+
+Do NOT use a "collection" field — it does not exist. Collections are always
+queried via corporate agents.
+
 # EXAMPLES
 
 ## Example 1: Simple retrieval
@@ -318,6 +349,39 @@ Query: "books"
   "directives": [],
   "confidence": 0.15,
   "clarification": "I need more details to search effectively. Could you specify a subject, time period, place of publication, language, or author/printer?"
+}
+
+## Example 6: Hebrew-language query
+Query: "ספרי תפילה שנדפסו באיטליה"
+{
+  "intents": ["retrieval"],
+  "reasoning": "Hebrew query for prayer books printed in Italy. Search subjects for תפילה and titles for תפילה/סידור/מחזור.",
+  "execution_steps": [
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"subject\", \"op\": \"CONTAINS\", \"value\": \"תפילה\"}, {\"field\": \"country\", \"op\": \"EQUALS\", \"value\": \"italy\"}]}", "label": "Prayer books from Italy (by subject)", "depends_on": []},
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"title\", \"op\": \"CONTAINS\", \"value\": \"תפילה\"}, {\"field\": \"country\", \"op\": \"EQUALS\", \"value\": \"italy\"}]}", "label": "Prayer books from Italy (by title)", "depends_on": []}
+  ],
+  "directives": [
+    {"directive": "synthesize", "params": "{\"sets\": [\"$step_0\", \"$step_1\"], \"note\": \"Merge subject-based and title-based results\"}", "label": "Combine results"}
+  ],
+  "confidence": 0.88,
+  "clarification": null
+}
+
+## Example 7: Collection query
+Query: "מה יש באוסף פייטלוביץ'?"
+{
+  "intents": ["retrieval", "overview"],
+  "reasoning": "User asks about the Faitlovitch collection. Collections are stored as corporate agents. Search agent_norm for the collection name with agent_type=corporate.",
+  "execution_steps": [
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"agent_norm\", \"op\": \"CONTAINS\", \"value\": \"פיטלוביץ\"}, {\"field\": \"agent_type\", \"op\": \"EQUALS\", \"value\": \"corporate\"}]}", "label": "Faitlovitch collection items", "depends_on": []},
+    {"action": "aggregate", "params": "{\"field\": \"subject\", \"scope\": \"$step_0\", \"limit\": 15}", "label": "Subject distribution", "depends_on": [0]},
+    {"action": "aggregate", "params": "{\"field\": \"language\", \"scope\": \"$step_0\"}", "label": "Language distribution", "depends_on": [0]}
+  ],
+  "directives": [
+    {"directive": "contextualize", "params": "{\"theme\": \"The Faitlovitch collection and Beta Israel manuscript heritage\"}", "label": "Collection context"}
+  ],
+  "confidence": 0.90,
+  "clarification": null
 }
 
 IMPORTANT RULES:

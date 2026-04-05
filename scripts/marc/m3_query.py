@@ -12,6 +12,7 @@ For production queries, use the M4 query system instead:
 """
 
 import json
+import re
 import sqlite3
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -35,6 +36,19 @@ class CandidateSet:
     evidence: List[Evidence] = field(default_factory=list)
     total_count: int = 0
     query_sql: str = ""  # SQL query used
+
+
+def _sanitize_fts5_query(value: str) -> str:
+    """Strip FTS5 metacharacters that cause syntax errors in MATCH clauses.
+
+    Handles apostrophes/single quotes (primary bug), double quotes,
+    parentheses, and other FTS5 operators.
+    """
+    value = value.replace("'", "")
+    value = value.replace('"', '')
+    value = re.sub(r'[(){}^:+\-]', ' ', value)
+    value = re.sub(r'\s+', ' ', value).strip()
+    return value
 
 
 def connect_db(db_path: Path) -> sqlite3.Connection:
@@ -287,7 +301,8 @@ def query_by_subject(
     cursor = conn.cursor()
 
     if use_fts:
-        # Full-text search
+        # Full-text search — sanitize query to avoid FTS5 syntax errors
+        safe_query = _sanitize_fts5_query(subject_query)
         sql = """
             SELECT DISTINCT
                 r.mms_id,
@@ -301,7 +316,7 @@ def query_by_subject(
             WHERE subjects_fts MATCH ?
             ORDER BY r.mms_id
         """
-        params = [subject_query]
+        params = [safe_query]
     else:
         # Exact match (case-insensitive)
         sql = """
@@ -448,9 +463,10 @@ def query_by_title(
     cursor = conn.cursor()
 
     if use_fts:
-        # Full-text search
+        # Full-text search — sanitize query to avoid FTS5 syntax errors
+        safe_query = _sanitize_fts5_query(title_query)
         sql_conditions = ["titles_fts MATCH ?"]
-        params = [title_query]
+        params = [safe_query]
 
         if title_type:
             sql_conditions.append("t.title_type = ?")

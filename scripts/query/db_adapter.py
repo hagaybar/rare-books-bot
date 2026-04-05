@@ -97,6 +97,34 @@ def get_connection(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
+def sanitize_fts5_query(value: str) -> str:
+    """Remove or escape characters that are FTS5 syntax metacharacters.
+
+    FTS5 treats these as special: single quotes (string delimiters),
+    double quotes (phrase delimiters), parentheses (grouping), asterisk
+    (prefix queries), plus/minus (prefix operators), caret (initial
+    token), colon (column filter), and curly braces (NEAR groups).
+
+    Strategy: strip single quotes and other operator characters that are
+    never meaningful in our bibliographic search terms. Double quotes are
+    handled separately by the caller (phrase wrapping).
+
+    Args:
+        value: Lowercased search term (pre-FTS5)
+
+    Returns:
+        Sanitized string safe for FTS5 MATCH
+    """
+    # Remove single quotes / apostrophes — primary cause of the bug
+    value = value.replace("'", "")
+    # Remove other FTS5 metacharacters that could cause syntax errors
+    # (parentheses, caret, colon, curly braces, plus, minus at start)
+    value = re.sub(r'[(){}^:+\-]', ' ', value)
+    # Collapse multiple spaces that removal may have introduced
+    value = re.sub(r'\s+', ' ', value).strip()
+    return value
+
+
 def normalize_filter_value(field: FilterField, raw_value: str, op: FilterOp = None) -> str:
     """Normalize filter values using M2 normalization rules.
 
@@ -132,10 +160,13 @@ def normalize_filter_value(field: FilterField, raw_value: str, op: FilterOp = No
         value = raw_value.lower()
         # Only wrap in quotes for FTS5 CONTAINS operations (MATCH syntax)
         # EQUALS operations use direct string comparison and must NOT be quoted
-        if op == FilterOp.CONTAINS and ' ' in value:
-            # Escape any existing double quotes in the value
-            value = value.replace('"', '""')
-            value = f'"{value}"'
+        if op == FilterOp.CONTAINS:
+            # Sanitize FTS5 metacharacters (apostrophes, operators, etc.)
+            value = sanitize_fts5_query(value)
+            # Strip double quotes before re-wrapping as a phrase
+            value = value.replace('"', '')
+            if ' ' in value:
+                value = f'"{value}"'
         return value
     elif field == FilterField.AGENT:
         # Agents use substring match, casefold for consistency
