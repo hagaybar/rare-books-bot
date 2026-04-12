@@ -51,7 +51,7 @@ Every response--even internal ones--must be grounded in:
 ```
 data/              # marc_source/, canonical/, index/, runs/, qa/, chat/
 data/eval/          # model config, benchmark queries, evaluation runs
-docs/current/      # 9 topic files -- single source of truth per area
+docs/current/      # 11 topic files -- single source of truth per area
 docs/history/      # Historical journal -- audits, reports, plans, specs
 docs/superpowers/  # Skill output targets (specs/, plans/)
 docs/testing/      # Manual testing guide
@@ -75,7 +75,7 @@ uvicorn app.api.main:app --reload # dev server
 cd frontend && npm run dev        # frontend dev
 ./deploy.sh                       # deploy to production
 python -m app.cli query "..."     # run a query
-python3 -m scripts.eval.run_eval --models gpt-4.1,gpt-4.1-mini --stages interpreter,narrator --queries data/eval/queries.json  # model comparison
+python3 scripts/eval/run_eval.py --models gpt-4.1,gpt-4.1-mini --stages interpreter,narrator --queries data/eval/queries.json --judge-model gpt-4.1  # model comparison
 ```
 
 ## Topic Registry

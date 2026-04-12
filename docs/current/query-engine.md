@@ -1,6 +1,6 @@
 # Query Engine
-> Last verified: 2026-04-01
-> Source of truth for: Query compilation (NL to SQL), LLM usage rules, query plan schema, execution pipeline, and acceptance tests
+> Last verified: 2026-04-12
+> Source of truth for: Query compilation (NL to SQL), LLM usage rules, query plan schema, execution pipeline, FTS5 sanitization, bilingual search, and acceptance tests
 
 ## Overview
 
@@ -28,7 +28,7 @@ These interfaces are the stable boundary between pipeline stages. Implementation
 ## LLM Usage Rules
 
 1. LLM is used **only** for query planning (converting natural language to structured QueryPlan). It is not used during normalization (M2) or execution.
-2. LLM output is validated against Pydantic models via OpenAI Responses API (`client.responses.parse()`).
+2. LLM output is validated against Pydantic models via litellm's `structured_completion()` wrapper.
 3. If schema validation fails: return empty plan with error in debug. Never retry.
 4. All LLM calls are cached to prevent redundant API usage.
 
@@ -40,12 +40,14 @@ These interfaces are the stable boundary between pipeline stages. Implementation
 
 **File**: `scripts/query/llm_compiler.py`
 
-The query compiler uses LLM-based parsing via OpenAI's Responses API:
+The query compiler uses LLM-based parsing via litellm's `structured_completion()`:
 
-- **Model**: gpt-4o (default, configurable)
-- **Schema enforcement**: Pydantic models validated by OpenAI Responses API
+- **Model**: Configurable via `scripts/models/config.py` (any litellm-supported model)
+- **Schema enforcement**: Pydantic models validated by litellm structured output
 - **Caching**: JSONL cache at `data/query_plan_cache.jsonl` (query_text -> QueryPlan)
-- **API key**: Set `OPENAI_API_KEY` environment variable
+- **API key**: Set `OPENAI_API_KEY` environment variable (used by litellm)
+
+> **Note**: This compiler is deprecated in favour of the scholar pipeline (`scripts/chat/interpreter.py`). It remains functional for the legacy CLI path and subject-hint retry logic.
 
 ### Usage
 
@@ -55,8 +57,8 @@ from scripts.query.compile import compile_query
 # With API key in environment
 plan = compile_query("books published by Oxford between 1500 and 1599")
 
-# Or pass explicitly
-plan = compile_query("...", api_key="sk-...", model="gpt-4o")
+# Or pass explicitly (any litellm-supported model string)
+plan = compile_query("...", api_key="sk-...", model="gpt-4.1-mini")
 ```
 
 ### Cache Behavior
@@ -105,6 +107,37 @@ Single matched record with rationale and evidence list, plus display fields.
 ### CandidateSet (BaseModel)
 
 Complete query result: query text, plan hash, SQL query used, candidates list, total count.
+
+---
+
+## FTS5 Sanitization
+
+**File**: `scripts/query/db_adapter.py` (`sanitize_fts5_query()`)
+
+FTS5 full-text search queries must be sanitized before execution. The `sanitize_fts5_query()` function strips characters that are FTS5 syntax metacharacters:
+
+- **Apostrophes/single quotes** — primary cause of FTS5 crashes (including Hebrew geresh)
+- **Parentheses, caret, colon, curly braces, plus/minus** — FTS5 operators
+
+This function is called automatically for `TITLE` and `SUBJECT` filters using the `CONTAINS` operation. A parallel implementation exists in `scripts/marc/m3_query.py` for the M3 indexing path.
+
+---
+
+## Bilingual Subject Search
+
+Subject headings are searchable in both English and Hebrew. Fix 19 (`scripts/qa/fixes/fix_19_add_hebrew_subjects.py`) added a `value_he` column to the subjects table with 3,094+ Hebrew translations, and rebuilt the `subjects_fts` FTS5 index to include both languages.
+
+The interpreter (`scripts/chat/interpreter.py`) handles bilingual queries by:
+- Using Hebrew terms directly in SUBJECT and TITLE filters
+- Optionally adding parallel English-language filters for broader recall
+- Preferring `CONTAINS` over `EQUALS` for cross-language matching
+
+### Collection Queries
+
+Named collections (e.g., "the Faitlovitch collection") are stored as **corporate agents**. The interpreter queries them via:
+- `agent_norm` with `op: CONTAINS` and the collection name
+- `agent_type` with `op: EQUALS` and value `corporate`
+- Both Hebrew and Latin-script variants of the collection name
 
 ---
 
@@ -177,5 +210,5 @@ poetry run python -m pytest tests/ --run-integration -k "query" -v
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `OPENAI_API_KEY` | Yes | Required for query compilation (LLM calls) |
+| `OPENAI_API_KEY` | Yes | Required for query compilation (used by litellm) |
 | `BIBLIOGRAPHIC_DB_PATH` | No (default: `data/index/bibliographic.db`) | SQLite database for query execution |

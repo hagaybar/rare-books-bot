@@ -1,6 +1,6 @@
 # Data Quality
 
-> Last verified: 2026-04-02
+> Last verified: 2026-04-12
 > Source of truth for: Quality checks, fix scripts, sampling protocol, remediation processes
 
 ## 1. Overview
@@ -59,7 +59,7 @@ Tier 2 dimensions report coverage percentages and counts (no error scoring).
 
 ## 3. Fix Processes
 
-All 16 fix scripts live in `scripts/qa/fixes/`. Each script:
+All 19 fix scripts live in `scripts/qa/fixes/`. Each script:
 - Takes `--db-path` (defaults to `data/index/bibliographic.db`) and `--dry-run` flags
 - Is **idempotent**: safe to re-run after re-ingest; finds only unfixed records
 - Preserves raw MARC values (only modifies normalized/derived fields)
@@ -188,7 +188,7 @@ bash scripts/qa/fixes/run_quick_wins.sh
 - **Detection**: High-record-count publishers missing from `publisher_variants` join.
 - **Fix script**: `scripts/qa/fixes/fix_12_add_missing_publisher_authorities.py`
 - **Usage**: `python3 scripts/qa/fixes/fix_12_add_missing_publisher_authorities.py --db-path data/index/bibliographic.db`
-- **What it does**: Creates 11 `publisher_variants` rows linking known `publisher_norm` values to their existing authorities, covering 88 records total.
+- **What it does**: Creates `publisher_variants` rows linking known `publisher_norm` values to their existing authorities. Initially 11 rows covering 88 records; subsequently expanded by 53 additional variants covering 11 more authorities (commit 746b39b).
 - **Verification**: Re-run quality checks; named publishers should now resolve through the variants table.
 - **Dimension**: Publisher Identity
 
@@ -230,6 +230,36 @@ bash scripts/qa/fixes/run_quick_wins.sh
 - **Usage**: `python3 scripts/qa/fixes/fix_16_investigate_subjectless_records.py --db-path data/index/bibliographic.db`
 - **What it does**: **Analysis only, no DB changes.** Produces `data/qa/subjectless-records-analysis.csv` with breakdowns by language (118 Hebrew, 67 French, 60 German, ...) and period (141 from 1700-1900). Identifies 46 modern reprints and 11 Hebrew liturgical works.
 - **Verification**: Check that `data/qa/subjectless-records-analysis.csv` exists.
+- **Dimension**: Subject Coverage (Tier 2)
+
+### Fix 17: Enrich Publisher Authorities
+
+- **Problem**: Many publisher authority records remain 'unresearched' despite web research data being available.
+- **Detection**: `SELECT COUNT(*) FROM publisher_authorities WHERE type = 'unresearched';`
+- **Fix script**: `scripts/qa/fixes/fix_17_enrich_publishers.py`
+- **Usage**: `python3 scripts/qa/fixes/fix_17_enrich_publishers.py --db-path data/index/bibliographic.db`
+- **What it does**: Reads `data/qa/publisher-research-results.json` and updates `publisher_authorities` rows where research confidence >= 0.90. Updates type, dates, location, notes, and sources. **No external API calls** -- uses only cached research data.
+- **Verification**: Re-check unresearched count; should decrease.
+- **Dimension**: Publisher Identity
+
+### Fix 18: Apply Subject Proposals
+
+- **Problem**: 349 records have no subject headings (identified by Fix 16). Proposed subjects are available from prior analysis.
+- **Detection**: Records in `data/qa/proposed-subjects.json` without subjects in the DB.
+- **Fix script**: `scripts/qa/fixes/fix_18_apply_subject_proposals.py`
+- **Usage**: `python3 scripts/qa/fixes/fix_18_apply_subject_proposals.py --db-path data/index/bibliographic.db`
+- **What it does**: Inserts proposed subject headings from `data/qa/proposed-subjects.json` into the `subjects` table for records that currently have no subjects (gap-filling for Tier 2).
+- **Verification**: `SELECT COUNT(DISTINCT r.mms_id) FROM records r LEFT JOIN subjects s ON r.mms_id = s.mms_id WHERE s.mms_id IS NULL;` should show fewer subjectless records.
+- **Dimension**: Subject Coverage (Tier 2)
+
+### Fix 19: Add Hebrew Subject Translations
+
+- **Problem**: Subject headings exist only in English, preventing Hebrew-language search.
+- **Detection**: `SELECT COUNT(*) FROM subjects WHERE value_he IS NULL;`
+- **Fix script**: `scripts/qa/fixes/fix_19_add_hebrew_subjects.py`
+- **Usage**: `python3 scripts/qa/fixes/fix_19_add_hebrew_subjects.py --db-path data/index/bibliographic.db`
+- **What it does**: Adds a `value_he` column to the subjects table. Translates 3,094+ subject headings into Hebrew using a component-based approach (base terms + subdivisions translated independently, then composed). Rebuilds the `subjects_fts` FTS5 index to include Hebrew values for bilingual search. Coverage: 78.4% of unique headings, 83.6% of subject rows.
+- **Verification**: `SELECT COUNT(*) FROM subjects WHERE value_he IS NOT NULL;` should return ~3,094+.
 - **Dimension**: Subject Coverage (Tier 2)
 
 ## 4. Sampling Protocol
@@ -290,7 +320,7 @@ This produces 150 verification points (30 records x 5 fields). **No paid API cal
 
 ## 6. Before/After Results
 
-Comparison of Tier 1 scores before and after all 16 fix processes were applied:
+Comparison of Tier 1 scores before and after all 19 fix processes were applied:
 
 | Dimension | Baseline Score | Current Score (Combined) | Improvement |
 |-----------|---------------|-------------------------|-------------|

@@ -1,5 +1,5 @@
 # Architecture
-> Last verified: 2026-04-02
+> Last verified: 2026-04-12
 > Source of truth for: Project structure, core modules, data model index, and key architectural patterns
 
 ## Project Structure
@@ -7,7 +7,8 @@
 ```
 app/                          # CLI interface (Typer) and FastAPI backend
   api/                        # FastAPI endpoints
-    main.py                   # Core app: /chat, /health, /sessions, WebSocket
+    main.py                   # Core app: /chat, /chat/compare, /chat/history, /health, /sessions, WebSocket
+    compare.py                # Model A/B comparison endpoint
     metadata.py               # Metadata workbench endpoints (12 routes)
     diagnostics.py            # QA/diagnostics endpoints
     models.py                 # API request/response models
@@ -21,14 +22,15 @@ scripts/                      # Core library organized by function
     m2_models.py              # M2 normalization models
     normalize.py              # Date, place, publisher normalization
     m2_normalize.py           # M1->M2 enrichment CLI
-  chat/                       # Chatbot session and response
+  chat/                       # Chatbot session and scholar pipeline
     models.py                 # ChatSession, Message, ChatResponse
     session_store.py          # SQLite session persistence
-    formatter.py              # Response formatting
-    clarification.py          # Ambiguity detection
+    interpreter.py            # NL query → InterpretationPlan (via litellm)
+    executor.py               # InterpretationPlan → ExecutionResult (SQL)
+    narrator.py               # ExecutionResult → narrative response (via litellm)
     plan_models.py            # Execution pipeline models (27 models)
   query/                      # Query compilation and execution
-    llm_compiler.py           # NL -> QueryPlan via OpenAI
+    llm_compiler.py           # NL -> QueryPlan via litellm (legacy; see chat/interpreter.py)
     compile.py                # Query compilation entry point
     models.py                 # QueryResult, FacetCounts, QueryOptions
   schemas/                    # Shared Pydantic schemas
@@ -149,7 +151,7 @@ Each component (ingestion, normalization, query, metadata) has a base interface 
 
 ## Pydantic Model Index
 
-The project uses 117 Pydantic models (5 Enums + 112 BaseModels) across 12 files. This section provides a complete reference.
+The project uses 122 Pydantic models (7 Enums + 115 BaseModels) across 12 files. This section provides a complete reference.
 
 ### Cross-Module (`scripts/shared_models.py`)
 
@@ -181,7 +183,7 @@ Step actions: `RESOLVE_AGENT`, `RESOLVE_PUBLISHER`, `RETRIEVE`, `AGGREGATE`, `FI
 
 Key models: `ExecutionStep`, `InterpretationPlan`, `StepResult`, `RecordSummary`, `GroundingData`, `ExecutionResult`, `ScholarResponse`
 
-LLM-facing variants: `ExecutionStepLLM`, `ScholarlyDirectiveLLM`, `InterpretationPlanLLM` (simplified for OpenAI Responses API compatibility)
+LLM-facing variants: `ExecutionStepLLM`, `ScholarlyDirectiveLLM`, `InterpretationPlanLLM` (simplified for litellm structured output compatibility)
 
 ### Query Domain (`scripts/schemas/`, `scripts/query/models.py`)
 
@@ -232,7 +234,7 @@ LLM-facing variants: `ExecutionStepLLM`, `ScholarlyDirectiveLLM`, `Interpretatio
 
 ### API Layer (`app/api/`)
 
-**Core** (4 models): `ChatRequest`, `ChatResponseAPI`, `HealthResponse`, `HealthExtendedResponse`
+**Core** (9 models): `ChatRequest`, `ChatResponseAPI`, `HealthResponse`, `HealthExtendedResponse`, `ModelPair`, `CompareRequest`, `ComparisonMetrics`, `ComparisonResult`, `CompareResponse`
 
 **Authentication** (6 models): `LoginRequest`, `TokenResponse`, `UserInfo`, `CreateUserRequest`, `UpdateUserRequest`, `UserListItem`
 
@@ -251,10 +253,10 @@ LLM-facing variants: `ExecutionStepLLM`, `ScholarlyDirectiveLLM`, `Interpretatio
 | `scripts/marc/models.py` | 8 | 0 | 8 |
 | `scripts/marc/m2_models.py` | 7 | 0 | 7 |
 | `scripts/query/models.py` | 4 | 0 | 4 |
-| `app/api/models.py` | 4 | 0 | 4 |
+| `app/api/models.py` | 9 | 0 | 9 |
 | `app/api/auth_models.py` | 6 | 0 | 6 |
 | `app/api/metadata_models.py` | 33 | 0 | 33 |
-| **Total** | **110** | **7** | **117** |
+| **Total** | **115** | **7** | **122** |
 
 ---
 

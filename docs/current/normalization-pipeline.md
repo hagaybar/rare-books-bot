@@ -1,5 +1,5 @@
 # Normalization Pipeline
-> Last verified: 2026-04-01
+> Last verified: 2026-04-12
 > Source of truth for: M2 normalization layer -- date, place, and publisher normalization rules, alias map generation, confidence scoring, and data models
 
 ## Overview
@@ -157,6 +157,14 @@ Same cleaning pipeline as place normalization:
 | Alias map match | 0.95 | `publisher_alias_map` |
 | No alias map or no match | 0.80 | `publisher_casefold_strip` |
 | Raw value is `None` | 0.0 | `missing` |
+
+### Post-M2 Publisher Enrichment
+
+After M2 normalization, publisher authority records can be further enriched via QA fix scripts (not part of the deterministic M2 pipeline):
+- **Fix 12** (`scripts/qa/fixes/fix_12_add_missing_publisher_authorities.py`): Links `publisher_norm` values to existing authorities via `publisher_variants` (64 variants total).
+- **Fix 17** (`scripts/qa/fixes/fix_17_enrich_publishers.py`): Updates `publisher_authorities` with researched metadata (type, dates, location, sources) from `data/qa/publisher-research-results.json` for publishers with confidence >= 0.90.
+
+See `docs/current/data-quality.md` for full details on these fix scripts.
 
 ---
 

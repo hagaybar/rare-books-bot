@@ -1,10 +1,10 @@
 # Streaming Responses
-> Last verified: 2026-04-01
-> Source of truth for: WebSocket streaming protocol, message types, batch structure, client integration, and chatbot testing procedures
+> Last verified: 2026-04-12
+> Source of truth for: WebSocket streaming protocol, message types, narrative streaming, client integration, and chatbot testing procedures
 
 ## Overview
 
-The WebSocket endpoint provides real-time streaming for progressive query results and better UX. Instead of waiting for a complete response, clients receive progress updates and result batches as they become available.
+The WebSocket endpoint provides real-time streaming for progressive query results and better UX. Instead of waiting for a complete response, clients receive thinking updates during each pipeline stage and streamed narrative text as it's generated.
 
 **Location**: `app/api/main.py` (`@app.websocket("/ws/chat")`)
 
@@ -18,8 +18,9 @@ The WebSocket endpoint provides real-time streaming for progressive query result
 2. Client sends JSON: `{"message": "query text", "session_id": "optional-id"}`
 3. Server streams messages in sequence:
    - `session_created` (if new session)
-   - `progress` (status updates during processing)
-   - `batch` (result batches, up to 10 candidates each)
+   - `thinking` (status updates during interpret/execute stages)
+   - `stream_start` (signals narrative streaming is about to begin)
+   - `stream_chunk` (repeated: real-time narrative text from the narrator)
    - `complete` (final response with full ChatResponse)
 4. Connection closes after the complete message
 
@@ -28,48 +29,41 @@ The WebSocket endpoint provides real-time streaming for progressive query result
 | Type | When Sent | Payload |
 |------|-----------|---------|
 | `session_created` | New session created | `{ session_id: string }` |
-| `progress` | During query processing | `{ message: string }` |
-| `batch` | Result batch ready | `{ candidates, batch_num, total_batches, start_idx, end_idx }` |
+| `thinking` | During interpret/execute stages | `{ text: string }` |
+| `stream_start` | Before narrative streaming begins | `{}` |
+| `stream_chunk` | Each narrative text chunk | `{ text: string }` |
 | `complete` | Processing finished | `{ response: ChatResponse }` |
 | `error` | Error occurred | `{ message: string }` (connection closes after) |
 
-### Progress Messages
+### Thinking Messages
 
-The server sends progress updates at each processing stage:
+The server sends thinking updates at each pipeline stage:
 
-1. `"Compiling query..."`
-2. `"Executing query with N filters..."`
-3. `"Found X results. Formatting response..."`
+1. `"Interpreting your query..."` (Stage 1: interpreter)
+2. `"Searching for {filter description}..."` (Stage 2: executor)
+3. `"Found N matching records"` (after execution)
 
-### Batch Structure
+### Narrative Streaming
 
-Results are streamed in batches of up to 10 candidates:
+After execution, the narrator generates a natural language response. This is streamed in real time:
+
+1. `stream_start` signals that narrative chunks are about to arrive
+2. Multiple `stream_chunk` messages deliver the narrative text incrementally
+3. `complete` carries the final `ChatResponse` with the full narrative, candidate set, and metadata
 
 ```json
-{
-  "type": "batch",
-  "candidates": [...],
-  "batch_num": 1,
-  "total_batches": 3,
-  "start_idx": 0,
-  "end_idx": 10
-}
+{"type": "stream_start"}
+{"type": "stream_chunk", "text": "I found 15 books matching"}
+{"type": "stream_chunk", "text": " your query about Oxford..."}
+{"type": "complete", "response": { ... }}
 ```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `candidates` | Array | Up to 10 Candidate objects |
-| `batch_num` | int | Current batch number (1-indexed) |
-| `total_batches` | int | Total number of batches |
-| `start_idx` | int | Start index in full result set |
-| `end_idx` | int | End index in full result set |
 
 ---
 
 ## Features
 
-- **Progressive result streaming**: Batches of 10 candidates
-- **Real-time progress updates**: Status messages during each processing stage
+- **Narrative streaming**: Real-time text chunks from the narrator via `stream_chunk`
+- **Thinking updates**: Status messages during interpret and execute stages
 - **Session creation and reuse**: Creates session if not provided, reuses existing
 - **Clarification detection**: Same ambiguity detection as the HTTP `/chat` endpoint
 - **Error handling**: Graceful connection closure on errors
@@ -81,7 +75,7 @@ Results are streamed in batches of up to 10 candidates:
 | Feature | HTTP POST /chat | WebSocket /ws/chat |
 |---------|-----------------|-------------------|
 | Protocol | Single request/response | Persistent connection |
-| Streaming | No | Yes (progress + batches) |
+| Streaming | No | Yes (thinking + narrative chunks) |
 | Client complexity | Simple | Moderate |
 | Best for | Quick queries, simple clients | Long-running queries, interactive UIs |
 | Session handling | Same | Same |
@@ -110,15 +104,18 @@ ws.onmessage = (event) => {
     case 'session_created':
       console.log('Session:', data.session_id);
       break;
-    case 'progress':
-      console.log('Progress:', data.message);
+    case 'thinking':
+      console.log('Thinking:', data.text);
       break;
-    case 'batch':
-      console.log(`Batch ${data.batch_num}/${data.total_batches}:`, data.candidates);
-      // Render candidates incrementally
+    case 'stream_start':
+      console.log('Narrative streaming started');
+      break;
+    case 'stream_chunk':
+      // Append text chunk to UI incrementally
+      process.stdout.write(data.text);
       break;
     case 'complete':
-      console.log('Complete:', data.response);
+      console.log('\nComplete:', data.response);
       // Final response with full ChatResponse
       break;
     case 'error':
@@ -143,7 +140,7 @@ ws.onclose = () => {
 ### Prerequisites
 
 1. Dependencies installed: `poetry install`
-2. OpenAI API key set: `export OPENAI_API_KEY="sk-..."`
+2. LLM API key set: `export OPENAI_API_KEY="sk-..."` (used by litellm)
 3. Bibliographic database exists at `data/index/bibliographic.db`
 
 ### Starting the Server
@@ -202,8 +199,9 @@ wscat -c ws://localhost:8000/ws/chat
 
 # Watch streaming messages:
 # - session_created (with session_id)
-# - progress messages ("Compiling query...", "Executing...", "Found X results...")
-# - batch messages (groups of 10 candidates)
+# - thinking messages ("Interpreting your query...", "Searching for...", "Found N matching records")
+# - stream_start (narrative about to begin)
+# - stream_chunk messages (real-time narrative text)
 # - complete message (final response)
 ```
 
@@ -240,11 +238,11 @@ pytest tests/app/test_api.py -v
 
 ## What's Working
 
-- Natural language query compilation (via OpenAI)
+- Natural language query interpretation (via litellm)
 - SQL query execution against bibliographic database
 - Evidence-based responses with MARC field citations
-- Formatted responses with follow-up suggestions
+- Streamed narrative responses with follow-up suggestions
 - Session-based conversation history
-- Real-time streaming with progress updates
+- Real-time streaming with thinking updates and narrative chunks
 - Clarification prompts for ambiguous queries
 - Basic rate limiting (10 req/min per IP for /chat)

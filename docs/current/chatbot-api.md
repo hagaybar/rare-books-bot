@@ -1,6 +1,6 @@
 # Chatbot API
-> Last verified: 2026-04-01
-> Source of truth for: HTTP chat endpoints, session management, response formatting, clarification flow, and API configuration
+> Last verified: 2026-04-12
+> Source of truth for: HTTP chat endpoints, model comparison, session management, Hebrew/bilingual support, clarification flow, and API configuration
 
 ## Overview
 
@@ -42,6 +42,46 @@ Send a natural language query, get results.
 - Automatically routes through M4 query pipeline (compile + execute)
 - Returns clarification prompt if query is ambiguous (see Clarification Flow below)
 
+### POST /chat/compare
+
+Run the same query through multiple interpreter+narrator model configurations side-by-side for evaluation.
+
+**File**: `app/api/compare.py`
+
+**Request**:
+```json
+{
+  "message": "Hebrew books printed in Venice",
+  "configs": [
+    {"interpreter": "gpt-4.1-mini", "narrator": "gpt-4.1-mini"},
+    {"interpreter": "gpt-4.1", "narrator": "gpt-4.1"}
+  ],
+  "token_saving": true
+}
+```
+
+**Response**:
+```json
+{
+  "comparisons": [
+    {
+      "config": {"interpreter": "gpt-4.1-mini", "narrator": "gpt-4.1-mini"},
+      "response": { "message": "...", "candidate_set": {...}, ... },
+      "metrics": {"latency_ms": 2340, "cost_usd": 0.0012, "tokens": {"input": 850, "output": 420}},
+      "error": null
+    }
+  ]
+}
+```
+
+- Up to 3 model configurations per request
+- Runs pipelines sequentially for accurate per-config metrics
+- Rate limited to 10 req/min (requires 'full' role authentication)
+
+### GET /chat/history
+
+Get chat history for the authenticated user.
+
 ### GET /health
 
 Health check for monitoring.
@@ -70,7 +110,7 @@ Expire a session.
 |---------------------|---------|---------|
 | `SESSIONS_DB_PATH` | `data/chat/sessions.db` | Path to sessions database |
 | `BIBLIOGRAPHIC_DB_PATH` | `data/index/bibliographic.db` | Path to bibliographic database |
-| `OPENAI_API_KEY` | (required) | Required for query compilation |
+| `OPENAI_API_KEY` | (required) | Required for LLM calls (used by litellm) |
 
 ---
 
@@ -172,119 +212,72 @@ cp data/chat/sessions.db data/chat/sessions_backup_$(date +%Y%m%d).db
 
 ---
 
-## Response Formatting
+## Scholar Pipeline (Interpret → Execute → Narrate)
 
-Natural language response formatting for conversational interfaces.
+The chat endpoint uses a three-stage scholar pipeline instead of direct query compilation:
 
-### Implementation
+### Pipeline Stages
 
-**File**: `scripts/chat/formatter.py`
+| Stage | File | Purpose |
+|-------|------|---------|
+| **Interpret** | `scripts/chat/interpreter.py` | NL query → `InterpretationPlan` (via litellm, default model: gpt-4.1-mini) |
+| **Execute** | `scripts/chat/executor.py` | `InterpretationPlan` → `ExecutionResult` (SQL against bibliographic.db) |
+| **Narrate** | `scripts/chat/narrator.py` | `ExecutionResult` → natural language narrative (via litellm) |
 
-### Key Functions
+### Model Configuration
 
-| Function | Purpose |
-|----------|---------|
-| `format_for_chat(candidate_set) -> str` | Main formatting: CandidateSet to conversational response with evidence |
-| `format_summary(candidate_set) -> str` | Brief one-line summary |
-| `generate_followups(candidate_set, query_text) -> List[str]` | Context-aware follow-up suggestions |
-| `format_evidence(evidence_list) -> str` | Evidence as readable bullet points |
+Models are configurable per pipeline stage via `scripts/models/config.py`:
+- **Config file**: `data/eval/model-config.json` maps stage names to model IDs
+- **Default**: gpt-4.1-mini for interpreter (switched from gpt-4.1 based on benchmark: 5x cheaper, +31% accuracy)
+- **Override**: The `/chat/compare` endpoint allows per-request model selection
+
+### Hebrew and Bilingual Support
+
+The interpreter includes dedicated handling for Hebrew queries:
+- Subject headings are searchable in both English and Hebrew (3,094+ bilingual headings)
+- Hebrew terms are used directly in SUBJECT and TITLE filters
+- Collection/provenance queries use corporate agents (e.g., "the Faitlovitch collection" → `agent_norm CONTAINS` + `agent_type EQUALS corporate`)
 
 ### Features
 
-- Natural language summaries: "Found X books matching your query"
-- Evidence formatted as bullet points with confidence scores
-- Context-aware follow-up question suggestions
+- LLM-generated narrative summaries with evidence citations
+- Context-aware follow-up suggestions
+- Streaming narrative via WebSocket (see `docs/current/streaming.md`)
 - Zero-results handling with broadening suggestions
-- Multi-result formatting with configurable detail limits
-
-### Integration
-
-- Used by API layer (`app/api/main.py`) to format responses
-- Automatically generates `suggested_followups` for ChatResponse
-- Provides evidence citations in readable format
-
-### Example Output
-
-```
-Found 2 books matching your query.
-Query: "books published by Oxford between 1500 and 1599"
-
-Showing details for 2 of 2 results:
-
-1. Record: 990001234
-   Match: publisher_norm='oxford' AND year_range overlaps 1500-1599
-   Evidence:
-     - publisher_norm matches 'oxford' (confidence: 95%) [marc:264$b[0]]
-     - date_start is 1550 (matches range) (confidence: 99%) [marc:264$c[0]]
-
-2. Record: 990005678
-   ...
-```
+- Bilingual Hebrew/English subject search
 
 ---
 
 ## Clarification Flow
 
-Ambiguity detection and clarification prompts for improved query success.
+Ambiguity detection and clarification prompts are now handled by the interpreter stage.
 
 ### Implementation
 
-**File**: `scripts/chat/clarification.py`
+**File**: `scripts/chat/interpreter.py` (clarification is part of the `InterpretationPlan`)
 
-### Key Functions
-
-| Function | Purpose |
-|----------|---------|
-| `detect_ambiguous_query(plan, result_count) -> (bool, reason)` | Detect ambiguity |
-| `generate_clarification_message(plan, reason) -> str` | Create helpful prompt |
-| `suggest_refinements(plan) -> List[str]` | Specific refinement suggestions |
-| `should_ask_for_clarification(plan, result_count) -> bool` | Main entry point |
-
-### Ambiguity Detection Criteria
-
-| Criterion | Condition | Reason Code |
-|-----------|-----------|-------------|
-| Empty filters | Query has no specific filters | `empty_filters` |
-| Low confidence | Filters have confidence < 0.7 | `low_confidence` |
-| Broad date range | Date range > 200 years | `broad_date_range` |
-| Vague queries | Single-word subject/title | `vague_query` |
-| Zero results | No matches found | `zero_results` |
+When the interpreter's confidence is low (< 0.7) and it sets a `clarification` field, the API short-circuits before execution and returns the clarification directly.
 
 ### Integration with API
 
-The `/chat` endpoint checks for ambiguity at two points:
+The `/chat` endpoint checks for clarification after interpretation:
 
-1. **After query compilation** (before execution): If the QueryPlan has empty filters or low confidence, return early with a clarification prompt.
-2. **After execution** (for zero results): If no matches are found, suggest broadening the query.
-
-The `clarification_needed` field in ChatResponse is set when clarification is needed.
+1. **After interpretation** (before execution): If `plan.clarification` is set and `plan.confidence < 0.7`, return early with a clarification prompt.
+2. The `clarification_needed` field in ChatResponse is set when clarification is needed.
 
 ### Example Flow
 
 ```
 User: "books"
 
-Compile query -> QueryPlan: { filters: [] }  (empty filters)
-Detect ambiguity -> reason: "empty_filters"
-Generate clarification ->
+Interpret query -> InterpretationPlan: { confidence: 0.3, clarification: "..." }
+Short-circuit (confidence < 0.7) ->
 
 Response: {
-  "message": "I need some clarification to search effectively.",
-  "clarification_needed": "I need more details to search effectively. Could you specify:
-    - What topic or subject are you interested in?
-    - A specific publisher, author, or printer?
-    - A time period or date range?
-    - A place of publication?"
+  "message": "I need some clarification to search effectively...",
+  "clarification_needed": "Could you specify a subject, author, date range, or place?"
 }
 ```
-
-### Features
-
-- Detects 5 types of ambiguity
-- Context-aware suggestions (suggests missing filter types)
-- Prioritizes specificity (narrow date ranges, specific terms)
-- Graceful zero-results handling (broadening suggestions)
-- Context-specific guidance based on reason code
 
 ---
 
