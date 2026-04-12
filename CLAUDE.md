@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. search first (rg/grep), then view small excerpts (offset/limit, sed -n, head, tail).
 3. Any command that may return large output must include a hard cap (e.g., | head -n 50).
 4. If a tool returns an error about size/limits, do not retry the same approach. Switch strategy (search -> narrow excerpt -> proceed).
+5. Research the codebase before editing. Never change code you haven't read.
 
 ## ⚠ Hard Rules (read first)
 
@@ -48,13 +49,27 @@ Every response--even internal ones--must be grounded in:
 
 ## Available Skills
 
-| Skill | Description | When to invoke |
+| Skill | Description | When to Invoke |
 |-------|-------------|----------------|
-| python-dev-expert | Python best practices | Pure Python implementation questions |
-| git-expert | Git/GitHub workflow | Branch, PR, and commit workflow |
-| marc-ingest | Full MARC XML ingestion pipeline rebuild (7 phases) | Rebuilding or repairing the ingestion pipeline |
-| babysitter | Orchestrate complex multi-step workflows | Any multi-step workflow requiring quality gates or process management |
-| superpowers | Brainstorming, planning, TDD, debugging, verification, code review | Planning new features, debugging, or reviewing code |
+| `python-dev-expert` | Python best practices: small pure functions, type hints, Pydantic/dataclasses, testable code, DRY principles | When writing or refactoring Python code. Invoke for new modules, architectural decisions, or when reducing duplication. |
+| `git-expert` | Git and GitHub workflow management: commits, branches, PRs, rebasing, conflict resolution | When performing any git operation -- creating commits, managing branches, opening PRs, or resolving merge conflicts. |
+| `marc-ingest` | Full MARC XML ingestion pipeline rebuild through 7 phases: parse, normalize, QA audit, authorities, Wikidata/Wikipedia enrichment, network tables | When the user says `/marc-ingest`, "rebuild the database", "re-ingest", or "run the pipeline". Supports `--yolo`, `--skip-enrichment`, and `--xml <path>` flags. |
+| `babysitter` | Orchestrate complex multi-step workflows with processes, agents, quality gates, and breakpoints | When a task requires multi-step orchestration with defined processes (`.a5c/processes/`). Use `/babysitter:call` for interactive runs, `/babysitter:yolo` for non-interactive. |
+| `project-audit` | Repeatable codebase audit: project intent vs implementation, architectural coherence, code health, contract enforcement | When the user requests a project audit, health check, or architectural review. Output lands in `audits/`. |
+| `bidi-engineering` | Bidirectional (BiDi) UI engineering and RTL support for Hebrew-English interfaces | When implementing RTL layouts, fixing mixed Hebrew/English text display, handling numbers/punctuation in RTL contexts, or reviewing BiDi accessibility. |
+| `frontend-design` | Create distinctive, production-grade frontend interfaces with high design quality | When building or redesigning web components, pages, or UI features in the `frontend/` directory. |
+| `claude-api` | Build, debug, and optimize Claude API / Anthropic SDK applications with prompt caching | When code imports `anthropic`/`@anthropic-ai/sdk`, or the user asks to use the Claude API or Anthropic SDKs. |
+| `superpowers:brainstorming` | Explore user intent, requirements, and design before implementation | **Must invoke** before any creative work -- creating features, building components, adding functionality, or modifying behavior. |
+| `superpowers:writing-plans` | Design multi-step implementation plans from specs or requirements | When you have a spec or requirements for a multi-step task, before touching code. Plans land in `docs/superpowers/plans/`. |
+| `superpowers:executing-plans` | Execute a written implementation plan with review checkpoints | When you have a written plan ready to execute. Use in a separate session from planning. |
+| `superpowers:test-driven-development` | TDD workflow: write tests first, then implement to pass them | When implementing any feature or bugfix, before writing implementation code. |
+| `superpowers:systematic-debugging` | Structured debugging: reproduce, isolate, diagnose, fix | When encountering any bug, test failure, or unexpected behavior, before proposing fixes. |
+| `superpowers:verification-before-completion` | Run verification commands and confirm output before claiming success | **Must invoke** before claiming work is complete, fixed, or passing -- evidence before assertions. |
+| `superpowers:requesting-code-review` | Request structured code review against requirements | When completing tasks, implementing major features, or before merging to verify work meets requirements. |
+| `superpowers:finishing-a-development-branch` | Guide branch completion: merge, PR, or cleanup options | When implementation is complete and all tests pass -- guides the decision on how to integrate the work. |
+| `superpowers:dispatching-parallel-agents` | Dispatch independent tasks to parallel subagents | When facing 2+ independent tasks that can be worked on without shared state or sequential dependencies. |
+| `claude-md-management:revise-claude-md` | Update CLAUDE.md with learnings from the current session | After a session where new conventions, commands, or patterns were established that should persist. |
+| `skill-creator` | Guide for creating or updating skills | When creating a new skill or editing an existing one to extend Claude's capabilities. |
 
 ## Directory Conventions
 
