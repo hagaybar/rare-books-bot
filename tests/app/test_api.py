@@ -274,10 +274,10 @@ def test_websocket_creates_session(client):
             if msg["type"] == "complete":
                 break
 
-        # Verify we got progress messages
-        progress_msgs = [m for m in messages if m["type"] == "progress"]
-        assert len(progress_msgs) > 0
-        assert any("Interpreting" in m["message"] for m in progress_msgs)
+        # Verify we got thinking messages
+        thinking_msgs = [m for m in messages if m["type"] == "thinking"]
+        assert len(thinking_msgs) > 0
+        assert any("Interpreting" in m["text"] for m in thinking_msgs)
 
 
 @pytest.mark.integration
@@ -363,20 +363,14 @@ def test_websocket_streaming_batches(client):
         # Should have session_created
         assert any(m["type"] == "session_created" for m in messages)
 
-        # Should have progress messages
-        progress_msgs = [m for m in messages if m["type"] == "progress"]
-        assert len(progress_msgs) >= 2  # At least compiling and executing
+        # Should have thinking messages (interpret + execute stages)
+        thinking_msgs = [m for m in messages if m["type"] == "thinking"]
+        assert len(thinking_msgs) >= 2  # At least interpreting and searching
 
         # Should have complete message
         complete_msgs = [m for m in messages if m["type"] == "complete"]
         assert len(complete_msgs) == 1
 
-        # If results found, should have batch messages
-        batch_msgs = [m for m in messages if m["type"] == "batch"]
-        if batch_msgs:
-            # Verify batch structure
-            for batch in batch_msgs:
-                assert "candidates" in batch
-                assert "batch_num" in batch
-                assert "total_batches" in batch
-                assert len(batch["candidates"]) <= 10  # Batch size limit
+        # May have stream_start and stream_chunk messages (narrative streaming)
+        stream_chunks = [m for m in messages if m["type"] == "stream_chunk"]
+        # stream_chunks may be empty if the query triggers clarification

@@ -26,7 +26,7 @@ def test_load_config_from_file(tmp_path):
 def test_load_config_defaults_when_missing():
     """Config returns defaults when file doesn't exist."""
     cfg = load_config(Path("/nonexistent/config.json"))
-    assert cfg.interpreter.model == "gpt-4.1"
+    assert cfg.interpreter.model == "gpt-4.1-mini"
     assert cfg.narrator.model == "gpt-4.1"
     assert cfg.meta_extraction.model == "gpt-4.1-nano"
     assert cfg.judge.model == "gpt-4.1"
