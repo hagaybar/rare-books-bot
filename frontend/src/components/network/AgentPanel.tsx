@@ -11,6 +11,7 @@ interface Props {
 
 export default function AgentPanel({ agent, onClose, onAgentClick, mobile }: Props) {
   const [expandedSummary, setExpandedSummary] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const years =
     agent.birth_year || agent.death_year
@@ -96,7 +97,9 @@ export default function AgentPanel({ agent, onClose, onAgentClick, mobile }: Pro
           const config =
             CONNECTION_TYPE_CONFIG[type as keyof typeof CONNECTION_TYPE_CONFIG];
           const [r, g, b] = config?.color ?? [156, 163, 175];
-          const displayLimit = mobile ? 10 : 20;
+          const defaultLimit = mobile ? 10 : 20;
+          const isExpanded = expandedGroups.has(type);
+          const displayLimit = isExpanded ? conns.length : defaultLimit;
           return (
             <div key={type} className="mb-3">
               <div className="flex items-center gap-2 mb-1">
@@ -108,20 +111,33 @@ export default function AgentPanel({ agent, onClose, onAgentClick, mobile }: Pro
                   {config?.label ?? type}
                 </span>
               </div>
-              {conns.slice(0, displayLimit).map((conn) => (
+              <div className={isExpanded ? 'max-h-60 overflow-y-auto' : ''}>
+                {conns.slice(0, displayLimit).map((conn) => (
+                  <button
+                    key={`${conn.agent_norm}-${type}`}
+                    onClick={() => onAgentClick(conn.agent_norm)}
+                    className={`block w-full text-left px-2 ${mobile ? 'py-1.5' : 'py-1'} text-sm text-blue-600 hover:bg-blue-50 rounded truncate`}
+                  >
+                    {conn.relationship ? `${conn.relationship}: ` : ''}
+                    {conn.display_name}
+                  </button>
+                ))}
+              </div>
+              {conns.length > defaultLimit && !isExpanded && (
                 <button
-                  key={`${conn.agent_norm}-${type}`}
-                  onClick={() => onAgentClick(conn.agent_norm)}
-                  className={`block w-full text-left px-2 ${mobile ? 'py-1.5' : 'py-1'} text-sm text-blue-600 hover:bg-blue-50 rounded truncate`}
+                  onClick={() => setExpandedGroups(prev => new Set([...prev, type]))}
+                  className="text-xs text-blue-500 hover:text-blue-700 px-2 py-0.5"
                 >
-                  {conn.relationship ? `${conn.relationship}: ` : ''}
-                  {conn.display_name}
+                  Show all {conns.length} connections
                 </button>
-              ))}
-              {conns.length > displayLimit && (
-                <p className="text-xs text-gray-400 px-2">
-                  +{conns.length - displayLimit} more
-                </p>
+              )}
+              {isExpanded && conns.length > defaultLimit && (
+                <button
+                  onClick={() => setExpandedGroups(prev => { const s = new Set(prev); s.delete(type); return s; })}
+                  className="text-xs text-gray-400 hover:text-gray-600 px-2 py-0.5"
+                >
+                  Show fewer
+                </button>
               )}
             </div>
           );

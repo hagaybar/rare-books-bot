@@ -231,6 +231,25 @@ async def get_network_map(
         conn.close()
 
 
+@router.get("/search")
+async def search_agents(q: str = Query(""), limit: int = Query(10, ge=1, le=20)) -> dict:
+    """Search network agents by display name or normalized name."""
+    if not q or len(q) < 2:
+        return {"results": []}
+    conn = _get_db()
+    try:
+        results = conn.execute(
+            """SELECT agent_norm, display_name, lat, lon, connection_count
+               FROM network_agents
+               WHERE display_name LIKE ? OR agent_norm LIKE ?
+               ORDER BY connection_count DESC LIMIT ?""",
+            (f"%{q}%", f"%{q}%", min(limit, 20)),
+        ).fetchall()
+        return {"results": [dict(r) for r in results]}
+    finally:
+        conn.close()
+
+
 @router.get("/agent/{agent_norm:path}", response_model=AgentDetail)
 async def get_agent_detail(agent_norm: str) -> AgentDetail:
     """Return full detail for a single agent."""

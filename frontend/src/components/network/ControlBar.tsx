@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNetworkStore } from '../../stores/networkStore';
 import { CONNECTION_TYPE_CONFIG } from '../../types/network';
 import type { ConnectionType, ColorByMode } from '../../types/network';
+import { searchNetworkAgents } from '../../api/network';
+import type { NetworkSearchResult } from '../../api/network';
 
 function useDebouncedCallback(callback: (val: number) => void, delay: number) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -9,6 +11,32 @@ function useDebouncedCallback(callback: (val: number) => void, delay: number) {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => callback(val), delay);
   };
+}
+
+function useAgentSearch(delay: number) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<NetworkSearchResult[]>([]);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const handleChange = (val: string) => {
+    setQuery(val);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (val.length < 2) {
+      setResults([]);
+      return;
+    }
+    timerRef.current = setTimeout(async () => {
+      const res = await searchNetworkAgents(val);
+      setResults(res);
+    }, delay);
+  };
+
+  const clear = () => {
+    setQuery('');
+    setResults([]);
+  };
+
+  return { query, results, handleChange, clear };
 }
 
 const CENTURIES = [
@@ -32,9 +60,10 @@ const ROLES = [
 
 interface ControlBarProps {
   mobile?: boolean;
+  onAgentSelect?: (agentNorm: string) => void;
 }
 
-export default function ControlBar({ mobile }: ControlBarProps) {
+export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
   const {
     connectionTypes,
     toggleConnectionType,
@@ -46,10 +75,20 @@ export default function ControlBar({ mobile }: ControlBarProps) {
     setColorBy,
   } = useNetworkStore();
 
+  const { query, results, handleChange, clear } = useAgentSearch(300);
+
+  const handleResultClick = (agentNorm: string) => {
+    onAgentSelect?.(agentNorm);
+    clear();
+  };
+
   // Mobile: stacked vertical layout
   if (mobile) {
     return (
       <div className="space-y-4">
+        {/* Agent search */}
+        <AgentSearch query={query} results={results} onChange={handleChange} onSelect={handleResultClick} />
+
         {/* Color by */}
         <div>
           <label className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">
@@ -140,6 +179,9 @@ export default function ControlBar({ mobile }: ControlBarProps) {
   // Desktop: horizontal layout (unchanged)
   return (
     <div className="px-4 py-3 bg-white border-b flex flex-wrap items-center gap-4">
+      {/* Agent search */}
+      <AgentSearch query={query} results={results} onChange={handleChange} onSelect={handleResultClick} />
+
       {/* Color by */}
       <div className="flex items-center gap-1">
         <span className="text-sm text-gray-600">Color by:</span>
@@ -235,6 +277,42 @@ export default function ControlBar({ mobile }: ControlBarProps) {
 
       {/* Agent count slider (debounced to avoid rapid API calls while dragging) */}
       <AgentSlider />
+    </div>
+  );
+}
+
+interface AgentSearchProps {
+  query: string;
+  results: NetworkSearchResult[];
+  onChange: (val: string) => void;
+  onSelect: (agentNorm: string) => void;
+}
+
+function AgentSearch({ query, results, onChange, onSelect }: AgentSearchProps) {
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Search agents..."
+        className="text-sm border border-gray-300 rounded px-2 py-1 w-44 focus:outline-none focus:ring-1 focus:ring-blue-400"
+      />
+      {results.length > 0 && (
+        <ul className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded shadow-lg z-50 max-h-60 overflow-y-auto">
+          {results.map((r) => (
+            <li key={r.agent_norm}>
+              <button
+                onClick={() => onSelect(r.agent_norm)}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex justify-between items-center gap-2"
+              >
+                <span className="truncate">{r.display_name}</span>
+                <span className="text-xs text-gray-400 shrink-0">{r.connection_count}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

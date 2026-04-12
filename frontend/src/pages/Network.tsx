@@ -91,7 +91,7 @@ export default function Network() {
 
       {/* Desktop: always visible. Mobile: collapsible bottom sheet */}
       <div className="hidden md:block">
-        <ControlBar />
+        <ControlBar onAgentSelect={setSelectedAgent} />
       </div>
 
       {/* Mobile filter bottom sheet */}
@@ -116,7 +116,7 @@ export default function Network() {
               </button>
             </div>
             <div className="p-4">
-              <ControlBar mobile />
+              <ControlBar mobile onAgentSelect={(norm) => { setSelectedAgent(norm); setFiltersOpen(false); }} />
             </div>
           </div>
         </div>

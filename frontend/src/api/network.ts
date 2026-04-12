@@ -1,6 +1,14 @@
 import type { MapResponse, AgentDetail } from '../types/network';
 import { authenticatedFetch } from './auth';
 
+export interface NetworkSearchResult {
+  agent_norm: string;
+  display_name: string;
+  lat: number | null;
+  lon: number | null;
+  connection_count: number;
+}
+
 const BASE = '/network';
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -40,4 +48,13 @@ export async function fetchMapData(params: MapParams): Promise<MapResponse> {
 export async function fetchAgentDetail(agentNorm: string): Promise<AgentDetail> {
   const res = await authenticatedFetch(`${BASE}/agent/${encodeURIComponent(agentNorm)}`);
   return handleResponse<AgentDetail>(res);
+}
+
+export async function searchNetworkAgents(query: string): Promise<NetworkSearchResult[]> {
+  const res = await authenticatedFetch(
+    `${BASE}/search?q=${encodeURIComponent(query)}&limit=10`,
+  );
+  if (!res.ok) return [];
+  const data = await res.json() as { results: NetworkSearchResult[] };
+  return data.results;
 }
