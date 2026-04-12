@@ -745,8 +745,8 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
     # --- Truncation notice ---
     if result.truncated:
         sections.append(
-            "NOTE: Results were truncated. The total count cited in step "
-            "results is accurate, but only a subset of records is shown above."
+            f"NOTE: Showing {len(records)} of {result.total_record_count} total matching records. "
+            "The response should acknowledge this truncation to the user."
         )
         sections.append("")
 
@@ -757,9 +757,38 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
             sections.append(f"  {msg.role.upper()}: {msg.content[:200]}")
         sections.append("")
 
+    # --- Follow-up hints (deterministic data for better suggestions) ---
+    hint_lines: list[str] = []
+    if agents:
+        top_agents = sorted(agents, key=lambda a: a.record_count, reverse=True)[:3]
+        hint_lines.append("Top agents: " + ", ".join(
+            f"{a.canonical_name} ({a.record_count} records)" for a in top_agents
+        ))
+    conn_agents = set()
+    for c in getattr(result.grounding, "connections", []):
+        for key in ("agent_a", "agent_b"):
+            if key in c:
+                conn_agents.add(c[key])
+    if conn_agents:
+        hint_lines.append("Agents with connections: " + ", ".join(sorted(conn_agents)[:5]))
+    if records:
+        all_subjects: list[str] = []
+        for rec in records[:10]:
+            all_subjects.extend(rec.subjects[:3])
+        top_subj = list(dict.fromkeys(all_subjects))[:5]
+        if top_subj:
+            hint_lines.append("Top subjects: " + ", ".join(top_subj))
+    if hint_lines:
+        sections.append("FOLLOW-UP HINT DATA:")
+        for line in hint_lines:
+            sections.append(f"  - {line}")
+        sections.append("")
+
     sections.append(
         "Compose a scholarly response following the evidence rules. "
-        "Include exact counts and weave links naturally into the text."
+        "Include exact counts and weave links naturally into the text. "
+        "Suggest follow-ups that leverage available data — e.g., exploring "
+        "an agent's connections, comparing publication places, or diving into a subject."
     )
 
     return "\n".join(sections)
@@ -932,8 +961,8 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
     # --- Truncation notice ---
     if result.truncated:
         sections.append(
-            "NOTE: Results were truncated. The total count cited in step "
-            "results is accurate, but only a subset of records is shown above."
+            f"NOTE: Showing {len(records)} of {result.total_record_count} total matching records. "
+            "The response should acknowledge this truncation to the user."
         )
         sections.append("")
 
@@ -944,9 +973,38 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
             sections.append(f"  {msg.role.upper()}: {msg.content[:200]}")
         sections.append("")
 
+    # --- Follow-up hints (deterministic data for better suggestions) ---
+    hint_lines_full: list[str] = []
+    if agents:
+        top_agents_full = sorted(agents, key=lambda a: a.record_count, reverse=True)[:3]
+        hint_lines_full.append("Top agents: " + ", ".join(
+            f"{a.canonical_name} ({a.record_count} records)" for a in top_agents_full
+        ))
+    conn_agents_full = set()
+    for c in getattr(result.grounding, "connections", []):
+        for key in ("agent_a", "agent_b"):
+            if key in c:
+                conn_agents_full.add(c[key])
+    if conn_agents_full:
+        hint_lines_full.append("Agents with connections: " + ", ".join(sorted(conn_agents_full)[:5]))
+    if records:
+        all_subj_full: list[str] = []
+        for rec in records[:10]:
+            all_subj_full.extend(rec.subjects[:3])
+        top_subj_full = list(dict.fromkeys(all_subj_full))[:5]
+        if top_subj_full:
+            hint_lines_full.append("Top subjects: " + ", ".join(top_subj_full))
+    if hint_lines_full:
+        sections.append("FOLLOW-UP HINT DATA:")
+        for line in hint_lines_full:
+            sections.append(f"  - {line}")
+        sections.append("")
+
     sections.append(
         "Compose a scholarly response following the evidence rules. "
-        "Include exact counts and weave links naturally into the text."
+        "Include exact counts and weave links naturally into the text. "
+        "Suggest follow-ups that leverage available data — e.g., exploring "
+        "an agent's connections, comparing publication places, or diving into a subject."
     )
 
     return "\n".join(sections)

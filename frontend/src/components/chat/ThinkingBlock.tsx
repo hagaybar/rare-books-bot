@@ -23,12 +23,29 @@ export default function ThinkingBlock({
 
   if (steps.length === 0 && !isActive) return null;
 
-  // ---- Active state: show latest step with pulse animation ----
+  // ---- Active state: show latest step with pulse animation + pipeline indicator ----
   if (isActive) {
     const latestStep = steps.length > 0 ? steps[steps.length - 1] : 'Thinking\u2026';
+    // Infer current pipeline stage from the latest step text
+    const stageNames = ['interpret', 'execute', 'narrate'] as const;
+    const stageLabels = { interpret: 'Interpret', execute: 'Execute', narrate: 'Narrate' };
+    let currentStage: string = 'interpret';
+    if (latestStep.startsWith('Composing')) currentStage = 'narrate';
+    else if (latestStep.startsWith('Searching') || latestStep.startsWith('Found')) currentStage = 'execute';
+
     return (
       <div className="flex justify-start">
         <div className="max-w-[75%] px-4 py-3 rounded-2xl rounded-bl-md bg-gray-100 border border-gray-200 shadow-sm animate-pulse">
+          <div className="flex items-center gap-1.5 mb-1.5 text-[10px] tracking-wide">
+            {stageNames.map((s, i) => (
+              <span key={s} className="flex items-center gap-1">
+                <span className={s === currentStage ? 'font-semibold text-gray-600' : 'text-gray-300'}>
+                  {stageLabels[s]}
+                </span>
+                {i < stageNames.length - 1 && <span className="text-gray-300">{'\u2192'}</span>}
+              </span>
+            ))}
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-base" aria-hidden="true">
               {'\uD83D\uDCAD'}

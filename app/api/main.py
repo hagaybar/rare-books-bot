@@ -1010,7 +1010,8 @@ async def websocket_chat(websocket: WebSocket):
         # ---- Stage 1: Interpret ----
         await websocket.send_json({
             "type": "thinking",
-            "text": "Interpreting your query..."
+            "text": "Interpreting your query...",
+            "stage": "interpret",
         })
 
         plan = await interpret(message, ws_session_context)
@@ -1040,7 +1041,8 @@ async def websocket_chat(websocket: WebSocket):
         filter_desc = describe_filters(plan)
         await websocket.send_json({
             "type": "thinking",
-            "text": f"Searching for {filter_desc}..."
+            "text": f"Searching for {filter_desc}...",
+            "stage": "execute",
         })
 
         execution_result = execute_scholar_plan(
@@ -1048,12 +1050,25 @@ async def websocket_chat(websocket: WebSocket):
         )
 
         records_found = len(execution_result.grounding.records)
+        if execution_result.truncated:
+            thinking_text = (
+                f"Found {execution_result.total_record_count} matching records"
+                f" (showing top {records_found})"
+            )
+        else:
+            thinking_text = f"Found {records_found} matching records"
         await websocket.send_json({
             "type": "thinking",
-            "text": f"Found {records_found} matching records"
+            "text": thinking_text,
+            "stage": "execute",
         })
 
         # ---- Stage 3: Narrate (streaming) ----
+        await websocket.send_json({
+            "type": "thinking",
+            "text": "Composing scholarly response...",
+            "stage": "narrate",
+        })
         await websocket.send_json({"type": "stream_start"})
 
         async def _stream_chunk(text: str) -> None:
@@ -1083,6 +1098,7 @@ async def websocket_chat(websocket: WebSocket):
             metadata={
                 "intents": plan.intents,
                 "grounding": scholar_response.grounding.model_dump(),
+                "total_record_count": execution_result.total_record_count,
                 **scholar_response.metadata,
             },
         )
