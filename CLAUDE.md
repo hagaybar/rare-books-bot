@@ -9,6 +9,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. Any command that may return large output must include a hard cap (e.g., | head -n 50).
 4. If a tool returns an error about size/limits, do not retry the same approach. Switch strategy (search -> narrow excerpt -> proceed).
 
+## ⚠ Hard Rules (read first)
+
+- Never read large files in full — always bound with `rg`/`head`/`sed -n`
+- Hard-cap any command that may return large output (`| head -n 50`)
+- On empty CandidateSet: report it explicitly with the query that produced it — do not narrate around it
+- On MARC parse failure: log the error to `data/runs/`, surface it clearly, and stop — do not proceed with partial data
+- On low normalization confidence: store `null` + explicit reason — never invent or guess values
+
 ## Project Mission
 
 Build a bibliographic discovery system for rare books where **MARC XML is the source of truth**.
@@ -40,11 +48,13 @@ Every response--even internal ones--must be grounded in:
 
 ## Available Skills
 
-- **python-dev-expert**: Python best practices (small functions, type hints, testable, DRY)
-- **git-expert**: Git/GitHub workflow (commits, branches, PRs)
-- **marc-ingest**: Full MARC XML ingestion pipeline rebuild (7 phases)
-- **babysitter**: Orchestrate complex multi-step workflows (processes, agents, quality gates)
-- **superpowers**: Brainstorming, planning, TDD, debugging, verification, code review
+| Skill | Description | When to invoke |
+|-------|-------------|----------------|
+| python-dev-expert | Python best practices | Pure Python implementation questions |
+| git-expert | Git/GitHub workflow | Branch, PR, and commit workflow |
+| marc-ingest | Full MARC XML ingestion pipeline rebuild (7 phases) | Rebuilding or repairing the ingestion pipeline |
+| babysitter | Orchestrate complex multi-step workflows | Any multi-step workflow requiring quality gates or process management |
+| superpowers | Brainstorming, planning, TDD, debugging, verification, code review | Planning new features, debugging, or reviewing code |
 
 ## Directory Conventions
 
@@ -75,7 +85,8 @@ uvicorn app.api.main:app --reload # dev server
 cd frontend && npm run dev        # frontend dev
 ./deploy.sh                       # deploy to production
 python -m app.cli query "..."     # run a query
-python3 scripts/eval/run_eval.py --models gpt-4.1,gpt-4.1-mini --stages interpreter,narrator --queries data/eval/queries.json --judge-model gpt-4.1  # model comparison
+# Run model comparison across stages; use when evaluating a new model or prompt change
+python3 scripts/eval/run_eval.py --models gpt-4.1,gpt-4.1-mini --stages interpreter,narrator --queries data/eval/queries.json --judge-model gpt-4.1
 ```
 
 ## Topic Registry
