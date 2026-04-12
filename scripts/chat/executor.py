@@ -31,6 +31,7 @@ from scripts.chat.plan_models import (
     GroundingData,
     GroundingLink,
     InterpretationPlan,
+    PublisherDetail,
     RecordSet,
     RecordSummary,
     ResolveAgentParams,
@@ -106,6 +107,21 @@ def execute_plan(
 
     # Collect grounding data from all step results
     grounding, was_truncated, total_records = _collect_grounding(step_results, db_path)
+
+    # Auto-discover agent connections if 2-10 agents and no explicit find_connections step
+    if (2 <= len(grounding.agents) <= 10
+            and not any(s.action == StepAction.FIND_CONNECTIONS for s in plan.execution_steps)):
+        try:
+            from scripts.chat.cross_reference import find_connections
+            top_agents = sorted(grounding.agents, key=lambda a: a.record_count, reverse=True)[:5]
+            agent_names = [a.canonical_name for a in top_agents]
+            conn_list = find_connections(db_path, agent_names)
+            grounding.connections = [
+                c.model_dump() if hasattr(c, "model_dump") else vars(c)
+                for c in conn_list
+            ]
+        except Exception:
+            pass  # Auto-connections are best-effort
 
     # Build ordered list of step results
     steps_completed = [step_results[i] for i in execution_order]
@@ -1013,6 +1029,18 @@ def _handle_enrich(
 
             canonical_name = enrich_row["canonical_name"] or agent_name
 
+            # Fetch Hebrew aliases via agent_authorities → agent_aliases
+            hebrew_alias_rows = conn.execute(
+                """SELECT alias_form FROM agent_aliases
+                   WHERE authority_id = (
+                       SELECT id FROM agent_authorities
+                       WHERE authority_uri = ?
+                   )
+                   AND script = 'hebrew'""",
+                (authority_uri,),
+            ).fetchall()
+            hebrew_aliases = [r["alias_form"] for r in hebrew_alias_rows]
+
             agent_summary = AgentSummary(
                 canonical_name=canonical_name,
                 variants=variants,
@@ -1022,6 +1050,9 @@ def _handle_enrich(
                 description=enrich_row["description"],
                 record_count=record_count,
                 links=links,
+                image_url=enrich_row["image_url"] if "image_url" in enrich_row.keys() else None,
+                authority_uri=authority_uri,
+                hebrew_aliases=hebrew_aliases,
             )
 
             # Enrich with Wikipedia data if available
@@ -1246,12 +1277,27 @@ def _collect_grounding(
             if row["mms_id"] not in titles_map:
                 titles_map[row["mms_id"]] = row["value"]
 
+        # Title variants: collect uniform and variant titles per mms_id (small sets only)
+        title_variants_map: Dict[str, List[str]] = {}
+        if len(all_mms) <= 15:
+            tvar_rows = conn.execute(
+                f"""SELECT r.mms_id, t.value, t.title_type FROM titles t
+                    JOIN records r ON t.record_id = r.id
+                    WHERE r.mms_id IN ({placeholders})
+                    AND t.title_type IN ('uniform', 'variant')""",
+                all_mms,
+            ).fetchall()
+            for row in tvar_rows:
+                if row["value"]:
+                    title_variants_map.setdefault(row["mms_id"], []).append(row["value"])
+
         # Imprints: keep first (lowest occurrence) per mms_id
         imprints_map: Dict[str, sqlite3.Row] = {}
         imp_rows = conn.execute(
             f"""SELECT r.mms_id, i.date_start, i.date_end, i.date_label,
                        i.place_norm, i.place_display,
-                       i.publisher_norm, i.publisher_display
+                       i.publisher_norm, i.publisher_display,
+                       i.date_confidence, i.place_confidence, i.publisher_confidence
                 FROM imprints i
                 JOIN records r ON i.record_id = r.id
                 WHERE r.mms_id IN ({placeholders})
@@ -1286,10 +1332,11 @@ def _collect_grounding(
             if row["agent_norm"]:
                 agents_map.setdefault(row["mms_id"], []).append(row["agent_norm"])
 
-        # Subjects: collect distinct values per mms_id
+        # Subjects: collect distinct values and Hebrew values per mms_id
         subjects_map: Dict[str, List[str]] = {}
+        subjects_he_map: Dict[str, List[str]] = {}
         subj_rows = conn.execute(
-            f"""SELECT DISTINCT r.mms_id, s.value FROM subjects s
+            f"""SELECT DISTINCT r.mms_id, s.value, s.value_he FROM subjects s
                 JOIN records r ON s.record_id = r.id
                 WHERE r.mms_id IN ({placeholders})""",
             all_mms,
@@ -1297,6 +1344,8 @@ def _collect_grounding(
         for row in subj_rows:
             if row["value"]:
                 subjects_map.setdefault(row["mms_id"], []).append(row["value"])
+            if row["value_he"]:
+                subjects_he_map.setdefault(row["mms_id"], []).append(row["value_he"])
 
         # Physical descriptions: first per mms_id
         phys_map: Dict[str, str] = {}
@@ -1327,6 +1376,22 @@ def _collect_grounding(
                 if len(lst) < 3:  # cap at 3 notes per record
                     lst.append(row["value"][:200])  # truncate long notes
 
+        # Notes structured: group by tag for small result sets
+        notes_structured_map: Dict[str, Dict[str, List[str]]] = {}
+        if len(all_mms) <= 15:
+            note_struct_rows = conn.execute(
+                f"""SELECT r.mms_id, n.value, n.tag FROM notes n
+                    JOIN records r ON n.record_id = r.id
+                    WHERE r.mms_id IN ({placeholders})
+                    AND n.tag IN ('500', '504', '505', '520', '590')
+                    ORDER BY r.mms_id, n.tag""",
+                all_mms,
+            ).fetchall()
+            for row in note_struct_rows:
+                if row["value"]:
+                    tag_map = notes_structured_map.setdefault(row["mms_id"], {})
+                    tag_map.setdefault(row["tag"], []).append(row["value"][:200])
+
         # Assemble RecordSummary objects from batch results
         for mms_id in all_mms:
             title = titles_map.get(mms_id, "")
@@ -1335,12 +1400,18 @@ def _collect_grounding(
             date_display = None
             place = None
             publisher = None
+            date_confidence = None
+            place_confidence = None
+            publisher_confidence = None
             if imp_row:
                 date_display = imp_row["date_label"] or (
                     str(imp_row["date_start"]) if imp_row["date_start"] else None
                 )
                 place = imp_row["place_display"] or imp_row["place_norm"]
                 publisher = imp_row["publisher_display"] or imp_row["publisher_norm"]
+                date_confidence = imp_row["date_confidence"]
+                place_confidence = imp_row["place_confidence"]
+                publisher_confidence = imp_row["publisher_confidence"]
 
             language = languages_map.get(mms_id)
             agents = agents_map.get(mms_id, [])
@@ -1362,6 +1433,12 @@ def _collect_grounding(
                 notes=notes_map.get(mms_id, []),
                 primo_url=primo_url,
                 source_steps=mms_to_steps.get(mms_id, []),
+                date_confidence=date_confidence,
+                place_confidence=place_confidence,
+                publisher_confidence=publisher_confidence,
+                title_variants=title_variants_map.get(mms_id, []),
+                notes_structured=notes_structured_map.get(mms_id, {}),
+                subjects_he=subjects_he_map.get(mms_id, []),
             ))
 
             # Add Primo link
@@ -1453,6 +1530,18 @@ def _collect_grounding(
                     except (json.JSONDecodeError, TypeError):
                         pass
 
+                # Fetch Hebrew aliases
+                hebrew_alias_rows = conn.execute(
+                    """SELECT alias_form FROM agent_aliases
+                       WHERE authority_id = (
+                           SELECT id FROM agent_authorities
+                           WHERE authority_uri = ?
+                       )
+                       AND script = 'hebrew'""",
+                    (authority_uri,),
+                ).fetchall()
+                grounding_hebrew_aliases = [r["alias_form"] for r in hebrew_alias_rows]
+
                 agent_summaries.append(AgentSummary(
                     canonical_name=display_name,
                     variants=[],
@@ -1461,6 +1550,9 @@ def _collect_grounding(
                     occupations=person_info.get("occupations", []),
                     description=enrich_row["description"],
                     links=agent_links,
+                    image_url=enrich_row["image_url"] if "image_url" in enrich_row.keys() else None,
+                    authority_uri=authority_uri,
+                    hebrew_aliases=grounding_hebrew_aliases,
                 ))
                 enriched_names.add(display_name)
                 if agent_name:
@@ -1470,11 +1562,48 @@ def _collect_grounding(
         for agent in agent_summaries:
             links.extend(agent.links)
 
+        # 6. Lookup publisher authority data for distinct publishers in records
+        publisher_details: List[PublisherDetail] = []
+        distinct_publishers = {
+            r.publisher.lower()
+            for r in records
+            if r.publisher
+        }
+        if distinct_publishers:
+            pub_placeholders = ",".join("?" for _ in distinct_publishers)
+            pub_rows = conn.execute(
+                f"""SELECT DISTINCT pa.canonical_name, pa.type, pa.dates_active,
+                           pa.date_start, pa.date_end,
+                           pa.location, pa.wikidata_id, pa.cerl_id
+                    FROM publisher_authorities pa
+                    JOIN publisher_variants pv ON pv.authority_id = pa.id
+                    WHERE lower(pv.variant_form) IN ({pub_placeholders})
+                      AND pa.type IS NOT NULL AND pa.type != 'unresearched'""",
+                list(distinct_publishers),
+            ).fetchall()
+            for prow in pub_rows:
+                # Build a human-readable dates_active string if not already stored
+                dates_active = prow["dates_active"]
+                if not dates_active:
+                    d_start = prow["date_start"]
+                    d_end = prow["date_end"]
+                    if d_start or d_end:
+                        dates_active = f"{d_start or '?'}–{d_end or '?'}"
+                publisher_details.append(PublisherDetail(
+                    canonical_name=prow["canonical_name"],
+                    type=prow["type"],
+                    dates_active=dates_active,
+                    location=prow["location"],
+                    wikidata_id=prow["wikidata_id"],
+                    cerl_id=prow["cerl_id"],
+                ))
+
         return GroundingData(
             records=records,
             agents=agent_summaries,
             aggregations=aggregations,
             links=links,
+            publishers=publisher_details,
         ), truncated, total_record_count
     finally:
         conn.close()

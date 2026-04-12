@@ -83,7 +83,7 @@ def test_db(tmp_path):
         CREATE TABLE subjects (
             id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT,
             source_tag TEXT, scheme TEXT, heading_lang TEXT,
-            authority_uri TEXT, parts TEXT, source TEXT
+            authority_uri TEXT, parts TEXT, source TEXT, value_he TEXT
         );
         CREATE TABLE titles (
             id INTEGER PRIMARY KEY, record_id INTEGER,
@@ -91,6 +91,13 @@ def test_db(tmp_path):
         );
         CREATE TABLE languages (
             id INTEGER PRIMARY KEY, record_id INTEGER, code TEXT, source TEXT
+        );
+        CREATE TABLE physical_descriptions (
+            id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT, source TEXT
+        );
+        CREATE TABLE notes (
+            id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT, tag TEXT,
+            source TEXT
         );
         CREATE TABLE agent_authorities (
             id INTEGER PRIMARY KEY, canonical_name TEXT,
@@ -186,9 +193,9 @@ def test_db(tmp_path):
              'printer', 0.95, 'relator_code', '[]');
 
         INSERT INTO subjects VALUES
-            (1, 1, 'Jewish law', '650', 'lcsh', 'eng', NULL, '{}', '[]');
+            (1, 1, 'Jewish law', '650', 'lcsh', 'eng', NULL, '{}', '[]', NULL);
         INSERT INTO subjects VALUES
-            (2, 3, 'Talmud', '650', 'lcsh', 'eng', NULL, '{}', '[]');
+            (2, 3, 'Talmud', '650', 'lcsh', 'eng', NULL, '{}', '[]', NULL);
 
         INSERT INTO titles VALUES
             (1, 1, 'main', 'Shulchan Aruch', '["245"]');
@@ -702,7 +709,7 @@ def test_grounding_link_collection(test_db):
         ),
     }
 
-    grounding, _truncated = _collect_grounding(step_results, test_db)
+    grounding, _truncated, _total = _collect_grounding(step_results, test_db)
 
     # Should have record summaries
     assert len(grounding.records) >= 1
@@ -733,7 +740,7 @@ def test_grounding_deduplicates_records(test_db):
         ),
     }
 
-    grounding, _truncated = _collect_grounding(step_results, test_db)
+    grounding, _truncated, _total = _collect_grounding(step_results, test_db)
 
     # Should have 3 unique records (deduped)
     mms_ids = [r.mms_id for r in grounding.records]
@@ -913,7 +920,7 @@ def test_grounding_collects_agent_links_without_enrich_step(test_db):
         ),
     }
 
-    grounding, _truncated = _collect_grounding(step_results, test_db)
+    grounding, _truncated, _total = _collect_grounding(step_results, test_db)
 
     # Record 990001234 has agents Karo and Bomberg.
     # Both have authority_enrichment entries with wikipedia_url, wikidata_id, etc.
@@ -975,7 +982,7 @@ def test_grounding_agent_links_not_duplicated_with_enrich_step(test_db):
         ),
     }
 
-    grounding, _truncated = _collect_grounding(step_results, test_db)
+    grounding, _truncated, _total = _collect_grounding(step_results, test_db)
 
     # Count how many Wikipedia links there are for Karo
     karo_wiki = [

@@ -211,6 +211,9 @@ class AgentSummary(BaseModel):
     record_count: int = 0
     links: list[GroundingLink] = Field(default_factory=list)
     wikipedia_context: str | None = None  # Extended bio from Wikipedia
+    image_url: str | None = None
+    authority_uri: str | None = None
+    hebrew_aliases: list[str] = Field(default_factory=list)
 
 
 class EnrichmentBundle(BaseModel):
@@ -332,6 +335,23 @@ class RecordSummary(BaseModel):
     notes: list[str] = Field(default_factory=list)
     primo_url: str = ""
     source_steps: list[int] = Field(default_factory=list)
+    date_confidence: float | None = None
+    place_confidence: float | None = None
+    publisher_confidence: float | None = None
+    title_variants: list[str] = Field(default_factory=list)
+    notes_structured: dict[str, list[str]] = Field(default_factory=dict)
+    subjects_he: list[str] = Field(default_factory=list)
+
+
+class PublisherDetail(BaseModel):
+    """Publisher authority data for narrator consumption."""
+
+    canonical_name: str
+    type: str | None = None
+    dates_active: str | None = None
+    location: str | None = None
+    wikidata_id: str | None = None
+    cerl_id: str | None = None
 
 
 class GroundingData(BaseModel):
@@ -344,6 +364,8 @@ class GroundingData(BaseModel):
     agents: list[AgentSummary] = Field(default_factory=list)
     aggregations: dict[str, list] = Field(default_factory=dict)
     links: list[GroundingLink] = Field(default_factory=list)
+    publishers: list[PublisherDetail] = Field(default_factory=list)
+    connections: list[dict] = Field(default_factory=list)
 
 
 class SessionContext(BaseModel):

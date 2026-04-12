@@ -57,6 +57,16 @@ EVIDENCE RULES (non-negotiable):
 7. When Wikipedia context is provided for an agent, use it to inform your
    narrative with richer biographical detail. Do not quote it verbatim.
    Wikipedia context is general scholarly knowledge, not collection evidence.
+8. When confidence scores indicate uncertainty (below 0.7) for dates, places,
+   or publishers, qualify your statements accordingly (e.g., "attributed to",
+   "possibly printed in", "circa").
+9. When Hebrew subject equivalents are provided, include them alongside English
+   terms to serve bilingual researchers.
+10. When publisher context is provided (type, dates, location), weave this
+    information into your description of the publication.
+11. When agent relationships are discovered, mention them to enrich the
+    scholarly narrative (e.g., teacher-student connections, co-publication
+    patterns).
 
 RESPONSE FORMAT:
 - Use markdown for structure (headers, bold, lists, links).
@@ -631,10 +641,18 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
         sections.append(f"COLLECTION RECORDS ({len(records)} found):")
         for rec in records:
             parts = [f"  - [{rec.mms_id}] {rec.title}"]
+            if rec.title_variants:
+                parts.append(f"    Also known as: {', '.join(rec.title_variants)}")
             if rec.date_display:
-                parts.append(f"    Date: {rec.date_display}")
+                date_str = rec.date_display
+                if rec.date_confidence is not None and rec.date_confidence < 0.7:
+                    date_str += " (uncertain)"
+                parts.append(f"    Date: {date_str}")
             if rec.publisher:
-                parts.append(f"    Publisher: {rec.publisher}")
+                pub_str = rec.publisher
+                if rec.publisher_confidence is not None and rec.publisher_confidence < 0.7:
+                    pub_str += " (uncertain)"
+                parts.append(f"    Publisher: {pub_str}")
             if mixed_langs and rec.language:
                 parts.append(f"    Language: {rec.language}")
             if rec.agents:
@@ -643,8 +661,10 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
                     parts.append(f"    Agents: {', '.join(selected)}")
             if include_subjects and rec.subjects:
                 selected_subj = rec.subjects[:2]
-                if selected_subj:
-                    parts.append(f"    Subjects: {', '.join(selected_subj)}")
+                subj_str = ", ".join(selected_subj)
+                if rec.subjects_he:
+                    subj_str += f" | עברית: {', '.join(rec.subjects_he[:2])}"
+                parts.append(f"    Subjects: {subj_str}")
             if rec.primo_url:
                 parts.append(f"    Catalog link: {rec.primo_url}")
             sections.append("\n".join(parts))
@@ -659,6 +679,33 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
         sections.append("AGENT PROFILES:")
         for agent in selected_agents:
             sections.append(_format_lean_agent(agent))
+        sections.append("")
+
+    # --- Publisher context ---
+    publishers = result.grounding.publishers
+    if publishers:
+        sections.append("PUBLISHER CONTEXT:")
+        for pub in publishers:
+            meta_parts: list[str] = []
+            if pub.location:
+                meta_parts.append(pub.location)
+            if pub.type:
+                meta_parts.append(pub.type)
+            if pub.dates_active:
+                meta_parts.append(pub.dates_active)
+            meta = f" ({', '.join(meta_parts)})" if meta_parts else ""
+            sections.append(f"  - {pub.canonical_name}{meta}")
+        sections.append("")
+
+    # --- Relationship hints ---
+    connections = result.grounding.connections
+    if connections:
+        sections.append("RELATIONSHIP HINTS:")
+        for conn in connections[:10]:
+            a = conn.get("agent_a", "")
+            b = conn.get("agent_b", "")
+            rel = conn.get("relationship_type", "co-published with")
+            sections.append(f"  - {a} {rel} {b}")
         sections.append("")
 
     # --- Aggregations (top 5 per field, drop single-value fields) ---
@@ -762,11 +809,19 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
         sections.append(f"COLLECTION RECORDS ({len(records)} found):")
         for rec in records:
             parts = [f"  - [{rec.mms_id}] {rec.title}"]
+            if rec.title_variants:
+                parts.append(f"    Also known as: {', '.join(rec.title_variants)}")
             if rec.date_display:
-                parts.append(f"    Date/Place: {rec.date_display}")
+                date_str = rec.date_display
+                if rec.date_confidence is not None and rec.date_confidence < 0.7:
+                    date_str += " (uncertain)"
+                parts.append(f"    Date/Place: {date_str}")
             detail_items: list[str] = []
             if rec.publisher:
-                detail_items.append(f"Publisher: {rec.publisher}")
+                pub_str = rec.publisher
+                if rec.publisher_confidence is not None and rec.publisher_confidence < 0.7:
+                    pub_str += " (uncertain)"
+                detail_items.append(f"Publisher: {pub_str}")
             if rec.language:
                 detail_items.append(f"Language: {rec.language}")
             if detail_items:
@@ -774,7 +829,10 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
             if rec.agents:
                 parts.append(f"    Agents: {', '.join(rec.agents)}")
             if rec.subjects:
-                parts.append(f"    Subjects: {', '.join(rec.subjects)}")
+                subj_str = ", ".join(rec.subjects)
+                if rec.subjects_he:
+                    subj_str += f" | עברית: {', '.join(rec.subjects_he)}"
+                parts.append(f"    Subjects: {subj_str}")
             if rec.primo_url:
                 parts.append(f"    Catalog link: {rec.primo_url}")
             sections.append("\n".join(parts))
@@ -809,6 +867,33 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
                 link_strs = [f"[{lnk.label}]({lnk.url})" for lnk in agent.links]
                 parts.append(f"    Links: {', '.join(link_strs)}")
             sections.append("\n".join(parts))
+        sections.append("")
+
+    # --- Publisher context ---
+    publishers = result.grounding.publishers
+    if publishers:
+        sections.append("PUBLISHER CONTEXT:")
+        for pub in publishers:
+            meta_parts: list[str] = []
+            if pub.location:
+                meta_parts.append(pub.location)
+            if pub.type:
+                meta_parts.append(pub.type)
+            if pub.dates_active:
+                meta_parts.append(pub.dates_active)
+            meta = f" ({', '.join(meta_parts)})" if meta_parts else ""
+            sections.append(f"  - {pub.canonical_name}{meta}")
+        sections.append("")
+
+    # --- Relationship hints ---
+    connections = result.grounding.connections
+    if connections:
+        sections.append("RELATIONSHIP HINTS:")
+        for conn in connections[:10]:
+            a = conn.get("agent_a", "")
+            b = conn.get("agent_b", "")
+            rel = conn.get("relationship_type", "co-published with")
+            sections.append(f"  - {a} {rel} {b}")
         sections.append("")
 
     # --- Aggregations ---

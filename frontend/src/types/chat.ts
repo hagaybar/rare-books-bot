@@ -104,6 +104,12 @@ export interface GroundingRecord {
   subjects: string[];
   primo_url: string;
   source_steps: number[];
+  date_confidence?: number | null;
+  place_confidence?: number | null;
+  publisher_confidence?: number | null;
+  title_variants?: string[];
+  subjects_he?: string[];
+  notes_structured?: Record<string, string[]>;
 }
 
 export interface GroundingAgent {
@@ -115,6 +121,18 @@ export interface GroundingAgent {
   description: string | null;
   record_count: number;
   links: GroundingLink[];
+  image_url?: string | null;
+  authority_uri?: string | null;
+  hebrew_aliases?: string[];
+}
+
+export interface PublisherDetail {
+  canonical_name: string;
+  type?: string | null;
+  dates_active?: string | null;
+  location?: string | null;
+  wikidata_id?: string | null;
+  cerl_id?: string | null;
 }
 
 export interface GroundingData {
@@ -122,6 +140,8 @@ export interface GroundingData {
   agents: GroundingAgent[];
   aggregations: Record<string, unknown[]>;
   links: GroundingLink[];
+  publishers?: PublisherDetail[];
+  connections?: Record<string, unknown>[];
 }
 
 // ---------------------------------------------------------------------------
