@@ -61,6 +61,7 @@ _DB_SCHEMA = """
     );
     CREATE TABLE subjects (
         id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT,
+        value_he TEXT,
         source_tag TEXT, scheme TEXT, heading_lang TEXT,
         authority_uri TEXT, parts TEXT, source TEXT
     );
