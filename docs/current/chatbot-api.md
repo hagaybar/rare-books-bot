@@ -238,10 +238,25 @@ The interpreter includes dedicated handling for Hebrew queries:
 - Hebrew terms are used directly in SUBJECT and TITLE filters
 - Collection/provenance queries use corporate agents (e.g., "the Faitlovitch collection" → `agent_norm CONTAINS` + `agent_type EQUALS corporate`)
 
+### Enriched Narrator Context
+
+The executor provides the narrator with rich grounding data beyond basic record fields:
+
+- **Confidence scores**: Date, place, and publisher confidence on each record. The narrator qualifies uncertain attributions (e.g., "circa", "possibly printed in").
+- **Publisher details**: Type, dates active, location, and external IDs from `publisher_authorities`. Enables descriptions like "printed by Aldine Press (Venice, active 1495-1515)".
+- **Hebrew subjects**: Bilingual subject headings (`subjects_he`). The narrator includes Hebrew equivalents alongside English terms.
+- **Agent images and aliases**: Wikipedia portrait URLs and Hebrew name variants from `agent_aliases`.
+- **Auto-discovered connections**: When 2-10 agents appear in results and no explicit `find_connections` step was planned, the executor auto-queries `cross_reference.find_connections()` and passes relationship hints to the narrator.
+- **Title variants**: Uniform and variant titles shown as "Also known as: ..."
+- **Expanded notes**: Notes from MARC tags 504 (bibliography), 505 (contents), and 590 (shelf marks) in addition to 500/520.
+- **Entity-aware follow-ups**: The narrator receives deterministic hint data (top agents, agents with connections, top subjects) to generate data-driven follow-up suggestions.
+- **Truncation feedback**: When results are truncated, the narrator is told "Showing N of M total records" and instructed to acknowledge this to the user.
+
 ### Features
 
 - LLM-generated narrative summaries with evidence citations
-- Context-aware follow-up suggestions
+- Confidence-qualified assertions for uncertain dates, places, publishers
+- Entity-aware follow-up suggestions leveraging available connections and subjects
 - Streaming narrative via WebSocket (see `docs/current/streaming.md`)
 - Zero-results handling with broadening suggestions
 - Bilingual Hebrew/English subject search

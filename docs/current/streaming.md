@@ -29,7 +29,7 @@ The WebSocket endpoint provides real-time streaming for progressive query result
 | Type | When Sent | Payload |
 |------|-----------|---------|
 | `session_created` | New session created | `{ session_id: string }` |
-| `thinking` | During interpret/execute stages | `{ text: string }` |
+| `thinking` | During interpret/execute/narrate stages | `{ text: string, stage?: string }` |
 | `stream_start` | Before narrative streaming begins | `{}` |
 | `stream_chunk` | Each narrative text chunk | `{ text: string }` |
 | `complete` | Processing finished | `{ response: ChatResponse }` |
@@ -37,11 +37,12 @@ The WebSocket endpoint provides real-time streaming for progressive query result
 
 ### Thinking Messages
 
-The server sends thinking updates at each pipeline stage:
+The server sends thinking updates at each pipeline stage. Each thinking message includes an optional `stage` field (`"interpret"`, `"execute"`, or `"narrate"`) for pipeline progress indication:
 
-1. `"Interpreting your query..."` (Stage 1: interpreter)
-2. `"Searching for {filter description}..."` (Stage 2: executor)
-3. `"Found N matching records"` (after execution)
+1. `"Interpreting your query..."` (stage: `"interpret"`)
+2. `"Searching for {filter description}..."` (stage: `"execute"`)
+3. `"Found N matching records"` or `"Found N matching records (showing top M)"` if truncated (stage: `"execute"`)
+4. `"Composing scholarly response..."` (stage: `"narrate"`)
 
 ### Narrative Streaming
 

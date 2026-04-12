@@ -28,7 +28,7 @@ scripts/                      # Core library organized by function
     interpreter.py            # NL query → InterpretationPlan (via litellm)
     executor.py               # InterpretationPlan → ExecutionResult (SQL)
     narrator.py               # ExecutionResult → narrative response (via litellm)
-    plan_models.py            # Execution pipeline models (27 models)
+    plan_models.py            # Execution pipeline models (28 models)
   query/                      # Query compilation and execution
     llm_compiler.py           # NL -> QueryPlan via litellm (legacy; see chat/interpreter.py)
     compile.py                # Query compilation entry point
@@ -151,7 +151,7 @@ Each component (ingestion, normalization, query, metadata) has a base interface 
 
 ## Pydantic Model Index
 
-The project uses 122 Pydantic models (7 Enums + 115 BaseModels) across 12 files. This section provides a complete reference.
+The project uses 123 Pydantic models (7 Enums + 116 BaseModels) across 12 files. This section provides a complete reference.
 
 ### Cross-Module (`scripts/shared_models.py`)
 
@@ -246,7 +246,7 @@ LLM-facing variants: `ExecutionStepLLM`, `ScholarlyDirectiveLLM`, `Interpretatio
 |------|-----------|-------|-------|
 | `scripts/shared_models.py` | 1 | 0 | 1 |
 | `scripts/chat/models.py` | 9 | 2 | 11 |
-| `scripts/chat/plan_models.py` | 26 | 1 | 27 |
+| `scripts/chat/plan_models.py` | 27 | 1 | 28 |
 | `scripts/schemas/query_plan.py` | 2 | 2 | 4 |
 | `scripts/schemas/candidate_set.py` | 3 | 0 | 3 |
 | `scripts/enrichment/models.py` | 7 | 2 | 9 |
@@ -256,7 +256,7 @@ LLM-facing variants: `ExecutionStepLLM`, `ScholarlyDirectiveLLM`, `Interpretatio
 | `app/api/models.py` | 9 | 0 | 9 |
 | `app/api/auth_models.py` | 6 | 0 | 6 |
 | `app/api/metadata_models.py` | 33 | 0 | 33 |
-| **Total** | **115** | **7** | **122** |
+| **Total** | **116** | **7** | **123** |
 
 ---
 

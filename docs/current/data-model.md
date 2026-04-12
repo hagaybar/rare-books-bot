@@ -1,6 +1,6 @@
 # Data Model
 
-> Last verified: 2026-04-02 (weaknesses review completed)
+> Last verified: 2026-04-12
 > Source of truth for: End-to-end data flow from MARC XML ingestion through chat user interface, including all intermediate schemas, transformations, and database structures
 
 ## 1. Overview
@@ -734,6 +734,8 @@ Aggregated evidence passed from executor to narrator. Deduplicated across all st
 | `agents` | `list[AgentSummary]` | Enriched agent profiles |
 | `aggregations` | `dict[str, list]` | Facet results by field |
 | `links` | `list[GroundingLink]` | External reference links |
+| `publishers` | `list[PublisherDetail]` | Publisher authority data (type, dates, location) |
+| `connections` | `list[dict]` | Auto-discovered agent relationships (when 2-10 agents, no explicit find_connections step) |
 
 ### RecordSummary
 
@@ -747,8 +749,16 @@ Aggregated evidence passed from executor to narrator. Deduplicated across all st
 | `language` | `str | None` | |
 | `agents` | `list[str]` | Agent names |
 | `subjects` | `list[str]` | Subject headings |
+| `physical_description` | `str | None` | MARC 300 physical description |
+| `notes` | `list[str]` | General/summary notes (tags 500/520, max 3, 200 chars) |
 | `primo_url` | `str` | Link to Primo catalog |
 | `source_steps` | `list[int]` | Steps that produced this record |
+| `date_confidence` | `float | None` | Date normalization confidence (0.0-1.0) |
+| `place_confidence` | `float | None` | Place normalization confidence |
+| `publisher_confidence` | `float | None` | Publisher normalization confidence |
+| `title_variants` | `list[str]` | Uniform and variant titles (skipped for >15 records) |
+| `notes_structured` | `dict[str, list[str]]` | Notes grouped by MARC tag (500/504/505/520/590; skipped for >15 records) |
+| `subjects_he` | `list[str]` | Hebrew subject heading translations |
 
 ### AgentSummary
 
@@ -763,6 +773,20 @@ Aggregated evidence passed from executor to narrator. Deduplicated across all st
 | `record_count` | `int` | Records in collection |
 | `links` | `list[GroundingLink]` | External reference links |
 | `wikipedia_context` | `str | None` | Extended bio from Wikipedia cache |
+| `image_url` | `str | None` | Wikipedia portrait/image URL |
+| `authority_uri` | `str | None` | NLI/VIAF/LC authority record URI |
+| `hebrew_aliases` | `list[str]` | Hebrew-script name variants |
+
+### PublisherDetail
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `canonical_name` | `str` | Normalized publisher name |
+| `type` | `str | None` | Publisher type (printing_house, private_press, etc.) |
+| `dates_active` | `str | None` | Active period (e.g., "1495-1515") |
+| `location` | `str | None` | Geographic location |
+| `wikidata_id` | `str | None` | Wikidata identifier |
+| `cerl_id` | `str | None` | CERL Thesaurus identifier |
 
 ### GroundingLink
 
@@ -864,6 +888,8 @@ TypeScript interfaces mirror the backend Pydantic models.
 | `agents` | `GroundingAgent[]` |
 | `aggregations` | `Record<string, unknown[]>` |
 | `links` | `GroundingLink[]` |
+| `publishers?` | `PublisherDetail[]` |
+| `connections?` | `Record<string, unknown>[]` |
 
 ### GroundingRecord (TS)
 
@@ -881,6 +907,12 @@ Mirrors `RecordSummary` from the backend.
 | `subjects` | `string[]` |
 | `primo_url` | `string` |
 | `source_steps` | `number[]` |
+| `date_confidence?` | `number | null` |
+| `place_confidence?` | `number | null` |
+| `publisher_confidence?` | `number | null` |
+| `title_variants?` | `string[]` |
+| `notes_structured?` | `Record<string, string[]>` |
+| `subjects_he?` | `string[]` |
 
 ### GroundingAgent (TS)
 
@@ -896,6 +928,20 @@ Mirrors `AgentSummary` from the backend.
 | `description` | `string | null` |
 | `record_count` | `number` |
 | `links` | `GroundingLink[]` |
+| `image_url?` | `string | null` |
+| `authority_uri?` | `string | null` |
+| `hebrew_aliases?` | `string[]` |
+
+### PublisherDetail (TS)
+
+| Field | Type |
+|-------|------|
+| `canonical_name` | `string` |
+| `type?` | `string | null` |
+| `dates_active?` | `string | null` |
+| `location?` | `string | null` |
+| `wikidata_id?` | `string | null` |
+| `cerl_id?` | `string | null` |
 
 ---
 
@@ -1118,7 +1164,7 @@ At every stage the raw value `"apud C. Plantinum,"` is preserved alongside the n
 
 3. ~~**CandidateSet always None in scholar pipeline.**~~ **FIXED** — `_build_candidate_set()` in app/api/main.py builds CandidateSet from ExecutionResult for both HTTP and WebSocket paths.
 
-4. ~~**RecordSummary omits physical description and notes.**~~ **FIXED** — Added `physical_description` and `notes` fields to RecordSummary. Executor batch-fetches MARC 300 (physical), 500 (general notes), and 520 (summary) — capped at 3 notes per record, 200 chars each.
+4. ~~**RecordSummary omits physical description and notes.**~~ **FIXED** — Added `physical_description` and `notes` fields to RecordSummary. Executor batch-fetches MARC 300 (physical), 500/520 (general notes/summary) — capped at 3 notes per record, 200 chars each. Additionally, `notes_structured` groups notes by MARC tag (500/504/505/520/590) for records sets of 15 or fewer.
 
 5. ~~**Grounding truncation at 30 records loses total count.**~~ **FIXED** — Added `total_record_count: int` to ExecutionResult, set before truncation.
 
