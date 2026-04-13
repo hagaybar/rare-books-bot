@@ -1,0 +1,9 @@
+{
+  "settingsPath": "/home/hagaybar/.claude/settings.json",
+  "oldPluginKey": "docs-sync@docs-sync-local",
+  "newPluginKey": "docs-sync@docs-sync",
+  "installedPluginsPath": "/home/hagaybar/.claude/plugins/installed_plugins.json",
+  "knownMarketplacesPath": "/home/hagaybar/.claude/plugins/known_marketplaces.json",
+  "marketplaceDir": "/home/hagaybar/.claude/plugins/marketplaces/docs-sync",
+  "cacheDir": "/home/hagaybar/.claude/plugins/cache/docs-sync/docs-sync/1.0.0"
+}
