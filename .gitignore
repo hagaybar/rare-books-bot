@@ -166,3 +166,6 @@ frontend/.a5c/
 
 # Babysitter run artifacts (ephemeral per-session state)
 .a5c/runs/
+
+# Docs-sync artifacts (ephemeral, per-commit analysis)
+docs-sync/artifacts/
