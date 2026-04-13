@@ -84,7 +84,7 @@ export default function MessageBubble({
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[75%] px-4 py-2.5 rounded-2xl rounded-br-md bg-blue-600 text-white text-sm leading-relaxed shadow-sm">
+        <div dir="auto" className="max-w-[75%] px-4 py-2.5 rounded-2xl rounded-br-md bg-blue-600 text-white text-sm leading-relaxed shadow-sm">
           {message.content}
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function MessageBubble({
               <svg className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
-              <div className="text-sm text-amber-800 leading-relaxed">
+              <div dir="auto" className="text-sm text-amber-800 leading-relaxed">
                 <ReactMarkdown>{message.clarificationNeeded}</ReactMarkdown>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function MessageBubble({
         <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-white border border-gray-200 text-sm text-gray-800 leading-relaxed shadow-sm">
           {isThinking ? (
             /* Thinking: show blinking cursor as typing indicator */
-            <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+            <div dir="auto" className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
               <span
                 className="inline-block w-[2px] h-[1em] bg-gray-400 align-text-bottom"
                 style={{ animation: 'blink-cursor 1s step-end infinite' }}
@@ -171,7 +171,7 @@ export default function MessageBubble({
             </div>
           ) : isStreaming ? (
             /* Streaming: show text so far with blinking cursor */
-            <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+            <div dir="auto" className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
               <ReactMarkdown>{message.content}</ReactMarkdown>
               <span
                 className="inline-block w-[2px] h-[1em] bg-gray-600 ml-0.5 align-text-bottom"
@@ -181,12 +181,12 @@ export default function MessageBubble({
             </div>
           ) : cleanedContent ? (
             /* Complete with content: normal render */
-            <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+            <div dir="auto" className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
               <ReactMarkdown>{cleanedContent}</ReactMarkdown>
             </div>
           ) : (
             /* Complete but empty content: show fallback */
-            <div className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+            <div dir="auto" className="chat-markdown-content prose prose-sm prose-gray max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
               <p className="text-gray-400 italic">No response text available.</p>
             </div>
           )}
@@ -239,7 +239,7 @@ export default function MessageBubble({
             </button>
             {narrativeOpen && (
               <div className="px-3 pb-3 text-sm text-blue-900 leading-relaxed">
-                <div className="chat-markdown-content prose prose-sm prose-blue max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
+                <div dir="auto" className="chat-markdown-content prose prose-sm prose-blue max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
                   <ReactMarkdown>{agentNarrative}</ReactMarkdown>
                 </div>
               </div>
