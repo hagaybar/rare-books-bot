@@ -16,6 +16,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - On empty CandidateSet: report it explicitly with the query that produced it — do not narrate around it
 - On MARC parse failure: log the error to `data/runs/`, surface it clearly, and stop — do not proceed with partial data
 - On low normalization confidence: store `null` + explicit reason — never invent or guess values
+- Research the codebase before editing. Never change code you haven't read.
+- When asked to invoke the /babysitter skill you *MUST* use it, don't second-guess or override this decision.
 
 ## Project Mission
 
