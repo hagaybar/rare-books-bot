@@ -1,0 +1,20 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "mainBranch": "main",
+  "mainCommit": "d1ecb1b",
+  "devBranch": "dev",
+  "devCommit": "26bc311",
+  "testQuery": "ספרים בשפה העברית שהודפסו באמסטרדם",
+  "serverHost": "rarebooks@151.145.90.19",
+  "sshKey": "~/.ssh/rarebooks_a1",
+  "serverLogsPath": "~/rare-books-data/logs/llm_calls.jsonl",
+  "changedFiles": [
+    "scripts/chat/executor.py",
+    "scripts/chat/narrator.py",
+    "scripts/chat/plan_models.py",
+    "app/api/main.py"
+  ],
+  "symptom": "Query returns 30 raw records with Primo links but scholarly narration is lost/degraded. Interpreter returned empty JSON {}.",
+  "constraint_no_llm_calls": true,
+  "constraint_no_modify_main": true
+}

@@ -1,0 +1,12 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "testQuery": "ספרים בשפה העברית שהודפסו באמסטרדם",
+  "confirmedEvidence": {
+    "fallbackResponse": "24,571 chars starting with 'Found 30 record(s)'",
+    "interpreterWorked": "162 output tokens, valid plan",
+    "executorWorked": "30 records found",
+    "narratorFailed": "Exception caught at narrator.py:224, fallback at :226",
+    "noNarratorLog": "streaming_completion() does not call log_llm_call()",
+    "locallyReproducible": true
+  }
+}
