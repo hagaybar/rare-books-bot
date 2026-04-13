@@ -1,0 +1,10 @@
+{
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "planPath": "docs/superpowers/plans/2026-04-13-docs-sync-implementation.md",
+  "specPath": "docs/superpowers/specs/2026-04-13-docs-sync-hook-design.md",
+  "hookPath": "/home/hagaybar/.claude/hooks/docs-sync-hook.py",
+  "testPath": "/home/hagaybar/.claude/hooks/tests/test_docs_sync_hook.py",
+  "skillPath": "/home/hagaybar/.claude/skills/update-docs/SKILL.md",
+  "settingsPath": "/home/hagaybar/.claude/settings.json",
+  "topicMapPath": "docs-sync/topic-map.json"
+}
