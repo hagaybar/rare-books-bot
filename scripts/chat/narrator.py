@@ -759,6 +759,7 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
 
     # --- Follow-up hints (deterministic data for better suggestions) ---
     hint_lines: list[str] = []
+    agents = result.grounding.agents
     if agents:
         top_agents = sorted(agents, key=lambda a: a.record_count, reverse=True)[:3]
         hint_lines.append("Top agents: " + ", ".join(
