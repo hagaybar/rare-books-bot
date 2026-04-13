@@ -1,0 +1,58 @@
+{
+  "config": {
+    "docs_root": "docs/current",
+    "code_extensions": [".py", ".ts", ".tsx", ".js", ".jsx"],
+    "skip_prefixes": ["docs:", "chore:", "style:", "test:"]
+  },
+  "mappings": {
+    "chatbot-api.md": [
+      "app/api/main.py",
+      "scripts/chat/**"
+    ],
+    "streaming.md": [
+      "app/api/main.py",
+      "frontend/src/pages/Chat.tsx",
+      "frontend/src/types/chat.ts"
+    ],
+    "query-engine.md": [
+      "scripts/chat/interpreter.py",
+      "scripts/chat/executor.py",
+      "scripts/chat/plan_models.py"
+    ],
+    "normalization-pipeline.md": [
+      "scripts/marc/m2_*",
+      "data/normalization/**"
+    ],
+    "architecture.md": [
+      "app/**",
+      "scripts/**",
+      "frontend/src/**"
+    ],
+    "deployment.md": [
+      "deploy.sh",
+      "Dockerfile",
+      "docker/**"
+    ],
+    "data-model.md": [
+      "scripts/marc/m3_schema.sql",
+      "scripts/marc/m1_*",
+      "scripts/marc/m2_*"
+    ],
+    "data-quality.md": [
+      "scripts/qa/**",
+      "data/qa/**"
+    ],
+    "metadata-workbench.md": [
+      "app/api/main.py",
+      "scripts/metadata/**",
+      "frontend/src/pages/Workbench.tsx"
+    ],
+    "ingestion-pipeline.md": [
+      "scripts/marc/**"
+    ],
+    "qa-framework.md": [
+      "scripts/qa/**",
+      "tests/**"
+    ]
+  }
+}
