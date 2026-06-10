@@ -4,6 +4,8 @@ Validates SQL generation, filter value normalization, and JOIN logic.
 """
 
 
+import pytest
+
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp
 from scripts.query.db_adapter import (
     normalize_filter_value,
@@ -334,3 +336,37 @@ class TestBuildFullQuery:
         assert "subjects_fts MATCH" in sql
         # Should have proper number of AND conditions (3, since we have 4 filters)
         assert sql.count(" AND ") >= 2
+
+
+class TestPhysicalDescFilter:
+    """physical_desc CONTAINS searches MARC 300 via EXISTS subquery (issue #2 B6)."""
+
+    def test_physical_desc_contains_builds_exists_subquery(self):
+        plan = QueryPlan(
+            query_text="test",
+            filters=[Filter(field=FilterField.PHYSICAL_DESC, op=FilterOp.CONTAINS, value="map")],
+        )
+        where_clause, params, needed_joins = build_where_clause(plan)
+        assert "EXISTS" in where_clause
+        assert "physical_descriptions" in where_clause
+        assert "map" in params.values()
+        # No join needed: EXISTS correlates on record id
+        assert "physical_descriptions" not in needed_joins
+
+    def test_physical_desc_equals_raises(self):
+        plan = QueryPlan(
+            query_text="test",
+            filters=[Filter(field=FilterField.PHYSICAL_DESC, op=FilterOp.EQUALS, value="map")],
+        )
+        with pytest.raises(ValueError, match="physical_desc"):
+            build_where_clause(plan)
+
+    def test_physical_desc_negate_wraps_not(self):
+        plan = QueryPlan(
+            query_text="test",
+            filters=[
+                Filter(field=FilterField.PHYSICAL_DESC, op=FilterOp.CONTAINS, value="map", negate=True)
+            ],
+        )
+        where_clause, _, _ = build_where_clause(plan)
+        assert where_clause.strip().startswith("NOT (")
