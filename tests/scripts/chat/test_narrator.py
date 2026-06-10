@@ -264,3 +264,19 @@ class TestLowConfidenceNotice:
     def test_confident_interpretation_gets_no_notice(self):
         from scripts.chat.narrator import low_confidence_notice
         assert low_confidence_notice("books about art", self._plan(0.9)) == ""
+
+
+class TestConfidenceBoundary:
+    """Boundary escape (2026-06-10): the model emitted exactly 0.70, slipping
+    past both strict '< 0.7' gates. 0.70 is labeled 'Low' in the UI and must
+    be treated as low by the backend too."""
+
+    def test_notice_fires_at_exactly_070(self):
+        from scripts.chat.narrator import low_confidence_notice
+        plan = TestLowConfidenceNotice()._plan(0.7)
+        assert low_confidence_notice("ביסטוריב של מרפת", plan) != ""
+
+    def test_notice_absent_just_above_boundary(self):
+        from scripts.chat.narrator import low_confidence_notice
+        plan = TestLowConfidenceNotice()._plan(0.75)
+        assert low_confidence_notice("books about art", plan) == ""

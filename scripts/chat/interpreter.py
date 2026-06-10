@@ -257,8 +257,10 @@ Set the `clarification` field (string) when:
   "קבלה" or any other thematically attractive guess. Ask, offering your
   best readings: "האם התכוונת ל'פילוסופיה ודת'?"
   If you nevertheless proceed with an interpretation of a garbled term,
-  you MUST set confidence below 0.7 AND state the assumed reading in the
-  clarification field.
+  you MUST set confidence to 0.6 or lower AND state the assumed reading in
+  the clarification field. When a garbled term has MORE THAN ONE plausible
+  reading (e.g. "מרפת" could be צרפת or מרפא), clarification is mandatory —
+  list the readings and ask.
 
 When clarification is set, the pipeline short-circuits: the plan is returned as a
 clarification prompt instead of being executed.

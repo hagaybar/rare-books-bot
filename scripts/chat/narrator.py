@@ -435,8 +435,11 @@ def describe_filters(plan) -> str:
 
 _HEBREW_CHAR_RE = re.compile(r"[֐-׿]")
 
-# Below this interpretation confidence, the user is told how their query was
-# read. Matches the clarification short-circuit threshold in app/api/main.py.
+# At or below this interpretation confidence, the user is told how their
+# query was read. INCLUSIVE: models gravitate to exactly 0.70 when unsure
+# (observed 2026-06-10 — a strict '< 0.7' let 0.70 escape both this notice
+# and the clarification gate). Matches app/api/main.py and the UI, which
+# labels 70% as "Low".
 LOW_CONFIDENCE_THRESHOLD = 0.7
 
 
@@ -449,7 +452,7 @@ def low_confidence_notice(query: str, plan) -> str:
     was interpreted, in the user's language, so silent reinterpretations
     are visible and correctable. Deterministic — no LLM involved.
     """
-    if getattr(plan, "confidence", 1.0) >= LOW_CONFIDENCE_THRESHOLD:
+    if getattr(plan, "confidence", 1.0) > LOW_CONFIDENCE_THRESHOLD:
         return ""
     description = describe_filters(plan)
     if _HEBREW_CHAR_RE.search(query):
