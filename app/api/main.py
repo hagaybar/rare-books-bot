@@ -56,7 +56,7 @@ from scripts.chat.session_store import SessionStore
 # Scholar pipeline (3-stage: interpret -> execute -> narrate)
 from scripts.chat.interpreter import interpret
 from scripts.chat.executor import execute_plan as execute_scholar_plan
-from scripts.chat.narrator import narrate, narrate_streaming, describe_filters
+from scripts.chat.narrator import narrate, narrate_streaming, describe_filters, low_confidence_notice
 from scripts.chat.plan_models import (
     ExecutionResult,
     RecordSet,
@@ -753,8 +753,10 @@ async def _run_scholar_pipeline(
     )
 
     # ---- Map ScholarResponse -> ChatResponse for API compatibility ----
+    # Transparency backstop: surface low-confidence interpretations.
+    notice = low_confidence_notice(chat_request.message, plan)
     response = ChatResponse(
-        message=scholar_response.narrative,
+        message=notice + scholar_response.narrative,
         candidate_set=_build_candidate_set(execution_result, chat_request.message),
         suggested_followups=scholar_response.suggested_followups,
         clarification_needed=None,
@@ -1085,6 +1087,9 @@ async def websocket_chat(websocket: WebSocket):
 
         # ---- Post-response security: Output validation ----
         narrative = validate_output(scholar_response.narrative)
+
+        # Transparency backstop: surface low-confidence interpretations.
+        narrative = low_confidence_notice(message, plan) + narrative
 
         # ---- Map to ChatResponse ----
         response = ChatResponse(

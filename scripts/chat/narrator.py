@@ -11,6 +11,7 @@ Provides two modes:
 Replaces: formatter.py, narrative_agent.py, thematic_context.py
 """
 import logging
+import re
 from typing import Awaitable, Callable, Optional
 
 from scripts.models.llm_client import structured_completion, streaming_completion
@@ -430,6 +431,37 @@ def describe_filters(plan) -> str:
         return labels[0]
 
     return "matching records"
+
+
+_HEBREW_CHAR_RE = re.compile(r"[֐-׿]")
+
+# Below this interpretation confidence, the user is told how their query was
+# read. Matches the clarification short-circuit threshold in app/api/main.py.
+LOW_CONFIDENCE_THRESHOLD = 0.7
+
+
+def low_confidence_notice(query: str, plan) -> str:
+    """Transparency backstop for low-confidence interpretations.
+
+    When the interpreter proceeds at confidence < 0.7 WITHOUT asking for
+    clarification (e.g. it silently re-read a garbled term — 'פילוסופיה חד'
+    answered as Kabbalah), the response must open by stating how the query
+    was interpreted, in the user's language, so silent reinterpretations
+    are visible and correctable. Deterministic — no LLM involved.
+    """
+    if getattr(plan, "confidence", 1.0) >= LOW_CONFIDENCE_THRESHOLD:
+        return ""
+    description = describe_filters(plan)
+    if _HEBREW_CHAR_RE.search(query):
+        return (
+            "**לתשומת לבך:** לא הייתי בטוח בפירוש השאלה, ולכן פירשתי אותה כך: "
+            f"_{description}_. אם התכוונת למשהו אחר — אנא נסחו מחדש.\n\n"
+        )
+    return (
+        "**Note:** I was not fully confident interpreting this question; "
+        f"I interpreted it as: _{description}_. "
+        "If you meant something else, please rephrase.\n\n"
+    )
 
 
 # =============================================================================

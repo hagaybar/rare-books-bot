@@ -227,3 +227,40 @@ class TestNoFollowupGeneration:
         exec_result = _make_karo_result()
         resp = _fallback_response("who was Karo?", exec_result)
         assert resp.suggested_followups == []
+
+
+class TestLowConfidenceNotice:
+    """Deterministic transparency backstop (typo/'philosophy חד' incident):
+    when the pipeline proceeds despite low interpretation confidence and no
+    clarification, the user must be told how the query was interpreted."""
+
+    def _plan(self, confidence):
+        from scripts.chat.plan_models import (
+            ExecutionStep, InterpretationPlan, RetrieveParams, StepAction,
+        )
+        from scripts.schemas.query_plan import Filter, FilterField, FilterOp
+        return InterpretationPlan(
+            intents=["retrieval"], reasoning="t", confidence=confidence, directives=[],
+            execution_steps=[ExecutionStep(
+                action=StepAction.RETRIEVE,
+                params=RetrieveParams(filters=[
+                    Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="kabbalah"),
+                ]),
+                label="t",
+            )],
+        )
+
+    def test_hebrew_query_gets_hebrew_notice(self):
+        from scripts.chat.narrator import low_confidence_notice
+        notice = low_confidence_notice("פילוסופיה חד", self._plan(0.6))
+        assert "פירשתי" in notice
+        assert "kabbalah" in notice  # the actual interpretation is shown
+
+    def test_english_query_gets_english_notice(self):
+        from scripts.chat.narrator import low_confidence_notice
+        notice = low_confidence_notice("philosophy xyz", self._plan(0.6))
+        assert "interpreted" in notice.lower()
+
+    def test_confident_interpretation_gets_no_notice(self):
+        from scripts.chat.narrator import low_confidence_notice
+        assert low_confidence_notice("books about art", self._plan(0.9)) == ""

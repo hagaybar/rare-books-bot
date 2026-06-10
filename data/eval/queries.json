@@ -557,5 +557,13 @@
     "difficulty": "simple",
     "expected_filters": {},
     "notes": "Real user query 2026-03-31 (audit). Chitchat robustness."
+  },
+  {
+    "id": "q59",
+    "query": "אני מעוניין ללמוד על הקשר בין פילוסופיה חד, אלו פרסומים באוסף יכולים לעזור לי?",
+    "intent": "clarification",
+    "difficulty": "hard",
+    "expected_filters": {},
+    "notes": "Real user query 2026-06-10 (typo incident). 'חד' is a typo for 'ודת' (religion). The interpreter must ASK (clarification field) — it previously substituted 'קבלה' silently and answered a question never asked. A plan that searches a guessed concept without clarification is a failure even if records return."
   }
 ]

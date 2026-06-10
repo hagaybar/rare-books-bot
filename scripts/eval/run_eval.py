@@ -111,6 +111,7 @@ async def evaluate_interpreter(
                 ],
                 "filters_produced": filters_produced,
                 "confidence": plan.confidence,
+                "clarification": plan.clarification,
             },
         }
     except Exception as e:

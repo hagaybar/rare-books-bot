@@ -788,3 +788,17 @@ class TestPromptFilterDiscipline:
     def test_prompt_routes_concept_adjectives_to_subject(self):
         from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
         assert "יהודיים" in INTERPRETER_SYSTEM_PROMPT
+
+
+class TestPromptGarbledTerms:
+    """Typo incident ('פילוסופיה חד' answered as Kabbalah): garbled terms
+    must trigger clarification, never silent concept substitution."""
+
+    def test_prompt_forbids_silent_substitution(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "NEVER silently substitute" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_lists_garbled_terms_as_clarification_trigger(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "garbled" in INTERPRETER_SYSTEM_PROMPT
+        assert "פילוסופיה חד" in INTERPRETER_SYSTEM_PROMPT
