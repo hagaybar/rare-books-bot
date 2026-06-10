@@ -4,7 +4,10 @@
     "query": "Books printed by Daniel Bomberg in Venice",
     "intent": "retrieval",
     "difficulty": "simple",
-    "expected_filters": {"publisher": "daniel bomberg", "place": "venice"},
+    "expected_filters": {
+      "publisher": "daniel bomberg",
+      "place": "venice"
+    },
     "notes": "Known publisher with 5 records, all in Venice"
   },
   {
@@ -12,7 +15,9 @@
     "query": "Works by Josephus Flavius",
     "intent": "retrieval",
     "difficulty": "simple",
-    "expected_filters": {"agent": "josephus, flavius"},
+    "expected_filters": {
+      "agent": "josephus, flavius"
+    },
     "notes": "Top author with 21 records"
   },
   {
@@ -20,7 +25,10 @@
     "query": "Hebrew books printed in Amsterdam",
     "intent": "retrieval",
     "difficulty": "moderate",
-    "expected_filters": {"language": "heb", "place": "amsterdam"},
+    "expected_filters": {
+      "language": "heb",
+      "place": "amsterdam"
+    },
     "notes": "Amsterdam has 196 imprints; Hebrew is the top language (806 records)"
   },
   {
@@ -28,7 +36,9 @@
     "query": "What did Aldo Manuzio publish?",
     "intent": "entity_exploration",
     "difficulty": "simple",
-    "expected_filters": {"agent": "manuzio, aldo"},
+    "expected_filters": {
+      "agent": "manuzio, aldo"
+    },
     "notes": "Manuzio has 23 agent records; Aldine Press has 7 publisher records"
   },
   {
@@ -36,7 +46,9 @@
     "query": "Tell me about Johann Buxtorf and his works",
     "intent": "entity_exploration",
     "difficulty": "moderate",
-    "expected_filters": {"agent": "buxtorf, johann"},
+    "expected_filters": {
+      "agent": "buxtorf, johann"
+    },
     "notes": "Buxtorf has 24 agent records, known Hebraist"
   },
   {
@@ -44,7 +56,9 @@
     "query": "What is the collection of Jacques Faitlovitch about?",
     "intent": "entity_exploration",
     "difficulty": "moderate",
-    "expected_filters": {"agent": "faitlovitch, jacques"},
+    "expected_filters": {
+      "agent": "faitlovitch, jacques"
+    },
     "notes": "Faitlovitch has 40 records, Ethiopian manuscripts collector"
   },
   {
@@ -60,7 +74,9 @@
     "query": "Distribution of printing locations for Hebrew books before 1600",
     "intent": "analytical",
     "difficulty": "complex",
-    "expected_filters": {"language": "heb"},
+    "expected_filters": {
+      "language": "heb"
+    },
     "notes": "Analytical query combining language filter with date range and place aggregation"
   },
   {
@@ -68,7 +84,9 @@
     "query": "Compare the output of the Bragadin Press and the Aldine Press in Venice",
     "intent": "comparison",
     "difficulty": "complex",
-    "expected_filters": {"place": "venice"},
+    "expected_filters": {
+      "place": "venice"
+    },
     "notes": "Bragadin has 12 records, Aldine has 7; both in Venice"
   },
   {
@@ -84,7 +102,9 @@
     "query": "Show me rare books about Hebrew grammar printed before 1800",
     "intent": "curation",
     "difficulty": "moderate",
-    "expected_filters": {"subject": "Hebrew language"},
+    "expected_filters": {
+      "subject": "Hebrew language"
+    },
     "notes": "27 records for 'Hebrew language -- Grammar -- Early works to 1800'"
   },
   {
@@ -100,7 +120,9 @@
     "query": "What books do you have about bibliomania and book collecting?",
     "intent": "topical",
     "difficulty": "simple",
-    "expected_filters": {"subject": "book collecting"},
+    "expected_filters": {
+      "subject": "book collecting"
+    },
     "notes": "24 records for 'Book collecting', 17 for 'Bibliomania'"
   },
   {
@@ -124,7 +146,9 @@
     "query": "Were any of those also printed in Latin?",
     "intent": "follow_up",
     "difficulty": "moderate",
-    "expected_filters": {"language": "lat"},
+    "expected_filters": {
+      "language": "lat"
+    },
     "notes": "Follow-up refining previous results with language filter; Latin has 505 records"
   },
   {
@@ -148,7 +172,10 @@
     "query": "Latin texts printed in Paris in the 18th century",
     "intent": "retrieval",
     "difficulty": "moderate",
-    "expected_filters": {"language": "lat", "place": "paris"},
+    "expected_filters": {
+      "language": "lat",
+      "place": "paris"
+    },
     "notes": "Paris is top place (356 imprints); Latin is second language (505 records)"
   },
   {
@@ -156,7 +183,9 @@
     "query": "Books by Moses Mendelssohn",
     "intent": "retrieval",
     "difficulty": "simple",
-    "expected_filters": {"agent": "mendelssohn, moses"},
+    "expected_filters": {
+      "agent": "mendelssohn, moses"
+    },
     "notes": "Mendelssohn has 11 author records"
   },
   {
@@ -172,7 +201,9 @@
     "query": "Show me the works of Christophe Plantin and his successors",
     "intent": "entity_exploration",
     "difficulty": "complex",
-    "expected_filters": {"publisher": "plantin"},
+    "expected_filters": {
+      "publisher": "plantin"
+    },
     "notes": "Multiple Plantin-related publisher entries including variants"
   },
   {
@@ -180,7 +211,9 @@
     "query": "German language books from Berlin and Leipzig",
     "intent": "retrieval",
     "difficulty": "moderate",
-    "expected_filters": {"language": "ger"},
+    "expected_filters": {
+      "language": "ger"
+    },
     "notes": "Berlin (123 imprints) and Leipzig (111); German has 496 language records"
   },
   {
@@ -188,7 +221,9 @@
     "query": "Curate a selection of Bible commentaries and related works",
     "intent": "curation",
     "difficulty": "complex",
-    "expected_filters": {"subject": "Bible"},
+    "expected_filters": {
+      "subject": "Bible"
+    },
     "notes": "Multiple Bible-related subjects: Pentateuch commentaries, illustrations, geography"
   },
   {
@@ -204,7 +239,10 @@
     "query": "Books published by the House of Elzevir in Leiden",
     "intent": "retrieval",
     "difficulty": "simple",
-    "expected_filters": {"publisher": "house of elzevir", "place": "leiden"},
+    "expected_filters": {
+      "publisher": "house of elzevir",
+      "place": "leiden"
+    },
     "notes": "House of Elzevir has 7 records in Leiden plus variant in Amsterdam"
   },
   {
@@ -212,7 +250,9 @@
     "query": "What Italian language books are in the collection?",
     "intent": "topical",
     "difficulty": "simple",
-    "expected_filters": {"language": "ita"},
+    "expected_filters": {
+      "language": "ita"
+    },
     "notes": "Italian has 103 language records"
   },
   {
@@ -228,7 +268,9 @@
     "query": "What Yiddish texts are in the collection?",
     "intent": "retrieval",
     "difficulty": "simple",
-    "expected_filters": {"language": "yid"},
+    "expected_filters": {
+      "language": "yid"
+    },
     "notes": "Yiddish has 55 language records"
   },
   {
@@ -236,7 +278,9 @@
     "query": "Books printed in Jerusalem",
     "intent": "retrieval",
     "difficulty": "simple",
-    "expected_filters": {"place": "jerusalem"},
+    "expected_filters": {
+      "place": "jerusalem"
+    },
     "notes": "Jerusalem has 109 imprints"
   },
   {
@@ -244,7 +288,274 @@
     "query": "שיעור שעוסק באמנות, מפות וקרטוגרפיה. מה תציע לי להראות מהאוסף?",
     "intent": "curation",
     "difficulty": "hard",
-    "expected_filters": {"topics_decomposed_or": ["art", "geography", "maps"], "physical_desc": "map"},
+    "expected_filters": {
+      "topics_decomposed_or": [
+        "art",
+        "geography",
+        "maps"
+      ],
+      "physical_desc": "map"
+    },
     "notes": "Issue #2 regression: multi-concept Hebrew curatorial query. Must NOT collapse to ANDed 0-result; expect >=10 candidates incl. 9933749415904146 (Reland 1714), 990014484230204146 (Survey of W. Palestine), 990020368010204146 (Bilder-Geographie). Coordinate topics -> one retrieve step per concept + sample notable over scope union."
+  },
+  {
+    "id": "q32",
+    "query": "אני רוצה לבנות קורס על תולדות הדפוס, המלץ לי על 10 דוגמאות לקורס - הן אמורות להתאים לסקירה היסטורית של בתי דפוס מפורסמים",
+    "intent": "curation",
+    "difficulty": "hard",
+    "expected_filters": {
+      "subject": "printing"
+    },
+    "notes": "Real user query 2026-03-31 (audit). Course on history of printing; subject 'printing' has 105 records."
+  },
+  {
+    "id": "q33",
+    "query": "תן לי דוגמא לפרסום חשוב שמופיע באוסף",
+    "intent": "curation",
+    "difficulty": "moderate",
+    "expected_filters": {},
+    "notes": "Real user query 2026-03-31 (audit). Open curatorial: one notable item."
+  },
+  {
+    "id": "q34",
+    "query": "ספרים שפורסמו במאה ה-17 בעברית",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "expected_filters": {
+      "language": "heb",
+      "year": "1600"
+    },
+    "notes": "Real user query 2026-04-01 (audit). 17th-century Hebrew books."
+  },
+  {
+    "id": "q35",
+    "query": "האם יש ספרים בשפת אידיש באוסף",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {
+      "language": "yid"
+    },
+    "notes": "Real user query 2026-04-03 (audit). Yiddish; 29 records have Yiddish subjects, language code yid."
+  },
+  {
+    "id": "q36",
+    "query": "ספר לי על התוכן של האוסף הזה",
+    "intent": "overview",
+    "difficulty": "moderate",
+    "expected_filters": {},
+    "notes": "Real user query 2026-04-04 (audit). Collection overview."
+  },
+  {
+    "id": "q37",
+    "query": "כמה ספרי תפילה קיימים באוסף?",
+    "intent": "analytical",
+    "difficulty": "moderate",
+    "expected_filters": {
+      "subject": "תפילה"
+    },
+    "notes": "Real user query 2026-04-04 (audit). Count of prayer books; bilingual subject search."
+  },
+  {
+    "id": "q38",
+    "query": "מה יש באוסף פייטלוביץ'?",
+    "intent": "retrieval",
+    "difficulty": "hard",
+    "expected_filters": {
+      "agent": "פיטלוביץ"
+    },
+    "notes": "Real user query 2026-04-04 (audit). Faitlovitch collection = corporate agent."
+  },
+  {
+    "id": "q39",
+    "query": "האם יש ספרים שעוסקים בנושאי דת או תפילה באוסף הזה?",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "expected_filters": {
+      "subject": "relig"
+    },
+    "notes": "Real user query 2026-04-05 (audit). Religion OR prayer — coordinate topics, must not AND."
+  },
+  {
+    "id": "q40",
+    "query": "האם האוסף כולל ספרות רבנית?",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "expected_filters": {
+      "subject": "rabbi"
+    },
+    "notes": "Real user query 2026-04-12 (audit). Rabbinical literature."
+  },
+  {
+    "id": "q41",
+    "query": "ספרים בשפה העברית שהודפסו באמסטרדם",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {
+      "language": "heb",
+      "place": "amsterdam"
+    },
+    "notes": "Real user query 2026-04-12 (audit). Hebrew + Amsterdam — genuinely conjunctive."
+  },
+  {
+    "id": "q42",
+    "query": "create a reading list about the history of print, with examples from this collection",
+    "intent": "curation",
+    "difficulty": "hard",
+    "expected_filters": {
+      "subject": "printing"
+    },
+    "notes": "Real user query 2026-04-20 (audit). English curatorial on printing history."
+  },
+  {
+    "id": "q43",
+    "query": "Something by Spinoza",
+    "intent": "entity_exploration",
+    "difficulty": "simple",
+    "expected_filters": {
+      "agent": "spinoza"
+    },
+    "notes": "Real user query 2026-04-29 (audit)."
+  },
+  {
+    "id": "q44",
+    "query": "Original editions of Descartes",
+    "intent": "entity_exploration",
+    "difficulty": "moderate",
+    "expected_filters": {
+      "agent": "descartes"
+    },
+    "notes": "Real user query 2026-04-29 (audit)."
+  },
+  {
+    "id": "q45",
+    "query": "Works by Davila",
+    "intent": "entity_exploration",
+    "difficulty": "simple",
+    "expected_filters": {
+      "agent": "davila"
+    },
+    "notes": "Real user query 2026-04-29 (audit)."
+  },
+  {
+    "id": "q46",
+    "query": "מה הספר העתיק ביותר באוסף",
+    "intent": "analytical",
+    "difficulty": "moderate",
+    "expected_filters": {},
+    "notes": "Real user query 2026-05-06 (audit). Earliest item — sample earliest strategy."
+  },
+  {
+    "id": "q47",
+    "query": "אני מחפשת ספרים שיש להם קשר לצנזורה",
+    "intent": "retrieval",
+    "difficulty": "hard",
+    "expected_filters": {
+      "subject": "censor"
+    },
+    "notes": "Real user query 2026-06-03 (audit). Censorship; only 3 records carry the subject token — vocabulary-bridge candidate."
+  },
+  {
+    "id": "q48",
+    "query": "האם יש לנו אינדקסים קתוליים של ספרים אסורים?",
+    "intent": "retrieval",
+    "difficulty": "hard",
+    "expected_filters": {},
+    "notes": "Real user query 2026-06-03 (audit). Index librorum prohibitorum; vocabulary gap likely."
+  },
+  {
+    "id": "q49",
+    "query": "אלו כתבי יד יש לנו באוסף?",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "expected_filters": {
+      "subject": "manuscript"
+    },
+    "notes": "Real user query 2026-06-03 (audit). Manuscripts: 70 records."
+  },
+  {
+    "id": "q50",
+    "query": "מנה את כל הספרים שהתפרסמו בדפוס דניאל בומברג שבאוסף",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {
+      "publisher": "bomberg"
+    },
+    "notes": "Real user query 2026-06-03 (audit). Bomberg: 5 imprints."
+  },
+  {
+    "id": "q51",
+    "query": "אלו ספרים שנדפסו על ידי דפוס פלנטין יש באוסף?",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {
+      "publisher": "plantin"
+    },
+    "notes": "Real user query 2026-06-03 (audit). Plantin: 12 imprints."
+  },
+  {
+    "id": "q52",
+    "query": "אלו ספרים מדפוס אלדוס מנוטיוס יש לנו באוסף?",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "expected_filters": {
+      "publisher": "ald"
+    },
+    "notes": "Real user query 2026-06-03 (audit). Aldus: 4 imprints + Aldine publisher authorities."
+  },
+  {
+    "id": "q53",
+    "query": "אלו ספרים שנדפסו בקושטא יש באוסף?",
+    "intent": "retrieval",
+    "difficulty": "hard",
+    "expected_filters": {},
+    "notes": "Real user query 2026-06-03 (audit). קושטא = Constantinople; place-alias challenge, expected left open."
+  },
+  {
+    "id": "q54",
+    "query": "האם יש לנו ספרי מדפוס שונצינו?",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {
+      "publisher": "soncino"
+    },
+    "notes": "Real user query 2026-06-03 (audit). Soncino: 8 imprints."
+  },
+  {
+    "id": "q55",
+    "query": "אני עורך שיעור על ספרים בתחום היסטוריה של הדתות, יש לך ספרים מהאוסף להציע?",
+    "intent": "curation",
+    "difficulty": "hard",
+    "expected_filters": {
+      "subject": "relig"
+    },
+    "notes": "Real user query 2026-06-10 (audit). History of religions lesson."
+  },
+  {
+    "id": "q56",
+    "query": "אני מעוניין לערוך שיעור על בתי דפוס יהודיים באירופה, אלו דוגמאות תוכל להציע לי?",
+    "intent": "curation",
+    "difficulty": "hard",
+    "expected_filters": {
+      "subject": "printing"
+    },
+    "notes": "Real user query 2026-06-10 (audit). THE printing-houses failure case: interpreter fabricated city/country hard filters ('wordsworth') as comma-joined strings -> forced 0. Must NOT invent geographic constraints; 'Europe' is context."
+  },
+  {
+    "id": "q57",
+    "query": "האם האוסף כולל פרסומים שהודפסו בבתי דפוס יהודיים בכלל?",
+    "intent": "retrieval",
+    "difficulty": "hard",
+    "expected_filters": {
+      "subject": "printing"
+    },
+    "notes": "Real user query 2026-06-10 (audit). Was misrouted to agent search 'יהודה' (name fragment). יהודיים is a concept, not a person."
+  },
+  {
+    "id": "q58",
+    "query": "hi",
+    "intent": "out_of_scope",
+    "difficulty": "simple",
+    "expected_filters": {},
+    "notes": "Real user query 2026-03-31 (audit). Chitchat robustness."
   }
 ]
