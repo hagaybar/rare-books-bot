@@ -31,7 +31,7 @@ Send a natural language query, get results.
     "session_id": "uuid",
     "message": "Found 2 books matching your query...",
     "candidate_set": { ... },
-    "suggested_followups": ["..."],
+    "suggested_followups": [],
     "clarification_needed": null
   },
   "error": null
@@ -250,14 +250,12 @@ The executor provides the narrator with rich grounding data beyond basic record 
 - **Auto-discovered connections**: When 2-10 agents appear in results and no explicit `find_connections` step was planned, the executor auto-queries `cross_reference.find_connections()` and passes relationship hints to the narrator.
 - **Title variants**: Uniform and variant titles shown as "Also known as: ..."
 - **Expanded notes**: Notes from MARC tags 504 (bibliography), 505 (contents), and 590 (shelf marks) in addition to 500/520.
-- **Entity-aware follow-ups**: The narrator receives deterministic hint data (top agents, agents with connections, top subjects) to generate data-driven follow-up suggestions.
 - **Truncation feedback**: When results are truncated, the narrator is told "Showing N of M total records" and instructed to acknowledge this to the user.
 
 ### Features
 
 - LLM-generated narrative summaries with evidence citations
 - Confidence-qualified assertions for uncertain dates, places, publishers
-- Entity-aware follow-up suggestions leveraging available connections and subjects
 - Streaming narrative via WebSocket (see `docs/current/streaming.md`)
 - Zero-results handling with broadening suggestions
 - Bilingual Hebrew/English subject search
