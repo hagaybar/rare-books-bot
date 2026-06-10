@@ -18,6 +18,7 @@ class FilterField(str, Enum):
     LANGUAGE = "language"
     TITLE = "title"
     SUBJECT = "subject"
+    PHYSICAL_DESC = "physical_desc"  # MARC 300 — physical form ("maps", "plates")
     # Agent fields - use AGENT_NORM/AGENT_ROLE/AGENT_TYPE for new code
     AGENT = "agent"  # Deprecated: searches raw agent_raw column. Use AGENT_NORM instead.
     AGENT_NORM = "agent_norm"  # Preferred: Query normalized agent names (comma-insensitive)
