@@ -262,6 +262,11 @@ Set the `clarification` field (string) when:
   reading (e.g. "מרפת" could be צרפת or מרפא), clarification is mandatory —
   list the readings and ask.
 
+Write the clarification in the language of the user's query: a Hebrew question
+gets a Hebrew clarification ("המונח 'צשפט' נראה כשגיאת הקלדה — האם התכוונת
+ל'משפט'?"), an English question an English one. The clarification is shown to
+the user verbatim.
+
 When clarification is set, the pipeline short-circuits: the plan is returned as a
 clarification prompt instead of being executed.
 

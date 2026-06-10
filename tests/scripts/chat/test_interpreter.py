@@ -802,3 +802,13 @@ class TestPromptGarbledTerms:
         from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
         assert "garbled" in INTERPRETER_SYSTEM_PROMPT
         assert "פילוסופיה חד" in INTERPRETER_SYSTEM_PROMPT
+
+
+class TestPromptClarificationLanguage:
+    """Clarifications bypass the narrator (short-circuit), so the language
+    rule must live in the interpreter prompt: Hebrew question → Hebrew
+    clarification (observed: 'צשפט' typo got an English clarification)."""
+
+    def test_prompt_requires_clarification_in_user_language(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "clarification in the language of the user's query" in INTERPRETER_SYSTEM_PROMPT
