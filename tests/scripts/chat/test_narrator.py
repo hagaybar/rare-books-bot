@@ -206,3 +206,24 @@ class TestPromptResponseLanguage:
     def test_prompt_keeps_titles_in_original_script(self):
         from scripts.chat.narrator import NARRATOR_SYSTEM_PROMPT
         assert "original language" in NARRATOR_SYSTEM_PROMPT
+
+
+class TestNoFollowupGeneration:
+    """Follow-up suggestions are no longer generated anywhere (user request):
+    the LLM schemas omit the field and the fallback returns an empty list.
+    ScholarResponse keeps the field (always []) for API compatibility."""
+
+    def test_narrator_llm_schema_has_no_followups(self):
+        from scripts.chat.narrator import NarratorResponseLLM
+        assert "suggested_followups" not in NarratorResponseLLM.model_fields
+
+    def test_streaming_meta_schema_is_confidence_only(self):
+        from scripts.chat.narrator import StreamingMetaLLM
+        assert "suggested_followups" not in StreamingMetaLLM.model_fields
+        assert "confidence" in StreamingMetaLLM.model_fields
+
+    def test_fallback_response_has_empty_followups(self):
+        from scripts.chat.narrator import _fallback_response
+        exec_result = _make_karo_result()
+        resp = _fallback_response("who was Karo?", exec_result)
+        assert resp.suggested_followups == []
