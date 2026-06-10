@@ -5,6 +5,7 @@
 
 ## 2026-06-10
 
+- **plan** `plans/2026-06-10-multi-topic-recall-and-curation.md` -- Issue #2: multi-topic recall, relaxation ladder, concept bridge, curatorial routing (implemented)
 - **audit** `audits/2026-06-10-data-leak-audit/` -- Sensitive-data leak audit (issue #1, sections A-H); 4 findings fixed (DL-1..DL-4)
 
 ## 2026-04-01

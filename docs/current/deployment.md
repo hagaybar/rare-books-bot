@@ -36,6 +36,10 @@ SQLite databases (Docker volume /app/data)
 - **Data persistence** via a Docker volume mounted at `/app/data`
 - **No nginx inside Docker** -- the host nginx handles all routing
 
+> ⚠️ **Shared host**: this server also runs unrelated services (a separate app on host port 8000, n8n containers on 5678). Our app is reachable ONLY on host port 8001. Never probe, stop, or bind port 8000 — `deploy.sh`'s health check was once pointed there and false-passed against the other app.
+
+> ⚠️ **Runtime data files do not ship with code**: `deploy.sh` rsync excludes `data/`. Anything the app reads from `data/` at runtime (e.g. `data/normalization/concept_maps/concept_map.json` for the query relaxation bridge) must be copied to the server volume `~/rare-books-data/` explicitly.
+
 ---
 
 ## Infrastructure Details
