@@ -105,7 +105,7 @@ params: {"name": "Elzevir", "variants": ["Elzevier", "ex officina Elzeviriana"]}
 Search the bibliographic database with filters.  Reuses the existing Filter model.
 params: {"filters": [...], "scope": "full_collection"}
 - `filters` (required): list of filter objects, each with:
-  - `field`: one of publisher, imprint_place, country, year, language, title, subject, agent_norm, agent_role, agent_type
+  - `field`: one of publisher, imprint_place, country, year, language, title, subject, agent_norm, agent_role, agent_type, physical_desc
   - `op`: one of EQUALS, CONTAINS, RANGE, IN
   - `value`: string value (for EQUALS / CONTAINS) — may be a $step_N reference
   - `start`, `end`: integers (for RANGE, e.g. year)
@@ -190,6 +190,23 @@ Available filter fields:
 - agent_norm: Normalized agent/person name (printers, authors, translators)
 - agent_role: Role (printer, author, translator, editor, etc.)
 - agent_type: Type (personal, corporate, meeting)
+- physical_desc: Physical form search over MARC 300 (partial match, CONTAINS only).
+  Use for physical/form concepts: "maps" → physical_desc CONTAINS "map" finds books
+  *containing* maps and atlases even when no subject heading mentions them.
+
+# COORDINATE TOPICS — NEVER AND THEM
+
+When a query lists coordinate topics ("art, maps and cartography"; "X, Y וגם Z"),
+do NOT put them as multiple subject filters in ONE retrieve step — that ANDs them
+and almost always returns 0 records in a 2,796-record collection. Instead create
+ONE retrieve step PER topic (translating each topic to catalog vocabulary), then
+operate on the union via scope "$step_0+$step_1+...". Reserve multiple filters in
+one step for genuinely conjunctive constraints (e.g. subject + year + place).
+
+Catalog vocabulary hints: this collection's subject headings rarely contain modern
+concept words. Prefer headings that exist: cartography/maps → subject "geography",
+subject "description and travel", physical_desc "map", title "atlas"; art →
+subject "art", "engraving", "illustration".
 
 OPERATIONS:
 - EQUALS: Exact match (specific entities, places, publishers)
@@ -367,7 +384,25 @@ Query: "ספרי תפילה שנדפסו באיטליה"
   "clarification": null
 }
 
-## Example 7: Collection query
+## Example 7: Hebrew curatorial query with coordinate topics
+Query: "שיעור שעוסק באמנות, מפות וקרטוגרפיה. מה תציע לי להראות מהאוסף?"
+{
+  "intents": ["curation", "topical"],
+  "reasoning": "Curatorial request (מה תציע לי להראות) for a lesson on three coordinate topics: art, maps, cartography. One retrieve step per concept using catalog vocabulary, then curate a notable sample over the union.",
+  "confidence": 0.85,
+  "execution_steps": [
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"subject\", \"op\": \"CONTAINS\", \"value\": \"art\"}]}", "label": "Books on art", "depends_on": []},
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"subject\", \"op\": \"CONTAINS\", \"value\": \"geography\"}]}", "label": "Geography & cartography", "depends_on": []},
+    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"physical_desc\", \"op\": \"CONTAINS\", \"value\": \"map\"}]}", "label": "Items physically containing maps", "depends_on": []},
+    {"action": "sample", "params": "{\"scope\": \"$step_0+$step_1+$step_2\", \"n\": 12, \"strategy\": \"notable\"}", "label": "Curate notable items for the lesson", "depends_on": [0, 1, 2]}
+  ],
+  "directives": [
+    {"directive": "synthesize", "params": "{\"sets\": [\"$step_3\"], \"note\": \"Present as a curated lesson set: why each item serves a lesson on art, maps and cartography\"}", "label": "Lesson framing"}
+  ],
+  "clarification": null
+}
+
+## Example 8: Collection query
 Query: "מה יש באוסף פייטלוביץ'?"
 {
   "intents": ["retrieval", "overview"],
