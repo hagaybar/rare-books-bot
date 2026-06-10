@@ -270,7 +270,7 @@ Ambiguity detection and clarification prompts are now handled by the interpreter
 
 **File**: `scripts/chat/interpreter.py` (clarification is part of the `InterpretationPlan`)
 
-When the interpreter's confidence is low (< 0.7) and it sets a `clarification` field, the API short-circuits before execution and returns the clarification directly.
+When the interpreter's confidence is low (<= 0.7) and it sets a `clarification` field, the API short-circuits before execution and returns the clarification directly.
 
 Clarification triggers include garbled/typo terms (e.g. "פילוסופיה חד" → "did you mean פילוסופיה ודת?"); the interpreter is forbidden from silently substituting a different concept for an unreadable term.
 
@@ -280,7 +280,7 @@ Clarification triggers include garbled/typo terms (e.g. "פילוסופיה חד
 
 The `/chat` endpoint checks for clarification after interpretation:
 
-1. **After interpretation** (before execution): If `plan.clarification` is set and `plan.confidence < 0.7`, return early with a clarification prompt.
+1. **After interpretation** (before execution): If `plan.clarification` is set and `plan.confidence <= 0.7`, return early with a clarification prompt.
 2. The `clarification_needed` field in ChatResponse is set when clarification is needed.
 
 ### Example Flow

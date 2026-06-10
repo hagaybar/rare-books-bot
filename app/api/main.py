@@ -694,7 +694,7 @@ async def _run_scholar_pipeline(
     )
 
     # ---- Clarification short-circuit ----
-    if plan.clarification and plan.confidence < 0.7:
+    if plan.clarification and plan.confidence <= 0.7:
         response = ChatResponse(
             message=plan.clarification,
             candidate_set=None,
@@ -1019,7 +1019,7 @@ async def websocket_chat(websocket: WebSocket):
         plan = await interpret(message, ws_session_context)
 
         # ---- Clarification short-circuit ----
-        if plan.clarification and plan.confidence < 0.7:
+        if plan.clarification and plan.confidence <= 0.7:
             response = ChatResponse(
                 message=plan.clarification,
                 candidate_set=None,
