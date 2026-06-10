@@ -1130,3 +1130,65 @@ class TestScopeUnion:
         result = execute_plan(plan, test_db)
         sample = result.steps_completed[2].data
         assert set(sample.mms_ids) == {"990111111", "990222222"}
+
+
+class TestMultiValueFilterNormalization:
+    """The planner sometimes emits malformed multi-value hard filters:
+    op IN for fields the adapter doesn't support, or comma-joined strings
+    ("venice,amsterdam,wordsworth") that can never match a single place_norm.
+    The executor must repair these deterministically into its multi-value
+    EQUALS mechanism (real SQL IN), keeping the original unsplit string as a
+    candidate because commas can be legitimate ("aldine press, venice")."""
+
+    def _plan(self, filters):
+        return InterpretationPlan(
+            intents=["retrieval"],
+            reasoning="t",
+            confidence=0.9,
+            directives=[],
+            execution_steps=[
+                ExecutionStep(
+                    action=StepAction.RETRIEVE,
+                    params=RetrieveParams(filters=filters),
+                    label="t",
+                )
+            ],
+        )
+
+    def test_comma_joined_equals_place_matches_any_city(self, test_db):
+        plan = self._plan([
+            Filter(
+                field=FilterField.IMPRINT_PLACE,
+                op=FilterOp.EQUALS,
+                value="venice,amsterdam,wordsworth",
+            )
+        ])
+        result = execute_plan(plan, test_db)
+        data = result.steps_completed[0].data
+        assert "990001234" in data.mms_ids  # venice
+        assert "990005678" in data.mms_ids  # amsterdam
+
+    def test_in_list_of_joined_strings_is_split(self, test_db):
+        plan = self._plan([
+            Filter(
+                field=FilterField.COUNTRY,
+                op=FilterOp.IN,
+                value=["italy,netherlands"],
+            )
+        ])
+        result = execute_plan(plan, test_db)
+        data = result.steps_completed[0].data
+        assert "990001234" in data.mms_ids
+        assert "990005678" in data.mms_ids
+
+    def test_original_unsplit_value_kept_as_candidate(self):
+        from scripts.chat.executor import _normalize_multivalue_filters
+
+        mv = {}
+        out = _normalize_multivalue_filters(
+            [Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="aldine press, venice")],
+            mv,
+        )
+        assert out[0].op == FilterOp.EQUALS
+        assert "aldine press, venice" in mv[0]
+        assert "venice" in mv[0]
