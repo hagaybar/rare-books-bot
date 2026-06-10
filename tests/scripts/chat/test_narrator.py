@@ -191,3 +191,18 @@ def test_build_narrator_prompt_includes_directives():
 
     assert "expand" in prompt.lower()
     assert "Joseph Karo" in prompt
+
+
+class TestPromptResponseLanguage:
+    """The narrator must answer in the user's language (issue #2 follow-up):
+    a Hebrew question gets a Hebrew answer, with bibliographic titles kept
+    in their original language/script."""
+
+    def test_prompt_instructs_matching_query_language(self):
+        from scripts.chat.narrator import NARRATOR_SYSTEM_PROMPT
+        assert "RESPONSE LANGUAGE" in NARRATOR_SYSTEM_PROMPT
+        assert "language of the user's query" in NARRATOR_SYSTEM_PROMPT
+
+    def test_prompt_keeps_titles_in_original_script(self):
+        from scripts.chat.narrator import NARRATOR_SYSTEM_PROMPT
+        assert "original language" in NARRATOR_SYSTEM_PROMPT
