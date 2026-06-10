@@ -33,7 +33,9 @@ else:
 
     if [ "$USER_COUNT" = "0" ]; then
         echo "[entrypoint] No users found. Creating admin user..."
-        python -m app.cli create-user "$ADMIN_EMAIL" "$ADMIN_PASSWORD" --role admin
+        # Pass the password via stdin (not argv) so it is not visible in the
+        # container process list (DL-1).
+        printf '%s' "$ADMIN_PASSWORD" | python -m app.cli create-user "$ADMIN_EMAIL" --role admin --password-stdin
         echo "[entrypoint] Admin user created."
     else
         echo "[entrypoint] Users exist ($USER_COUNT). Skipping admin seed."

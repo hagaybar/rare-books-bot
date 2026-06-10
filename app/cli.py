@@ -12,6 +12,7 @@ sys.path.append(str(ROOT))
 
 import typer
 from pathlib import Path
+from typing import Optional
 
 app = typer.Typer()
 
@@ -565,12 +566,30 @@ def seed_agent_authorities(
 @app.command("create-user")
 def create_user_cmd(
     username: str = typer.Argument(..., help="Username"),
-    password: str = typer.Argument(..., help="Password (min 8 chars)"),
+    password: Optional[str] = typer.Argument(
+        None,
+        help="Password (min 8 chars). Prefer --password-stdin to avoid exposing "
+        "it in the process list.",
+    ),
     role: str = typer.Option("admin", help="Role: admin, full, limited, guest"),
+    password_stdin: bool = typer.Option(
+        False,
+        "--password-stdin",
+        help="Read the password from stdin instead of argv (avoids process-list "
+        "exposure).",
+    ),
 ):
     """Create a new user (for bootstrapping the first admin)."""
     from app.api.auth_db import init_auth_db
     from app.api.auth_service import create_user as _create_user
+
+    if password_stdin:
+        password = sys.stdin.readline().rstrip("\n")
+    if not password:
+        typer.echo(
+            "Error: password required (pass as argument or use --password-stdin)"
+        )
+        raise typer.Exit(1)
 
     init_auth_db()
     try:

@@ -3,6 +3,10 @@
 > Reverse-chronological listing of all historical project documents.
 > Moved here as part of docs reorganization (2026-04-01).
 
+## 2026-06-10
+
+- **audit** `audits/2026-06-10-data-leak-audit/` -- Sensitive-data leak audit (issue #1, sections A-H); 4 findings fixed (DL-1..DL-4)
+
 ## 2026-04-01
 
 - **audit** `audits/2026-04-01-full-stack/` -- Full-stack audit with all 13 findings resolved

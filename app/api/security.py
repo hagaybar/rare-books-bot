@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 
 from app.api.auth_db import get_auth_db
+from scripts.utils.redaction import redact_secrets
 
 logger = logging.getLogger(__name__)
 
@@ -138,18 +139,15 @@ def mask_pii(text: str) -> str:
 
 # --- Output Validation ---
 
-BLOCKED_OUTPUT_PATTERNS = [
-    re.compile(r'sk-[a-zA-Z0-9]{20,}'),  # OpenAI API key pattern
-    re.compile(r'JWT_SECRET', re.IGNORECASE),
-    re.compile(r'password_hash', re.IGNORECASE),
-]
-
 
 def validate_output(text: str) -> str:
-    """Check LLM output for leaked secrets. Redact if found."""
-    for pattern in BLOCKED_OUTPUT_PATTERNS:
-        text = pattern.sub('[REDACTED]', text)
-    return text
+    """Check LLM output for leaked secrets. Redact if found.
+
+    Delegates to the shared low-level redactor so the same patterns (API keys,
+    bearer tokens, JWT secret / password_hash references, connection-string
+    credentials) cover both user-facing output and persisted log artifacts.
+    """
+    return redact_secrets(text)
 
 
 # --- Input Validation ---

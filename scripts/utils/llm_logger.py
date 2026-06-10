@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from scripts.utils.logger import LoggerManager
+from scripts.utils.redaction import redact_secrets
 
 
 # DEPRECATED: Previously used for manual cost calculation.
@@ -66,14 +67,16 @@ class LLMLogger:
     def __init__(
         self,
         log_path: Optional[Path] = None,
-        log_full_prompts: bool = True,
+        log_full_prompts: bool = False,
         preview_length: int = 500,
     ):
         """Initialize LLM logger.
 
         Args:
             log_path: Path to JSONL log file. Defaults to logs/llm_calls.jsonl
-            log_full_prompts: If True, log complete prompts. If False, log previews only.
+            log_full_prompts: If True, log complete prompts. If False (default),
+                log previews only. Defaults to False so full user/system prompts
+                are not persisted to disk by default (DL-2); opt in for debugging.
             preview_length: Max characters for prompt previews when log_full_prompts=False
         """
         self.log_path = log_path or DEFAULT_LLM_LOG_PATH
@@ -198,16 +201,20 @@ class LLMLogger:
             "cost_usd": cost_usd,
         }
 
-        # Add full prompts or previews
+        # Add full prompts or previews. Redact secret-shaped substrings before
+        # anything is persisted to disk (DL-3), so an accidental key/token in a
+        # prompt never lands in logs/llm_calls.jsonl.
+        safe_system = redact_secrets(system_prompt)
+        safe_user = redact_secrets(user_prompt)
         if self.log_full_prompts:
-            log_entry["prompts"]["system"] = system_prompt
-            log_entry["prompts"]["user"] = user_prompt
+            log_entry["prompts"]["system"] = safe_system
+            log_entry["prompts"]["user"] = safe_user
         else:
             log_entry["prompts"]["system_preview"] = self._truncate(
-                system_prompt, self.preview_length
+                safe_system, self.preview_length
             )
             log_entry["prompts"]["user_preview"] = self._truncate(
-                user_prompt, self.preview_length
+                safe_user, self.preview_length
             )
 
         # Add extra metadata if provided
