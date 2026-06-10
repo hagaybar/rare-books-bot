@@ -272,6 +272,10 @@ Ambiguity detection and clarification prompts are now handled by the interpreter
 
 When the interpreter's confidence is low (< 0.7) and it sets a `clarification` field, the API short-circuits before execution and returns the clarification directly.
 
+Clarification triggers include garbled/typo terms (e.g. "פילוסופיה חד" → "did you mean פילוסופיה ודת?"); the interpreter is forbidden from silently substituting a different concept for an unreadable term.
+
+**Transparency backstop** (deterministic, `narrator.low_confidence_notice`): when the pipeline *proceeds* at confidence < 0.7 without a clarification, the response opens by stating how the query was interpreted (in the user's language), on both REST and WebSocket paths.
+
 ### Integration with API
 
 The `/chat` endpoint checks for clarification after interpretation:
