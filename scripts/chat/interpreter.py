@@ -206,7 +206,24 @@ one step for genuinely conjunctive constraints (e.g. subject + year + place).
 Catalog vocabulary hints: this collection's subject headings rarely contain modern
 concept words. Prefer headings that exist: cartography/maps → subject "geography",
 subject "description and travel", physical_desc "map", title "atlas"; art →
-subject "art", "engraving", "illustration".
+subject "art", "engraving", "illustration"; printing/בתי דפוס → subject "printing";
+Jewish/יהודיים → subject "jews".
+
+# FILTER DISCIPLINE — NEVER INVENT CONSTRAINTS
+
+- Add place / country / year / language filters ONLY when the user explicitly
+  stated them. Broad context ("in Europe", "famous printing houses") is NOT a
+  geographic filter — leave geography unconstrained rather than enumerating
+  example cities you imagine relevant. An invented city list silently excludes
+  everything outside it.
+- Multi-value filters must use op "IN" with a proper JSON array of separate
+  values: {"field": "imprint_place", "op": "IN", "value": ["venice", "amsterdam"]}.
+  NEVER a single comma-joined string like "venice,amsterdam" — it can never
+  match the database, which stores one place per record.
+- Adjectives describing content or community (יהודיים/Jewish, נוצרי/Christian)
+  are SUBJECT concepts — never agent or author names. "בתי דפוס יהודיים" is
+  subject "jews" + subject "printing", NOT agent "יהודה". Use agent_norm only
+  for actual personal or corporate names (e.g., "Daniel Bomberg", "Soncino").
 
 OPERATIONS:
 - EQUALS: Exact match (specific entities, places, publishers)

@@ -641,12 +641,63 @@ def _handle_resolve_publisher(
 
 _TOPICAL_CONTAINS_FIELDS = {FilterField.SUBJECT, FilterField.TITLE, FilterField.PHYSICAL_DESC}
 
+# Fields where the planner may legitimately want several alternative values.
+# db_adapter supports only EQUALS/CONTAINS for these, so multi-value intents
+# arrive malformed (op IN, or one comma-joined string) and must be repaired.
+_MULTIVALUE_FIELDS = {FilterField.IMPRINT_PLACE, FilterField.COUNTRY, FilterField.PUBLISHER}
+
+# db_adapter abbreviates this field in its SQL parameter names.
+_PARAM_SUFFIX = {FilterField.IMPRINT_PLACE.value: "place"}
+
 
 def _is_topical_contains(f: Filter) -> bool:
     """Topical filters are subject/title/physical_desc CONTAINS (not negated).
     These are recall constraints; everything else (year, place, language,
     agent…) is a hard constraint that relaxation must never loosen."""
     return f.field in _TOPICAL_CONTAINS_FIELDS and f.op == FilterOp.CONTAINS and not f.negate
+
+
+def _normalize_multivalue_filters(
+    filters: List[Filter],
+    multi_value_map: Dict[int, List[str]],
+) -> List[Filter]:
+    """Repair malformed multi-value place/country/publisher filters (issue:
+    'בתי דפוס יהודיים' — the planner emitted place IN
+    ['venice,amsterdam,...,wordsworth'], which can never match).
+
+    op IN lists and comma-joined EQUALS strings become EQUALS plus a
+    ``multi_value_map`` entry (rendered as SQL IN by ``_run_filter_query``).
+    The original unsplit string stays among the candidates because commas can
+    be legitimate ("aldine press, venice"). Filters already registered in
+    ``multi_value_map`` (step-ref resolution) are left untouched.
+    """
+    normalized: List[Filter] = []
+    for idx, f in enumerate(filters):
+        if (
+            f.field in _MULTIVALUE_FIELDS
+            and not f.negate
+            and idx not in multi_value_map
+        ):
+            raw_values: Optional[List[str]] = None
+            if f.op == FilterOp.IN and isinstance(f.value, list):
+                raw_values = [str(v) for v in f.value]
+            elif f.op == FilterOp.EQUALS and isinstance(f.value, str) and "," in f.value:
+                raw_values = [f.value]
+            if raw_values:
+                candidates: List[str] = []
+                for v in raw_values:
+                    for candidate in [v.strip(), *(p.strip() for p in v.split(","))]:
+                        if candidate and candidate not in candidates:
+                            candidates.append(candidate)
+                if candidates:
+                    normalized.append(
+                        f.model_copy(update={"op": FilterOp.EQUALS, "value": candidates[0]})
+                    )
+                    if len(candidates) > 1:
+                        multi_value_map[len(normalized) - 1] = candidates
+                    continue
+        normalized.append(f)
+    return normalized
 
 
 def _run_filter_query(
@@ -667,7 +718,8 @@ def _run_filter_query(
     if multi_value_map:
         for filter_idx, all_values in multi_value_map.items():
             f = filters[filter_idx]
-            param_key = f"filter_{filter_idx}_{f.field.value}"
+            suffix = _PARAM_SUFFIX.get(f.field.value, f.field.value)
+            param_key = f"filter_{filter_idx}_{suffix}"
             if param_key in sql_params:
                 old_cond = f"LOWER(:{param_key})"
                 mv_keys = [f"mv_{filter_idx}_{i}" for i in range(len(all_values))]
@@ -717,12 +769,19 @@ def _relax_and_retry(
     if not topical:
         return [], []
 
+    def _run_probe(probe_filters: List[Filter]) -> List[str]:
+        # Probe lists are rebuilt per topic, so multi-value normalization
+        # must be re-applied with fresh indices.
+        probe_mv: Dict[int, List[str]] = {}
+        normalized = _normalize_multivalue_filters(probe_filters, probe_mv)
+        return _run_filter_query(conn, normalized, scope_ids, probe_mv or None)
+
     union: set = set()
     notes: List[str] = []
     for tf in topical:
         topic_hits: set = set()
         if len(topical) >= 2:
-            direct = _run_filter_query(conn, others + [tf], scope_ids)
+            direct = _run_probe(others + [tf])
             if direct:
                 notes.append(
                     f"'{tf.value}' matched {len(direct)} records on its own (OR-union)"
@@ -732,7 +791,7 @@ def _relax_and_retry(
             probe = QPFilter(
                 field=FilterField(exp.field), op=FilterOp.CONTAINS, value=exp.value
             )
-            exp_hits = _run_filter_query(conn, others + [probe], scope_ids)
+            exp_hits = _run_probe(others + [probe])
             if exp_hits:
                 notes.append(
                     f"'{tf.value}' expanded to {exp.field} CONTAINS "
@@ -795,6 +854,10 @@ def _handle_retrieve(
             total_count=0,
             filters_applied=[f.model_dump() for f in resolved_filters],
         )
+
+    # Repair malformed multi-value hard filters (comma-joined strings,
+    # unsupported op IN) before any querying.
+    resolved_filters = _normalize_multivalue_filters(resolved_filters, multi_value_map)
 
     conn = _get_conn(db_path)
     try:

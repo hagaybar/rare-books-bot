@@ -771,3 +771,20 @@ class TestPromptCoordinateTopics:
             {"field": "physical_desc", "op": "CONTAINS", "value": "map"}
         )
         assert f.field.value == "physical_desc"
+
+
+class TestPromptFilterDiscipline:
+    """The prompt must forbid invented constraints, malformed multi-value
+    filters, and concept-words routed as agent names (printing-houses case)."""
+
+    def test_prompt_forbids_inventing_constraints(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "NEVER INVENT" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_requires_proper_in_arrays(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "comma-joined" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_routes_concept_adjectives_to_subject(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "יהודיים" in INTERPRETER_SYSTEM_PROMPT

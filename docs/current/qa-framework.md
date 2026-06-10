@@ -69,7 +69,32 @@ Separate SQLite database, isolated from the production `bibliographic.db`.
 - **CLI runner**: `python -m app.cli regression --gold data/qa/gold.json --db data/index/bibliographic.db`
 - **Exit codes**: 0 = pass, 1 = fail (CI-friendly)
 
-### External-Citation Verification (`scripts/qa/verify_external_citations.py`)
+### Benchmark-Driven Evaluation Loop
+
+> Added 2026-06-10. Guards against case-by-case patching: every interpreter/
+> recall change must hold or improve the whole benchmark, not just the example
+> that motivated it.
+
+- **Benchmark**: `data/eval/queries.json` — q01-q31 synthetic + q32-q58 mined
+  verbatim from the production audit log (real librarian queries; provenance in
+  each entry's `notes`).
+- **Run** (interpreter stage, ~58 LLM calls + 58 judge calls):
+  `PYTHONPATH=. poetry run python scripts/eval/run_eval.py --models gpt-4.1-mini --stages interpreter --queries data/eval/queries.json --output-dir data/eval/runs/<date-label>`
+- **Empirical recall**: every eval entry now executes its plan deterministically
+  (no LLM) and records `recall.total_records` / `zero_result` /
+  `relaxations_used` — a 5/5-judged plan that retrieves nothing is visible.
+- **Compare two runs**:
+  `PYTHONPATH=. poetry run python scripts/eval/compare_runs.py <before>/results.json <after>/results.json --out comparison.md`
+  Flags per-query regressions (Δ ≤ -1.0) and zero-result changes.
+- **Judge**: caps plans at 3/5 when they invent hard constraints the user never
+  stated (fabricated city/country lists).
+- **Known limitation**: follow-up-intent queries (q15, q16) lack session
+  context in single-turn eval and report zero — harness artifact, not a bug.
+- 2026-06-10 state: judge avg 4.0/5; 16 retrieval-intent queries return zero
+  records (see `data/eval/runs/2026-06-10-postfix/comparison.md`) — the
+  primary target for the next quality iteration.
+
+## External-Citation Verification (`scripts/qa/verify_external_citations.py`)
 
 **Purpose**: external tools (ChatGPT etc.) may cite works "from our collection" with **fabricated MMS IDs** -- the title is real, the ID is invented. This harness cross-checks each claimed (title, mms_id) pair against `bibliographic.db` and flags fabrications deterministically (no LLM).
 
