@@ -1,0 +1,7 @@
+{
+  "pluginDir": "/home/hagaybar/.claude/plugins/local/docs-sync",
+  "existingHookPath": "/home/hagaybar/.claude/hooks/docs_sync_hook.py",
+  "existingSkillPath": "/home/hagaybar/.claude/skills/update-docs/SKILL.md",
+  "exampleTopicMapPath": "/home/hagaybar/projects/rare-books-bot/docs-sync/topic-map.json",
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot"
+}

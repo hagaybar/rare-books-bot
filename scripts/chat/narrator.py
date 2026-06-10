@@ -11,6 +11,7 @@ Provides two modes:
 Replaces: formatter.py, narrative_agent.py, thematic_context.py
 """
 import logging
+import re
 from typing import Awaitable, Callable, Optional
 
 from scripts.models.llm_client import structured_completion, streaming_completion
@@ -68,14 +69,24 @@ EVIDENCE RULES (non-negotiable):
     scholarly narrative (e.g., teacher-student connections, co-publication
     patterns).
 
+RESPONSE LANGUAGE:
+- Respond in the language of the user's query: a Hebrew question gets a
+  Hebrew answer, an English question an English answer.
+- Keep bibliographic titles, imprints, and personal names in their
+  original language and script — never translate or transliterate them
+  (e.g., inside a Hebrew narrative, cite "Palaestina ex monumentis
+  veteribus illustrata" as-is).
+- Field labels, headings, and your scholarly commentary follow the user's
+  language; quoted catalog data follows the source.
+
 RESPONSE FORMAT:
 - Use markdown for structure (headers, bold, lists, links).
 
 IMPORTANT: Do NOT include suggested follow-up questions or confidence scores
-in your narrative text. These are handled as separate structured fields.
-Your narrative should end with the scholarly content only -- never add
-sections like "Suggested Followups", "Confidence", or similar headings.
-The narrative field must contain ONLY the scholarly response.
+in your narrative text. Your narrative should end with the scholarly content
+only -- never add sections like "Suggested Followups", "Confidence", or
+similar headings. The narrative field must contain ONLY the scholarly
+response.
 """
 
 
@@ -97,10 +108,6 @@ class NarratorResponseLLM(BaseModel):
         ...,
         description="Scholarly narrative response in markdown format",
     )
-    suggested_followups: list[str] = Field(
-        default_factory=list,
-        description="2-4 suggested follow-up questions",
-    )
     confidence: float = Field(
         ...,
         ge=0.0,
@@ -110,13 +117,9 @@ class NarratorResponseLLM(BaseModel):
 
 
 class StreamingMetaLLM(BaseModel):
-    """Lightweight model for post-streaming followup/confidence extraction."""
+    """Lightweight model for post-streaming confidence extraction."""
     model_config = ConfigDict(extra="forbid")
 
-    suggested_followups: list[str] = Field(
-        default_factory=list,
-        description="2-4 suggested follow-up questions based on the response",
-    )
     confidence: float = Field(
         ...,
         ge=0.0,
@@ -211,11 +214,11 @@ async def narrate_streaming(
             query, execution_result, chunk_callback, model, api_key,
             token_saving=token_saving,
         )
-        # Post-streaming: extract followups and confidence via lightweight call
-        followups, confidence = await _extract_streaming_meta(query, narrative, api_key)
+        # Post-streaming: extract confidence via lightweight call
+        confidence = await _extract_streaming_meta(query, narrative, api_key)
         response = ScholarResponse(
             narrative=narrative,
-            suggested_followups=followups,
+            suggested_followups=[],
             grounding=execution_result.grounding,
             confidence=confidence,
             metadata={"model": model, "streamed": True},
@@ -233,13 +236,13 @@ async def _extract_streaming_meta(
     query: str,
     narrative: str,
     api_key: Optional[str] = None,
-) -> tuple[list[str], float]:
-    """Extract followups and confidence after streaming completes.
+) -> float:
+    """Extract a confidence score after streaming completes.
 
-    Makes a lightweight structured-output call via litellm to get
-    real followup suggestions and confidence instead of hardcoded defaults.
-    Uses the meta_extraction model from model-config.json.
-    Falls back to defaults on any failure.
+    Makes a lightweight structured-output call via litellm to get a real
+    confidence rating instead of a hardcoded default. Uses the
+    meta_extraction model from model-config.json.
+    Falls back to a default on any failure.
     """
     try:
         config = load_config()
@@ -249,7 +252,6 @@ async def _extract_streaming_meta(
             model=meta_model,
             system=(
                 "Given a user query and the scholarly response that was generated, "
-                "suggest 2-4 follow-up questions the user might ask next, and "
                 "rate the response quality from 0.0 to 1.0."
             ),
             user=f"Query: {query}\n\nResponse (first 500 chars): {narrative[:500]}",
@@ -257,10 +259,10 @@ async def _extract_streaming_meta(
             call_type="narrator_meta",
         )
         meta: StreamingMetaLLM = result.parsed
-        return meta.suggested_followups, meta.confidence
+        return meta.confidence
     except Exception:
         logger.debug("Post-streaming meta extraction failed; using defaults")
-        return [], 0.85
+        return 0.85
 
 
 # =============================================================================
@@ -310,7 +312,7 @@ async def _call_llm(
     llm_resp: NarratorResponseLLM = result.parsed
     return ScholarResponse(
         narrative=llm_resp.narrative,
-        suggested_followups=llm_resp.suggested_followups,
+        suggested_followups=[],
         grounding=GroundingData(records=[], agents=[], aggregations={}, links=[]),
         confidence=llm_resp.confidence,
         metadata={"model": model},
@@ -429,6 +431,40 @@ def describe_filters(plan) -> str:
         return labels[0]
 
     return "matching records"
+
+
+_HEBREW_CHAR_RE = re.compile(r"[֐-׿]")
+
+# At or below this interpretation confidence, the user is told how their
+# query was read. INCLUSIVE: models gravitate to exactly 0.70 when unsure
+# (observed 2026-06-10 — a strict '< 0.7' let 0.70 escape both this notice
+# and the clarification gate). Matches app/api/main.py and the UI, which
+# labels 70% as "Low".
+LOW_CONFIDENCE_THRESHOLD = 0.7
+
+
+def low_confidence_notice(query: str, plan) -> str:
+    """Transparency backstop for low-confidence interpretations.
+
+    When the interpreter proceeds at confidence < 0.7 WITHOUT asking for
+    clarification (e.g. it silently re-read a garbled term — 'פילוסופיה חד'
+    answered as Kabbalah), the response must open by stating how the query
+    was interpreted, in the user's language, so silent reinterpretations
+    are visible and correctable. Deterministic — no LLM involved.
+    """
+    if getattr(plan, "confidence", 1.0) > LOW_CONFIDENCE_THRESHOLD:
+        return ""
+    description = describe_filters(plan)
+    if _HEBREW_CHAR_RE.search(query):
+        return (
+            "**לתשומת לבך:** לא הייתי בטוח בפירוש השאלה, ולכן פירשתי אותה כך: "
+            f"_{description}_. אם התכוונת למשהו אחר — אנא נסחו מחדש.\n\n"
+        )
+    return (
+        "**Note:** I was not fully confident interpreting this question; "
+        f"I interpreted it as: _{description}_. "
+        "If you meant something else, please rephrase.\n\n"
+    )
 
 
 # =============================================================================
@@ -759,6 +795,7 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
 
     # --- Follow-up hints (deterministic data for better suggestions) ---
     hint_lines: list[str] = []
+    agents = result.grounding.agents
     if agents:
         top_agents = sorted(agents, key=lambda a: a.record_count, reverse=True)[:3]
         hint_lines.append("Top agents: " + ", ".join(
@@ -1084,20 +1121,13 @@ def _fallback_response(
             parts.append(f"- [{link.label}]({link.url})")
         parts.append("")
 
-    # Suggested followups
-    followups: list[str] = []
-    if records:
-        followups.append(f"Tell me more about one of these {len(records)} records")
-    if agents:
-        followups.append(f"What else did {agents[0].canonical_name} write?")
-    if not records:
-        followups.append("Try a broader search or different terms")
-
     narrative = "\n".join(parts).strip()
 
     return ScholarResponse(
         narrative=narrative,
-        suggested_followups=followups,
+        # Follow-up suggestions intentionally not generated (user request);
+        # the field stays for API compatibility and is always empty.
+        suggested_followups=[],
         grounding=grounding,
         confidence=0.5,  # lower confidence for fallback
         metadata={"fallback": True},

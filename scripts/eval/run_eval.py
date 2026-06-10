@@ -28,6 +28,56 @@ from scripts.models.config import load_config
 logger = logging.getLogger(__name__)
 
 
+def extract_filters(plan) -> dict[str, list]:
+    """Collect ALL filter values per field across all plan steps.
+
+    The previous implementation kept only the last value per field
+    (dict overwrite), so multi-step / multi-filter plans were scored
+    on a fraction of what they actually contained.
+    """
+    filters_produced: dict[str, list] = {}
+    for step in plan.execution_steps:
+        if hasattr(step.params, "filters"):
+            for f in step.params.filters:
+                key = f.field.value if hasattr(f.field, "value") else str(f.field)
+                filters_produced.setdefault(key, []).append(f.value)
+    return filters_produced
+
+
+def compute_recall(plan, db_path: str) -> dict[str, Any]:
+    """Execute the plan deterministically and report what it actually finds.
+
+    A plan can look excellent to an LLM judge and still retrieve nothing
+    (e.g. fabricated geographic constraints). This runs the real executor
+    (no LLM) so every eval entry carries empirical recall:
+    total_records, zero_result, relaxations_used, step error count.
+    """
+    from pathlib import Path as _Path
+
+    from scripts.chat.executor import execute_plan
+
+    try:
+        result = execute_plan(plan, _Path(db_path))
+        relaxations_used = any(
+            getattr(s.data, "relaxations", None) for s in result.steps_completed
+        )
+        errors = sum(1 for s in result.steps_completed if s.status == "error")
+        return {
+            "total_records": result.total_record_count,
+            "zero_result": result.total_record_count == 0,
+            "relaxations_used": relaxations_used,
+            "step_errors": errors,
+        }
+    except Exception as e:  # recall must never sink the eval entry
+        return {
+            "total_records": 0,
+            "zero_result": True,
+            "relaxations_used": False,
+            "step_errors": -1,
+            "recall_error": str(e),
+        }
+
+
 async def evaluate_interpreter(
     query: EvalQuery,
     model: str,
@@ -41,12 +91,8 @@ async def evaluate_interpreter(
         plan = await interpret(query.query, model=model)
         latency_ms = (time.monotonic() - start) * 1000
 
-        # Extract filters from plan for scoring
-        filters_produced = {}
-        for step in plan.execution_steps:
-            if hasattr(step.params, 'filters'):
-                for f in step.params.filters:
-                    filters_produced[f.field.value if hasattr(f.field, 'value') else str(f.field)] = f.value
+        filters_produced = extract_filters(plan)
+        recall = compute_recall(plan, db_path)
 
         return {
             "query_id": query.id,
@@ -54,15 +100,18 @@ async def evaluate_interpreter(
             "stage": "interpreter",
             "success": True,
             "latency_ms": round(latency_ms),
+            "recall": recall,
             "plan": {
                 "intents": plan.intents,
                 "execution_steps": [
                     {"action": s.action.value if hasattr(s.action, 'value') else str(s.action),
-                     "label": s.label}
+                     "label": s.label,
+                     "params": s.params.model_dump() if hasattr(s.params, "model_dump") else str(s.params)}
                     for s in plan.execution_steps
                 ],
                 "filters_produced": filters_produced,
                 "confidence": plan.confidence,
+                "clarification": plan.clarification,
             },
         }
     except Exception as e:
@@ -83,15 +132,17 @@ async def evaluate_narrator(
     db_path: str,
 ) -> dict[str, Any]:
     """Run full pipeline (interpret + execute + narrate) for a query x narrator model."""
+    from pathlib import Path as _Path
+
     from scripts.chat.interpreter import interpret
-    from scripts.chat.executor import execute
+    from scripts.chat.executor import execute_plan
     from scripts.chat.narrator import narrate
 
     start = time.monotonic()
     try:
         # Use default interpreter model, only vary narrator
         plan = await interpret(query.query)
-        exec_result = await execute(plan, db_path=db_path)
+        exec_result = execute_plan(plan, _Path(db_path))
         scholar_resp = await narrate(query.query, exec_result, model=model)
         latency_ms = (time.monotonic() - start) * 1000
 

@@ -153,12 +153,15 @@ class RecordSet(BaseModel):
     """Output of ``retrieve`` / ``sample``.
 
     ``mms_ids`` may be truncated; ``total_count`` always reflects
-    the full match count.
+    the full match count. ``relaxations`` records every query-broadening
+    step the executor applied after a 0-hit strict match (evidence of
+    how the result set was obtained — empty when no relaxation ran).
     """
 
     mms_ids: list[str]
     total_count: int
     filters_applied: list[dict]
+    relaxations: list[str] = Field(default_factory=list)
 
 
 class AggregationResult(BaseModel):

@@ -738,14 +738,11 @@ export default function Chat() {
         ) : (
           /* ---- Message history ---- */
           <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-            {messages.map((msg, idx) => (
+            {messages.map((msg) => (
               <MessageBubble
                 key={msg.id}
                 message={msg}
-                onFollowUp={handleFollowUp}
-                isLatest={idx === messages.length - 1 && msg.role === 'assistant'}
                 primoUrls={primoUrls}
-                loading={loading}
               />
             ))}
 

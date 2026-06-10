@@ -468,6 +468,24 @@ def build_where_clause(
                 condition = f"NOT ({condition})"
             conditions.append(condition)
 
+        elif filter.field == FilterField.PHYSICAL_DESC:
+            # MARC 300 physical description — substring match via EXISTS
+            # (no FTS table for physical_descriptions; table is small).
+            if filter.op == FilterOp.CONTAINS:
+                param_name = f"{param_prefix}_phys"
+                condition = (
+                    f"EXISTS (SELECT 1 FROM {M3Tables.PHYSICAL_DESCRIPTIONS} pd "
+                    f"WHERE pd.record_id = {M3Aliases.RECORDS}.id "
+                    f"AND LOWER(pd.value) LIKE '%' || LOWER(:{param_name}) || '%')"
+                )
+                params[param_name] = filter.value
+            else:
+                raise ValueError(f"Unsupported operation {filter.op} for physical_desc")
+
+            if filter.negate:
+                condition = f"NOT ({condition})"
+            conditions.append(condition)
+
     where_clause = " AND ".join(conditions)
     return where_clause, params, list(needed_joins)
 

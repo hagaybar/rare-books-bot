@@ -1,5 +1,5 @@
 # Chatbot API
-> Last verified: 2026-04-12
+> Last verified: 2026-06-10
 > Source of truth for: HTTP chat endpoints, model comparison, session management, Hebrew/bilingual support, clarification flow, and API configuration
 
 ## Overview
@@ -31,7 +31,7 @@ Send a natural language query, get results.
     "session_id": "uuid",
     "message": "Found 2 books matching your query...",
     "candidate_set": { ... },
-    "suggested_followups": ["..."],
+    "suggested_followups": [],
     "clarification_needed": null
   },
   "error": null
@@ -237,6 +237,7 @@ The interpreter includes dedicated handling for Hebrew queries:
 - Subject headings are searchable in both English and Hebrew (3,094+ bilingual headings)
 - Hebrew terms are used directly in SUBJECT and TITLE filters
 - Collection/provenance queries use corporate agents (e.g., "the Faitlovitch collection" → `agent_norm CONTAINS` + `agent_type EQUALS corporate`)
+- The narrator answers in the language of the user's query (Hebrew question → Hebrew answer, both REST and streaming paths); bibliographic titles, imprints, and names stay in their original language/script
 
 ### Enriched Narrator Context
 
@@ -249,14 +250,12 @@ The executor provides the narrator with rich grounding data beyond basic record 
 - **Auto-discovered connections**: When 2-10 agents appear in results and no explicit `find_connections` step was planned, the executor auto-queries `cross_reference.find_connections()` and passes relationship hints to the narrator.
 - **Title variants**: Uniform and variant titles shown as "Also known as: ..."
 - **Expanded notes**: Notes from MARC tags 504 (bibliography), 505 (contents), and 590 (shelf marks) in addition to 500/520.
-- **Entity-aware follow-ups**: The narrator receives deterministic hint data (top agents, agents with connections, top subjects) to generate data-driven follow-up suggestions.
 - **Truncation feedback**: When results are truncated, the narrator is told "Showing N of M total records" and instructed to acknowledge this to the user.
 
 ### Features
 
 - LLM-generated narrative summaries with evidence citations
 - Confidence-qualified assertions for uncertain dates, places, publishers
-- Entity-aware follow-up suggestions leveraging available connections and subjects
 - Streaming narrative via WebSocket (see `docs/current/streaming.md`)
 - Zero-results handling with broadening suggestions
 - Bilingual Hebrew/English subject search
@@ -271,13 +270,17 @@ Ambiguity detection and clarification prompts are now handled by the interpreter
 
 **File**: `scripts/chat/interpreter.py` (clarification is part of the `InterpretationPlan`)
 
-When the interpreter's confidence is low (< 0.7) and it sets a `clarification` field, the API short-circuits before execution and returns the clarification directly.
+When the interpreter's confidence is low (<= 0.7) and it sets a `clarification` field, the API short-circuits before execution and returns the clarification directly.
+
+Clarification triggers include garbled/typo terms (e.g. "פילוסופיה חד" → "did you mean פילוסופיה ודת?"); the interpreter is forbidden from silently substituting a different concept for an unreadable term.
+
+**Transparency backstop** (deterministic, `narrator.low_confidence_notice`): when the pipeline *proceeds* at confidence < 0.7 without a clarification, the response opens by stating how the query was interpreted (in the user's language), on both REST and WebSocket paths.
 
 ### Integration with API
 
 The `/chat` endpoint checks for clarification after interpretation:
 
-1. **After interpretation** (before execution): If `plan.clarification` is set and `plan.confidence < 0.7`, return early with a clarification prompt.
+1. **After interpretation** (before execution): If `plan.clarification` is set and `plan.confidence <= 0.7`, return early with a clarification prompt.
 2. The `clarification_needed` field in ChatResponse is set when clarification is needed.
 
 ### Example Flow

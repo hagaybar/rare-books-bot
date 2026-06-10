@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "description": "Curated concept-to-catalog-vocabulary expansions. Every expansion term must match >=1 record in bibliographic.db (enforced by tests/scripts/query/test_concept_bridge.py). Fields: subject (FTS token/phrase), title (FTS token), physical_desc (substring LIKE).",
+  "concepts": [
+    {
+      "canonical": "cartography",
+      "aliases": [
+        "maps",
+        "map",
+        "atlas",
+        "atlases",
+        "mapping",
+        "קרטוגרפיה",
+        "מפות",
+        "מפה",
+        "אטלס",
+        "אטלסים"
+      ],
+      "expansions": [
+        {
+          "field": "subject",
+          "value": "geography"
+        },
+        {
+          "field": "subject",
+          "value": "maps"
+        },
+        {
+          "field": "subject",
+          "value": "cartography"
+        },
+        {
+          "field": "subject",
+          "value": "description and travel"
+        },
+        {
+          "field": "title",
+          "value": "atlas"
+        },
+        {
+          "field": "title",
+          "value": "geographie"
+        },
+        {
+          "field": "physical_desc",
+          "value": "map"
+        }
+      ]
+    },
+    {
+      "canonical": "art",
+      "aliases": [
+        "arts",
+        "אמנות",
+        "אומנות"
+      ],
+      "expansions": [
+        {
+          "field": "subject",
+          "value": "art"
+        },
+        {
+          "field": "subject",
+          "value": "engraving"
+        },
+        {
+          "field": "subject",
+          "value": "illustration"
+        }
+      ]
+    },
+    {
+      "canonical": "geography",
+      "aliases": [
+        "גאוגרפיה",
+        "גיאוגרפיה"
+      ],
+      "expansions": [
+        {
+          "field": "subject",
+          "value": "geography"
+        },
+        {
+          "field": "subject",
+          "value": "description and travel"
+        },
+        {
+          "field": "title",
+          "value": "geographie"
+        }
+      ]
+    },
+    {
+      "canonical": "printing",
+      "aliases": [
+        "printing houses",
+        "printing house",
+        "printers",
+        "typography",
+        "דפוס",
+        "בתי דפוס",
+        "בית דפוס",
+        "בתי-דפוס",
+        "מדפיסים",
+        "תולדות הדפוס"
+      ],
+      "expansions": [
+        {
+          "field": "subject",
+          "value": "printing"
+        },
+        {
+          "field": "subject",
+          "value": "דפוס"
+        },
+        {
+          "field": "title",
+          "value": "דפוס"
+        }
+      ]
+    },
+    {
+      "canonical": "jewish",
+      "aliases": [
+        "jews",
+        "judaism",
+        "יהודי",
+        "יהודים",
+        "יהודיים",
+        "יהודית",
+        "יהדות"
+      ],
+      "expansions": [
+        {
+          "field": "subject",
+          "value": "jews"
+        },
+        {
+          "field": "subject",
+          "value": "jewish"
+        },
+        {
+          "field": "subject",
+          "value": "judaism"
+        }
+      ]
+    }
+  ]
+}

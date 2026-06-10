@@ -739,3 +739,76 @@ class TestStepIndexRemapping:
         assert plan.execution_steps[1].depends_on == [0]
         # scope $step_0 stays $step_0 (step 0 not skipped)
         assert plan.execution_steps[1].params.scope == "$step_0"
+
+
+# =============================================================================
+# Prompt integrity: coordinate topics, physical_desc, curatorial routing
+# =============================================================================
+
+
+class TestPromptCoordinateTopics:
+    """The system prompt must teach multi-topic decomposition, the
+    physical_desc field, and curatorial routing (issue #2 A3/C8)."""
+
+    def test_prompt_forbids_anding_coordinate_topics(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "COORDINATE TOPICS" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_documents_physical_desc_field(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "physical_desc" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_has_curatorial_example_with_sample_step(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "מה תציע לי להראות" in INTERPRETER_SYSTEM_PROMPT
+        # NB: no surrounding quotes in the assertion — inside the prompt the
+        # scope value sits in an escaped-JSON params string (\"...\").
+        assert "$step_0+$step_1+$step_2" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_convert_filter_dict_accepts_physical_desc(self):
+        from scripts.chat.interpreter import _convert_filter_dict
+        f = _convert_filter_dict(
+            {"field": "physical_desc", "op": "CONTAINS", "value": "map"}
+        )
+        assert f.field.value == "physical_desc"
+
+
+class TestPromptFilterDiscipline:
+    """The prompt must forbid invented constraints, malformed multi-value
+    filters, and concept-words routed as agent names (printing-houses case)."""
+
+    def test_prompt_forbids_inventing_constraints(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "NEVER INVENT" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_requires_proper_in_arrays(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "comma-joined" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_routes_concept_adjectives_to_subject(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "יהודיים" in INTERPRETER_SYSTEM_PROMPT
+
+
+class TestPromptGarbledTerms:
+    """Typo incident ('פילוסופיה חד' answered as Kabbalah): garbled terms
+    must trigger clarification, never silent concept substitution."""
+
+    def test_prompt_forbids_silent_substitution(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "NEVER silently substitute" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_lists_garbled_terms_as_clarification_trigger(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "garbled" in INTERPRETER_SYSTEM_PROMPT
+        assert "פילוסופיה חד" in INTERPRETER_SYSTEM_PROMPT
+
+
+class TestPromptClarificationLanguage:
+    """Clarifications bypass the narrator (short-circuit), so the language
+    rule must live in the interpreter prompt: Hebrew question → Hebrew
+    clarification (observed: 'צשפט' typo got an English clarification)."""
+
+    def test_prompt_requires_clarification_in_user_language(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "clarification in the language of the user's query" in INTERPRETER_SYSTEM_PROMPT

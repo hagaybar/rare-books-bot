@@ -135,6 +135,11 @@ def test_db(tmp_path):
             script TEXT, language TEXT, is_primary INTEGER,
             priority INTEGER, notes TEXT, created_at TEXT
         );
+        CREATE VIRTUAL TABLE subjects_fts USING fts5(mms_id, value, content='');
+        CREATE VIRTUAL TABLE titles_fts USING fts5(
+            title_type UNINDEXED, value,
+            content=titles, content_rowid=id
+        );
 
         -- Sample data: Joseph Karo with 2 books, plus a second agent
         INSERT INTO records VALUES
@@ -143,6 +148,9 @@ def test_db(tmp_path):
             (2, '990005678', 'test.xml', '2024-01-01', 2);
         INSERT INTO records VALUES
             (3, '990009999', 'test.xml', '2024-01-01', 3);
+        -- Themed records for relaxation-ladder tests (issue #2)
+        INSERT INTO records VALUES (4, '990111111', 'test.xml', '2024-01-01', 4);
+        INSERT INTO records VALUES (5, '990222222', 'test.xml', '2024-01-01', 5);
 
         INSERT INTO imprints VALUES
             (1, 1, 0, '1565', 'Venice', 'Bragadin', NULL, '["264"]',
@@ -196,6 +204,15 @@ def test_db(tmp_path):
             (1, 1, 'Jewish law', '650', 'lcsh', 'eng', NULL, '{}', '[]', NULL);
         INSERT INTO subjects VALUES
             (2, 3, 'Talmud', '650', 'lcsh', 'eng', NULL, '{}', '[]', NULL);
+        INSERT INTO subjects VALUES
+            (101, 4, 'Bible -- Geography -- Early works to 1800', '650',
+             NULL, 'en', NULL, NULL, '["650"]', NULL);
+        INSERT INTO subjects VALUES
+            (102, 5, 'Art -- History', '650',
+             NULL, 'en', NULL, NULL, '["650"]', NULL);
+
+        INSERT INTO physical_descriptions VALUES
+            (201, 4, '2 v. : ill., 10 folded maps', '["300"]');
 
         INSERT INTO titles VALUES
             (1, 1, 'main', 'Shulchan Aruch', '["245"]');
@@ -203,6 +220,10 @@ def test_db(tmp_path):
             (2, 2, 'main', 'Beit Yosef', '["245"]');
         INSERT INTO titles VALUES
             (3, 3, 'main', 'Talmud Bavli', '["245"]');
+        INSERT INTO titles VALUES
+            (301, 4, 'main', 'Palaestina illustrata', '["245"]');
+        INSERT INTO titles VALUES
+            (302, 5, 'main', 'De arte pingendi', '["245"]');
 
         INSERT INTO languages VALUES (1, 1, 'heb', '008/35-37');
         INSERT INTO languages VALUES (2, 2, 'heb', '008/35-37');
@@ -260,6 +281,11 @@ def test_db(tmp_path):
             (2, 1, 'Giovanni di Gara for Bragadin',
              'giovanni di gara for bragadin',
              'latin', NULL, 0, 0, NULL, '2024-01-01');
+
+        -- Populate FTS indexes from base tables
+        INSERT INTO subjects_fts(rowid, mms_id, value)
+            SELECT s.id, r.mms_id, s.value FROM subjects s JOIN records r ON s.record_id = r.id;
+        INSERT INTO titles_fts(titles_fts) VALUES('rebuild');
     """)
     conn.close()
 
@@ -991,3 +1017,178 @@ def test_grounding_agent_links_not_duplicated_with_enrich_step(test_db):
     ]
     # Should not be duplicated (exactly 1 from the enrich step)
     assert len(karo_wiki) == 1
+
+
+# =============================================================================
+# Relaxation ladder + scope union (issue #2)
+# =============================================================================
+
+from scripts.chat.executor import execute_plan  # noqa: E402
+
+
+class TestRetrieveRelaxationLadder:
+    """0-hit multi-topic AND queries are relaxed to OR-union + concept
+    expansion, with every relaxation recorded as evidence (issue #2 A1/A2)."""
+
+    def _plan(self, filters):
+        return InterpretationPlan(
+            intents=["retrieval"],
+            reasoning="t",
+            confidence=0.9,
+            execution_steps=[
+                ExecutionStep(
+                    action=StepAction.RETRIEVE,
+                    params=RetrieveParams(filters=filters),
+                    label="t",
+                )
+            ],
+            directives=[],
+        )
+
+    def test_strict_match_does_not_relax(self, test_db):
+        plan = self._plan([
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="geography"),
+        ])
+        result = execute_plan(plan, test_db)
+        data = result.steps_completed[0].data
+        assert "990111111" in data.mms_ids
+        assert data.relaxations == []
+
+    def test_multi_topic_zero_relaxes_to_or_union_with_expansion(self, test_db):
+        # art AND maps AND cartography → 0 strict; ladder must recover both
+        # the art record (direct OR) and the geography record (concept map:
+        # cartography→subject geography / physical_desc map).
+        plan = self._plan([
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="art"),
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="maps"),
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="cartography"),
+        ])
+        result = execute_plan(plan, test_db)
+        step = result.steps_completed[0]
+        data = step.data
+        assert "990222222" in data.mms_ids  # art (direct OR-union)
+        assert "990111111" in data.mms_ids  # cartography via expansion
+        assert step.status == "ok"
+        assert data.relaxations, "relaxation must be recorded as evidence"
+        assert any("0" in r or "relax" in r.lower() or "broaden" in r.lower() for r in data.relaxations)
+
+    def test_non_topical_filters_stay_hard(self, test_db):
+        # year constraint must remain AND even during relaxation:
+        # records 4/5 have no imprints rows → a 1500-1510 RANGE excludes them.
+        plan = self._plan([
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="art"),
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="cartography"),
+            Filter(field=FilterField.YEAR, op=FilterOp.RANGE, start=1500, end=1510),
+        ])
+        result = execute_plan(plan, test_db)
+        data = result.steps_completed[0].data
+        assert data.mms_ids == []
+        assert data.relaxations == []
+
+    def test_zero_with_no_expansion_stays_honest_empty(self, test_db):
+        plan = self._plan([
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="xyzzy"),
+        ])
+        result = execute_plan(plan, test_db)
+        step = result.steps_completed[0]
+        assert step.status == "empty"
+        assert step.data.mms_ids == []
+
+
+class TestScopeUnion:
+    """sample/retrieve scope may union steps: "$step_0+$step_1" (issue #2 C8)."""
+
+    def test_union_scope_merges_step_results(self, test_db):
+        plan = InterpretationPlan(
+            intents=["curation"],
+            reasoning="t",
+            confidence=0.9,
+            execution_steps=[
+                ExecutionStep(
+                    action=StepAction.RETRIEVE,
+                    params=RetrieveParams(filters=[
+                        Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="geography"),
+                    ]),
+                    label="geo",
+                ),
+                ExecutionStep(
+                    action=StepAction.RETRIEVE,
+                    params=RetrieveParams(filters=[
+                        Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="art"),
+                    ]),
+                    label="art",
+                ),
+                ExecutionStep(
+                    action=StepAction.SAMPLE,
+                    params=SampleParams(scope="$step_0+$step_1", n=10, strategy="earliest"),
+                    label="curate",
+                    depends_on=[0, 1],
+                ),
+            ],
+            directives=[],
+        )
+        result = execute_plan(plan, test_db)
+        sample = result.steps_completed[2].data
+        assert set(sample.mms_ids) == {"990111111", "990222222"}
+
+
+class TestMultiValueFilterNormalization:
+    """The planner sometimes emits malformed multi-value hard filters:
+    op IN for fields the adapter doesn't support, or comma-joined strings
+    ("venice,amsterdam,wordsworth") that can never match a single place_norm.
+    The executor must repair these deterministically into its multi-value
+    EQUALS mechanism (real SQL IN), keeping the original unsplit string as a
+    candidate because commas can be legitimate ("aldine press, venice")."""
+
+    def _plan(self, filters):
+        return InterpretationPlan(
+            intents=["retrieval"],
+            reasoning="t",
+            confidence=0.9,
+            directives=[],
+            execution_steps=[
+                ExecutionStep(
+                    action=StepAction.RETRIEVE,
+                    params=RetrieveParams(filters=filters),
+                    label="t",
+                )
+            ],
+        )
+
+    def test_comma_joined_equals_place_matches_any_city(self, test_db):
+        plan = self._plan([
+            Filter(
+                field=FilterField.IMPRINT_PLACE,
+                op=FilterOp.EQUALS,
+                value="venice,amsterdam,wordsworth",
+            )
+        ])
+        result = execute_plan(plan, test_db)
+        data = result.steps_completed[0].data
+        assert "990001234" in data.mms_ids  # venice
+        assert "990005678" in data.mms_ids  # amsterdam
+
+    def test_in_list_of_joined_strings_is_split(self, test_db):
+        plan = self._plan([
+            Filter(
+                field=FilterField.COUNTRY,
+                op=FilterOp.IN,
+                value=["italy,netherlands"],
+            )
+        ])
+        result = execute_plan(plan, test_db)
+        data = result.steps_completed[0].data
+        assert "990001234" in data.mms_ids
+        assert "990005678" in data.mms_ids
+
+    def test_original_unsplit_value_kept_as_candidate(self):
+        from scripts.chat.executor import _normalize_multivalue_filters
+
+        mv = {}
+        out = _normalize_multivalue_filters(
+            [Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="aldine press, venice")],
+            mv,
+        )
+        assert out[0].op == FilterOp.EQUALS
+        assert "aldine press, venice" in mv[0]
+        assert "venice" in mv[0]

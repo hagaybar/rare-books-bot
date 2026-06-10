@@ -1,0 +1,10 @@
+{
+  "pluginDir": "/home/hagaybar/.claude/plugins/local/docs-sync",
+  "standaloneHookPath": "/home/hagaybar/.claude/hooks/docs_sync_hook.py",
+  "standaloneSkillDir": "/home/hagaybar/.claude/skills/update-docs",
+  "settingsPath": "/home/hagaybar/.claude/settings.json",
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "topicMapPath": "/home/hagaybar/projects/rare-books-bot/docs-sync/topic-map.json",
+  "notificationFile": "docs-sync/artifacts/.pending-notification",
+  "archiveKeep": 25
+}

@@ -170,7 +170,7 @@ curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "books published by Oxford between 1500 and 1599"}'
 
-# Response includes: session_id, message, candidate_set, followup_questions
+# Response includes: session_id, message, candidate_set (suggested_followups is always [] — feature removed 2026-06-10)
 ```
 
 ### Test 3: Multi-Turn Conversation
@@ -242,7 +242,7 @@ pytest tests/app/test_api.py -v
 - Natural language query interpretation (via litellm)
 - SQL query execution against bibliographic database
 - Evidence-based responses with MARC field citations
-- Streamed narrative responses with follow-up suggestions
+- Streamed narrative responses
 - Session-based conversation history
 - Real-time streaming with thinking updates and narrative chunks
 - Clarification prompts for ambiguous queries

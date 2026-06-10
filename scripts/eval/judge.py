@@ -124,6 +124,11 @@ Given a user's query and the execution plan produced by the interpreter, rate th
 4 = Steps are good with minor improvements possible
 5 = Steps are excellent and comprehensive
 
+Cap the rating at 3 when the plan adds hard constraints the user never
+stated — e.g. inventing specific city/country/year filters when the user
+only gave broad context like "in Europe". Invented hard constraints
+silently exclude relevant records.
+
 Respond with your rating and a brief justification."""
 
 

@@ -191,3 +191,92 @@ def test_build_narrator_prompt_includes_directives():
 
     assert "expand" in prompt.lower()
     assert "Joseph Karo" in prompt
+
+
+class TestPromptResponseLanguage:
+    """The narrator must answer in the user's language (issue #2 follow-up):
+    a Hebrew question gets a Hebrew answer, with bibliographic titles kept
+    in their original language/script."""
+
+    def test_prompt_instructs_matching_query_language(self):
+        from scripts.chat.narrator import NARRATOR_SYSTEM_PROMPT
+        assert "RESPONSE LANGUAGE" in NARRATOR_SYSTEM_PROMPT
+        assert "language of the user's query" in NARRATOR_SYSTEM_PROMPT
+
+    def test_prompt_keeps_titles_in_original_script(self):
+        from scripts.chat.narrator import NARRATOR_SYSTEM_PROMPT
+        assert "original language" in NARRATOR_SYSTEM_PROMPT
+
+
+class TestNoFollowupGeneration:
+    """Follow-up suggestions are no longer generated anywhere (user request):
+    the LLM schemas omit the field and the fallback returns an empty list.
+    ScholarResponse keeps the field (always []) for API compatibility."""
+
+    def test_narrator_llm_schema_has_no_followups(self):
+        from scripts.chat.narrator import NarratorResponseLLM
+        assert "suggested_followups" not in NarratorResponseLLM.model_fields
+
+    def test_streaming_meta_schema_is_confidence_only(self):
+        from scripts.chat.narrator import StreamingMetaLLM
+        assert "suggested_followups" not in StreamingMetaLLM.model_fields
+        assert "confidence" in StreamingMetaLLM.model_fields
+
+    def test_fallback_response_has_empty_followups(self):
+        from scripts.chat.narrator import _fallback_response
+        exec_result = _make_karo_result()
+        resp = _fallback_response("who was Karo?", exec_result)
+        assert resp.suggested_followups == []
+
+
+class TestLowConfidenceNotice:
+    """Deterministic transparency backstop (typo/'philosophy חד' incident):
+    when the pipeline proceeds despite low interpretation confidence and no
+    clarification, the user must be told how the query was interpreted."""
+
+    def _plan(self, confidence):
+        from scripts.chat.plan_models import (
+            ExecutionStep, InterpretationPlan, RetrieveParams, StepAction,
+        )
+        from scripts.schemas.query_plan import Filter, FilterField, FilterOp
+        return InterpretationPlan(
+            intents=["retrieval"], reasoning="t", confidence=confidence, directives=[],
+            execution_steps=[ExecutionStep(
+                action=StepAction.RETRIEVE,
+                params=RetrieveParams(filters=[
+                    Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="kabbalah"),
+                ]),
+                label="t",
+            )],
+        )
+
+    def test_hebrew_query_gets_hebrew_notice(self):
+        from scripts.chat.narrator import low_confidence_notice
+        notice = low_confidence_notice("פילוסופיה חד", self._plan(0.6))
+        assert "פירשתי" in notice
+        assert "kabbalah" in notice  # the actual interpretation is shown
+
+    def test_english_query_gets_english_notice(self):
+        from scripts.chat.narrator import low_confidence_notice
+        notice = low_confidence_notice("philosophy xyz", self._plan(0.6))
+        assert "interpreted" in notice.lower()
+
+    def test_confident_interpretation_gets_no_notice(self):
+        from scripts.chat.narrator import low_confidence_notice
+        assert low_confidence_notice("books about art", self._plan(0.9)) == ""
+
+
+class TestConfidenceBoundary:
+    """Boundary escape (2026-06-10): the model emitted exactly 0.70, slipping
+    past both strict '< 0.7' gates. 0.70 is labeled 'Low' in the UI and must
+    be treated as low by the backend too."""
+
+    def test_notice_fires_at_exactly_070(self):
+        from scripts.chat.narrator import low_confidence_notice
+        plan = TestLowConfidenceNotice()._plan(0.7)
+        assert low_confidence_notice("ביסטוריב של מרפת", plan) != ""
+
+    def test_notice_absent_just_above_boundary(self):
+        from scripts.chat.narrator import low_confidence_notice
+        plan = TestLowConfidenceNotice()._plan(0.75)
+        assert low_confidence_notice("books about art", plan) == ""

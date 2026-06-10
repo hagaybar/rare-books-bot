@@ -395,3 +395,48 @@ class TestConvenienceFunctions:
             )
 
             mock_log.assert_called_once()
+
+
+class TestLLMLoggerPrivacyDefaults:
+    """Privacy hardening: prompts are not persisted in full by default (DL-2),
+    and secret-shaped substrings are redacted before being written (DL-3)."""
+
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_default_does_not_persist_full_prompts(self, mock_cc, temp_log_path, mock_response):
+        """A default-constructed logger writes previews, not full prompts."""
+        logger = LLMLogger(log_path=temp_log_path)
+
+        logger.log_call(
+            call_type="test_call",
+            model="gpt-4o",
+            system_prompt="System prompt content",
+            user_prompt="User prompt content",
+            response=mock_response,
+        )
+
+        with open(temp_log_path) as f:
+            entry = json.loads(f.readline())
+
+        assert "system" not in entry["prompts"]
+        assert "user" not in entry["prompts"]
+        assert "system_preview" in entry["prompts"]
+        assert "user_preview" in entry["prompts"]
+
+    @patch("litellm.completion_cost", return_value=0.0075)
+    def test_secrets_redacted_when_full_prompts_enabled(self, mock_cc, temp_log_path, mock_response):
+        """Even with full-prompt logging on, an API key in a prompt is redacted on write."""
+        logger = LLMLogger(log_path=temp_log_path, log_full_prompts=True)
+
+        logger.log_call(
+            call_type="test_call",
+            model="gpt-4o",
+            system_prompt="ignore",
+            user_prompt="my key is sk-abcdefghijklmnopqrstuvwxyz0123456789",
+            response=mock_response,
+        )
+
+        with open(temp_log_path) as f:
+            entry = json.loads(f.readline())
+
+        assert "sk-abcdefghijklmnopqrstuvwxyz0123456789" not in entry["prompts"]["user"]
+        assert "[REDACTED]" in entry["prompts"]["user"]

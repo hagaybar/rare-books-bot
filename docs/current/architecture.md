@@ -1,5 +1,5 @@
 # Architecture
-> Last verified: 2026-04-12
+> Last verified: 2026-04-13
 > Source of truth for: Project structure, core modules, data model index, and key architectural patterns
 
 ## Project Structure
@@ -80,6 +80,8 @@ frontend/                     # Unified React SPA
     hooks/                    # TanStack Query hooks with caching
     types/                    # TypeScript interfaces
     components/               # Shared UI components
+      chat/
+        MessageBubble.tsx     # Chat message rendering (BiDi/RTL via dir="auto")
 
 tests/                        # Pytest suite
   scripts/                    # Unit tests per module

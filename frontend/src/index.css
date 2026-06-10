@@ -35,6 +35,13 @@
 /* Safe area padding for devices with home indicators */
 .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
+/* RTL-aware list styling: flip list padding when dir="auto" resolves to RTL */
+.chat-markdown-content[dir="rtl"] ul,
+.chat-markdown-content[dir="rtl"] ol {
+  padding-right: 1.5em;
+  padding-left: 0;
+}
+
 /* Blinking cursor for streaming chat responses */
 @keyframes blink-cursor {
   0%, 100% { opacity: 1; }

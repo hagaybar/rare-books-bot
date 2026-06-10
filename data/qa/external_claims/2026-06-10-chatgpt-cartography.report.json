@@ -1,0 +1,124 @@
+{
+  "results": [
+    {
+      "claimed_title": "Hadriani Relandi Palaestina ex monumentis veteribus illustrata",
+      "claimed_mms_id": "9933433384704146",
+      "status": "id_fabricated_title_real",
+      "id_exists": false,
+      "real_mms_ids": [
+        "9933749415904146"
+      ]
+    },
+    {
+      "claimed_title": "Kanaan en d'Omleggende Landen",
+      "claimed_mms_id": "9933433393004146",
+      "status": "not_found",
+      "id_exists": false,
+      "real_mms_ids": []
+    },
+    {
+      "claimed_title": "Het algemeen groot historisch",
+      "claimed_mms_id": "9933323384704146",
+      "status": "verified",
+      "id_exists": true,
+      "real_mms_ids": [
+        "9933323384704146"
+      ]
+    },
+    {
+      "claimed_title": "Eisagoge eis ta Geographika kai Sphairika",
+      "claimed_mms_id": "9933433537104146",
+      "status": "not_found",
+      "id_exists": false,
+      "real_mms_ids": []
+    },
+    {
+      "claimed_title": "תיאורי מסעות פורטוגליים (João de Barros)",
+      "claimed_mms_id": "9933433543004146",
+      "status": "not_found",
+      "id_exists": false,
+      "real_mms_ids": []
+    },
+    {
+      "claimed_title": "Atlas géographique & iconographique du cours complet d'Écriture Sainte",
+      "claimed_mms_id": "9933435600004146",
+      "status": "id_fabricated_title_real",
+      "id_exists": false,
+      "real_mms_ids": [
+        "990032664220204146"
+      ]
+    },
+    {
+      "claimed_title": "Neu-eingerichtete und vermahrte Bilder-Geographie",
+      "claimed_mms_id": "990020368010204146",
+      "status": "verified",
+      "id_exists": true,
+      "real_mms_ids": [
+        "990020368010204146"
+      ]
+    },
+    {
+      "claimed_title": "Voyage en Syrie et en Égypte",
+      "claimed_mms_id": "990030745030204146",
+      "status": "verified",
+      "id_exists": true,
+      "real_mms_ids": [
+        "990030745030204146"
+      ]
+    },
+    {
+      "claimed_title": "The Survey of Western Palestine",
+      "claimed_mms_id": "990014484230204146",
+      "status": "verified",
+      "id_exists": true,
+      "real_mms_ids": [
+        "990014484230204146",
+        "990019370430204146",
+        "990019370520204146",
+        "990019370590204146",
+        "990025015330204146"
+      ]
+    },
+    {
+      "claimed_title": "Arabic and English Name Lists Collected During the Survey",
+      "claimed_mms_id": "990019370590204146",
+      "status": "verified",
+      "id_exists": true,
+      "real_mms_ids": [
+        "990019370590204146"
+      ]
+    },
+    {
+      "claimed_title": "Histoire des campagnes d'Italie",
+      "claimed_mms_id": "990013394710204146",
+      "status": "verified",
+      "id_exists": true,
+      "real_mms_ids": [
+        "990013394710204146"
+      ]
+    },
+    {
+      "claimed_title": "Tableau historique de la guerre de la révolution de France",
+      "claimed_mms_id": "990014205570204146",
+      "status": "id_real_title_mismatch",
+      "id_exists": true,
+      "real_mms_ids": []
+    },
+    {
+      "claimed_title": "מאמר על שמות ערי ארץ ישראל",
+      "claimed_mms_id": "990015534410204146",
+      "status": "verified",
+      "id_exists": true,
+      "real_mms_ids": [
+        "990015534410204146"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "id_fabricated_title_real": 2,
+    "not_found": 3,
+    "verified": 7,
+    "id_real_title_mismatch": 1
+  }
+}

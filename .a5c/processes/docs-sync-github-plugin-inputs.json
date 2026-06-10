@@ -1,0 +1,6 @@
+{
+  "githubRepo": "hagaybar/docs-sync-plugin",
+  "localMarketplacePath": "/home/hagaybar/.claude/plugins/marketplaces/docs-sync-local",
+  "projectRoot": "/home/hagaybar/projects/rare-books-bot",
+  "knownMarketplacesPath": "/home/hagaybar/.claude/plugins/known_marketplaces.json"
+}
