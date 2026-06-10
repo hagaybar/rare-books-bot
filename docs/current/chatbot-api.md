@@ -1,5 +1,5 @@
 # Chatbot API
-> Last verified: 2026-04-12
+> Last verified: 2026-06-10
 > Source of truth for: HTTP chat endpoints, model comparison, session management, Hebrew/bilingual support, clarification flow, and API configuration
 
 ## Overview
@@ -237,6 +237,7 @@ The interpreter includes dedicated handling for Hebrew queries:
 - Subject headings are searchable in both English and Hebrew (3,094+ bilingual headings)
 - Hebrew terms are used directly in SUBJECT and TITLE filters
 - Collection/provenance queries use corporate agents (e.g., "the Faitlovitch collection" → `agent_norm CONTAINS` + `agent_type EQUALS corporate`)
+- The narrator answers in the language of the user's query (Hebrew question → Hebrew answer, both REST and streaming paths); bibliographic titles, imprints, and names stay in their original language/script
 
 ### Enriched Narrator Context
 
