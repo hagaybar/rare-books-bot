@@ -1,6 +1,6 @@
 # QA Framework
-> Last verified: 2026-04-01
-> Source of truth for: Quality assurance infrastructure -- query debugger, diagnostics API, candidate labeling, gold set management, and regression testing
+> Last verified: 2026-06-10
+> Source of truth for: Quality assurance infrastructure -- query debugger, diagnostics API, candidate labeling, gold set management, regression testing, and external-citation verification
 
 ## Overview
 
@@ -69,6 +69,40 @@ Separate SQLite database, isolated from the production `bibliographic.db`.
 - **CLI runner**: `python -m app.cli regression --gold data/qa/gold.json --db data/index/bibliographic.db`
 - **Exit codes**: 0 = pass, 1 = fail (CI-friendly)
 
+### External-Citation Verification (`scripts/qa/verify_external_citations.py`)
+
+**Purpose**: external tools (ChatGPT etc.) may cite works "from our collection" with **fabricated MMS IDs** -- the title is real, the ID is invented. This harness cross-checks each claimed (title, mms_id) pair against `bibliographic.db` and flags fabrications deterministically (no LLM).
+
+**Usage**:
+
+```bash
+poetry run python scripts/qa/verify_external_citations.py \
+  --claims data/qa/external_claims/2026-06-10-chatgpt-cartography.json \
+  --db data/index/bibliographic.db \
+  [--out report.json]
+```
+
+**Claims file format** -- a JSON array of claimed pairs:
+
+```json
+[
+  {"title": "Hadriani Relandi Palaestina ex monumentis veteribus illustrata", "mms_id": "9933433384704146"}
+]
+```
+
+**The four statuses** (per claim):
+
+| Status | Meaning |
+|--------|---------|
+| `verified` | The mms_id exists AND one of its titles matches the claimed title |
+| `id_fabricated_title_real` | The title exists in the collection but under different mms_id(s); the claimed id does not match it (fabricated or wrong) -- the report lists the real id(s) |
+| `id_real_title_mismatch` | The mms_id exists but none of its titles match the claimed title |
+| `not_found` | Neither the id nor the title is in the collection |
+
+Title matching is a case-insensitive substring probe on the first 40 whitespace-collapsed characters of the claimed title (LIKE-escaped), against the `titles` table. The report (stdout, and JSON via `--out`) includes per-claim results plus a status-count summary.
+
+**First example** -- the 2026-06-10 ChatGPT cartography report (issue #2), stored at `data/qa/external_claims/2026-06-10-chatgpt-cartography.json` with its report alongside (`.report.json`). Summary: `total=13, verified=7, id_fabricated_title_real=2, not_found=3, id_real_title_mismatch=1`. The two fabricated-ID claims (Reland's *Palaestina* and the *Survey of Western Palestine*) are real works in the collection under different MMS IDs -- exactly the failure mode this harness exists to catch.
+
 ---
 
 ## Workflow
@@ -134,6 +168,8 @@ This can be integrated into CI pipelines for automated quality gates.
 |------|---------|
 | `app/api/diagnostics.py` | REST API for QA operations |
 | `scripts/qa/db.py` | QA database operations (CRUD for runs, labels, gold set) |
+| `scripts/qa/verify_external_citations.py` | External-citation verification harness (claimed title/mms_id pairs vs DB) |
+| `data/qa/external_claims/` | Claims files + verification reports from external tools |
 | `data/qa/qa.db` | QA SQLite database |
 | `data/qa/gold.json` | Exported gold set for regression testing |
 | `frontend/src/pages/QueryDebugger.tsx` | React query debugger UI |
