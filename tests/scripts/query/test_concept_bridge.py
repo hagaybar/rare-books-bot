@@ -73,3 +73,16 @@ def test_every_expansion_term_hits_the_db():
                 assert n >= 1, f"zero-hit expansion {key} — remove or fix it"
     finally:
         conn.close()
+
+
+def test_expand_printing_concept_hebrew_aliases():
+    """Printing-houses regression: בתי דפוס must bridge to catalog vocabulary."""
+    expansions = expand_concept("בתי דפוס")
+    assert expansions, "no printing concept in map"
+    assert expansions == expand_concept("printing")
+    assert Expansion(field="subject", value="printing") in expansions
+
+
+def test_expand_jewish_concept():
+    expansions = expand_concept("יהודיים")
+    assert Expansion(field="subject", value="jews") in expansions
