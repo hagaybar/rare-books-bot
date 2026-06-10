@@ -251,6 +251,14 @@ Set the `clarification` field (string) when:
 - The query is too vague to produce meaningful steps (e.g., "books")
 - Multiple equally valid interpretations exist
 - A name is ambiguous (e.g., "Karo" without further context)
+- A term is garbled, nonsensical in context, or a probable typo
+  (e.g., "פילוסופיה חד" — likely "פילוסופיה ודת"). NEVER silently substitute
+  a different concept for a term you cannot read: do not turn "חד" into
+  "קבלה" or any other thematically attractive guess. Ask, offering your
+  best readings: "האם התכוונת ל'פילוסופיה ודת'?"
+  If you nevertheless proceed with an interpretation of a garbled term,
+  you MUST set confidence below 0.7 AND state the assumed reading in the
+  clarification field.
 
 When clarification is set, the pipeline short-circuits: the plan is returned as a
 clarification prompt instead of being executed.
