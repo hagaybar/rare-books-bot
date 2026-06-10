@@ -44,6 +44,7 @@ from scripts.chat.plan_models import (
     StepOutputData,
     StepResult,
 )
+from scripts.schemas.query_plan import Filter, FilterField, FilterOp
 
 logger = logging.getLogger(__name__)
 
@@ -294,6 +295,19 @@ def _resolve_scope(
         if session_context and session_context.previous_record_ids:
             return list(session_context.previous_record_ids)
         return []
+
+    # Union of step references: "$step_0+$step_1" (deduplicated, order kept)
+    if "+" in scope:
+        parts = [p.strip() for p in scope.split("+")]
+        if parts and all(_STEP_REF_RE.match(p) for p in parts):
+            merged: List[str] = []
+            seen: set = set()
+            for part in parts:
+                for mms in _resolve_step_ref(part, step_results, context="scope"):
+                    if mms not in seen:
+                        seen.add(mms)
+                        merged.append(mms)
+            return merged
 
     # Try to resolve as a step reference
     match = _STEP_REF_RE.match(scope)
@@ -625,6 +639,119 @@ def _handle_resolve_publisher(
         conn.close()
 
 
+_TOPICAL_CONTAINS_FIELDS = {FilterField.SUBJECT, FilterField.TITLE, FilterField.PHYSICAL_DESC}
+
+
+def _is_topical_contains(f: Filter) -> bool:
+    """Topical filters are subject/title/physical_desc CONTAINS (not negated).
+    These are recall constraints; everything else (year, place, language,
+    agent…) is a hard constraint that relaxation must never loosen."""
+    return f.field in _TOPICAL_CONTAINS_FIELDS and f.op == FilterOp.CONTAINS and not f.negate
+
+
+def _run_filter_query(
+    conn: sqlite3.Connection,
+    filters: List[Filter],
+    scope_ids: Optional[List[str]],
+    multi_value_map: Optional[Dict[int, List[str]]] = None,
+) -> List[str]:
+    """Build and run one filter query; returns matching mms_ids (sorted)."""
+    from scripts.query.db_adapter import build_where_clause, build_join_clauses
+    from scripts.schemas.query_plan import QueryPlan
+
+    if not filters:
+        return []
+    plan = QueryPlan(query_text="executor_retrieve", filters=filters)
+    where_clause, sql_params, needed_joins = build_where_clause(plan, conn=conn)
+
+    if multi_value_map:
+        for filter_idx, all_values in multi_value_map.items():
+            f = filters[filter_idx]
+            param_key = f"filter_{filter_idx}_{f.field.value}"
+            if param_key in sql_params:
+                old_cond = f"LOWER(:{param_key})"
+                mv_keys = [f"mv_{filter_idx}_{i}" for i in range(len(all_values))]
+                multi_placeholders = ", ".join(f"LOWER(:{k})" for k in mv_keys)
+                where_clause = where_clause.replace(
+                    f"= {old_cond}", f"IN ({multi_placeholders})"
+                )
+                del sql_params[param_key]
+                for k, v in zip(mv_keys, all_values):
+                    sql_params[k] = v
+
+    scope_clause = ""
+    if scope_ids is not None:
+        scope_keys = [f"scope_{i}" for i in range(len(scope_ids))]
+        scope_placeholders = ",".join(f":{k}" for k in scope_keys)
+        scope_clause = f" AND r.mms_id IN ({scope_placeholders})"
+        for k, mms in zip(scope_keys, scope_ids):
+            sql_params[k] = mms
+
+    join_clauses = build_join_clauses(needed_joins)
+    sql = "SELECT DISTINCT r.mms_id\nFROM records r"
+    if join_clauses:
+        sql += f"\n{join_clauses}"
+    sql += f"\nWHERE {where_clause}{scope_clause}"
+    sql += "\nORDER BY r.mms_id"
+    rows = conn.execute(sql, sql_params).fetchall()
+    return [row["mms_id"] for row in rows]
+
+
+def _relax_and_retry(
+    conn: sqlite3.Connection,
+    filters: List[Filter],
+    scope_ids: Optional[List[str]],
+) -> tuple[List[str], List[str]]:
+    """Relaxation ladder for 0-hit retrieves (issue #2 A2).
+
+    Per topical filter: direct hits (OR-union when >=2 topics) plus
+    concept-map expansion hits. Non-topical filters stay ANDed in every
+    probe. Returns (mms_ids, relaxation_notes); ([], []) when nothing
+    could be recovered — honest empty.
+    """
+    from scripts.query.concept_bridge import expand_concept
+    from scripts.schemas.query_plan import Filter as QPFilter
+
+    topical = [f for f in filters if _is_topical_contains(f)]
+    others = [f for f in filters if not _is_topical_contains(f)]
+    if not topical:
+        return [], []
+
+    union: set = set()
+    notes: List[str] = []
+    for tf in topical:
+        topic_hits: set = set()
+        if len(topical) >= 2:
+            direct = _run_filter_query(conn, others + [tf], scope_ids)
+            if direct:
+                notes.append(
+                    f"'{tf.value}' matched {len(direct)} records on its own (OR-union)"
+                )
+                topic_hits |= set(direct)
+        for exp in expand_concept(str(tf.value)):
+            probe = QPFilter(
+                field=FilterField(exp.field), op=FilterOp.CONTAINS, value=exp.value
+            )
+            exp_hits = _run_filter_query(conn, others + [probe], scope_ids)
+            if exp_hits:
+                notes.append(
+                    f"'{tf.value}' expanded to {exp.field} CONTAINS "
+                    f"'{exp.value}' ({len(exp_hits)} records)"
+                )
+                topic_hits |= set(exp_hits)
+        union |= topic_hits
+
+    if not union:
+        return [], []
+    header = (
+        f"Strict AND of {len(filters)} filter(s) returned 0 records; "
+        f"broadened to OR-union with concept expansion across "
+        f"{len(topical)} topic(s)"
+    )
+    logger.info("Retrieve relaxation: %s", header)
+    return sorted(union), [header] + notes
+
+
 def _handle_retrieve(
     params: RetrieveParams,
     db_path: Path,
@@ -634,16 +761,13 @@ def _handle_retrieve(
     """Retrieve records matching filters, optionally scoped.
 
     Converts RetrieveParams.filters to a QueryPlan, resolves $step_N
-    references in filter values, calls db_adapter.build_full_query()
-    and db_adapter.fetch_candidates(). If scope is set, adds WHERE
-    r.mms_id IN (...) constraint.
+    references in filter values, and runs the query via
+    _run_filter_query(). If scope is set, adds WHERE r.mms_id IN (...)
+    constraint. On a 0-hit strict match, applies the relaxation ladder
+    (_relax_and_retry) and records each broadening step as evidence.
 
     Returns RecordSet with matched mms_ids.
     """
-    from scripts.query.db_adapter import build_where_clause, build_select_columns
-    from scripts.query.db_adapter import build_join_clauses, fetch_candidates
-    from scripts.schemas.query_plan import QueryPlan
-
     # Resolve $step_N references in filter values
     resolved_filters = []
     multi_value_map: Dict[int, List[str]] = {}  # filter_index -> all resolved values
@@ -664,65 +788,25 @@ def _handle_retrieve(
     # Resolve scope
     scope_ids = _resolve_scope(params.scope, step_results, session_context)
 
+    if scope_ids is not None and not scope_ids:
+        # Empty scope = no results
+        return RecordSet(
+            mms_ids=[],
+            total_count=0,
+            filters_applied=[f.model_dump() for f in resolved_filters],
+        )
+
     conn = _get_conn(db_path)
     try:
-        # Build query from filters
-        plan = QueryPlan(query_text="executor_retrieve", filters=resolved_filters)
-        where_clause, sql_params, needed_joins = build_where_clause(plan, conn=conn)
-
-        # Replace single-value EQUALS with IN(...) for multi-value resolved filters
-        for filter_idx, all_values in multi_value_map.items():
-            f = resolved_filters[filter_idx]
-            # Find the param key used by build_where_clause for this filter
-            param_key = f"filter_{filter_idx}_{f.field.value}"
-            if param_key in sql_params:
-                # Replace LOWER(col) = LOWER(:param) with LOWER(col) IN (LOWER(:mv_N), ...)
-                old_cond = f"LOWER(:{param_key})"
-                mv_keys = [f"mv_{filter_idx}_{i}" for i in range(len(all_values))]
-                multi_placeholders = ", ".join(f"LOWER(:{k})" for k in mv_keys)
-                where_clause = where_clause.replace(
-                    f"= {old_cond}",
-                    f"IN ({multi_placeholders})"
-                )
-                del sql_params[param_key]
-                for k, v in zip(mv_keys, all_values):
-                    sql_params[k] = v
-
-        select_columns = build_select_columns(needed_joins)
-        join_clauses = build_join_clauses(needed_joins)
-
-        # Add scope constraint
-        scope_clause = ""
-        if scope_ids is not None:
-            if not scope_ids:
-                # Empty scope = no results
-                return RecordSet(
-                    mms_ids=[],
-                    total_count=0,
-                    filters_applied=[f.model_dump() for f in resolved_filters],
-                )
-            scope_keys = [f"scope_{i}" for i in range(len(scope_ids))]
-            scope_placeholders = ",".join(f":{k}" for k in scope_keys)
-            scope_clause = f" AND r.mms_id IN ({scope_placeholders})"
-            for k, mms in zip(scope_keys, scope_ids):
-                sql_params[k] = mms
-
-        sql = (
-            f"SELECT DISTINCT r.mms_id"
-            f"\nFROM records r"
-        )
-        if join_clauses:
-            sql += f"\n{join_clauses}"
-        sql += f"\nWHERE {where_clause}{scope_clause}"
-        sql += f"\nORDER BY r.mms_id"
-
-        rows = conn.execute(sql, sql_params).fetchall()
-        mms_ids = [row["mms_id"] for row in rows]
-
+        mms_ids = _run_filter_query(conn, resolved_filters, scope_ids, multi_value_map)
+        relaxations: List[str] = []
+        if not mms_ids:
+            mms_ids, relaxations = _relax_and_retry(conn, resolved_filters, scope_ids)
         return RecordSet(
             mms_ids=mms_ids,
             total_count=len(mms_ids),
             filters_applied=[f.model_dump() for f in resolved_filters],
+            relaxations=relaxations,
         )
     finally:
         conn.close()

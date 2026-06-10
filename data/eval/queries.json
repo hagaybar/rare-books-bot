@@ -1,0 +1,250 @@
+[
+  {
+    "id": "q01",
+    "query": "Books printed by Daniel Bomberg in Venice",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {"publisher": "daniel bomberg", "place": "venice"},
+    "notes": "Known publisher with 5 records, all in Venice"
+  },
+  {
+    "id": "q02",
+    "query": "Works by Josephus Flavius",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {"agent": "josephus, flavius"},
+    "notes": "Top author with 21 records"
+  },
+  {
+    "id": "q03",
+    "query": "Hebrew books printed in Amsterdam",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "expected_filters": {"language": "heb", "place": "amsterdam"},
+    "notes": "Amsterdam has 196 imprints; Hebrew is the top language (806 records)"
+  },
+  {
+    "id": "q04",
+    "query": "What did Aldo Manuzio publish?",
+    "intent": "entity_exploration",
+    "difficulty": "simple",
+    "expected_filters": {"agent": "manuzio, aldo"},
+    "notes": "Manuzio has 23 agent records; Aldine Press has 7 publisher records"
+  },
+  {
+    "id": "q05",
+    "query": "Tell me about Johann Buxtorf and his works",
+    "intent": "entity_exploration",
+    "difficulty": "moderate",
+    "expected_filters": {"agent": "buxtorf, johann"},
+    "notes": "Buxtorf has 24 agent records, known Hebraist"
+  },
+  {
+    "id": "q06",
+    "query": "What is the collection of Jacques Faitlovitch about?",
+    "intent": "entity_exploration",
+    "difficulty": "moderate",
+    "expected_filters": {"agent": "faitlovitch, jacques"},
+    "notes": "Faitlovitch has 40 records, Ethiopian manuscripts collector"
+  },
+  {
+    "id": "q07",
+    "query": "How many books were printed in each century across all cities?",
+    "intent": "analytical",
+    "difficulty": "moderate",
+    "expected_filters": {},
+    "notes": "Analytical/distribution query requiring date aggregation"
+  },
+  {
+    "id": "q08",
+    "query": "Distribution of printing locations for Hebrew books before 1600",
+    "intent": "analytical",
+    "difficulty": "complex",
+    "expected_filters": {"language": "heb"},
+    "notes": "Analytical query combining language filter with date range and place aggregation"
+  },
+  {
+    "id": "q09",
+    "query": "Compare the output of the Bragadin Press and the Aldine Press in Venice",
+    "intent": "comparison",
+    "difficulty": "complex",
+    "expected_filters": {"place": "venice"},
+    "notes": "Bragadin has 12 records, Aldine has 7; both in Venice"
+  },
+  {
+    "id": "q10",
+    "query": "How does Amsterdam compare to Venice as a Hebrew printing center?",
+    "intent": "comparison",
+    "difficulty": "complex",
+    "expected_filters": {},
+    "notes": "Amsterdam has 196, Venice has 164 imprints; compare Hebrew output specifically"
+  },
+  {
+    "id": "q11",
+    "query": "Show me rare books about Hebrew grammar printed before 1800",
+    "intent": "curation",
+    "difficulty": "moderate",
+    "expected_filters": {"subject": "Hebrew language"},
+    "notes": "27 records for 'Hebrew language -- Grammar -- Early works to 1800'"
+  },
+  {
+    "id": "q12",
+    "query": "Curate a selection of Ethiopian manuscripts from the collection",
+    "intent": "curation",
+    "difficulty": "moderate",
+    "expected_filters": {},
+    "notes": "39 records for 'Manuscripts, Ethiopic.' subject; Ge'ez language (58 records)"
+  },
+  {
+    "id": "q13",
+    "query": "What books do you have about bibliomania and book collecting?",
+    "intent": "topical",
+    "difficulty": "simple",
+    "expected_filters": {"subject": "book collecting"},
+    "notes": "24 records for 'Book collecting', 17 for 'Bibliomania'"
+  },
+  {
+    "id": "q14",
+    "query": "Books related to Napoleon",
+    "intent": "topical",
+    "difficulty": "moderate",
+    "expected_filters": {},
+    "notes": "20 records with Napoleon subject heading"
+  },
+  {
+    "id": "q15",
+    "query": "Tell me more about that author's other works",
+    "intent": "follow_up",
+    "difficulty": "simple",
+    "expected_filters": {},
+    "notes": "Follow-up query requiring session context for 'that author'"
+  },
+  {
+    "id": "q16",
+    "query": "Were any of those also printed in Latin?",
+    "intent": "follow_up",
+    "difficulty": "moderate",
+    "expected_filters": {"language": "lat"},
+    "notes": "Follow-up refining previous results with language filter; Latin has 505 records"
+  },
+  {
+    "id": "q17",
+    "query": "Give me an overview of the rare books collection",
+    "intent": "overview",
+    "difficulty": "simple",
+    "expected_filters": {},
+    "notes": "High-level summary of the full collection (~2796 records)"
+  },
+  {
+    "id": "q18",
+    "query": "What are the main subjects and languages represented in this collection?",
+    "intent": "overview",
+    "difficulty": "moderate",
+    "expected_filters": {},
+    "notes": "Aggregation across subjects and languages tables"
+  },
+  {
+    "id": "q19",
+    "query": "Latin texts printed in Paris in the 18th century",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "expected_filters": {"language": "lat", "place": "paris"},
+    "notes": "Paris is top place (356 imprints); Latin is second language (505 records)"
+  },
+  {
+    "id": "q20",
+    "query": "Books by Moses Mendelssohn",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {"agent": "mendelssohn, moses"},
+    "notes": "Mendelssohn has 11 author records"
+  },
+  {
+    "id": "q21",
+    "query": "What connections exist between printers in Venice and Amsterdam in the 17th century?",
+    "intent": "analytical",
+    "difficulty": "complex",
+    "expected_filters": {},
+    "notes": "Network/connection query across two major printing centers"
+  },
+  {
+    "id": "q22",
+    "query": "Show me the works of Christophe Plantin and his successors",
+    "intent": "entity_exploration",
+    "difficulty": "complex",
+    "expected_filters": {"publisher": "plantin"},
+    "notes": "Multiple Plantin-related publisher entries including variants"
+  },
+  {
+    "id": "q23",
+    "query": "German language books from Berlin and Leipzig",
+    "intent": "retrieval",
+    "difficulty": "moderate",
+    "expected_filters": {"language": "ger"},
+    "notes": "Berlin (123 imprints) and Leipzig (111); German has 496 language records"
+  },
+  {
+    "id": "q24",
+    "query": "Curate a selection of Bible commentaries and related works",
+    "intent": "curation",
+    "difficulty": "complex",
+    "expected_filters": {"subject": "Bible"},
+    "notes": "Multiple Bible-related subjects: Pentateuch commentaries, illustrations, geography"
+  },
+  {
+    "id": "q25",
+    "query": "Who were the most prolific authors in the collection and what did they write?",
+    "intent": "analytical",
+    "difficulty": "complex",
+    "expected_filters": {},
+    "notes": "Aggregation across agents table; top authors: Josephus (21), Buxtorf (19), Buchon (16)"
+  },
+  {
+    "id": "q26",
+    "query": "Books published by the House of Elzevir in Leiden",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {"publisher": "house of elzevir", "place": "leiden"},
+    "notes": "House of Elzevir has 7 records in Leiden plus variant in Amsterdam"
+  },
+  {
+    "id": "q27",
+    "query": "What Italian language books are in the collection?",
+    "intent": "topical",
+    "difficulty": "simple",
+    "expected_filters": {"language": "ita"},
+    "notes": "Italian has 103 language records"
+  },
+  {
+    "id": "q28",
+    "query": "Compare French and German scholarly publishing in the 19th century",
+    "intent": "comparison",
+    "difficulty": "complex",
+    "expected_filters": {},
+    "notes": "French (500 records) vs German (496); Paris and Berlin/Leipzig as centers"
+  },
+  {
+    "id": "q29",
+    "query": "What Yiddish texts are in the collection?",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {"language": "yid"},
+    "notes": "Yiddish has 55 language records"
+  },
+  {
+    "id": "q30",
+    "query": "Books printed in Jerusalem",
+    "intent": "retrieval",
+    "difficulty": "simple",
+    "expected_filters": {"place": "jerusalem"},
+    "notes": "Jerusalem has 109 imprints"
+  },
+  {
+    "id": "q31",
+    "query": "שיעור שעוסק באמנות, מפות וקרטוגרפיה. מה תציע לי להראות מהאוסף?",
+    "intent": "curation",
+    "difficulty": "hard",
+    "expected_filters": {"topics_decomposed_or": ["art", "geography", "maps"], "physical_desc": "map"},
+    "notes": "Issue #2 regression: multi-concept Hebrew curatorial query. Must NOT collapse to ANDed 0-result; expect >=10 candidates incl. 9933749415904146 (Reland 1714), 990014484230204146 (Survey of W. Palestine), 990020368010204146 (Bilder-Geographie). Coordinate topics -> one retrieve step per concept + sample notable over scope union."
+  }
+]

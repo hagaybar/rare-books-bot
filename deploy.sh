@@ -61,7 +61,9 @@ health_check() {
     echo "--- Health check ---"
     for i in 1 2 3; do
         sleep 5
-        if $SSH_CMD "curl -sf http://127.0.0.1:8000/health" > /dev/null 2>&1; then
+        # Check OUR container's host port ($HOST_PORT). Port 8000 on this host
+        # belongs to a different application — curling it gives a false PASS.
+        if $SSH_CMD "curl -sf http://127.0.0.1:$HOST_PORT/health" > /dev/null 2>&1; then
             echo "Health check PASSED (attempt $i)"
             echo "Site live at: https://$DOMAIN"
             return 0
