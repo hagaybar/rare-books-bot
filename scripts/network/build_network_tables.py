@@ -231,8 +231,40 @@ def _resolve_name_to_agent_norm(conn: sqlite3.Connection, name: str) -> str | No
     return None
 
 
+def _agent_lifespans(conn: sqlite3.Connection) -> dict[str, tuple[int | None, int | None]]:
+    """Map agent_norm -> (birth_year, death_year) from authority_enrichment.
+
+    Used to clamp imprint-derived activity windows to an agent's lifetime so a
+    posthumous reprint can't make a dead agent "active" (issue #28, A11).
+    """
+    spans: dict[str, tuple[int | None, int | None]] = {}
+    for norm, person_info in conn.execute(
+        """SELECT a.agent_norm, ae.person_info
+           FROM agents a
+           JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
+           WHERE ae.person_info IS NOT NULL"""
+    ).fetchall():
+        if norm in spans or not person_info:
+            continue
+        try:
+            pi = json.loads(person_info)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        birth, death = pi.get("birth_year"), pi.get("death_year")
+        if birth is not None or death is not None:
+            spans[norm] = (birth, death)
+    return spans
+
+
 def _build_same_place_period_edges(conn: sqlite3.Connection) -> int:
-    """Find agents active in the same city during overlapping periods (>=10 years)."""
+    """Find agents active in the same city during overlapping periods (>=10 years).
+
+    Activity windows derive from imprint dates but are clamped to each agent's
+    lifespan (issue #28): a window that falls entirely outside [birth, death]
+    is dropped, so a posthumous reprint never implies activity.
+    """
+    lifespans = _agent_lifespans(conn)
+
     # For each agent, get their place + date range per place
     agent_places = conn.execute("""
         SELECT a.agent_norm, i.place_norm,
@@ -245,9 +277,17 @@ def _build_same_place_period_edges(conn: sqlite3.Connection) -> int:
         HAVING MAX(i.date_start) - MIN(i.date_start) >= 0
     """).fetchall()
 
-    # Group by place
+    # Group by place, clamping each window to the agent's lifetime when known
     place_agents = defaultdict(list)
     for norm, place, earliest, latest in agent_places:
+        birth, death = lifespans.get(norm, (None, None))
+        if birth is not None:
+            earliest = max(earliest, birth)
+        if death is not None:
+            latest = min(latest, death)
+        if earliest > latest:
+            # No part of this agent's activity at this place falls within life
+            continue
         place_agents[place].append((norm, earliest, latest))
 
     count = 0
