@@ -1112,6 +1112,8 @@ def _handle_aggregate(
             "year": "date_decade",
             "decade": "date_decade",
             "century": "date_decade",
+            "date_century": "date_decade",  # issue #11 (q07 silent empty)
+            "date_year": "date_decade",
             "agent_norm": "agent",
             "author": "agent",
             "printer": "agent",

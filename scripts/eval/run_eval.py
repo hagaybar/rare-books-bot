@@ -40,21 +40,38 @@ def extract_filters(plan) -> dict[str, list]:
         if hasattr(step.params, "filters"):
             for f in step.params.filters:
                 key = f.field.value if hasattr(f.field, "value") else str(f.field)
-                filters_produced.setdefault(key, []).append(f.value)
+                if f.value is None and f.start is not None:
+                    # Issue #10: RANGE filters carry start/end, not value —
+                    # serializing None cost every year-query its overlap credit.
+                    filters_produced.setdefault(key, []).append(f"{f.start}-{f.end}")
+                else:
+                    filters_produced.setdefault(key, []).append(f.value)
     return filters_produced
 
 
-def compute_recall(plan, db_path: str) -> dict[str, Any]:
+def compute_recall(plan, db_path: str, expected_intent: str | None = None) -> dict[str, Any]:
     """Execute the plan deterministically and report what it actually finds.
 
     A plan can look excellent to an LLM judge and still retrieve nothing
     (e.g. fabricated geographic constraints). This runs the real executor
-    (no LLM) so every eval entry carries empirical recall:
-    total_records, zero_result, relaxations_used, step error count.
+    (no LLM) so every eval entry carries empirical recall.
+
+    Intent-aware (issue #11): aggregation facets count as success for
+    overview/analytical queries; follow_up queries are skipped (single-turn
+    eval has no session context); out_of_scope queries are expected empty.
     """
     from pathlib import Path as _Path
 
     from scripts.chat.executor import execute_plan
+
+    if expected_intent == "follow_up":
+        return {
+            "total_records": None,
+            "zero_result": None,
+            "relaxations_used": False,
+            "step_errors": 0,
+            "skipped": "follow_up needs session context the harness lacks",
+        }
 
     try:
         result = execute_plan(plan, _Path(db_path))
@@ -62,9 +79,19 @@ def compute_recall(plan, db_path: str) -> dict[str, Any]:
             getattr(s.data, "relaxations", None) for s in result.steps_completed
         )
         errors = sum(1 for s in result.steps_completed if s.status == "error")
+        has_aggregations = any(
+            getattr(s.data, "facets", None) for s in result.steps_completed
+        )
+        if expected_intent == "out_of_scope":
+            zero_result = False  # an empty plan IS the correct behavior
+        elif expected_intent in ("overview", "analytical") and has_aggregations:
+            zero_result = False  # facets are the deliverable, not records
+        else:
+            zero_result = result.total_record_count == 0
         return {
             "total_records": result.total_record_count,
-            "zero_result": result.total_record_count == 0,
+            "zero_result": zero_result,
+            "has_aggregations": has_aggregations,
             "relaxations_used": relaxations_used,
             "step_errors": errors,
         }
@@ -92,7 +119,7 @@ async def evaluate_interpreter(
         latency_ms = (time.monotonic() - start) * 1000
 
         filters_produced = extract_filters(plan)
-        recall = compute_recall(plan, db_path)
+        recall = compute_recall(plan, db_path, expected_intent=query.intent)
 
         return {
             "query_id": query.id,
@@ -212,6 +239,13 @@ async def run_evaluation(
                                 query, result["plan"], judge_model=judge_model,
                             )
                             result["score_combined"] = score.combined
+                            if (
+                                score.combined >= 4.0
+                                and (result.get("recall") or {}).get("zero_result") is True
+                            ):
+                                # Issue #11: a high judge score on empirically
+                                # zero recall is the framework's loudest smell.
+                                result["flags"] = ["judge_recall_disagreement"]
                             result["score_detail"] = {
                                 "intent_match": score.intent_match,
                                 "filter_overlap": score.filter_overlap,

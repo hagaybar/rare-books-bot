@@ -1332,3 +1332,21 @@ class TestNotableSampleUsesCurationEngine:
         # imprint; pure-earliest can never pick it, the engine should.
         notable = execute_plan(self._plan("notable"), test_db).steps_completed[0].data
         assert "990111111" in notable.mms_ids
+
+
+class TestAggregateFieldAliases:
+    """Issue #11 (q07): interpreter said 'date_century'; executor only knew
+    'century' — silent empty AggregationResult."""
+
+    def test_date_century_alias_resolves(self, test_db):
+        from scripts.chat.plan_models import AggregateParams
+        plan = InterpretationPlan(
+            intents=["analytical"], reasoning="t", confidence=0.9, directives=[],
+            execution_steps=[ExecutionStep(
+                action=StepAction.AGGREGATE,
+                params=AggregateParams(field="date_century", scope="full_collection", limit=10),
+                label="centuries")])
+        result = execute_plan(plan, test_db)
+        step = result.steps_completed[0]
+        assert step.status == "ok"
+        assert step.data.facets, "date_century must aggregate, not silently empty"
