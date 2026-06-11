@@ -146,6 +146,11 @@ Steps can reference prior steps' outputs using `$step_N` (0-indexed).
 - In `agents` list: references resolved agent names
 - In `targets`: references resolved entities for enrichment
 
+Scope fields also accept a UNION of step references joined with '+'
+(e.g. "$step_0+$step_1+$step_2") — the executor merges the referenced
+record sets, deduplicated. Use it to sample/aggregate across several
+retrieve steps. List every referenced step in `depends_on`.
+
 Always set `depends_on` when referencing a prior step.  Example:
 - Step 0: resolve_agent (Karo)
 - Step 1: retrieve with filter value=$step_0, depends_on=[0]
@@ -256,11 +261,14 @@ Set the `clarification` field (string) when:
   a different concept for a term you cannot read: do not turn "חד" into
   "קבלה" or any other thematically attractive guess. Ask, offering your
   best readings: "האם התכוונת ל'פילוסופיה ודת'?"
-  If you nevertheless proceed with an interpretation of a garbled term,
-  you MUST set confidence to 0.6 or lower AND state the assumed reading in
-  the clarification field. When a garbled term has MORE THAN ONE plausible
-  reading (e.g. "מרפת" could be צרפת or מרפא), clarification is mandatory —
-  list the readings and ask.
+  When a garbled term has MORE THAN ONE plausible reading (e.g. "מרפת"
+  could be צרפת or מרפא), clarification is mandatory — list the readings
+  and ask. If you nevertheless proceed with a single confident reading,
+  leave the clarification field EMPTY, set confidence to 0.6 or lower,
+  and state the assumed reading in `reasoning` — the system automatically
+  shows low-confidence interpretations to the user. NEVER both proceed
+  and set clarification: setting clarification ALWAYS stops execution
+  and asks the user instead.
 
 Write the clarification in the language of the user's query: a Hebrew question
 gets a Hebrew clarification ("המונח 'צשפט' נראה כשגיאת הקלדה — האם התכוונת
@@ -283,9 +291,11 @@ Also treat as likely out-of-scope: queries about modern authors, modern topics, 
 entities that would not appear in a rare books collection (pre-20th century focus).
 Examples: contemporary fiction authors (J.K. Rowling, Stephen King), modern academic
 fields (computer science, machine learning, quantum computing).
-For these, still generate a retrieval plan (so the executor can confirm zero results),
-but set confidence LOW (≤ 0.5) and add a clarification noting that the topic is
-unlikely to appear in this collection.
+For these, still generate a retrieval plan (so the executor can confirm zero
+results), set confidence LOW (≤ 0.5), and note in `reasoning` that the topic
+is unlikely to appear in this collection — leave clarification EMPTY (setting
+it would stop execution; the system discloses low-confidence interpretations
+to the user automatically).
 
 # FOLLOW-UP QUERIES
 
@@ -774,12 +784,22 @@ def _convert_llm_step(llm_step: ExecutionStepLLM) -> ExecutionStep:
 
 
 def _remap_single_ref(ref: str, old_to_new: dict[int, int]) -> str | None:
-    """Remap a single ``$step_N`` reference string using *old_to_new*.
+    """Remap a ``$step_N`` reference (or a '+'-joined union of them).
 
-    Returns the remapped string, or ``None`` if the referenced step
-    was skipped (not present in *old_to_new*).  Non-reference strings
-    are returned unchanged.
+    Returns the remapped string, or ``None`` if every referenced step was
+    skipped. Union members referencing skipped steps are dropped (issue #8:
+    they previously survived UNCHANGED, leaving stale indices pointing at
+    the wrong record sets). Non-reference strings are returned unchanged.
     """
+    if "+" in ref:
+        parts = [p.strip() for p in ref.split("+")]
+        if all(_STEP_REF_RE.match(p) for p in parts):
+            remapped = [
+                r for r in (_remap_single_ref(p, old_to_new) for p in parts)
+                if r is not None
+            ]
+            return "+".join(remapped) if remapped else None
+        return ref
     m = _STEP_REF_RE.match(ref)
     if not m:
         return ref
@@ -927,12 +947,14 @@ def _extract_step_refs_from_params(params) -> list[int]:
     """
     refs: list[int] = []
 
-    # scope field (RetrieveParams, AggregateParams, SampleParams)
+    # scope field (RetrieveParams, AggregateParams, SampleParams) —
+    # may be a single ref or a '+'-joined union (issue #8)
     scope = getattr(params, "scope", None)
     if scope and scope not in ("full_collection", "$previous_results"):
-        m = _STEP_REF_RE.match(scope)
-        if m:
-            refs.append(int(m.group(1)))
+        for part in scope.split("+"):
+            m = _STEP_REF_RE.match(part.strip())
+            if m:
+                refs.append(int(m.group(1)))
 
     # targets field (EnrichParams)
     targets = getattr(params, "targets", None)

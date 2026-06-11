@@ -847,3 +847,83 @@ class TestIssue5EmptyPlans:
         assert plan.execution_steps == []
         assert len(plan.dropped_steps) == 2
         assert "bad" in plan.dropped_steps[0] or "0" in plan.dropped_steps[0]
+
+
+class TestUnionScopeValidationAndRemap:
+    """Issue #8: '$step_0+$step_1' union scopes were invisible to validation
+    and step-index remapping — dropped steps left stale indices pointing at
+    the WRONG record sets (a silent wrong-answer path)."""
+
+    def test_validate_rejects_out_of_range_union_member(self):
+        from scripts.chat.interpreter import _validate_step_refs
+        from scripts.chat.plan_models import (
+            ExecutionStep, InterpretationPlan, RetrieveParams, SampleParams, StepAction,
+        )
+        from scripts.schemas.query_plan import Filter, FilterField, FilterOp
+        plan = InterpretationPlan(
+            intents=["curation"], reasoning="t", confidence=0.9, directives=[],
+            execution_steps=[
+                ExecutionStep(action=StepAction.RETRIEVE, label="a",
+                              params=RetrieveParams(filters=[Filter(
+                                  field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="art")])),
+                ExecutionStep(action=StepAction.SAMPLE, label="s",
+                              params=SampleParams(scope="$step_0+$step_7", n=5),
+                              depends_on=[0]),
+            ])
+        import pytest as _pytest
+        with _pytest.raises(ValueError):
+            _validate_step_refs(plan)
+
+    def test_remap_drops_skipped_member_and_renumbers(self):
+        from scripts.chat.interpreter import _convert_llm_plan
+        from scripts.chat.plan_models import InterpretationPlanLLM
+        llm_plan = InterpretationPlanLLM(
+            intents=["curation"], reasoning="t", confidence=0.9, directives=[],
+            execution_steps=[
+                {"action": "retrieve", "label": "a",
+                 "params": '{"filters":[{"field":"subject","op":"CONTAINS","value":"art"}]}'},
+                {"action": "no_such_action", "label": "bad", "params": "{}"},
+                {"action": "retrieve", "label": "b",
+                 "params": '{"filters":[{"field":"subject","op":"CONTAINS","value":"maps"}]}'},
+                {"action": "sample", "label": "s",
+                 "params": '{"scope": "$step_0+$step_1+$step_2", "n": 5}'},
+            ])
+        plan = _convert_llm_plan(llm_plan)
+        # bad step dropped: old 0->0, old 2->1, old 3->2
+        assert len(plan.execution_steps) == 3
+        scope = plan.execution_steps[2].params.scope
+        assert scope == "$step_0+$step_1", f"stale union scope: {scope}"
+
+    def test_union_with_all_members_dropped_becomes_full_collection(self):
+        from scripts.chat.interpreter import _convert_llm_plan
+        from scripts.chat.plan_models import InterpretationPlanLLM
+        llm_plan = InterpretationPlanLLM(
+            intents=["curation"], reasoning="t", confidence=0.9, directives=[],
+            execution_steps=[
+                {"action": "no_such_action", "label": "bad1", "params": "{}"},
+                {"action": "no_such_action2", "label": "bad2", "params": "{}"},
+                {"action": "sample", "label": "s",
+                 "params": '{"scope": "$step_0+$step_1", "n": 5}'},
+            ])
+        plan = _convert_llm_plan(llm_plan)
+        assert plan.execution_steps[0].params.scope == "full_collection"
+
+    def test_spec_section_documents_union_syntax(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        spec = INTERPRETER_SYSTEM_PROMPT.split("# $step_N REFERENCES")[1].split("#")[0]
+        assert "+" in spec and "$step_0+$step_1" in spec
+
+
+class TestPromptClarificationContractCoherence:
+    """Issue #7: the prompt told the model to proceed WITH a clarification at
+    low confidence — but the runtime short-circuits whenever clarification is
+    set. One contract now: clarification => always ask; proceeding with an
+    assumed reading means leaving clarification EMPTY."""
+
+    def test_garbled_rule_says_leave_clarification_empty(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "leave the clarification field EMPTY" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_out_of_scope_rule_no_longer_pairs_plan_with_clarification(self):
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+        assert "add a clarification noting that the topic is" not in INTERPRETER_SYSTEM_PROMPT
