@@ -335,9 +335,16 @@ function AgentSearch({ query, results, onChange, onSelect }: AgentSearchProps) {
             <li key={r.agent_norm}>
               <button
                 onClick={() => onSelect(r.agent_norm)}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex justify-between items-center gap-2"
+                className="w-full text-start px-3 py-2 text-sm hover:bg-gray-50 flex justify-between items-start gap-2"
               >
-                <span className="truncate">{r.display_name}</span>
+                <span className="min-w-0">
+                  <bdi dir="auto" className="block truncate">{r.display_name}</bdi>
+                  {r.matched_alias && (
+                    <span className="block truncate text-xs text-gray-400">
+                      matched <bdi dir="auto">“{r.matched_alias}”</bdi>
+                    </span>
+                  )}
+                </span>
                 <span className="text-xs text-gray-400 shrink-0">{r.connection_count}</span>
               </button>
             </li>

@@ -7,6 +7,7 @@ export interface NetworkSearchResult {
   lat: number | null;
   lon: number | null;
   connection_count: number;
+  matched_alias: string | null; // set when the hit came via a cross-script/variant alias (#30)
 }
 
 const BASE = '/network';

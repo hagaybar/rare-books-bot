@@ -48,8 +48,13 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
         <div className="flex justify-between items-start">
           <div className="min-w-0 flex-1">
             <h2 className={`${mobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 truncate`}>
-              {agent.display_name}
+              <bdi dir="auto">{agent.display_name}</bdi>
             </h2>
+            {agent.name_alt && (
+              <p className="text-sm text-gray-500 truncate" title={agent.name_alt}>
+                <bdi dir="auto">{agent.name_alt}</bdi>
+              </p>
+            )}
             {years && (
               <p className="text-sm text-gray-500">
                 {isPublisher ? 'active ' : ''}{years} &middot;{' '}
@@ -129,7 +134,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
                     className={`block w-full text-left px-2 ${mobile ? 'py-1.5' : 'py-1'} text-sm text-blue-600 hover:bg-blue-50 rounded truncate`}
                   >
                     {conn.relationship ? `${conn.relationship}: ` : ''}
-                    {conn.display_name}
+                    <bdi dir="auto">{conn.display_name}</bdi>
                   </button>
                 ))}
               </div>

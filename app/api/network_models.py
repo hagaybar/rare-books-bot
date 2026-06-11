@@ -66,6 +66,7 @@ class AgentWork(BaseModel):
 class AgentDetail(BaseModel):
     agent_norm: str
     display_name: str
+    name_alt: str | None = None  # name in the opposite script (issue #30)
     lat: float | None = None
     lon: float | None = None
     place_norm: str | None = None
