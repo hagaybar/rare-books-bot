@@ -91,6 +91,24 @@ def mock_db(tmp_path):
             (1, 2, 'משה בן מימון', 'משה בן מימון', 'primary', 'Hebr', 'he'),
             (2, 2, 'Maimonides', 'maimonides', 'cross_script', 'Latn', 'en'),
             (3, 2, 'Rambam', 'rambam', 'variant_spelling', 'Latn', 'en');
+
+        -- Ego cluster (issue #31): a hub with 3 same_record neighbours, one
+        -- neighbour-neighbour edge, one excluded category edge, and a node
+        -- reachable from center only via category (must NOT appear in the ego).
+        -- lat/lon NULL so these don't pollute the geographic /map tests.
+        INSERT INTO network_agents VALUES
+            ('ego, center', 'Ego Center', NULL, NULL, NULL, NULL, NULL, '[]', 'author', 0, 1, 4, 'person', NULL),
+            ('ego, n1', 'Ego N1', NULL, NULL, NULL, NULL, NULL, '[]', 'author', 0, 1, 3, 'person', NULL),
+            ('ego, n2', 'Ego N2', NULL, NULL, NULL, NULL, NULL, '[]', 'author', 0, 1, 2, 'person', NULL),
+            ('ego, n3', 'Ego N3', NULL, NULL, NULL, NULL, NULL, '[]', 'author', 0, 1, 1, 'person', NULL),
+            ('ego, far', 'Ego Far', NULL, NULL, NULL, NULL, NULL, '[]', 'author', 0, 1, 1, 'person', NULL);
+        INSERT INTO network_edges VALUES
+            ('ego, center', 'ego, n1', 'same_record', 0.90, 'appeared together', 1, 'mms:1'),
+            ('ego, center', 'ego, n2', 'same_record', 0.90, 'appeared together', 1, 'mms:2'),
+            ('ego, center', 'ego, n3', 'same_record', 0.90, 'appeared together', 1, 'mms:3'),
+            ('ego, n1', 'ego, n2', 'same_record', 0.80, 'appeared together', 1, 'mms:4'),
+            ('ego, center', 'ego, far', 'category', 0.95, NULL, 1, 'Shared category: X'),
+            ('ego, n1', 'ego, far', 'same_record', 0.70, 'appeared together', 1, 'mms:5');
     """)
     conn.commit()
     conn.close()
@@ -170,6 +188,52 @@ def test_search_direct_match_reports_no_alias(client):
     results = resp.json()["results"]
     hit = next(r for r in results if r["agent_norm"] == "smith, john")
     assert hit["matched_alias"] is None
+
+
+def test_ego_returns_induced_subgraph(client):
+    """Issue #31: ego = focal + direct neighbours + edges among that set."""
+    resp = client.get("/network/ego/ego, center?connection_types=same_record")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["focal"] == "ego, center"
+    norms = {n["agent_norm"] for n in data["nodes"]}
+    assert norms == {"ego, center", "ego, n1", "ego, n2", "ego, n3"}
+    # 'ego, far' is reachable from center only via a category edge -> excluded
+    assert "ego, far" not in norms
+    # neighbour<->neighbour edge is included (induced subgraph, not a star)
+    pairs = {frozenset((e["source"], e["target"])) for e in data["edges"]}
+    assert frozenset(("ego, n1", "ego, n2")) in pairs
+    # no category edge, and the n1<->far edge is dropped (far not in node set)
+    assert all(e["type"] != "category" for e in data["edges"])
+    assert frozenset(("ego, n1", "ego, far")) not in pairs
+    assert data["meta"]["truncated"] is False
+    assert data["meta"]["total_neighbors"] == 3
+
+
+def test_ego_respects_neighbor_cap(client):
+    """A focal node with more neighbours than `limit` is capped + flagged."""
+    resp = client.get("/network/ego/ego, center?connection_types=same_record&limit=2")
+    assert resp.status_code == 200
+    data = resp.json()
+    neighbours = {n["agent_norm"] for n in data["nodes"]} - {"ego, center"}
+    assert len(neighbours) == 2
+    assert data["meta"]["truncated"] is True
+    assert data["meta"]["total_neighbors"] == 3
+
+
+def test_ego_isolate_returns_focal_only(client):
+    """A node with no in-filter edges yields just itself, no edges."""
+    resp = client.get("/network/ego/משה בן מימון?connection_types=same_record")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert [n["agent_norm"] for n in data["nodes"]] == ["משה בן מימון"]
+    assert data["edges"] == []
+    assert data["meta"]["total_neighbors"] == 0
+
+
+def test_ego_unknown_agent_404(client):
+    resp = client.get("/network/ego/nobody, here?connection_types=same_record")
+    assert resp.status_code == 404
 
 
 def test_map_nodes_and_meta_carry_community(client):

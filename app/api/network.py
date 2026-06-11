@@ -11,6 +11,8 @@ from app.api.network_models import (
     AgentConnection,
     AgentDetail,
     AgentWork,
+    EgoMeta,
+    EgoResponse,
     MapEdge,
     MapMeta,
     MapNode,
@@ -137,6 +139,31 @@ def _works_for_agent(conn: sqlite3.Connection, agent_norm: str, limit: int = 25)
     ]
 
 
+def _map_node_from_row(r: sqlite3.Row, filtered_count: int = 0) -> MapNode:
+    """Build a MapNode from a network_agents row (shared by /map and /ego)."""
+    try:
+        occupations = json.loads(r["occupations"]) if r["occupations"] else []
+    except (json.JSONDecodeError, TypeError):
+        occupations = []
+    keys = r.keys()
+    return MapNode(
+        agent_norm=r["agent_norm"],
+        display_name=r["display_name"],
+        lat=r["lat"],
+        lon=r["lon"],
+        place_norm=r["place_norm"],
+        birth_year=r["birth_year"],
+        death_year=r["death_year"],
+        occupations=occupations,
+        connection_count=r["connection_count"],
+        filtered_count=(r["filtered_count"] if "filtered_count" in keys else filtered_count),
+        record_count=r["record_count"],
+        has_wikipedia=bool(r["has_wikipedia"]),
+        primary_role=r["primary_role"],
+        node_type=(r["node_type"] if "node_type" in keys else "person") or "person",
+        community=(r["community"] if "community" in keys else None),
+    )
+
 
 @router.get("/map", response_model=MapResponse)
 async def get_network_map(
@@ -218,30 +245,7 @@ async def get_network_map(
 
         agent_norms = {r["agent_norm"] for r in rows}
 
-        nodes = []
-        for r in rows:
-            occupations = []
-            try:
-                occupations = json.loads(r["occupations"]) if r["occupations"] else []
-            except (json.JSONDecodeError, TypeError):
-                pass
-            nodes.append(MapNode(
-                agent_norm=r["agent_norm"],
-                display_name=r["display_name"],
-                lat=r["lat"],
-                lon=r["lon"],
-                place_norm=r["place_norm"],
-                birth_year=r["birth_year"],
-                death_year=r["death_year"],
-                occupations=occupations,
-                connection_count=r["connection_count"],
-                filtered_count=r["filtered_count"],
-                record_count=r["record_count"],
-                has_wikipedia=bool(r["has_wikipedia"]),
-                primary_role=r["primary_role"],
-                node_type=(r["node_type"] if "node_type" in r.keys() else "person") or "person",
-                community=(r["community"] if "community" in r.keys() else None),
-            ))
+        nodes = [_map_node_from_row(r) for r in rows]
 
         # Get edges between returned agents
         if empty_types or len(agent_norms) < 2:
@@ -357,6 +361,113 @@ async def search_agents(q: str = Query(""), limit: int = Query(10, ge=1, le=20))
                 for r in results
             ]
         }
+    finally:
+        conn.close()
+
+
+@router.get("/ego/{agent_norm:path}", response_model=EgoResponse)
+async def get_ego_network(
+    agent_norm: str,
+    connection_types: str = Query("same_record,printed_by,teacher_student"),
+    min_confidence: float = Query(0.5, ge=0.0, le=1.0),
+    limit: int = Query(60, ge=1, le=150),
+) -> EgoResponse:
+    """Induced 1-hop neighbourhood of a focal node (issue #31).
+
+    Nodes = the focal node + its direct neighbours under the active filters.
+    Edges = every edge of those types among that node set, so
+    neighbour↔neighbour links show clustering rather than a bare star. Category
+    is never an allowed type, so it is excluded for free. Neighbours beyond
+    `limit` are dropped (strongest edge to the focal first, then
+    connection_count) and the drop is flagged via meta.truncated.
+    """
+    types = [t.strip() for t in connection_types.split(",") if t.strip()]
+    invalid = set(types) - VALID_CONNECTION_TYPES
+    if invalid:
+        raise HTTPException(400, f"Invalid connection types: {invalid}")
+    if not types:
+        types = list(VALID_CONNECTION_TYPES)
+
+    conn = _get_db()
+    try:
+        focal_row = conn.execute(
+            "SELECT * FROM network_agents WHERE agent_norm = ?", (agent_norm,)
+        ).fetchone()
+        if not focal_row:
+            raise HTTPException(404, f"Agent not found: {agent_norm}")
+
+        tph = ",".join("?" for _ in types)
+        neighbours = conn.execute(
+            f"""SELECT na.agent_norm AS norm, MAX(e.conf) AS best, na.connection_count AS cc
+                FROM (
+                    SELECT target_agent_norm AS other, confidence AS conf
+                    FROM network_edges
+                    WHERE source_agent_norm = ? AND connection_type IN ({tph})
+                      AND confidence >= ?
+                    UNION ALL
+                    SELECT source_agent_norm AS other, confidence AS conf
+                    FROM network_edges
+                    WHERE target_agent_norm = ? AND connection_type IN ({tph})
+                      AND confidence >= ?
+                ) e
+                JOIN network_agents na ON na.agent_norm = e.other
+                WHERE e.other != ?
+                GROUP BY na.agent_norm
+                ORDER BY best DESC, cc DESC, na.agent_norm ASC""",
+            (agent_norm, *types, min_confidence,
+             agent_norm, *types, min_confidence, agent_norm),
+        ).fetchall()
+
+        total_neighbors = len(neighbours)
+        kept = neighbours[:limit]
+        truncated = total_neighbors > limit
+        node_norms = [agent_norm] + [r["norm"] for r in kept]
+
+        nodes = [_map_node_from_row(focal_row)]
+        if kept:
+            kph = ",".join("?" for _ in kept)
+            neigh_rows = conn.execute(
+                f"SELECT * FROM network_agents WHERE agent_norm IN ({kph})",
+                [r["norm"] for r in kept],
+            ).fetchall()
+            by_norm = {r["agent_norm"]: r for r in neigh_rows}
+            nodes += [_map_node_from_row(by_norm[r["norm"]]) for r in kept if r["norm"] in by_norm]
+
+        edges = []
+        if len(node_norms) >= 2:
+            nph = ",".join("?" for _ in node_norms)
+            edge_rows = conn.execute(
+                f"""SELECT source_agent_norm, target_agent_norm, connection_type,
+                           confidence, relationship, evidence, bidirectional
+                    FROM network_edges
+                    WHERE connection_type IN ({tph}) AND confidence >= ?
+                      AND source_agent_norm IN ({nph})
+                      AND target_agent_norm IN ({nph})""",
+                [*types, min_confidence, *node_norms, *node_norms],
+            ).fetchall()
+            edges = [
+                MapEdge(
+                    source=r["source_agent_norm"],
+                    target=r["target_agent_norm"],
+                    type=r["connection_type"],
+                    confidence=r["confidence"],
+                    relationship=r["relationship"],
+                    evidence=r["evidence"],
+                    bidirectional=bool(r["bidirectional"]),
+                )
+                for r in edge_rows
+            ]
+
+        return EgoResponse(
+            focal=agent_norm,
+            nodes=nodes,
+            edges=edges,
+            meta=EgoMeta(
+                truncated=truncated,
+                total_neighbors=total_neighbors,
+                showing=len(nodes),
+            ),
+        )
     finally:
         conn.close()
 
