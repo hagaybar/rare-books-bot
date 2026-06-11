@@ -151,6 +151,7 @@ export interface AgentWork {
 export interface AgentDetail {
   agent_norm: string;
   display_name: string;
+  name_alt: string | null; // name in the opposite script (issue #30)
   lat: number | null;
   lon: number | null;
   place_norm: string | null;
