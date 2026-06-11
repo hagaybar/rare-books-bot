@@ -124,6 +124,10 @@ Given a user's query and the execution plan produced by the interpreter, rate th
 4 = Steps are good with minor improvements possible
 5 = Steps are excellent and comprehensive
 
+A plan that asks for clarification (clarification set, empty steps) on a
+garbled, ambiguous, or unintelligible query is CORRECT behavior — rate it
+4-5, not as an empty plan.
+
 Cap the rating at 3 when the plan adds hard constraints the user never
 stated — e.g. inventing specific city/country/year filters when the user
 only gave broad context like "in Europe". Invented hard constraints
@@ -132,24 +136,41 @@ silently exclude relevant records.
 Respond with your rating and a brief justification."""
 
 
+def deterministic_checks(
+    query: EvalQuery,
+    plan_dict: dict[str, Any],
+) -> tuple[bool, float]:
+    """Intent match + filter overlap (issue #10: pure, testable).
+
+    Expected intent 'clarification' is satisfied by the clarification FIELD
+    being set — it is not in the interpreter's intent vocabulary, and asking
+    (empty steps + question) is the correct behavior for garbled queries.
+    """
+    if query.intent == "clarification":
+        intent_match = bool(plan_dict.get("clarification"))
+    else:
+        intent_match = query.intent in plan_dict.get("intents", [])
+    filter_overlap = _compute_filter_overlap(
+        query.expected_filters, plan_dict.get("filters_produced", {})
+    )
+    return intent_match, filter_overlap
+
+
 async def score_interpreter(
     query: EvalQuery,
     plan_dict: dict[str, Any],
     judge_model: str = "gpt-4.1",
 ) -> InterpreterScore:
     """Score an interpreter output using deterministic checks + LLM judge."""
-    # Deterministic: intent match
-    plan_intents = plan_dict.get("intents", [])
-    intent_match = query.intent in plan_intents
+    intent_match, filter_overlap = deterministic_checks(query, plan_dict)
 
-    # Deterministic: filter overlap
-    filters_produced = plan_dict.get("filters_produced", {})
-    filter_overlap = _compute_filter_overlap(query.expected_filters, filters_produced)
-
-    # LLM judge: step quality
+    # LLM judge: step quality — must see clarification + confidence
+    # (issue #10: a correct clarification looked like an empty plan).
     user_prompt = (
         f"Query: {query.query}\n"
         f"Expected intent: {query.intent}\n"
+        f"Plan confidence: {plan_dict.get('confidence')}\n"
+        f"Clarification asked: {plan_dict.get('clarification') or '(none)'}\n"
         f"Execution steps: {plan_dict.get('execution_steps', [])}\n"
     )
     result = await structured_completion(

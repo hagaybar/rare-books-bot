@@ -86,3 +86,82 @@ class TestCompareRuns:
         deltas = {d["query_id"]: d for d in cmp["queries"]}
         assert deltas["q1"]["delta"] == 1.5
         assert deltas["q2"]["delta"] == -1.0
+
+
+class TestRangeFilterSerialization:
+    """Issue #10a: RANGE filters serialized as None — every year-expecting
+    query lost overlap credit (q34: overlap 0.5 beside a 5/5 judge note)."""
+
+    def test_range_serializes_start_end(self):
+        from scripts.eval.run_eval import extract_filters
+        plan = _plan([[Filter(field=FilterField.YEAR, op=FilterOp.RANGE,
+                              start=1500, end=1599)]])
+        out = extract_filters(plan)
+        assert out["year"] == ["1500-1599"]
+
+
+class TestClarificationScoring:
+    """Issue #10b: expected intent 'clarification' was unmatchable and the
+    judge never saw the clarification field — asking could not be rewarded."""
+
+    def _q(self, intent):
+        from scripts.eval.query_set import EvalQuery
+        return EvalQuery(id="t", query="פילוסופיה חד", intent=intent,
+                         difficulty="hard", expected_filters={})
+
+    def test_clarification_intent_satisfied_by_clarification_field(self):
+        from scripts.eval.judge import deterministic_checks
+        intent_match, _ = deterministic_checks(
+            self._q("clarification"),
+            {"intents": ["retrieval"], "clarification": "האם התכוונת ל...?",
+             "filters_produced": {}})
+        assert intent_match is True
+
+    def test_clarification_intent_fails_without_field(self):
+        from scripts.eval.judge import deterministic_checks
+        intent_match, _ = deterministic_checks(
+            self._q("clarification"),
+            {"intents": ["retrieval"], "clarification": None,
+             "filters_produced": {}})
+        assert intent_match is False
+
+    def test_judge_prompt_rewards_asking(self):
+        from scripts.eval.judge import INTERPRETER_JUDGE_PROMPT
+        assert "clarification" in INTERPRETER_JUDGE_PROMPT.lower()
+
+
+class TestRecallIntentAwareness:
+    """Issue #11: 6 of 22 zero_result entries were metric artifacts."""
+
+    @pytest.fixture(autouse=True)
+    def _require_db(self):
+        if not DB_PATH.exists():
+            pytest.skip("Bibliographic database not available")
+
+    def test_out_of_scope_empty_plan_is_not_a_failure(self):
+        from scripts.eval.run_eval import compute_recall
+        plan = InterpretationPlan(intents=["out_of_scope"], reasoning="t",
+                                  confidence=0.9, directives=[], execution_steps=[])
+        recall = compute_recall(plan, str(DB_PATH), expected_intent="out_of_scope")
+        assert recall["zero_result"] is False
+
+    def test_aggregate_only_overview_counts_facets_as_success(self):
+        from scripts.chat.plan_models import AggregateParams
+        from scripts.eval.run_eval import compute_recall
+        plan = InterpretationPlan(
+            intents=["overview"], reasoning="t", confidence=0.9, directives=[],
+            execution_steps=[ExecutionStep(
+                action=StepAction.AGGREGATE,
+                params=AggregateParams(field="language", scope="full_collection", limit=5),
+                label="langs")])
+        recall = compute_recall(plan, str(DB_PATH), expected_intent="overview")
+        assert recall["has_aggregations"] is True
+        assert recall["zero_result"] is False
+
+    def test_follow_up_recall_is_skipped(self):
+        from scripts.eval.run_eval import compute_recall
+        plan = _plan([[Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS,
+                              value="$previous")]])
+        recall = compute_recall(plan, str(DB_PATH), expected_intent="follow_up")
+        assert recall.get("skipped"), "follow-ups need session context the harness lacks"
+        assert recall["zero_result"] is None
