@@ -337,8 +337,12 @@ class TestChatClarification:
         assert "Karo" in data["response"]["clarification_needed"]
         assert data["response"]["confidence"] == 0.55
 
-    def test_high_confidence_clarification_still_executes(self, client):
-        """If confidence >= 0.7, clarification is ignored and pipeline executes."""
+    def test_high_confidence_clarification_also_shortcircuits(self, client):
+        """Issue #7: clarification set => ALWAYS ask, regardless of confidence.
+        The previous contract silently DISCARDED clarifications above 0.7 —
+        the user never saw the question. To proceed-with-assumption the model
+        must leave clarification empty (the low-confidence notice then
+        discloses the interpretation)."""
         plan = InterpretationPlan(
             intents=["retrieval"],
             reasoning="Slight ambiguity but proceeding",
@@ -369,8 +373,9 @@ class TestChatClarification:
 
         data = resp.json()
         assert data["success"] is True
-        # Should have gone through the full pipeline (narrator was called)
-        assert "Found books from Venice" in data["response"]["message"]
+        # The clarification must reach the user — never silently discarded.
+        assert data["response"]["clarification_needed"] is not None
+        assert "ambiguity" in data["response"]["clarification_needed"].lower()
 
 
 class TestChatOutOfScope:

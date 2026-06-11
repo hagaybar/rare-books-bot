@@ -651,8 +651,9 @@ async def _run_scholar_pipeline(
     Stage 2 (Execute): Deterministic executor walks the plan via SQL.
     Stage 3 (Narrate): LLM composes a scholarly response from verified data.
 
-    If the interpreter returns a clarification with confidence < 0.7,
-    the pipeline short-circuits and returns the clarification to the user.
+    If the interpreter sets a clarification, the pipeline short-circuits
+    and returns it to the user — regardless of confidence (issue #7:
+    high-confidence clarifications were previously silently discarded).
 
     Args:
         chat_request: The chat request
@@ -694,7 +695,7 @@ async def _run_scholar_pipeline(
     )
 
     # ---- Clarification short-circuit ----
-    if plan.clarification and plan.confidence <= 0.7:
+    if plan.clarification:
         response = ChatResponse(
             message=plan.clarification,
             candidate_set=None,
@@ -1019,7 +1020,7 @@ async def websocket_chat(websocket: WebSocket):
         plan = await interpret(message, ws_session_context)
 
         # ---- Clarification short-circuit ----
-        if plan.clarification and plan.confidence <= 0.7:
+        if plan.clarification:
             response = ChatResponse(
                 message=plan.clarification,
                 candidate_set=None,
