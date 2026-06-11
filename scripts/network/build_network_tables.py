@@ -13,6 +13,121 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# Wikipedia maintenance/metadata categories that must never become a
+# community-coloring facet (issue #28). Everything else is eligible.
+_COMMUNITY_DENY_PATTERNS = [
+    re.compile(p, re.I)
+    for p in (
+        r"^\d{3,4} births$",
+        r"^\d{3,4} deaths$",
+        r"^year of (birth|death)",
+        r"^floruit",
+        r"encyclop(a|æ)edia britannica",
+        r"^coordinates on wikidata$",
+        r"\bstubs?$",
+        r"^articles ",
+        r"^all .* articles",
+        r"^wikipedia ",
+        r"^pages ",
+        r"^cs1[ :]",
+        r"webarchive",
+        r"^use (dmy|mdy) dates",
+        r"needing translation",
+        r"^commons category",
+        r"^short description",
+        r"different from wikidata$",
+        r"^open library id",
+        r"^source attribution$",
+        r"with author abbreviations$",
+        r"imslp links$",
+        r"^webarchive template",
+        r"^articles with",
+        r"^biography with",
+        r"^biography articles",
+        r"^people with",
+        r"signature$",
+    )
+]
+
+
+def _is_maintenance_category(name: str) -> bool:
+    """True for Wikipedia housekeeping categories (never a coloring facet)."""
+    return any(p.search(name) for p in _COMMUNITY_DENY_PATTERNS)
+
+
+def assign_communities(
+    conn: sqlite3.Connection, min_nodes: int = 8, max_communities: int = 20
+) -> dict:
+    """Color network nodes by intellectual community from Wikipedia categories.
+
+    Category *edges* are retired from the arc layer (issue #28); instead each
+    node is tagged with the most-specific (rarest) of the allow-listed
+    categories it belongs to, drawn from the top ``max_communities`` categories
+    by membership. Wikipedia maintenance/metadata categories are excluded. The
+    result lands in ``network_agents.community`` (NULL when nothing qualifies).
+
+    Returns ``{"assigned": int, "communities": [name, ...],
+    "community_sizes": {name: count}}`` with communities ordered by the number
+    of nodes they actually color (legend order).
+    """
+    rows = conn.execute(
+        """SELECT DISTINCT na.agent_norm, wc.categories
+           FROM network_agents na
+           JOIN agents a ON a.agent_norm = na.agent_norm
+           JOIN authority_enrichment ae ON ae.authority_uri = a.authority_uri
+           JOIN wikipedia_cache wc ON wc.wikidata_id = ae.wikidata_id
+           WHERE wc.categories IS NOT NULL AND wc.categories != '[]'"""
+    ).fetchall()
+
+    node_cats: dict[str, set[str]] = defaultdict(set)
+    for agent_norm, cats_json in rows:
+        try:
+            cats = json.loads(cats_json)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        for c in cats:
+            if isinstance(c, str) and c and not _is_maintenance_category(c):
+                node_cats[agent_norm].add(c)
+
+    cat_count: dict[str, int] = defaultdict(int)
+    for cats in node_cats.values():
+        for c in cats:
+            cat_count[c] += 1
+
+    # Palette = the top categories by membership that clear the minimum size.
+    palette = {
+        c
+        for c, _ in sorted(
+            ((c, n) for c, n in cat_count.items() if n >= min_nodes),
+            key=lambda x: (-x[1], x[0]),
+        )[:max_communities]
+    }
+
+    assignments: dict[str, str] = {}
+    for agent_norm, cats in node_cats.items():
+        eligible = [(cat_count[c], c) for c in cats if c in palette]
+        if eligible:
+            # most specific = smallest membership, tiebreak alphabetical
+            eligible.sort(key=lambda x: (x[0], x[1]))
+            assignments[agent_norm] = eligible[0][1]
+
+    conn.execute("UPDATE network_agents SET community = NULL")
+    conn.executemany(
+        "UPDATE network_agents SET community = ? WHERE agent_norm = ?",
+        [(comm, norm) for norm, comm in assignments.items()],
+    )
+
+    sizes: dict[str, int] = defaultdict(int)
+    for comm in assignments.values():
+        sizes[comm] += 1
+    ordered = [c for c, _ in sorted(sizes.items(), key=lambda x: (-x[1], x[0]))]
+    logger.info("Assigned %d nodes to %d communities", len(assignments), len(ordered))
+    return {
+        "assigned": len(assignments),
+        "communities": ordered,
+        "community_sizes": dict(sizes),
+    }
+
 
 def title_case_agent_norm(agent_norm: str) -> str:
     """Convert 'maimonides, moses' to 'Maimonides, Moses'."""
@@ -231,8 +346,40 @@ def _resolve_name_to_agent_norm(conn: sqlite3.Connection, name: str) -> str | No
     return None
 
 
+def _agent_lifespans(conn: sqlite3.Connection) -> dict[str, tuple[int | None, int | None]]:
+    """Map agent_norm -> (birth_year, death_year) from authority_enrichment.
+
+    Used to clamp imprint-derived activity windows to an agent's lifetime so a
+    posthumous reprint can't make a dead agent "active" (issue #28, A11).
+    """
+    spans: dict[str, tuple[int | None, int | None]] = {}
+    for norm, person_info in conn.execute(
+        """SELECT a.agent_norm, ae.person_info
+           FROM agents a
+           JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
+           WHERE ae.person_info IS NOT NULL"""
+    ).fetchall():
+        if norm in spans or not person_info:
+            continue
+        try:
+            pi = json.loads(person_info)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        birth, death = pi.get("birth_year"), pi.get("death_year")
+        if birth is not None or death is not None:
+            spans[norm] = (birth, death)
+    return spans
+
+
 def _build_same_place_period_edges(conn: sqlite3.Connection) -> int:
-    """Find agents active in the same city during overlapping periods (>=10 years)."""
+    """Find agents active in the same city during overlapping periods (>=10 years).
+
+    Activity windows derive from imprint dates but are clamped to each agent's
+    lifespan (issue #28): a window that falls entirely outside [birth, death]
+    is dropped, so a posthumous reprint never implies activity.
+    """
+    lifespans = _agent_lifespans(conn)
+
     # For each agent, get their place + date range per place
     agent_places = conn.execute("""
         SELECT a.agent_norm, i.place_norm,
@@ -245,9 +392,17 @@ def _build_same_place_period_edges(conn: sqlite3.Connection) -> int:
         HAVING MAX(i.date_start) - MIN(i.date_start) >= 0
     """).fetchall()
 
-    # Group by place
+    # Group by place, clamping each window to the agent's lifetime when known
     place_agents = defaultdict(list)
     for norm, place, earliest, latest in agent_places:
+        birth, death = lifespans.get(norm, (None, None))
+        if birth is not None:
+            earliest = max(earliest, birth)
+        if death is not None:
+            latest = min(latest, death)
+        if earliest > latest:
+            # No part of this agent's activity at this place falls within life
+            continue
         place_agents[place].append((norm, earliest, latest))
 
     count = 0
@@ -512,7 +667,8 @@ def build_network_agents(
             primary_role TEXT,
             has_wikipedia INTEGER DEFAULT 0,
             record_count INTEGER DEFAULT 0,
-            connection_count INTEGER DEFAULT 0
+            connection_count INTEGER DEFAULT 0,
+            community TEXT
         )
     """)
 
@@ -771,6 +927,14 @@ def main():
         # Issue 4: Recompute connection_count after all cleanup
         _recompute_connection_counts(conn)
         logger.info("Recomputed connection counts")
+
+        # Issue 28: color nodes by intellectual community (category facet)
+        community_stats = assign_communities(conn)
+        logger.info(
+            "Assigned %d nodes across %d communities",
+            community_stats["assigned"],
+            len(community_stats["communities"]),
+        )
 
         conn.commit()
 

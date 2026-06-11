@@ -18,7 +18,8 @@ def mock_db(tmp_path):
             birth_year INTEGER, death_year INTEGER, occupations TEXT,
             primary_role TEXT,
             has_wikipedia INTEGER DEFAULT 0, record_count INTEGER DEFAULT 0,
-            connection_count INTEGER DEFAULT 0
+            connection_count INTEGER DEFAULT 0,
+            node_type TEXT DEFAULT 'person', community TEXT
         );
         CREATE TABLE network_edges (
             source_agent_norm TEXT, target_agent_norm TEXT,
@@ -57,10 +58,10 @@ def mock_db(tmp_path):
 
         INSERT INTO network_agents VALUES
             ('smith, john', 'John Smith', 'amsterdam', 52.37, 4.90,
-             1500, 1570, '["author"]', 'author', 1, 5, 10);
+             1500, 1570, '["author"]', 'author', 1, 5, 10, 'person', 'Kabbalists');
         INSERT INTO network_agents VALUES
             ('jones, mary', 'Mary Jones', 'venice', 45.44, 12.32,
-             1480, 1550, '["printer"]', 'printer', 0, 3, 5);
+             1480, 1550, '["printer"]', 'printer', 0, 3, 5, 'person', NULL);
         INSERT INTO network_edges VALUES
             ('smith, john', 'jones, mary', 'teacher_student', 0.85,
              'teacher of', 0, 'documented in authority record');
@@ -111,6 +112,22 @@ def test_get_map_with_types(client):
 def test_get_map_invalid_type(client):
     resp = client.get("/network/map?connection_types=invalid_type")
     assert resp.status_code == 400
+
+
+def test_category_is_not_a_valid_arc_type(client):
+    """Issue #28: category retired from arcs; requesting it is a 400."""
+    resp = client.get("/network/map?connection_types=category")
+    assert resp.status_code == 400
+
+
+def test_map_nodes_and_meta_carry_community(client):
+    """Issue #28: nodes expose their community and meta lists the palette order."""
+    resp = client.get("/network/map")
+    assert resp.status_code == 200
+    data = resp.json()
+    smith = next(n for n in data["nodes"] if n["agent_norm"] == "smith, john")
+    assert smith["community"] == "Kabbalists"
+    assert data["meta"]["communities"] == ["Kabbalists"]
 
 
 def test_get_agent_detail(client):

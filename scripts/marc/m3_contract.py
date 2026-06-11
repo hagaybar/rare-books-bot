@@ -286,6 +286,7 @@ class M3NetworkColumns:
         RECORD_COUNT = "record_count"
         CONNECTION_COUNT = "connection_count"
         NODE_TYPE = "node_type"  # issue #27 (publisher nodes)
+        COMMUNITY = "community"  # issue #28 (category-coloring facet)
 
     class NetworkEdges:
         SOURCE_AGENT_NORM = "source_agent_norm"

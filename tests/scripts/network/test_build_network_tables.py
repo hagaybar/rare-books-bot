@@ -7,7 +7,94 @@ from scripts.network.build_network_tables import (
     resolve_display_name,
     build_network_edges,
     build_network_agents,
+    _build_same_place_period_edges,
+    assign_communities,
 )
+
+
+def _community_db():
+    """Minimal DB for assign_communities: nodes -> wikidata -> categories."""
+    conn = sqlite3.connect(":memory:")
+    conn.executescript("""
+        CREATE TABLE network_agents (
+            agent_norm TEXT PRIMARY KEY, display_name TEXT, community TEXT
+        );
+        CREATE TABLE agents (
+            id INTEGER PRIMARY KEY, record_id INTEGER, agent_norm TEXT,
+            agent_raw TEXT, authority_uri TEXT, role_norm TEXT
+        );
+        CREATE TABLE authority_enrichment (
+            id INTEGER PRIMARY KEY, authority_uri TEXT UNIQUE, label TEXT,
+            person_info TEXT, wikidata_id TEXT
+        );
+        CREATE TABLE wikipedia_cache (
+            id INTEGER PRIMARY KEY, wikidata_id TEXT, categories TEXT
+        );
+    """)
+    conn.executescript("""
+        INSERT INTO network_agents VALUES ('a1','A One',NULL);
+        INSERT INTO network_agents VALUES ('a2','A Two',NULL);
+        INSERT INTO network_agents VALUES ('a3','A Three',NULL);
+        INSERT INTO network_agents VALUES ('a4','A Four',NULL);
+
+        INSERT INTO agents VALUES (1,10,'a1','A One','uri1','author');
+        INSERT INTO agents VALUES (2,11,'a2','A Two','uri2','author');
+        INSERT INTO agents VALUES (3,12,'a3','A Three','uri3','author');
+        INSERT INTO agents VALUES (4,13,'a4','A Four','uri4','author');
+
+        INSERT INTO authority_enrichment VALUES (1,'uri1','A One',NULL,'Q1');
+        INSERT INTO authority_enrichment VALUES (2,'uri2','A Two',NULL,'Q2');
+        INSERT INTO authority_enrichment VALUES (3,'uri3','A Three',NULL,'Q3');
+        INSERT INTO authority_enrichment VALUES (4,'uri4','A Four',NULL,'Q4');
+
+        INSERT INTO wikipedia_cache VALUES (1,'Q1',
+            '["Kabbalists","Bible commentators","1654 births","Year of birth unknown"]');
+        INSERT INTO wikipedia_cache VALUES (2,'Q2',
+            '["Kabbalists","18th-century German male writers"]');
+        INSERT INTO wikipedia_cache VALUES (3,'Q3',
+            '["Coordinates on Wikidata","Jewish biography stubs"]');
+        INSERT INTO wikipedia_cache VALUES (4,'Q4', '["Kabbalists"]');
+    """)
+    return conn
+
+
+def _community_of(conn, agent_norm):
+    return conn.execute(
+        "SELECT community FROM network_agents WHERE agent_norm=?", (agent_norm,)
+    ).fetchone()[0]
+
+
+def _spp_db():
+    """Minimal DB with the tables _build_same_place_period_edges needs."""
+    conn = sqlite3.connect(":memory:")
+    conn.executescript("""
+        CREATE TABLE agents (
+            id INTEGER PRIMARY KEY, record_id INTEGER, agent_norm TEXT,
+            agent_raw TEXT, authority_uri TEXT, role_norm TEXT
+        );
+        CREATE TABLE imprints (
+            id INTEGER PRIMARY KEY, record_id INTEGER, place_norm TEXT,
+            date_start INTEGER
+        );
+        CREATE TABLE authority_enrichment (
+            id INTEGER PRIMARY KEY, authority_uri TEXT UNIQUE, label TEXT,
+            person_info TEXT, wikidata_id TEXT
+        );
+        CREATE TABLE network_edges (
+            source_agent_norm TEXT NOT NULL, target_agent_norm TEXT NOT NULL,
+            connection_type TEXT NOT NULL, confidence REAL NOT NULL,
+            relationship TEXT, bidirectional INTEGER DEFAULT 0, evidence TEXT,
+            UNIQUE(source_agent_norm, target_agent_norm, connection_type)
+        );
+    """)
+    return conn
+
+
+def _spp_edges(conn):
+    return conn.execute(
+        "SELECT source_agent_norm, target_agent_norm, evidence "
+        "FROM network_edges WHERE connection_type='same_place_period'"
+    ).fetchall()
 
 
 @pytest.fixture
@@ -218,3 +305,117 @@ def test_publisher_nodes_and_printed_by(db):
     assert edge["source_agent_norm"] == "pirke, avot"
     assert edge["target_agent_norm"] == PUBLISHER_PREFIX + "daniel bomberg, venice"
     assert "990012345678900146" in edge["evidence"]
+
+
+def test_same_place_period_drops_anachronism():
+    """A posthumous reprint must not make a dead agent 'active' (issue #28, A11).
+
+    Gravelot (d.1773) has a London imprint in 1750 (during life) and a 1900
+    posthumous reprint. A Victorian (1850-1920) has London imprints 1890/1905.
+    On raw imprint dates their windows overlap 1890-1900 -> a bogus edge.
+    Intersecting with lifespans, Gravelot's London activity is [1750,1773],
+    which cannot overlap the Victorian -> no edge.
+    """
+    conn = _spp_db()
+    conn.executescript("""
+        INSERT INTO agents VALUES (1, 100, 'gravelot, hubert', 'Gravelot', 'uri:grav', 'illustrator');
+        INSERT INTO agents VALUES (2, 200, 'gravelot, hubert', 'Gravelot', 'uri:grav', 'illustrator');
+        INSERT INTO agents VALUES (3, 300, 'victorian, alfred', 'Victorian', 'uri:vic', 'author');
+        INSERT INTO agents VALUES (4, 400, 'victorian, alfred', 'Victorian', 'uri:vic', 'author');
+
+        INSERT INTO imprints VALUES (1, 100, 'london', 1750);
+        INSERT INTO imprints VALUES (2, 200, 'london', 1900);
+        INSERT INTO imprints VALUES (3, 300, 'london', 1890);
+        INSERT INTO imprints VALUES (4, 400, 'london', 1905);
+
+        INSERT INTO authority_enrichment VALUES
+            (1, 'uri:grav', 'Gravelot', '{"birth_year":1699,"death_year":1773}', 'Q1');
+        INSERT INTO authority_enrichment VALUES
+            (2, 'uri:vic', 'Victorian', '{"birth_year":1850,"death_year":1920}', 'Q2');
+    """)
+    _build_same_place_period_edges(conn)
+    assert _spp_edges(conn) == [], "anachronistic same_place_period edge emitted"
+    conn.close()
+
+
+def test_same_place_period_emits_for_contemporaries():
+    """Two agents truly active in the same city/period still connect, and the
+    emitted period falls within both lifespans."""
+    conn = _spp_db()
+    conn.executescript("""
+        INSERT INTO agents VALUES (1, 100, 'aldus, manutius', 'Aldus', 'uri:ald', 'printer');
+        INSERT INTO agents VALUES (2, 101, 'aldus, manutius', 'Aldus', 'uri:ald', 'printer');
+        INSERT INTO agents VALUES (3, 100, 'bembo, pietro', 'Bembo', 'uri:bem', 'author');
+        INSERT INTO agents VALUES (4, 101, 'bembo, pietro', 'Bembo', 'uri:bem', 'author');
+
+        INSERT INTO imprints VALUES (1, 100, 'venice', 1500);
+        INSERT INTO imprints VALUES (2, 101, 'venice', 1514);
+
+        INSERT INTO authority_enrichment VALUES
+            (1, 'uri:ald', 'Aldus', '{"birth_year":1449,"death_year":1515}', 'Q3');
+        INSERT INTO authority_enrichment VALUES
+            (2, 'uri:bem', 'Bembo', '{"birth_year":1470,"death_year":1547}', 'Q4');
+    """)
+    _build_same_place_period_edges(conn)
+    edges = _spp_edges(conn)
+    assert len(edges) == 1
+    # Period 1500-1514 is inside Aldus [1449,1515] and Bembo [1470,1547]
+    assert "venice: 1500-1514" in edges[0][2]
+    conn.close()
+
+
+def test_same_place_period_keeps_edge_when_lifespan_unknown():
+    """When birth/death are unknown we cannot intersect, so behaviour is
+    unchanged (non-destructive): an imprint-overlap edge is still emitted."""
+    conn = _spp_db()
+    conn.executescript("""
+        INSERT INTO agents VALUES (1, 100, 'anon, one', 'Anon One', 'uri:a1', 'author');
+        INSERT INTO agents VALUES (2, 101, 'anon, one', 'Anon One', 'uri:a1', 'author');
+        INSERT INTO agents VALUES (3, 100, 'anon, two', 'Anon Two', 'uri:a2', 'author');
+        INSERT INTO agents VALUES (4, 101, 'anon, two', 'Anon Two', 'uri:a2', 'author');
+
+        INSERT INTO imprints VALUES (1, 100, 'basel', 1600);
+        INSERT INTO imprints VALUES (2, 101, 'basel', 1620);
+    """)
+    _build_same_place_period_edges(conn)
+    assert len(_spp_edges(conn)) == 1
+    conn.close()
+
+
+def test_assign_communities_excludes_maintenance():
+    """Wikipedia maintenance/metadata categories never color a node (issue #28)."""
+    conn = _community_db()
+    assign_communities(conn, min_nodes=1)
+    # a3's only categories are maintenance -> no community
+    assert _community_of(conn, "a3") is None
+    # no node is ever assigned a denied category
+    assigned = {r[0] for r in conn.execute(
+        "SELECT community FROM network_agents WHERE community IS NOT NULL"
+    )}
+    assert "Coordinates on Wikidata" not in assigned
+    assert "Jewish biography stubs" not in assigned
+    assert not any(c.endswith("births") or c.startswith("Year of") for c in assigned)
+    conn.close()
+
+
+def test_assign_communities_picks_most_specific():
+    """A node in several allowed categories gets the rarest (most specific)."""
+    conn = _community_db()
+    assign_communities(conn, min_nodes=1)
+    # a1 is in Kabbalists (3 nodes) and Bible commentators (1) -> the rarer
+    assert _community_of(conn, "a1") == "Bible commentators"
+    # a4 only Kabbalists
+    assert _community_of(conn, "a4") == "Kabbalists"
+    conn.close()
+
+
+def test_assign_communities_respects_min_nodes():
+    """A category below the minimum cluster size is not used for coloring."""
+    conn = _community_db()
+    stats = assign_communities(conn, min_nodes=2)
+    # Only Kabbalists (3) clears min_nodes=2; the singletons drop out
+    assert _community_of(conn, "a1") == "Kabbalists"
+    assert _community_of(conn, "a2") == "Kabbalists"
+    assert _community_of(conn, "a3") is None
+    assert stats["communities"] == ["Kabbalists"]
+    conn.close()

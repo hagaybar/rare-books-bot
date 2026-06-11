@@ -28,8 +28,10 @@ router = APIRouter(
 
 DB_PATH = Path("data/index/bibliographic.db")
 
+# 'category' is intentionally absent: issue #28 retired category from the arc
+# layer (76% maintenance noise) into a node-coloring facet (network_agents.community).
 VALID_CONNECTION_TYPES = {
-    "teacher_student", "wikilink", "llm_extraction", "category", "co_publication",
+    "teacher_student", "wikilink", "llm_extraction", "co_publication",
     "same_place_period", "same_record", "printed_by",
 }
 
@@ -209,54 +211,26 @@ async def get_network_map(
                 has_wikipedia=bool(r["has_wikipedia"]),
                 primary_role=r["primary_role"],
                 node_type=(r["node_type"] if "node_type" in r.keys() else "person") or "person",
+                community=(r["community"] if "community" in r.keys() else None),
             ))
 
         # Get edges between returned agents
-        category_limited = False
-        category_total = 0
-
         if empty_types or len(agent_norms) < 2:
             edges = []
         else:
             norm_list = list(agent_norms)
             norm_placeholders = ",".join("?" for _ in norm_list)
-
-            # Build per-type edge queries, applying LIMIT 100 for category
-            edge_queries = []
-            edge_params_all: list = []
-
-            for t in types:
-                if t == "category":
-                    edge_queries.append(f"""
-                        SELECT source_agent_norm, target_agent_norm, connection_type,
-                               confidence, relationship, evidence, bidirectional
-                        FROM (
-                            SELECT source_agent_norm, target_agent_norm, connection_type,
-                                   confidence, relationship, evidence, bidirectional
-                            FROM network_edges
-                            WHERE connection_type = 'category'
-                              AND confidence >= ?
-                              AND source_agent_norm IN ({norm_placeholders})
-                              AND target_agent_norm IN ({norm_placeholders})
-                            ORDER BY confidence DESC
-                            LIMIT 100
-                        )
-                    """)
-                    edge_params_all.extend([min_confidence, *norm_list, *norm_list])
-                else:
-                    edge_queries.append(f"""
-                        SELECT source_agent_norm, target_agent_norm, connection_type,
-                               confidence, relationship, evidence, bidirectional
-                        FROM network_edges
-                        WHERE connection_type = ?
-                          AND confidence >= ?
-                          AND source_agent_norm IN ({norm_placeholders})
-                          AND target_agent_norm IN ({norm_placeholders})
-                    """)
-                    edge_params_all.extend([t, min_confidence, *norm_list, *norm_list])
-
-            combined_sql = " UNION ALL ".join(edge_queries)
-            edge_rows = conn.execute(combined_sql, edge_params_all).fetchall()
+            type_placeholders = ",".join("?" for _ in types)
+            edge_rows = conn.execute(
+                f"""SELECT source_agent_norm, target_agent_norm, connection_type,
+                           confidence, relationship, evidence, bidirectional
+                    FROM network_edges
+                    WHERE connection_type IN ({type_placeholders})
+                      AND confidence >= ?
+                      AND source_agent_norm IN ({norm_placeholders})
+                      AND target_agent_norm IN ({norm_placeholders})""",
+                [*types, min_confidence, *norm_list, *norm_list],
+            ).fetchall()
 
             edges = [
                 MapEdge(
@@ -271,23 +245,19 @@ async def get_network_map(
                 for r in edge_rows
             ]
 
-            # Check if category was limited
-            if "category" in types:
-                cat_total_row = conn.execute(
-                    f"""SELECT count(*) FROM network_edges
-                        WHERE connection_type = 'category'
-                          AND confidence >= ?
-                          AND source_agent_norm IN ({norm_placeholders})
-                          AND target_agent_norm IN ({norm_placeholders})""",
-                    [min_confidence, *norm_list, *norm_list],
-                ).fetchone()
-                category_total = cat_total_row[0]
-                if category_total > 100:
-                    category_limited = True
-
         total_agents = conn.execute(
             "SELECT count(*) FROM network_agents WHERE lat IS NOT NULL"
         ).fetchone()[0]
+
+        # Stable community palette order (by global membership) for the legend
+        communities = [
+            row[0]
+            for row in conn.execute(
+                """SELECT community FROM network_agents
+                   WHERE community IS NOT NULL
+                   GROUP BY community ORDER BY COUNT(*) DESC, community ASC"""
+            ).fetchall()
+        ]
 
         return MapResponse(
             nodes=nodes,
@@ -296,8 +266,7 @@ async def get_network_map(
                 total_agents=total_agents,
                 showing=len(nodes),
                 total_edges=len(edges),
-                category_limited=category_limited,
-                category_total=category_total,
+                communities=communities,
             ),
         )
     finally:
@@ -388,12 +357,14 @@ async def get_agent_detail(agent_norm: str) -> AgentDetail:
         if wiki_row:
             wikipedia_summary = wiki_row[0]
 
-        # Connections
+        # Connections (category excluded — it is a coloring facet, not a
+        # relationship arc, per issue #28)
         edge_rows = conn.execute(
             """SELECT source_agent_norm, target_agent_norm, connection_type,
                       confidence, relationship, evidence
                FROM network_edges
-               WHERE source_agent_norm = ? OR target_agent_norm = ?""",
+               WHERE (source_agent_norm = ? OR target_agent_norm = ?)
+                 AND connection_type != 'category'""",
             (agent_norm, agent_norm),
         ).fetchall()
 

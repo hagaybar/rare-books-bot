@@ -105,6 +105,7 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
             <option value="century">Life Period</option>
             <option value="role">Role</option>
             <option value="occupation">Occupation</option>
+            <option value="community">Community</option>
           </select>
         </div>
 
@@ -196,6 +197,7 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
           <option value="century">Life Period</option>
           <option value="role">Role</option>
           <option value="occupation">Occupation</option>
+          <option value="community">Community</option>
         </select>
       </div>
 

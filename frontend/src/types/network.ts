@@ -13,9 +13,10 @@ export interface MapNode {
   has_wikipedia: boolean;
   primary_role: string | null;
   node_type: string; // 'person' | 'publisher'
+  community: string | null; // intellectual-community color facet (issue #28)
 }
 
-export type ColorByMode = 'century' | 'role' | 'occupation';
+export type ColorByMode = 'century' | 'role' | 'occupation' | 'community';
 
 export const CENTURY_COLORS: Record<string, [number, number, number]> = {
   'Before 1400': [245, 158, 11],
@@ -59,7 +60,35 @@ export function getCenturyLabel(birthYear: number | null): string {
 
 export const PUBLISHER_COLOR: [number, number, number] = [202, 138, 4]; // amber — printing houses
 
-export function getAgentColor(node: MapNode, colorBy: ColorByMode): [number, number, number] {
+export const COMMUNITY_OTHER_COLOR: [number, number, number] = [203, 213, 225]; // slate-300
+
+// Distinct categorical palette for the community-coloring facet (issue #28).
+// Indexed by the position of a community in meta.communities (global order),
+// so colors stay stable as filters change.
+export const COMMUNITY_PALETTE: [number, number, number][] = [
+  [37, 99, 235], [220, 38, 38], [22, 163, 74], [217, 119, 6],
+  [147, 51, 234], [13, 148, 136], [219, 39, 119], [101, 163, 13],
+  [2, 132, 199], [234, 88, 12], [86, 60, 178], [190, 18, 60],
+  [4, 120, 87], [161, 98, 7], [124, 58, 237], [15, 118, 110],
+  [159, 18, 57], [3, 105, 161], [180, 83, 9], [109, 40, 217],
+];
+
+/** Stable community -> color map from the global community order in meta. */
+export function buildCommunityColorMap(
+  communities: string[]
+): Record<string, [number, number, number]> {
+  const map: Record<string, [number, number, number]> = {};
+  communities.forEach((name, i) => {
+    map[name] = COMMUNITY_PALETTE[i % COMMUNITY_PALETTE.length];
+  });
+  return map;
+}
+
+export function getAgentColor(
+  node: MapNode,
+  colorBy: ColorByMode,
+  communityColors?: Record<string, [number, number, number]>
+): [number, number, number] {
   if (node.node_type === 'publisher') return PUBLISHER_COLOR;
   switch (colorBy) {
     case 'century':
@@ -69,6 +98,10 @@ export function getAgentColor(node: MapNode, colorBy: ColorByMode): [number, num
     case 'occupation': {
       const occ = node.occupations[0] ?? 'other';
       return OCCUPATION_COLORS[occ] ?? OCCUPATION_COLORS['other'];
+    }
+    case 'community': {
+      const c = node.community ? communityColors?.[node.community] : undefined;
+      return c ?? COMMUNITY_OTHER_COLOR;
     }
   }
 }
@@ -87,8 +120,7 @@ export interface MapMeta {
   total_agents: number;
   showing: number;
   total_edges: number;
-  category_limited: boolean;
-  category_total: number;
+  communities: string[]; // legend palette order (issue #28)
 }
 
 export interface MapResponse {
@@ -134,11 +166,11 @@ export interface AgentDetail {
   node_type: string;
 }
 
+// 'category' removed (issue #28): retired from arcs into a node-coloring facet.
 export type ConnectionType =
   | 'teacher_student'
   | 'wikilink'
   | 'llm_extraction'
-  | 'category'
   | 'co_publication'
   | 'same_place_period'
   | 'same_record'
@@ -157,5 +189,4 @@ export const CONNECTION_TYPE_CONFIG: Record<ConnectionType, {
   same_place_period: { label: 'Active in Same City', color: [6, 182, 212], width: 2, tier: 'primary' },
   wikilink: { label: 'Mentioned Together', color: [245, 158, 11], width: 2, tier: 'primary' },
   llm_extraction: { label: 'AI-Discovered', color: [139, 92, 246], width: 2, tier: 'secondary' },
-  category: { label: 'Shared Topics', color: [156, 163, 175], width: 1, tier: 'secondary' },
 };

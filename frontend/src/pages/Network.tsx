@@ -216,8 +216,9 @@ export default function Network() {
             onPlaceSelect={selectPlace}
             isLoading={isLoading}
             colorBy={colorBy}
+            communities={mapData?.meta.communities}
           />
-          <Legend colorBy={colorBy} activeTypes={connectionTypes} />
+          <Legend colorBy={colorBy} activeTypes={connectionTypes} communities={mapData?.meta.communities} />
           {/* Empty results overlay */}
           {!isLoading && mapData && mapData.nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
@@ -276,7 +277,7 @@ export default function Network() {
           {mapData
             ? connectionTypes.length === 0
               ? `${mapData.meta.showing}/${mapData.meta.total_agents} agents`
-              : `${mapData.meta.showing}/${mapData.meta.total_agents} agents \u00B7 ${mapData.meta.total_edges} connections${mapData.meta.category_limited ? ` (limited)` : ''}`
+              : `${mapData.meta.showing}/${mapData.meta.total_agents} agents \u00B7 ${mapData.meta.total_edges} connections`
             : 'Loading...'}
         </span>
         {isLoading && <span className="text-blue-500 shrink-0 ml-2">Updating...</span>}
