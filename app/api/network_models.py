@@ -43,6 +43,19 @@ class MapResponse(BaseModel):
     meta: MapMeta
 
 
+class EgoMeta(BaseModel):
+    truncated: bool = False  # neighbours exceeded the cap (issue #31)
+    total_neighbors: int = 0
+    showing: int = 0
+
+
+class EgoResponse(BaseModel):
+    focal: str
+    nodes: list[MapNode]
+    edges: list[MapEdge]
+    meta: EgoMeta
+
+
 class AgentConnection(BaseModel):
     agent_norm: str
     display_name: str

@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { fetchMapData, fetchAgentDetail, fetchPlaceDetail } from '../api/network';
+import { fetchMapData, fetchAgentDetail, fetchPlaceDetail, fetchEgo } from '../api/network';
 import { useNetworkStore } from '../stores/networkStore';
 import MapView from '../components/network/MapView';
+import EgoView from '../components/network/EgoView';
+import Breadcrumbs from '../components/network/Breadcrumbs';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
 import PlacePanel from '../components/network/PlacePanel';
@@ -87,6 +89,54 @@ export default function Network() {
   const selectAgent = (norm: string) => { setSelectedPlace(null); setSelectedAgent(norm); };
   const selectPlace = (norm: string) => { setSelectedAgent(null); setSelectedPlace(norm); };
 
+  // Ego-network mode (issue #31)
+  const viewMode = useNetworkStore((s) => s.viewMode);
+  const focusAgent = useNetworkStore((s) => s.focusAgent);
+  const enterEgo = useNetworkStore((s) => s.enterEgo);
+  const pushEgo = useNetworkStore((s) => s.pushEgo);
+  const setViewMode = useNetworkStore((s) => s.setViewMode);
+
+  // Default focal node when entering Network mode with nothing selected:
+  // the most-connected node currently on the map (decision A).
+  const topNode = useMemo(() => {
+    const ns = mapData?.nodes ?? [];
+    return ns.length ? ns.reduce((a, b) => (b.connection_count > a.connection_count ? b : a)) : null;
+  }, [mapData]);
+
+  const { data: egoData, isLoading: egoLoading } = useQuery({
+    queryKey: ['network-ego', focusAgent, connectionTypes, minConfidence],
+    queryFn: () => fetchEgo(focusAgent!, { connectionTypes, minConfidence }),
+    enabled: viewMode === 'ego' && !!focusAgent,
+    placeholderData: (prev) => prev,
+  });
+
+  const nameFor = (norm: string) =>
+    mapData?.nodes.find((x) => x.agent_norm === norm)?.display_name
+    ?? (agentDetail?.agent_norm === norm ? agentDetail.display_name : undefined)
+    ?? norm;
+
+  const goNetwork = () => {
+    const start = selectedAgent
+      ? { agent_norm: selectedAgent, display_name: nameFor(selectedAgent) }
+      : focusAgent
+      ? { agent_norm: focusAgent, display_name: nameFor(focusAgent) }
+      : topNode
+      ? { agent_norm: topNode.agent_norm, display_name: topNode.display_name }
+      : null;
+    if (start) enterEgo(start);
+    else setViewMode('ego');
+  };
+
+  const goMap = () => setViewMode('map');
+
+  const handleEgoNodeClick = (node: MapNode) => {
+    selectAgent(node.agent_norm);
+    pushEgo({ agent_norm: node.agent_norm, display_name: node.display_name });
+  };
+
+  const handleExplore = (norm: string, displayName: string) =>
+    enterEgo({ agent_norm: norm, display_name: displayName });
+
   // Show toast on API error (map retains last successful data via placeholderData)
   useEffect(() => {
     if (error) toast.error(`Map data error: ${String(error)}`);
@@ -131,10 +181,29 @@ export default function Network() {
           </p>
         </div>
 
+        <div className="flex items-center gap-2 shrink-0 ml-2">
+        {/* Map / Network view toggle (issue #31) */}
+        <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden text-sm" role="group" aria-label="View mode">
+          <button
+            onClick={goMap}
+            aria-pressed={viewMode === 'map'}
+            className={`px-3 py-1.5 ${viewMode === 'map' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+          >
+            Map
+          </button>
+          <button
+            onClick={goNetwork}
+            aria-pressed={viewMode === 'ego'}
+            className={`px-3 py-1.5 border-l border-gray-300 ${viewMode === 'ego' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+          >
+            Network
+          </button>
+        </div>
+
         {/* Mobile filter toggle button */}
         <button
           onClick={() => setFiltersOpen(!filtersOpen)}
-          className="md:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 active:bg-gray-100 shrink-0 ml-2"
+          className="md:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 active:bg-gray-100 shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
@@ -146,6 +215,7 @@ export default function Network() {
             </span>
           )}
         </button>
+        </div>
       </div>
 
       {/* Desktop: always visible. Mobile: collapsible bottom sheet */}
@@ -205,22 +275,39 @@ export default function Network() {
         </div>
       )}
 
+      {viewMode === 'ego' && <Breadcrumbs />}
+
       <div className="flex flex-1 relative overflow-hidden">
         <div className="flex-1 relative">
-          <MapView
-            nodes={mapData?.nodes ?? []}
-            edges={mapData?.edges ?? []}
-            selectedAgent={selectedAgent}
-            onAgentClick={handleAgentClick}
-            onBackgroundClick={handleClosePanel}
-            onPlaceSelect={selectPlace}
-            isLoading={isLoading}
-            colorBy={colorBy}
-            communities={mapData?.meta.communities}
-          />
+          {viewMode === 'ego' ? (
+            egoData ? (
+              <EgoView
+                data={egoData}
+                colorBy={colorBy}
+                communities={mapData?.meta.communities}
+                onNodeClick={handleEgoNodeClick}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-500 text-sm">
+                {egoLoading ? 'Loading network…' : 'Search or pick a node to explore its connections.'}
+              </div>
+            )
+          ) : (
+            <MapView
+              nodes={mapData?.nodes ?? []}
+              edges={mapData?.edges ?? []}
+              selectedAgent={selectedAgent}
+              onAgentClick={handleAgentClick}
+              onBackgroundClick={handleClosePanel}
+              onPlaceSelect={selectPlace}
+              isLoading={isLoading}
+              colorBy={colorBy}
+              communities={mapData?.meta.communities}
+            />
+          )}
           <Legend colorBy={colorBy} activeTypes={connectionTypes} communities={mapData?.meta.communities} />
-          {/* Empty results overlay */}
-          {!isLoading && mapData && mapData.nodes.length === 0 && (
+          {/* Empty results overlay (map mode only) */}
+          {viewMode === 'map' && !isLoading && mapData && mapData.nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
               <p className="text-gray-500 bg-white/80 px-4 py-2 rounded shadow">
                 No agents match these filters. Try broadening your search.
@@ -232,7 +319,7 @@ export default function Network() {
         {/* Desktop agent panel — sidebar */}
         {selectedAgent && agentDetail && (
           <div className="hidden md:block">
-            <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={selectAgent} onPlaceSelect={selectPlace} />
+            <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={selectAgent} onPlaceSelect={selectPlace} onExplore={handleExplore} />
           </div>
         )}
         {/* Desktop place panel — sidebar */}
@@ -266,7 +353,7 @@ export default function Network() {
             <div className="flex justify-center pt-2 pb-1">
               <div className="w-10 h-1 bg-gray-300 rounded-full" />
             </div>
-            <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={selectAgent} onPlaceSelect={selectPlace} mobile />
+            <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={selectAgent} onPlaceSelect={selectPlace} onExplore={(n, d) => { handleExplore(n, d); handleClosePanel(); }} mobile />
           </div>
         </div>
       )}

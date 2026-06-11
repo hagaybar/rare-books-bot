@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import type { ConnectionType, ColorByMode } from '../types/network';
 
+export type ViewMode = 'map' | 'ego';
+export interface TrailItem { agent_norm: string; display_name: string }
+
 interface NetworkState {
   connectionTypes: ConnectionType[];
   minConfidence: number;
@@ -19,6 +22,15 @@ interface NetworkState {
   colorBy: ColorByMode;
   setColorBy: (mode: ColorByMode) => void;
   resetFilters: () => void;
+
+  // Ego-network mode (issue #31)
+  viewMode: ViewMode;
+  focusAgent: string | null;
+  egoTrail: TrailItem[];
+  setViewMode: (mode: ViewMode) => void;
+  enterEgo: (node: TrailItem) => void;   // start a fresh ego walk at node
+  pushEgo: (node: TrailItem) => void;    // re-center onto a neighbour
+  popTrailTo: (agentNorm: string) => void;
 }
 
 const DEFAULT_STATE = {
@@ -53,4 +65,28 @@ export const useNetworkStore = create<NetworkState>((set) => ({
   setAgentLimit: (val) => set({ agentLimit: val }),
   setColorBy: (mode) => set({ colorBy: mode }),
   resetFilters: () => set(DEFAULT_STATE),
+
+  // Ego-network mode (issue #31) — kept out of DEFAULT_STATE so resetFilters
+  // (a filter reset) doesn't yank the user out of the view they're in.
+  viewMode: 'map',
+  focusAgent: null,
+  egoTrail: [],
+  setViewMode: (mode) => set({ viewMode: mode }),
+  enterEgo: (node) =>
+    set({ viewMode: 'ego', focusAgent: node.agent_norm, egoTrail: [node] }),
+  pushEgo: (node) =>
+    set((s) => {
+      const last = s.egoTrail[s.egoTrail.length - 1];
+      if (last && last.agent_norm === node.agent_norm) return { focusAgent: node.agent_norm };
+      const existing = s.egoTrail.findIndex((t) => t.agent_norm === node.agent_norm);
+      const egoTrail = existing >= 0 ? s.egoTrail.slice(0, existing + 1) : [...s.egoTrail, node];
+      return { focusAgent: node.agent_norm, egoTrail };
+    }),
+  popTrailTo: (agentNorm) =>
+    set((s) => {
+      const idx = s.egoTrail.findIndex((t) => t.agent_norm === agentNorm);
+      return idx >= 0
+        ? { focusAgent: agentNorm, egoTrail: s.egoTrail.slice(0, idx + 1) }
+        : { focusAgent: agentNorm };
+    }),
 }));

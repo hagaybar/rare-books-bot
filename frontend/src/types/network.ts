@@ -129,6 +129,19 @@ export interface MapResponse {
   meta: MapMeta;
 }
 
+export interface EgoMeta {
+  truncated: boolean; // neighbours exceeded the cap (issue #31)
+  total_neighbors: number;
+  showing: number;
+}
+
+export interface EgoResponse {
+  focal: string;
+  nodes: MapNode[];
+  edges: MapEdge[];
+  meta: EgoMeta;
+}
+
 export interface AgentConnection {
   agent_norm: string;
   display_name: string;

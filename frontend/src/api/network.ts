@@ -1,4 +1,4 @@
-import type { MapResponse, AgentDetail, AgentWork } from '../types/network';
+import type { MapResponse, AgentDetail, AgentWork, EgoResponse } from '../types/network';
 import { authenticatedFetch } from './auth';
 
 export interface NetworkSearchResult {
@@ -49,6 +49,25 @@ export async function fetchMapData(params: MapParams): Promise<MapResponse> {
 export async function fetchAgentDetail(agentNorm: string): Promise<AgentDetail> {
   const res = await authenticatedFetch(`${BASE}/agent/${encodeURIComponent(agentNorm)}`);
   return handleResponse<AgentDetail>(res);
+}
+
+export interface EgoParams {
+  connectionTypes: string[];
+  minConfidence?: number;
+  limit?: number;
+}
+
+export async function fetchEgo(agentNorm: string, params: EgoParams): Promise<EgoResponse> {
+  const qs = new URLSearchParams();
+  // ego always needs at least one type; fall back to the collection-first set
+  const types = params.connectionTypes.length
+    ? params.connectionTypes
+    : ['same_record', 'printed_by', 'teacher_student'];
+  qs.set('connection_types', types.join(','));
+  if (params.minConfidence !== undefined) qs.set('min_confidence', String(params.minConfidence));
+  if (params.limit) qs.set('limit', String(params.limit));
+  const res = await authenticatedFetch(`${BASE}/ego/${encodeURIComponent(agentNorm)}?${qs}`);
+  return handleResponse<EgoResponse>(res);
 }
 
 export async function searchNetworkAgents(query: string): Promise<NetworkSearchResult[]> {
