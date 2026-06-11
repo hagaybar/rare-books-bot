@@ -35,7 +35,8 @@ def mock_db(tmp_path):
         );
         CREATE TABLE imprints (
             id INTEGER PRIMARY KEY, record_id INTEGER, place_norm TEXT,
-            date_start INTEGER
+            date_start INTEGER, date_label TEXT, place_display TEXT,
+            publisher_display TEXT
         );
         CREATE TABLE authority_enrichment (
             id INTEGER PRIMARY KEY, authority_uri TEXT, wikidata_id TEXT,
@@ -44,6 +45,15 @@ def mock_db(tmp_path):
         CREATE TABLE wikipedia_cache (
             id INTEGER PRIMARY KEY, wikidata_id TEXT, summary_extract TEXT
         );
+        CREATE TABLE records (
+            id INTEGER PRIMARY KEY, mms_id TEXT NOT NULL UNIQUE
+        );
+        CREATE TABLE titles (
+            id INTEGER PRIMARY KEY, record_id INTEGER, title_type TEXT, value TEXT
+        );
+
+        INSERT INTO records VALUES (100, '990001112220304146');
+        INSERT INTO titles VALUES (1, 100, 'main', 'A Treatise on Optics');
 
         INSERT INTO network_agents VALUES
             ('smith, john', 'John Smith', 'amsterdam', 52.37, 4.90,
@@ -53,9 +63,9 @@ def mock_db(tmp_path):
              1480, 1550, '["printer"]', 'printer', 0, 3, 5);
         INSERT INTO network_edges VALUES
             ('smith, john', 'jones, mary', 'teacher_student', 0.85,
-             'teacher of', 0, NULL);
+             'teacher of', 0, 'documented in authority record');
         INSERT INTO agents VALUES (1, 100, 'smith, john', 'uri:smith', 'author');
-        INSERT INTO imprints VALUES (1, 100, 'amsterdam', 1550);
+        INSERT INTO imprints VALUES (1, 100, 'amsterdam', 1550, '1550', 'Amsterdam', 'Elzevir');
         INSERT INTO authority_enrichment VALUES
             (1, 'uri:smith', 'Q111', 'https://en.wikipedia.org/wiki/John_Smith',
              'V123', '{"birth_year":1500}', 'John Smith');
@@ -117,3 +127,44 @@ def test_get_agent_detail(client):
 def test_get_agent_not_found(client):
     resp = client.get("/network/agent/nonexistent, agent")
     assert resp.status_code == 404
+
+
+# --- Network committee Tier 1 (issues #18/#19/#20/#25/#29) ---
+
+
+def test_agent_detail_includes_works_with_primo_mms_id(client):
+    """#18/#19: clicking an agent lists the collection's own books with a
+    Primo URL built from the MMS ID (not the internal rowid)."""
+    resp = client.get("/network/agent/smith, john")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["works"], "agent detail must list the agent's records"
+    w = data["works"][0]
+    assert w["mms_id"] == "990001112220304146"
+    assert w["title"] == "A Treatise on Optics"
+    assert "990001112220304146" in w["primo_url"]  # MMS ID, never the rowid (100)
+    assert "query=100&" not in w["primo_url"]
+
+
+def test_map_edges_carry_evidence(client):
+    """#20: every edge ships its evidence string so the UI can explain why."""
+    resp = client.get("/network/map?connection_types=teacher_student")
+    assert resp.status_code == 200
+    edges = resp.json()["edges"]
+    assert edges and edges[0]["evidence"] == "documented in authority record"
+
+
+def test_map_nodes_carry_record_count_and_filtered_count(client):
+    """#25: node size can reflect catalog presence and the active filter."""
+    resp = client.get("/network/map?connection_types=teacher_student")
+    nodes = {n["agent_norm"]: n for n in resp.json()["nodes"]}
+    assert nodes["smith, john"]["record_count"] == 5
+    assert nodes["smith, john"]["filtered_count"] >= 1
+
+
+def test_place_endpoint_lists_books_printed_there(client):
+    """#29: clicking a place shows the collection's imprints from there."""
+    resp = client.get("/network/place/amsterdam")
+    assert resp.status_code == 200
+    works = resp.json()["works"]
+    assert any(w["mms_id"] == "990001112220304146" for w in works)

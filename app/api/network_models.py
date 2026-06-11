@@ -12,6 +12,8 @@ class MapNode(BaseModel):
     death_year: int | None = None
     occupations: list[str] = Field(default_factory=list)
     connection_count: int = 0
+    filtered_count: int = 0  # edges within the active connection-type filter
+    record_count: int = 0  # holdings in this collection
     has_wikipedia: bool = False
     primary_role: str | None = None
 
@@ -22,6 +24,7 @@ class MapEdge(BaseModel):
     type: str
     confidence: float
     relationship: str | None = None
+    evidence: str | None = None
     bidirectional: bool = False
 
 
@@ -44,7 +47,19 @@ class AgentConnection(BaseModel):
     display_name: str
     type: str
     relationship: str | None = None
+    evidence: str | None = None
     confidence: float
+
+
+class AgentWork(BaseModel):
+    """A book in the collection associated with an agent or place."""
+    mms_id: str
+    title: str | None = None
+    date_label: str | None = None
+    place_display: str | None = None
+    publisher_display: str | None = None
+    role_norm: str | None = None
+    primo_url: str | None = None
 
 
 class AgentDetail(BaseModel):
@@ -59,5 +74,13 @@ class AgentDetail(BaseModel):
     wikipedia_summary: str | None = None
     connections: list[AgentConnection] = Field(default_factory=list)
     record_count: int = 0
+    works: list[AgentWork] = Field(default_factory=list)
     primo_url: str | None = None
     external_links: dict[str, str] = Field(default_factory=dict)
+
+
+class PlaceDetail(BaseModel):
+    """Books printed in a given place (issue #29)."""
+    place_norm: str
+    total: int = 0
+    works: list[AgentWork] = Field(default_factory=list)

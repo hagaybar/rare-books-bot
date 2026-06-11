@@ -10,10 +10,12 @@ from app.api.auth_deps import require_role
 from app.api.network_models import (
     AgentConnection,
     AgentDetail,
+    AgentWork,
     MapEdge,
     MapMeta,
     MapNode,
     MapResponse,
+    PlaceDetail,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,6 +38,46 @@ def _get_db() -> sqlite3.Connection:
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def _primo_url(mms_id: str) -> str | None:
+    """Catalog deep link from the real MMS ID (issue #19)."""
+    try:
+        from scripts.utils.primo import generate_primo_url
+        return generate_primo_url(mms_id)
+    except ImportError:
+        return None
+
+
+def _works_for_agent(conn: sqlite3.Connection, agent_norm: str, limit: int = 25) -> list[AgentWork]:
+    """The collection's books for an agent, newest-cataloguing first (issue #18)."""
+    rows = conn.execute(
+        """SELECT DISTINCT r.mms_id AS mms_id,
+                  (SELECT t.value FROM titles t WHERE t.record_id = r.id
+                   ORDER BY CASE t.title_type WHEN 'main' THEN 0 ELSE 1 END LIMIT 1) AS title,
+                  (SELECT i.date_label FROM imprints i WHERE i.record_id = r.id LIMIT 1) AS date_label,
+                  (SELECT i.place_display FROM imprints i WHERE i.record_id = r.id LIMIT 1) AS place_display,
+                  (SELECT i.publisher_display FROM imprints i WHERE i.record_id = r.id LIMIT 1) AS publisher_display,
+                  a.role_norm AS role_norm,
+                  MIN(i2.date_start) AS sort_date
+           FROM agents a
+           JOIN records r ON r.id = a.record_id
+           LEFT JOIN imprints i2 ON i2.record_id = r.id
+           WHERE a.agent_norm = ?
+           GROUP BY r.mms_id
+           ORDER BY sort_date IS NULL, sort_date ASC
+           LIMIT ?""",
+        (agent_norm, limit),
+    ).fetchall()
+    return [
+        AgentWork(
+            mms_id=r["mms_id"], title=r["title"], date_label=r["date_label"],
+            place_display=r["place_display"], publisher_display=r["publisher_display"],
+            role_norm=r["role_norm"], primo_url=_primo_url(r["mms_id"]),
+        )
+        for r in rows
+    ]
+
 
 
 @router.get("/map", response_model=MapResponse)
@@ -135,6 +177,8 @@ async def get_network_map(
                 death_year=r["death_year"],
                 occupations=occupations,
                 connection_count=r["connection_count"],
+                filtered_count=r["filtered_count"],
+                record_count=r["record_count"],
                 has_wikipedia=bool(r["has_wikipedia"]),
                 primary_role=r["primary_role"],
             ))
@@ -157,10 +201,10 @@ async def get_network_map(
                 if t == "category":
                     edge_queries.append(f"""
                         SELECT source_agent_norm, target_agent_norm, connection_type,
-                               confidence, relationship, bidirectional
+                               confidence, relationship, evidence, bidirectional
                         FROM (
                             SELECT source_agent_norm, target_agent_norm, connection_type,
-                                   confidence, relationship, bidirectional
+                                   confidence, relationship, evidence, bidirectional
                             FROM network_edges
                             WHERE connection_type = 'category'
                               AND confidence >= ?
@@ -174,7 +218,7 @@ async def get_network_map(
                 else:
                     edge_queries.append(f"""
                         SELECT source_agent_norm, target_agent_norm, connection_type,
-                               confidence, relationship, bidirectional
+                               confidence, relationship, evidence, bidirectional
                         FROM network_edges
                         WHERE connection_type = ?
                           AND confidence >= ?
@@ -193,6 +237,7 @@ async def get_network_map(
                     type=r["connection_type"],
                     confidence=r["confidence"],
                     relationship=r["relationship"],
+                    evidence=r["evidence"],
                     bidirectional=bool(r["bidirectional"]),
                 )
                 for r in edge_rows
@@ -250,6 +295,41 @@ async def search_agents(q: str = Query(""), limit: int = Query(10, ge=1, le=20))
         conn.close()
 
 
+@router.get("/place/{place_norm:path}", response_model=PlaceDetail)
+async def get_place_detail(place_norm: str, limit: int = Query(50, ge=1, le=200)) -> PlaceDetail:
+    """Books in the collection printed in a given place (issue #29)."""
+    conn = _get_db()
+    try:
+        total = conn.execute(
+            "SELECT COUNT(DISTINCT i.record_id) FROM imprints i WHERE LOWER(i.place_norm) = LOWER(?)",
+            (place_norm,),
+        ).fetchone()[0]
+        rows = conn.execute(
+            """SELECT DISTINCT r.mms_id AS mms_id,
+                      (SELECT t.value FROM titles t WHERE t.record_id = r.id
+                       ORDER BY CASE t.title_type WHEN 'main' THEN 0 ELSE 1 END LIMIT 1) AS title,
+                      i.date_label AS date_label, i.place_display AS place_display,
+                      i.publisher_display AS publisher_display, i.date_start AS sort_date
+               FROM imprints i JOIN records r ON r.id = i.record_id
+               WHERE LOWER(i.place_norm) = LOWER(?)
+               GROUP BY r.mms_id
+               ORDER BY sort_date IS NULL, sort_date ASC
+               LIMIT ?""",
+            (place_norm, limit),
+        ).fetchall()
+        works = [
+            AgentWork(
+                mms_id=r["mms_id"], title=r["title"], date_label=r["date_label"],
+                place_display=r["place_display"], publisher_display=r["publisher_display"],
+                primo_url=_primo_url(r["mms_id"]),
+            )
+            for r in rows
+        ]
+        return PlaceDetail(place_norm=place_norm, total=total, works=works)
+    finally:
+        conn.close()
+
+
 @router.get("/agent/{agent_norm:path}", response_model=AgentDetail)
 async def get_agent_detail(agent_norm: str) -> AgentDetail:
     """Return full detail for a single agent."""
@@ -283,7 +363,7 @@ async def get_agent_detail(agent_norm: str) -> AgentDetail:
         # Connections
         edge_rows = conn.execute(
             """SELECT source_agent_norm, target_agent_norm, connection_type,
-                      confidence, relationship
+                      confidence, relationship, evidence
                FROM network_edges
                WHERE source_agent_norm = ? OR target_agent_norm = ?""",
             (agent_norm, agent_norm),
@@ -302,22 +382,13 @@ async def get_agent_detail(agent_norm: str) -> AgentDetail:
                 display_name=other_display,
                 type=er["connection_type"],
                 relationship=er["relationship"],
+                evidence=er["evidence"],
                 confidence=er["confidence"],
             ))
 
-        # Primo URL: link to the first record by this agent in the catalog
-        primo_url = None
-        try:
-            from scripts.utils.primo import generate_primo_url
-            first_record = conn.execute(
-                "SELECT DISTINCT record_id FROM agents WHERE agent_norm = ? LIMIT 1",
-                (agent_norm,),
-            ).fetchone()
-            if first_record:
-                # record_id is the MMS ID
-                primo_url = generate_primo_url(str(first_record[0]))
-        except ImportError:
-            pass
+        # Collection holdings (issue #18) + correct Primo links (issue #19)
+        works = _works_for_agent(conn, agent_norm)
+        primo_url = works[0].primo_url if works else None
 
         # External links
         external_links = {}
@@ -349,6 +420,7 @@ async def get_agent_detail(agent_norm: str) -> AgentDetail:
             wikipedia_summary=wikipedia_summary,
             connections=connections,
             record_count=row["record_count"],
+            works=works,
             primo_url=primo_url,
             external_links=external_links,
         )
