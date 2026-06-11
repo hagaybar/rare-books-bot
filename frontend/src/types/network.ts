@@ -12,6 +12,7 @@ export interface MapNode {
   record_count: number;
   has_wikipedia: boolean;
   primary_role: string | null;
+  node_type: string; // 'person' | 'publisher'
 }
 
 export type ColorByMode = 'century' | 'role' | 'occupation';
@@ -56,7 +57,10 @@ export function getCenturyLabel(birthYear: number | null): string {
   return '20th+';
 }
 
+export const PUBLISHER_COLOR: [number, number, number] = [202, 138, 4]; // amber — printing houses
+
 export function getAgentColor(node: MapNode, colorBy: ColorByMode): [number, number, number] {
+  if (node.node_type === 'publisher') return PUBLISHER_COLOR;
   switch (colorBy) {
     case 'century':
       return CENTURY_COLORS[getCenturyLabel(node.birth_year)] ?? CENTURY_COLORS['Unknown'];
@@ -127,6 +131,7 @@ export interface AgentDetail {
   works: AgentWork[];
   primo_url: string | null;
   external_links: Record<string, string>;
+  node_type: string;
 }
 
 export type ConnectionType =
@@ -136,7 +141,8 @@ export type ConnectionType =
   | 'category'
   | 'co_publication'
   | 'same_place_period'
-  | 'same_record';
+  | 'same_record'
+  | 'printed_by';
 
 export const CONNECTION_TYPE_CONFIG: Record<ConnectionType, {
   label: string;
@@ -145,6 +151,7 @@ export const CONNECTION_TYPE_CONFIG: Record<ConnectionType, {
   tier: 'primary' | 'secondary';
 }> = {
   same_record: { label: 'Same Book', color: [217, 70, 239], width: 2, tier: 'primary' },
+  printed_by: { label: 'Printed By', color: [202, 138, 4], width: 2, tier: 'primary' },
   teacher_student: { label: 'Teacher & Student', color: [59, 130, 246], width: 3, tier: 'primary' },
   co_publication: { label: 'Published Together', color: [16, 185, 129], width: 2, tier: 'primary' },
   same_place_period: { label: 'Active in Same City', color: [6, 182, 212], width: 2, tier: 'primary' },

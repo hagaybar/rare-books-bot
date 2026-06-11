@@ -16,6 +16,7 @@ class MapNode(BaseModel):
     record_count: int = 0  # holdings in this collection
     has_wikipedia: bool = False
     primary_role: str | None = None
+    node_type: str = "person"  # 'person' | 'publisher' (issue #27)
 
 
 class MapEdge(BaseModel):
@@ -77,6 +78,7 @@ class AgentDetail(BaseModel):
     works: list[AgentWork] = Field(default_factory=list)
     primo_url: str | None = None
     external_links: dict[str, str] = Field(default_factory=dict)
+    node_type: str = "person"
 
 
 class PlaceDetail(BaseModel):

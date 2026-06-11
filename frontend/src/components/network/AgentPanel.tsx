@@ -14,6 +14,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
   const [expandedSummary, setExpandedSummary] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
+  const isPublisher = agent.node_type === 'publisher';
   const years =
     agent.birth_year || agent.death_year
       ? `${agent.birth_year ?? '?'}\u2013${agent.death_year ?? '?'}`
@@ -51,7 +52,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
             </h2>
             {years && (
               <p className="text-sm text-gray-500">
-                {years} &middot;{' '}
+                {isPublisher ? 'active ' : ''}{years} &middot;{' '}
                 {agent.place_norm && onPlaceSelect ? (
                   <button onClick={() => onPlaceSelect(agent.place_norm!)} className="text-blue-600 hover:text-blue-800 capitalize" dir="auto">
                     {agent.place_norm}
@@ -59,7 +60,9 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
                 ) : (agent.place_norm ?? 'Unknown')}
               </p>
             )}
-            {agent.occupations.length > 0 && (
+            {isPublisher ? (
+              <p className="text-xs text-amber-700 mt-0.5 font-medium uppercase tracking-wide">Printing house</p>
+            ) : agent.occupations.length > 0 && (
               <p className="text-sm text-gray-400 mt-0.5">
                 {agent.occupations.join(', ')}
               </p>
@@ -157,7 +160,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
       {/* In our collection (issue #18) — the books we actually hold, first */}
       <div className={`${mobile ? 'px-4 py-3' : 'p-4'} border-b`}>
         <h3 className="text-sm font-medium text-gray-700 mb-2">
-          In our collection ({agent.record_count})
+          {isPublisher ? 'Printed by this house' : 'In our collection'} ({agent.record_count})
         </h3>
         {agent.works.length === 0 ? (
           <p className="text-sm text-gray-400">No catalogued works for this figure.</p>
@@ -187,10 +190,10 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
           </ul>
         )}
         <a
-          href={`/chat?q=${encodeURIComponent(`books by ${agent.agent_norm}`)}`}
+          href={`/chat?q=${encodeURIComponent(`books ${isPublisher ? 'printed by' : 'by'} ${agent.display_name}`)}`}
           className="text-sm text-blue-500 hover:text-blue-700 block mt-3"
         >
-          Ask about this figure in Chat &rarr;
+          Ask about this {isPublisher ? 'house' : 'figure'} in Chat &rarr;
         </a>
       </div>
 
