@@ -32,22 +32,52 @@ def resolve_display_name(conn: sqlite3.Connection, agent_norm: str) -> str:
     if row and row[0]:
         return row[0]
 
-    # Level 2: authority_enrichment.label via agents.authority_uri
-    row = conn.execute(
-        """SELECT DISTINCT ae.label FROM authority_enrichment ae
-           JOIN agents a ON a.authority_uri = ae.authority_uri
-           WHERE a.agent_norm = ? AND ae.label IS NOT NULL
-           LIMIT 1""",
-        (agent_norm,),
-    ).fetchone()
-    if row and row[0]:
-        # Strip disambiguation suffixes like "(DNB12)"
-        label = re.sub(r"\s*\([^)]*\)\s*$", "", row[0]).strip()
-        if label:
-            return label
+    # Level 2: the agent's MOST FREQUENT authority entity (issue #22).
+    # An agent's records can link to several authority_uris — the person AND
+    # their works (Joseph Karo's records also point to the book "Kessef
+    # Mishneh"). The person entity dominates; a one-off work is the minority,
+    # so rank by occurrence count and prefer the Wikipedia article title
+    # (a real person/article name) over the raw enrichment label, and never
+    # accept a label that is actually a title on this agent's records.
+    candidate = _best_person_label(conn, agent_norm)
+    if candidate:
+        return candidate
 
     # Level 3: title-cased agent_norm
     return title_case_agent_norm(agent_norm)
+
+
+def _best_person_label(conn: sqlite3.Connection, agent_norm: str) -> str | None:
+    """Pick the agent's most frequent authority entity's name (issue #22)."""
+    # Positional access (callers may pass a plain tuple-row connection).
+    rows = conn.execute(
+        """SELECT wc.wikipedia_title, ae.label
+           FROM agents a
+           JOIN authority_enrichment ae ON a.authority_uri = ae.authority_uri
+           LEFT JOIN wikipedia_cache wc ON wc.wikidata_id = ae.wikidata_id
+           WHERE a.agent_norm = ?
+             AND (wc.wikipedia_title IS NOT NULL OR ae.label IS NOT NULL)
+           GROUP BY ae.wikidata_id
+           ORDER BY COUNT(*) DESC""",
+        (agent_norm,),
+    ).fetchall()
+    if not rows:
+        return None
+    record_titles = {
+        (t[0] or "").strip().lower()
+        for t in conn.execute(
+            """SELECT DISTINCT ti.value FROM titles ti
+               JOIN agents a ON a.record_id = ti.record_id
+               WHERE a.agent_norm = ?""",
+            (agent_norm,),
+        ).fetchall()
+    }
+    for wiki_title, label in rows:
+        candidate = (wiki_title or label or "").strip()
+        candidate = re.sub(r"\s*\([^)]*\)\s*$", "", candidate).strip()
+        if candidate and candidate.lower() not in record_titles:
+            return candidate
+    return None
 
 
 def build_network_edges(conn: sqlite3.Connection) -> int:

@@ -39,7 +39,11 @@ def db():
             bidirectional INTEGER DEFAULT 0, evidence TEXT
         );
         CREATE TABLE wikipedia_cache (
-            id INTEGER PRIMARY KEY, wikidata_id TEXT, summary_extract TEXT
+            id INTEGER PRIMARY KEY, wikidata_id TEXT, summary_extract TEXT,
+            wikipedia_title TEXT
+        );
+        CREATE TABLE titles (
+            id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT
         );
     """)
 
@@ -62,7 +66,7 @@ def db():
 
         INSERT INTO wikipedia_connections VALUES
             (1, 'smith, john', 'doe, jane', 'wikilink', 0.75, NULL, 0, 'linked');
-        INSERT INTO wikipedia_cache VALUES (1, 'Q111', 'John Smith was a scholar.');
+        INSERT INTO wikipedia_cache VALUES (1, 'Q111', 'John Smith was a scholar.', 'John Smith');
     """)
     yield conn
     conn.close()

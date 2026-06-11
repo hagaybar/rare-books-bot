@@ -116,6 +116,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick, mobile }: Pro
                   <button
                     key={`${conn.agent_norm}-${type}`}
                     onClick={() => onAgentClick(conn.agent_norm)}
+                    title={conn.evidence ?? conn.relationship ?? undefined}
                     className={`block w-full text-left px-2 ${mobile ? 'py-1.5' : 'py-1'} text-sm text-blue-600 hover:bg-blue-50 rounded truncate`}
                   >
                     {conn.relationship ? `${conn.relationship}: ` : ''}
@@ -147,30 +148,63 @@ export default function AgentPanel({ agent, onClose, onAgentClick, mobile }: Pro
         )}
       </div>
 
-      {/* Catalog */}
-      <div className={`${mobile ? 'px-4 py-3' : 'p-4'}`}>
-        <h3 className="text-sm font-medium text-gray-700 mb-2">In Catalog</h3>
-        <p className="text-sm text-gray-600 mb-2">
-          {agent.record_count} record{agent.record_count !== 1 ? 's' : ''}
-        </p>
+      {/* In our collection (issue #18) — the books we actually hold, first */}
+      <div className={`${mobile ? 'px-4 py-3' : 'p-4'} border-b`}>
+        <h3 className="text-sm font-medium text-gray-700 mb-2">
+          In our collection ({agent.record_count})
+        </h3>
+        {agent.works.length === 0 ? (
+          <p className="text-sm text-gray-400">No catalogued works for this figure.</p>
+        ) : (
+          <ul className="space-y-2">
+            {agent.works.map((w) => (
+              <li key={w.mms_id} className="text-sm">
+                {w.primo_url ? (
+                  <a
+                    href={w.primo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    dir="auto"
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    {w.title ?? w.mms_id}
+                  </a>
+                ) : (
+                  <span dir="auto" className="font-medium text-gray-800">{w.title ?? w.mms_id}</span>
+                )}
+                <div className="text-xs text-gray-500">
+                  {[w.place_display, w.date_label, w.publisher_display].filter(Boolean).join(' \u00B7 ')}
+                  {w.role_norm ? ` \u00B7 ${w.role_norm}` : ''}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
         <a
-          href={`/chat?q=${encodeURIComponent(`books by ${agent.display_name}`)}`}
-          className="text-sm text-blue-500 hover:text-blue-700 block mb-1"
+          href={`/chat?q=${encodeURIComponent(`books by ${agent.agent_norm}`)}`}
+          className="text-sm text-blue-500 hover:text-blue-700 block mt-3"
         >
-          View in Chat &rarr;
+          Ask about this figure in Chat &rarr;
         </a>
-        {Object.entries(agent.external_links).map(([name, url]) => (
-          <a
-            key={name}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-500 hover:text-blue-700 block mb-1 capitalize"
-          >
-            {name} &rarr;
-          </a>
-        ))}
       </div>
+
+      {/* External authorities */}
+      {Object.keys(agent.external_links).length > 0 && (
+        <div className={`${mobile ? 'px-4 py-3' : 'p-4'}`}>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">External</h3>
+          {Object.entries(agent.external_links).map(([name, url]) => (
+            <a
+              key={name}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-500 hover:text-blue-700 block mb-1 capitalize"
+            >
+              {name} &rarr;
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

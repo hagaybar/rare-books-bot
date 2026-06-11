@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { fetchMapData, fetchAgentDetail } from '../api/network';
@@ -15,6 +16,40 @@ export default function Network() {
 
   const { connectionTypes, minConfidence, century, place, role, agentLimit, colorBy } =
     useNetworkStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Hydrate filters + selected agent from the URL once on mount (issue #24).
+  useEffect(() => {
+    const s = useNetworkStore.getState();
+    const types = searchParams.get('types');
+    if (types !== null) s.setConnectionTypes(types ? (types.split(',') as typeof connectionTypes) : []);
+    const c = searchParams.get('century');
+    if (c) s.setCentury(Number(c));
+    const r = searchParams.get('role');
+    if (r) s.setRole(r);
+    const mc = searchParams.get('conf');
+    if (mc) s.setMinConfidence(Number(mc));
+    const lim = searchParams.get('limit');
+    if (lim) s.setAgentLimit(Number(lim));
+    const cb = searchParams.get('color');
+    if (cb) s.setColorBy(cb as typeof colorBy);
+    const agent = searchParams.get('agent');
+    if (agent) setSelectedAgent(agent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reflect filter + selection state back into the URL (shareable views).
+  useEffect(() => {
+    const next: Record<string, string> = {};
+    if (connectionTypes.length) next.types = connectionTypes.join(',');
+    if (century) next.century = String(century);
+    if (role) next.role = role;
+    if (minConfidence !== 0.5) next.conf = String(minConfidence);
+    if (agentLimit !== 150) next.limit = String(agentLimit);
+    if (colorBy !== 'century') next.color = colorBy;
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectionTypes, century, role, minConfidence, agentLimit, colorBy]);
 
   const {
     data: mapData,
@@ -44,6 +79,17 @@ export default function Network() {
   useEffect(() => {
     if (error) toast.error(`Map data error: ${String(error)}`);
   }, [error]);
+
+  // Keep ?agent= in sync with the selection.
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      if (selectedAgent) p.set('agent', selectedAgent);
+      else p.delete('agent');
+      return p;
+    }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAgent]);
 
   const handleAgentClick = (node: MapNode) => {
     setSelectedAgent(node.agent_norm);
@@ -157,7 +203,7 @@ export default function Network() {
             isLoading={isLoading}
             colorBy={colorBy}
           />
-          <Legend colorBy={colorBy} />
+          <Legend colorBy={colorBy} activeTypes={connectionTypes} />
           {/* Empty results overlay */}
           {!isLoading && mapData && mapData.nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">

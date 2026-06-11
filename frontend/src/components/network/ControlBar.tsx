@@ -73,6 +73,9 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
     setRole,
     colorBy,
     setColorBy,
+    minConfidence,
+    setMinConfidence,
+    resetFilters,
   } = useNetworkStore();
 
   const { query, results, handleChange, clear } = useAgentSearch(300);
@@ -275,8 +278,28 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
         </select>
       </div>
 
+      {/* Min confidence (issue #25) */}
+      <div className="flex items-center gap-1">
+        <span className="text-sm text-gray-600">Min conf:</span>
+        <input
+          type="range" min={0} max={1} step={0.1} value={minConfidence}
+          onChange={(e) => setMinConfidence(Number(e.target.value))}
+          className="w-20"
+          title="Minimum edge confidence"
+        />
+        <span className="text-xs text-gray-500 w-6">{minConfidence.toFixed(1)}</span>
+      </div>
+
       {/* Agent count slider (debounced to avoid rapid API calls while dragging) */}
       <AgentSlider />
+
+      {/* Reset (issue #25) */}
+      <button
+        onClick={resetFilters}
+        className="text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded px-2 py-1"
+      >
+        Reset
+      </button>
     </div>
   );
 }
@@ -289,6 +312,7 @@ interface AgentSearchProps {
 }
 
 function AgentSearch({ query, results, onChange, onSelect }: AgentSearchProps) {
+  const showEmpty = query.trim().length >= 2 && results.length === 0;
   return (
     <div className="relative">
       <input
@@ -298,6 +322,11 @@ function AgentSearch({ query, results, onChange, onSelect }: AgentSearchProps) {
         placeholder="Search agents..."
         className="text-sm border border-gray-300 rounded px-2 py-1 w-44 focus:outline-none focus:ring-1 focus:ring-blue-400"
       />
+      {showEmpty && (
+        <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded shadow-lg z-50 px-3 py-2 text-sm text-gray-400">
+          No agents match “{query.trim()}”
+        </div>
+      )}
       {results.length > 0 && (
         <ul className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded shadow-lg z-50 max-h-60 overflow-y-auto">
           {results.map((r) => (
