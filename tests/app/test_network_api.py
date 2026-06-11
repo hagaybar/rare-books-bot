@@ -52,6 +52,14 @@ def mock_db(tmp_path):
         CREATE TABLE titles (
             id INTEGER PRIMARY KEY, record_id INTEGER, title_type TEXT, value TEXT
         );
+        CREATE TABLE agent_authorities (
+            id INTEGER PRIMARY KEY, canonical_name TEXT, canonical_name_lower TEXT,
+            authority_uri TEXT
+        );
+        CREATE TABLE agent_aliases (
+            id INTEGER PRIMARY KEY, authority_id INTEGER, alias_form TEXT,
+            alias_form_lower TEXT, alias_type TEXT, script TEXT, language TEXT
+        );
 
         INSERT INTO records VALUES (100, '990001112220304146');
         INSERT INTO titles VALUES (1, 100, 'main', 'A Treatise on Optics');
@@ -71,6 +79,18 @@ def mock_db(tmp_path):
             (1, 'uri:smith', 'Q111', 'https://en.wikipedia.org/wiki/John_Smith',
              'V123', '{"birth_year":1500}', 'John Smith');
         INSERT INTO wikipedia_cache VALUES (1, 'Q111', 'John Smith was a scholar.');
+
+        -- Cross-script case (issue #30): a Hebrew-normed node whose only Latin
+        -- handle lives in agent_aliases, so a Latin query must reach it.
+        INSERT INTO network_agents VALUES
+            ('משה בן מימון', 'Moshe ben Maimon', 'cordoba', 37.88, -4.78,
+             1138, 1204, '["philosopher"]', 'author', 1, 2, 7, 'person', NULL);
+        INSERT INTO agents VALUES (2, 100, 'משה בן מימון', 'uri:rambam', 'author');
+        INSERT INTO agent_authorities VALUES (2, 'Moses Maimonides', 'moses maimonides', 'uri:rambam');
+        INSERT INTO agent_aliases VALUES
+            (1, 2, 'משה בן מימון', 'משה בן מימון', 'primary', 'Hebr', 'he'),
+            (2, 2, 'Maimonides', 'maimonides', 'cross_script', 'Latn', 'en'),
+            (3, 2, 'Rambam', 'rambam', 'variant_spelling', 'Latn', 'en');
     """)
     conn.commit()
     conn.close()
@@ -118,6 +138,24 @@ def test_category_is_not_a_valid_arc_type(client):
     """Issue #28: category retired from arcs; requesting it is a 400."""
     resp = client.get("/network/map?connection_types=category")
     assert resp.status_code == 400
+
+
+def test_search_resolves_cross_script_via_alias(client):
+    """Issue #30: a Latin query finds a Hebrew-normed node through agent_aliases."""
+    resp = client.get("/network/search?q=maimonides")
+    assert resp.status_code == 200
+    results = resp.json()["results"]
+    hit = next((r for r in results if r["agent_norm"] == "משה בן מימון"), None)
+    assert hit is not None, "cross-script alias did not resolve the Hebrew node"
+    assert hit["matched_alias"] and "maimonides" in hit["matched_alias"].lower()
+
+
+def test_search_direct_match_reports_no_alias(client):
+    """A plain name match carries no matched_alias (nothing to disambiguate)."""
+    resp = client.get("/network/search?q=smith")
+    results = resp.json()["results"]
+    hit = next(r for r in results if r["agent_norm"] == "smith, john")
+    assert hit["matched_alias"] is None
 
 
 def test_map_nodes_and_meta_carry_community(client):

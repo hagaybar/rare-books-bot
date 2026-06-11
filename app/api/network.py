@@ -275,19 +275,59 @@ async def get_network_map(
 
 @router.get("/search")
 async def search_agents(q: str = Query(""), limit: int = Query(10, ge=1, le=20)) -> dict:
-    """Search network agents by display name or normalized name."""
+    """Search network agents across scripts (issue #30).
+
+    Matches the display name / normalized name directly AND fans out through
+    ``agent_aliases`` (variant spellings, word reorderings, and cross-script
+    forms) so "maimonides", "rambam" and "משה בן מימון" all resolve the same
+    Hebrew-normed node. ``matched_alias`` is set only when the hit came via an
+    alias (so the UI can show *why* it matched); a direct name match leaves it
+    null. SQLite's MIN()-bare-column rule ties ``matched_alias`` to the
+    lowest ``via_alias`` row, preferring a direct match when one exists.
+    """
     if not q or len(q) < 2:
         return {"results": []}
+    like = f"%{q}%"
+    n = min(limit, 20)
     conn = _get_db()
     try:
         results = conn.execute(
-            """SELECT agent_norm, display_name, lat, lon, connection_count
-               FROM network_agents
-               WHERE display_name LIKE ? OR agent_norm LIKE ?
-               ORDER BY connection_count DESC LIMIT ?""",
-            (f"%{q}%", f"%{q}%", min(limit, 20)),
+            """
+            SELECT agent_norm, display_name, lat, lon, connection_count,
+                   matched_alias, MIN(via_alias) AS via_alias
+            FROM (
+                SELECT na.agent_norm, na.display_name, na.lat, na.lon,
+                       na.connection_count, NULL AS matched_alias, 0 AS via_alias
+                FROM network_agents na
+                WHERE na.display_name LIKE ? OR na.agent_norm LIKE ?
+                UNION ALL
+                SELECT na.agent_norm, na.display_name, na.lat, na.lon,
+                       na.connection_count, sa.alias_form AS matched_alias, 1 AS via_alias
+                FROM agent_aliases sa
+                JOIN agent_authorities aa ON aa.id = sa.authority_id
+                JOIN agents ag ON ag.authority_uri = aa.authority_uri
+                JOIN network_agents na ON na.agent_norm = ag.agent_norm
+                WHERE sa.alias_form_lower LIKE ?
+            )
+            GROUP BY agent_norm
+            ORDER BY via_alias ASC, connection_count DESC
+            LIMIT ?
+            """,
+            (like, like, like, n),
         ).fetchall()
-        return {"results": [dict(r) for r in results]}
+        return {
+            "results": [
+                {
+                    "agent_norm": r["agent_norm"],
+                    "display_name": r["display_name"],
+                    "lat": r["lat"],
+                    "lon": r["lon"],
+                    "connection_count": r["connection_count"],
+                    "matched_alias": r["matched_alias"],
+                }
+                for r in results
+            ]
+        }
     finally:
         conn.close()
 
