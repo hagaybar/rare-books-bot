@@ -94,6 +94,26 @@ Separate SQLite database, isolated from the production `bibliographic.db`.
   records (see `data/eval/runs/2026-06-10-postfix/comparison.md`) — the
   primary target for the next quality iteration.
 
+## FTS Parity Gate
+
+> Added 2026-06-11 (issue #9). The FTS triggers are now legal (fix_20 rebuilt
+> both tables: titles_fts external-content with 'delete'-command triggers;
+> subjects_fts contentless_delete=1), so UPDATE/DELETE on titles/subjects work
+> without dropping triggers. Because contentless FTS cannot be content-audited,
+> sync is guarded by a deterministic gate:
+
+```bash
+poetry run python scripts/qa/fts_parity_check.py [--db PATH] [--sample N]
+```
+
+Checks row-count parity (subjects↔subjects_fts, titles↔titles_fts) plus a
+stratified round-trip sample (incl. Hebrew value_he rows). **Run after every
+QA fix script and before every `deploy.sh --update-db`.** Exit 1 = desync.
+Fix scripts must NEVER drop FTS triggers anymore — if a bulk rewrite needs
+speed, rebuild via `scripts/qa/fixes/fix_20_rebuild_fts.py --apply` (takes a
+backup, verifies a search battery byte-identically, restores on mismatch).
+The schema contract is enforced by `tests/integration/test_schema_contract.py`.
+
 ## External-Citation Verification (`scripts/qa/verify_external_citations.py`)
 
 **Purpose**: external tools (ChatGPT etc.) may cite works "from our collection" with **fabricated MMS IDs** -- the title is real, the ID is invented. This harness cross-checks each claimed (title, mms_id) pair against `bibliographic.db` and flags fabrications deterministically (no LLM).
