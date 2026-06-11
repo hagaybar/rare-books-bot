@@ -8,7 +8,60 @@ from scripts.network.build_network_tables import (
     build_network_edges,
     build_network_agents,
     _build_same_place_period_edges,
+    assign_communities,
 )
+
+
+def _community_db():
+    """Minimal DB for assign_communities: nodes -> wikidata -> categories."""
+    conn = sqlite3.connect(":memory:")
+    conn.executescript("""
+        CREATE TABLE network_agents (
+            agent_norm TEXT PRIMARY KEY, display_name TEXT, community TEXT
+        );
+        CREATE TABLE agents (
+            id INTEGER PRIMARY KEY, record_id INTEGER, agent_norm TEXT,
+            agent_raw TEXT, authority_uri TEXT, role_norm TEXT
+        );
+        CREATE TABLE authority_enrichment (
+            id INTEGER PRIMARY KEY, authority_uri TEXT UNIQUE, label TEXT,
+            person_info TEXT, wikidata_id TEXT
+        );
+        CREATE TABLE wikipedia_cache (
+            id INTEGER PRIMARY KEY, wikidata_id TEXT, categories TEXT
+        );
+    """)
+    conn.executescript("""
+        INSERT INTO network_agents VALUES ('a1','A One',NULL);
+        INSERT INTO network_agents VALUES ('a2','A Two',NULL);
+        INSERT INTO network_agents VALUES ('a3','A Three',NULL);
+        INSERT INTO network_agents VALUES ('a4','A Four',NULL);
+
+        INSERT INTO agents VALUES (1,10,'a1','A One','uri1','author');
+        INSERT INTO agents VALUES (2,11,'a2','A Two','uri2','author');
+        INSERT INTO agents VALUES (3,12,'a3','A Three','uri3','author');
+        INSERT INTO agents VALUES (4,13,'a4','A Four','uri4','author');
+
+        INSERT INTO authority_enrichment VALUES (1,'uri1','A One',NULL,'Q1');
+        INSERT INTO authority_enrichment VALUES (2,'uri2','A Two',NULL,'Q2');
+        INSERT INTO authority_enrichment VALUES (3,'uri3','A Three',NULL,'Q3');
+        INSERT INTO authority_enrichment VALUES (4,'uri4','A Four',NULL,'Q4');
+
+        INSERT INTO wikipedia_cache VALUES (1,'Q1',
+            '["Kabbalists","Bible commentators","1654 births","Year of birth unknown"]');
+        INSERT INTO wikipedia_cache VALUES (2,'Q2',
+            '["Kabbalists","18th-century German male writers"]');
+        INSERT INTO wikipedia_cache VALUES (3,'Q3',
+            '["Coordinates on Wikidata","Jewish biography stubs"]');
+        INSERT INTO wikipedia_cache VALUES (4,'Q4', '["Kabbalists"]');
+    """)
+    return conn
+
+
+def _community_of(conn, agent_norm):
+    return conn.execute(
+        "SELECT community FROM network_agents WHERE agent_norm=?", (agent_norm,)
+    ).fetchone()[0]
 
 
 def _spp_db():
@@ -326,4 +379,43 @@ def test_same_place_period_keeps_edge_when_lifespan_unknown():
     """)
     _build_same_place_period_edges(conn)
     assert len(_spp_edges(conn)) == 1
+    conn.close()
+
+
+def test_assign_communities_excludes_maintenance():
+    """Wikipedia maintenance/metadata categories never color a node (issue #28)."""
+    conn = _community_db()
+    assign_communities(conn, min_nodes=1)
+    # a3's only categories are maintenance -> no community
+    assert _community_of(conn, "a3") is None
+    # no node is ever assigned a denied category
+    assigned = {r[0] for r in conn.execute(
+        "SELECT community FROM network_agents WHERE community IS NOT NULL"
+    )}
+    assert "Coordinates on Wikidata" not in assigned
+    assert "Jewish biography stubs" not in assigned
+    assert not any(c.endswith("births") or c.startswith("Year of") for c in assigned)
+    conn.close()
+
+
+def test_assign_communities_picks_most_specific():
+    """A node in several allowed categories gets the rarest (most specific)."""
+    conn = _community_db()
+    assign_communities(conn, min_nodes=1)
+    # a1 is in Kabbalists (3 nodes) and Bible commentators (1) -> the rarer
+    assert _community_of(conn, "a1") == "Bible commentators"
+    # a4 only Kabbalists
+    assert _community_of(conn, "a4") == "Kabbalists"
+    conn.close()
+
+
+def test_assign_communities_respects_min_nodes():
+    """A category below the minimum cluster size is not used for coloring."""
+    conn = _community_db()
+    stats = assign_communities(conn, min_nodes=2)
+    # Only Kabbalists (3) clears min_nodes=2; the singletons drop out
+    assert _community_of(conn, "a1") == "Kabbalists"
+    assert _community_of(conn, "a2") == "Kabbalists"
+    assert _community_of(conn, "a3") is None
+    assert stats["communities"] == ["Kabbalists"]
     conn.close()
