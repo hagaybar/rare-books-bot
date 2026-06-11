@@ -1,4 +1,4 @@
-import type { MapResponse, AgentDetail } from '../types/network';
+import type { MapResponse, AgentDetail, AgentWork } from '../types/network';
 import { authenticatedFetch } from './auth';
 
 export interface NetworkSearchResult {
@@ -57,4 +57,16 @@ export async function searchNetworkAgents(query: string): Promise<NetworkSearchR
   if (!res.ok) return [];
   const data = await res.json() as { results: NetworkSearchResult[] };
   return data.results;
+}
+
+
+export interface PlaceDetail {
+  place_norm: string;
+  total: number;
+  works: AgentWork[];
+}
+
+export async function fetchPlaceDetail(placeNorm: string): Promise<PlaceDetail> {
+  const res = await authenticatedFetch(`${BASE}/place/${encodeURIComponent(placeNorm)}`);
+  return handleResponse<PlaceDetail>(res);
 }

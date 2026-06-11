@@ -22,7 +22,9 @@ interface NetworkState {
 }
 
 const DEFAULT_STATE = {
-  connectionTypes: [] as ConnectionType[],
+  // Curated meaningful default (issue #21): not empty (no arcs), not the
+  // wikilink hairball. Documented collection/teaching relationships.
+  connectionTypes: ['teacher_student', 'co_publication', 'same_place_period'] as ConnectionType[],
   minConfidence: 0.5,
   century: null as number | null,
   place: null as string | null,

@@ -8,6 +8,8 @@ export interface MapNode {
   death_year: number | null;
   occupations: string[];
   connection_count: number;
+  filtered_count: number;
+  record_count: number;
   has_wikipedia: boolean;
   primary_role: string | null;
 }
@@ -73,6 +75,7 @@ export interface MapEdge {
   type: string;
   confidence: number;
   relationship: string | null;
+  evidence: string | null;
   bidirectional: boolean;
 }
 
@@ -95,7 +98,18 @@ export interface AgentConnection {
   display_name: string;
   type: string;
   relationship: string | null;
+  evidence: string | null;
   confidence: number;
+}
+
+export interface AgentWork {
+  mms_id: string;
+  title: string | null;
+  date_label: string | null;
+  place_display: string | null;
+  publisher_display: string | null;
+  role_norm: string | null;
+  primo_url: string | null;
 }
 
 export interface AgentDetail {
@@ -110,6 +124,7 @@ export interface AgentDetail {
   wikipedia_summary: string | null;
   connections: AgentConnection[];
   record_count: number;
+  works: AgentWork[];
   primo_url: string | null;
   external_links: Record<string, string>;
 }

@@ -185,7 +185,7 @@ export default function MapView({
             return base * 2;
           return base;
         },
-        pickable: false,
+        pickable: true,
         updateTriggers: {
           getSourceColor: selectedAgent,
           getTargetColor: selectedAgent,
@@ -216,6 +216,7 @@ export default function MapView({
         getPixelOffset: [10, 0],
         fontFamily: 'Inter, system-ui, sans-serif',
         fontWeight: 600,
+        characterSet: 'auto',
         outlineWidth: 3,
         outlineColor: [255, 255, 255, 200],
         billboard: false,
@@ -254,7 +255,15 @@ export default function MapView({
                 ? ` (${n.birth_year ?? '?'}\u2013${n.death_year ?? '?'})`
                 : '';
             return {
-              text: `${n.display_name}${years}\n${n.place_norm ?? ''}\n${n.connection_count} connections`,
+              text: `${n.display_name}${years}\n${n.place_norm ?? ''}\n${n.connection_count} connections\u00B7 ${n.record_count} records`,
+            };
+          }
+          if ('source' in object && 'target' in object) {
+            const e = object as MapEdge;
+            const cfg = CONNECTION_TYPE_CONFIG[e.type as keyof typeof CONNECTION_TYPE_CONFIG];
+            const why = e.relationship || e.evidence || '';
+            return {
+              text: `${cfg?.label ?? e.type}\u2003confidence ${Math.round(e.confidence * 100)}%${why ? '\n' + why : ''}`,
             };
           }
           return null;

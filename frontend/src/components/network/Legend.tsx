@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import type { ColorByMode } from '../../types/network';
+import type { ColorByMode, ConnectionType } from '../../types/network';
 import { CENTURY_COLORS, ROLE_COLORS, OCCUPATION_COLORS, CONNECTION_TYPE_CONFIG } from '../../types/network';
 
 interface Props {
   colorBy: ColorByMode;
+  activeTypes?: ConnectionType[];
 }
 
 const PALETTES: Record<ColorByMode, { label: string; entries: Record<string, [number, number, number]> }> = {
@@ -12,7 +13,10 @@ const PALETTES: Record<ColorByMode, { label: string; entries: Record<string, [nu
   occupation: { label: 'Occupation', entries: OCCUPATION_COLORS },
 };
 
-export default function Legend({ colorBy }: Props) {
+export default function Legend({ colorBy, activeTypes }: Props) {
+  const active = activeTypes ?? [];
+  const shownEdgeTypes = (Object.entries(CONNECTION_TYPE_CONFIG) as [ConnectionType, typeof CONNECTION_TYPE_CONFIG[ConnectionType]][])
+    .filter(([type]) => active.length === 0 || active.includes(type));
   const palette = PALETTES[colorBy];
   const [expanded, setExpanded] = useState(false);
 
@@ -36,8 +40,11 @@ export default function Legend({ colorBy }: Props) {
         <div className="mt-1.5 border-t pt-1.5">
           <div className="font-semibold text-gray-700 mb-1">Edge Types</div>
           <div className="space-y-0.5">
-            {Object.values(CONNECTION_TYPE_CONFIG).map((cfg) => (
-              <div key={cfg.label} className="flex items-center gap-1.5">
+            {shownEdgeTypes.length === 0 && (
+              <div className="text-gray-400">No edge types active</div>
+            )}
+            {shownEdgeTypes.map(([type, cfg]) => (
+              <div key={type} className="flex items-center gap-1.5">
                 <span
                   className="inline-block flex-shrink-0 h-0.5 w-4 rounded"
                   style={{ backgroundColor: `rgb(${cfg.color[0]},${cfg.color[1]},${cfg.color[2]})`, height: `${cfg.width}px` }}
@@ -77,8 +84,8 @@ export default function Legend({ colorBy }: Props) {
             </div>
             <div className="mt-1.5 border-t pt-1">
               <div className="font-semibold text-gray-700 mb-0.5 text-[10px]">Edges</div>
-              {Object.values(CONNECTION_TYPE_CONFIG).map((cfg) => (
-                <div key={cfg.label} className="flex items-center gap-1">
+              {shownEdgeTypes.map(([type, cfg]) => (
+                <div key={type} className="flex items-center gap-1">
                   <span
                     className="inline-block flex-shrink-0 w-3 rounded"
                     style={{ backgroundColor: `rgb(${cfg.color[0]},${cfg.color[1]},${cfg.color[2]})`, height: `${Math.max(cfg.width, 1)}px` }}
