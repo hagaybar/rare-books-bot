@@ -43,7 +43,7 @@ def db():
             wikipedia_title TEXT
         );
         CREATE TABLE titles (
-            id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT
+            id INTEGER PRIMARY KEY, record_id INTEGER, title_type TEXT, value TEXT
         );
     """)
 
@@ -120,3 +120,50 @@ def test_build_network_agents(db):
     assert row[0] == "amsterdam"
     assert row[1] == pytest.approx(52.37)
     assert row[2] == 1  # has wikipedia cache entry
+
+
+def test_same_record_edges_are_role_typed_and_evidenced(db):
+    """Issue #26: agents on the same record get an evidenced, role-typed edge."""
+    from scripts.network.build_network_tables import build_same_record_edges
+    conn = db
+    conn.row_factory = sqlite3.Row
+    # records/titles + a network_agents table so the join can fire
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY, mms_id TEXT);
+        CREATE TABLE IF NOT EXISTS network_agents (agent_norm TEXT PRIMARY KEY, display_name TEXT);
+        CREATE TABLE IF NOT EXISTS network_edges (
+            source_agent_norm TEXT, target_agent_norm TEXT, connection_type TEXT,
+            confidence REAL, relationship TEXT, bidirectional INTEGER DEFAULT 0, evidence TEXT,
+            UNIQUE(source_agent_norm, target_agent_norm, connection_type));
+        INSERT INTO records VALUES (200, '990077788890104146');
+        INSERT INTO titles VALUES (50, 200, 'main', 'De Revolutionibus');
+        INSERT INTO agents VALUES (90, 200, 'copernicus, nicolaus', 'C', 'uri:c', 'author');
+        INSERT INTO agents VALUES (91, 200, 'rheticus, georg', 'R', 'uri:r', 'editor');
+        INSERT INTO network_agents VALUES ('copernicus, nicolaus', 'Nicolaus Copernicus');
+        INSERT INTO network_agents VALUES ('rheticus, georg', 'Georg Rheticus');
+    """)
+    added = build_same_record_edges(conn)
+    assert added == 1
+    e = conn.execute("SELECT * FROM network_edges WHERE connection_type='same_record'").fetchone()
+    assert e["relationship"] == "edited"
+    assert "990077788890104146" in e["evidence"]
+    assert "De Revolutionibus" in e["evidence"]
+
+
+def test_same_record_skips_non_network_agents(db):
+    """An agent without a network node never produces a rendered edge."""
+    from scripts.network.build_network_tables import build_same_record_edges
+    conn = db
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY, mms_id TEXT);
+        CREATE TABLE IF NOT EXISTS network_agents (agent_norm TEXT PRIMARY KEY, display_name TEXT);
+        CREATE TABLE IF NOT EXISTS network_edges (
+            source_agent_norm TEXT, target_agent_norm TEXT, connection_type TEXT,
+            confidence REAL, relationship TEXT, bidirectional INTEGER DEFAULT 0, evidence TEXT,
+            UNIQUE(source_agent_norm, target_agent_norm, connection_type));
+        INSERT INTO records VALUES (201, '990000000000000001');
+        INSERT INTO agents VALUES (92, 201, 'in_network, a', 'A', 'u:a', 'author');
+        INSERT INTO agents VALUES (93, 201, 'not_in_network, b', 'B', 'u:b', 'author');
+        INSERT INTO network_agents VALUES ('in_network, a', 'A');
+    """)
+    assert build_same_record_edges(conn) == 0

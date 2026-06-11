@@ -30,7 +30,7 @@ DB_PATH = Path("data/index/bibliographic.db")
 
 VALID_CONNECTION_TYPES = {
     "teacher_student", "wikilink", "llm_extraction", "category", "co_publication",
-    "same_place_period",
+    "same_place_period", "same_record",
 }
 
 

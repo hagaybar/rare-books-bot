@@ -135,7 +135,8 @@ export type ConnectionType =
   | 'llm_extraction'
   | 'category'
   | 'co_publication'
-  | 'same_place_period';
+  | 'same_place_period'
+  | 'same_record';
 
 export const CONNECTION_TYPE_CONFIG: Record<ConnectionType, {
   label: string;
@@ -143,6 +144,7 @@ export const CONNECTION_TYPE_CONFIG: Record<ConnectionType, {
   width: number;
   tier: 'primary' | 'secondary';
 }> = {
+  same_record: { label: 'Same Book', color: [217, 70, 239], width: 2, tier: 'primary' },
   teacher_student: { label: 'Teacher & Student', color: [59, 130, 246], width: 3, tier: 'primary' },
   co_publication: { label: 'Published Together', color: [16, 185, 129], width: 2, tier: 'primary' },
   same_place_period: { label: 'Active in Same City', color: [6, 182, 212], width: 2, tier: 'primary' },

@@ -120,6 +120,10 @@ def build_network_edges(conn: sqlite3.Connection) -> int:
     spp_count = _build_same_place_period_edges(conn)
     logger.info("Inserted %d same-place-period connections", spp_count)
 
+    # 5. Same-record co-occurrence — the collection's own connective tissue
+    sr_count = build_same_record_edges(conn)
+    logger.info("Inserted %d same-record connections", sr_count)
+
     # Create indexes
     conn.execute("CREATE INDEX idx_network_edges_source ON network_edges(source_agent_norm)")
     conn.execute("CREATE INDEX idx_network_edges_target ON network_edges(target_agent_norm)")
@@ -271,6 +275,90 @@ def _build_same_place_period_edges(conn: sqlite3.Connection) -> int:
                     except sqlite3.IntegrityError:
                         pass
     return count
+
+
+def _same_record_relationship(roles: frozenset[str]) -> str:
+    """Human-readable relationship for a role pair on a shared record (issue #26)."""
+    if "translator" in roles and "author" in roles:
+        return "translated"
+    if "editor" in roles and "author" in roles:
+        return "edited"
+    if ("printer" in roles or "publisher" in roles) and "author" in roles:
+        return "printed for"
+    if "curator" in roles and "author" in roles:
+        return "compiled"
+    if roles == frozenset({"author"}):
+        return "co-authored"
+    return "appeared together"
+
+
+def build_same_record_edges(conn: sqlite3.Connection) -> int:
+    """Edges between agents who appear on the SAME catalogue record (issue #26).
+
+    Idempotent (INSERT OR IGNORE) so it is safe to run additively on an
+    existing network_edges table. Each edge is a deterministic MARC fact,
+    role-typed, and carries the shared MMS ID(s) + a title as evidence —
+    the collection's own connective tissue, unlike Wikipedia-derived edges.
+    Only pairs where BOTH agents are network nodes (geocoded) are emitted.
+    No-op if network_agents/records aren't built yet (positional row access
+    so a tuple-row connection works too).
+    """
+    have = {
+        r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()
+    }
+    if not {"network_agents", "records", "titles"} <= have:
+        return 0
+
+    rows = conn.execute(
+        """SELECT a1.agent_norm, a2.agent_norm,
+                  a1.role_norm, a2.role_norm,
+                  r.mms_id,
+                  (SELECT t.value FROM titles t
+                   WHERE t.record_id = a1.record_id AND t.title_type = 'main'
+                   LIMIT 1)
+           FROM agents a1
+           JOIN agents a2 ON a1.record_id = a2.record_id
+                AND a1.agent_norm < a2.agent_norm
+           JOIN network_agents na1 ON na1.agent_norm = a1.agent_norm
+           JOIN network_agents na2 ON na2.agent_norm = a2.agent_norm
+           JOIN records r ON r.id = a1.record_id"""
+    ).fetchall()
+
+    pairs: dict[tuple[str, str], dict] = {}
+    for n1, n2, r1, r2, mms_id, title in rows:
+        agg = pairs.setdefault((n1, n2), {"roles": set(), "records": {}})
+        agg["roles"].update(x for x in (r1, r2) if x)
+        if mms_id not in agg["records"]:
+            agg["records"][mms_id] = title
+
+    payload = []
+    for (n1, n2), agg in pairs.items():
+        rel = _same_record_relationship(frozenset(agg["roles"]))
+        recs = list(agg["records"].items())
+        sample_title = next((t for _m, t in recs if t), None) or recs[0][0]
+        n = len(recs)
+        evidence = f"{rel} on “{sample_title}” ({recs[0][0]})"
+        if n > 1:
+            evidence += f" and {n - 1} more record{'s' if n > 2 else ''}"
+        confidence = min(0.7 + 0.1 * n, 1.0)
+        payload.append((n1, n2, "same_record", confidence, rel, 1, evidence))
+
+    before = conn.execute(
+        "SELECT COUNT(*) FROM network_edges WHERE connection_type='same_record'"
+    ).fetchone()[0]
+    conn.executemany(
+        """INSERT OR IGNORE INTO network_edges
+               (source_agent_norm, target_agent_norm, connection_type,
+                confidence, relationship, bidirectional, evidence)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        payload,
+    )
+    after = conn.execute(
+        "SELECT COUNT(*) FROM network_edges WHERE connection_type='same_record'"
+    ).fetchone()[0]
+    return after - before
 
 
 def _build_co_publication_edges(conn: sqlite3.Connection) -> int:
