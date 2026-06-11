@@ -1192,3 +1192,110 @@ class TestMultiValueFilterNormalization:
         assert out[0].op == FilterOp.EQUALS
         assert "aldine press, venice" in mv[0]
         assert "venice" in mv[0]
+
+
+class TestUnresolvedStepRefFallback:
+    """Issue #3: when entity resolution fails, the executor must NEVER query
+    the literal '$step_N' string. It probes CONTAINS on the resolve step's
+    query_name (longest token), then drops the filter, recording every move."""
+
+    def _failed_resolve(self, query_name):
+        return {0: StepResult(
+            step_index=0, action="resolve_agent", label="resolve",
+            status="empty",
+            data=ResolvedEntity(query_name=query_name, matched_values=[],
+                                match_method="none", confidence=0.0))}
+
+    def test_fallback_probe_recovers_records(self, test_db):
+        from scripts.chat.executor import _handle_retrieve
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.AGENT_NORM, op=FilterOp.EQUALS, value="$step_0"),
+        ])
+        rs = _handle_retrieve(params, test_db, self._failed_resolve("Rabbi D. Bomberg"), None)
+        # longest token 'bomberg' -> CONTAINS hits agent_norm 'bomberg, daniel' (records 1, 3)
+        assert "990001234" in rs.mms_ids
+        assert "990009999" in rs.mms_ids
+        assert any("$step_0" in n for n in rs.relaxations)
+
+    def test_unresolvable_ref_dropped_secondary_filter_kept(self, test_db):
+        from scripts.chat.executor import _handle_retrieve
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.AGENT_NORM, op=FilterOp.EQUALS, value="$step_0"),
+            Filter(field=FilterField.IMPRINT_PLACE, op=FilterOp.EQUALS, value="venice"),
+        ])
+        rs = _handle_retrieve(params, test_db, self._failed_resolve("Zzz Qqq"), None)
+        # tokens match nothing -> ref filter dropped, venice kept (records 1, 3)
+        assert set(rs.mms_ids) >= {"990001234", "990009999"}
+        assert rs.relaxations
+
+    def test_unresolvable_sole_filter_honest_empty_with_explanation(self, test_db):
+        from scripts.chat.executor import _handle_retrieve
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.AGENT_NORM, op=FilterOp.EQUALS, value="$step_0"),
+        ])
+        rs = _handle_retrieve(params, test_db, self._failed_resolve("Zzz Qqq"), None)
+        assert rs.mms_ids == []
+        assert rs.relaxations, "the resolution failure must be explained, not silent"
+
+
+class TestMultiValueResolutionNormalization:
+    """Issue #4: multi-value resolved names must pass normalize_filter_value —
+    'bomberg, daniel' (comma) can never equal the comma-stripped SQL expression."""
+
+    def test_comma_canonical_names_match_via_normalized_in(self, test_db):
+        from scripts.chat.executor import _handle_retrieve
+        sr = {0: StepResult(
+            step_index=0, action="resolve_agent", label="r", status="ok",
+            data=ResolvedEntity(query_name="bomberg",
+                                matched_values=["bomberg, daniel", "no, body"],
+                                match_method="exact", confidence=1.0))}
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.AGENT_NORM, op=FilterOp.EQUALS, value="$step_0"),
+        ])
+        rs = _handle_retrieve(params, test_db, sr, None)
+        assert "990001234" in rs.mms_ids
+        assert "990009999" in rs.mms_ids
+
+
+class TestFallbackVariantsAndCrossField:
+    """Issue #3 follow-through (replay evidence q04/q51): the fallback must
+    also use the resolve step's VARIANTS (Hebrew name + Latin variants) and
+    probe the twin field (publisher<->agent_norm) before giving up."""
+
+    def _failed_resolve(self, action, query_name, variants):
+        return {0: StepResult(
+            step_index=0, action=action, label="resolve", status="empty",
+            data=ResolvedEntity(query_name=query_name, matched_values=[],
+                                query_variants=variants,
+                                match_method="none", confidence=0.0))}
+
+    def test_variant_token_rescues_hebrew_name(self, test_db):
+        # q51 shape: Hebrew publisher name, Latin variant carries the token
+        from scripts.chat.executor import _handle_retrieve
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="$step_0"),
+        ])
+        rs = _handle_retrieve(
+            params, test_db,
+            self._failed_resolve("resolve_publisher", "דפוס בומברג", ["Bomberg"]),
+            None)
+        assert "990009999" in rs.mms_ids  # record 3: publisher_norm 'bomberg'
+        assert rs.relaxations
+
+    def test_cross_field_probe_publisher_to_agent(self, test_db):
+        # q04 shape: person queried as publisher; exists only as agent
+        from scripts.chat.executor import _handle_retrieve
+        # fixture has agent 'bomberg, daniel' AND publisher 'bomberg' — use
+        # Karo (agent-only, Hebrew norm) via his Hebrew token instead
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="$step_0"),
+        ])
+        rs = _handle_retrieve(
+            params, test_db,
+            self._failed_resolve("resolve_publisher", "דפוס קארו", []),
+            None)
+        # publisher CONTAINS 'קארו' -> nothing; twin probe agent_norm CONTAINS
+        # 'קארו' -> Karo's records 1 and 2
+        assert "990001234" in rs.mms_ids
+        assert "990005678" in rs.mms_ids
+        assert any("agent_norm" in n for n in rs.relaxations)
