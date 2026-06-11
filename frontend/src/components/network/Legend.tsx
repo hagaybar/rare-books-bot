@@ -29,12 +29,15 @@ export default function Legend({ colorBy, activeTypes, communities }: Props) {
       }
     : (STATIC_PALETTES[colorBy] ?? STATIC_PALETTES.century!);
   const gridCols = isCommunity ? 'grid-cols-1 max-w-[230px]' : 'grid-cols-2';
+  // Community names are long and there can be ~21 of them: wrap instead of
+  // truncate, and let the panel scroll rather than overflow off-screen.
+  const labelClass = isCommunity ? 'break-words leading-snug' : 'truncate';
   const [expanded, setExpanded] = useState(false);
 
   return (
     <>
       {/* Desktop: always visible */}
-      <div className="hidden md:block absolute bottom-12 left-3 bg-white/90 backdrop-blur-sm rounded-lg shadow-md px-3 py-2 z-10 text-xs">
+      <div className="hidden md:block absolute bottom-12 left-3 bg-white/90 backdrop-blur-sm rounded-lg shadow-md px-3 py-2 z-10 text-xs max-h-[70vh] overflow-y-auto">
         <div className="font-semibold text-gray-700 mb-1">{palette.label}</div>
         <div className={`grid ${gridCols} gap-x-4 gap-y-0.5`}>
           {Object.entries(palette.entries).map(([label, color]) => (
@@ -43,7 +46,7 @@ export default function Legend({ colorBy, activeTypes, communities }: Props) {
                 className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0"
                 style={{ backgroundColor: `rgb(${color[0]},${color[1]},${color[2]})` }}
               />
-              <span className="text-gray-600 truncate" title={label}>{label}</span>
+              <span className={`text-gray-600 ${labelClass}`} title={label}>{label}</span>
             </div>
           ))}
         </div>
@@ -74,7 +77,7 @@ export default function Legend({ colorBy, activeTypes, communities }: Props) {
       {/* Mobile: collapsible icon button */}
       <div className="md:hidden absolute bottom-3 left-3 z-10">
         {expanded ? (
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-md px-3 py-2 text-xs">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-md px-3 py-2 text-xs max-h-[60vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-1">
               <span className="font-semibold text-gray-700">{palette.label}</span>
               <button
@@ -93,7 +96,7 @@ export default function Legend({ colorBy, activeTypes, communities }: Props) {
                     className="w-2 h-2 rounded-full inline-block flex-shrink-0"
                     style={{ backgroundColor: `rgb(${color[0]},${color[1]},${color[2]})` }}
                   />
-                  <span className="text-gray-600 text-[10px] truncate" title={label}>{label}</span>
+                  <span className={`text-gray-600 text-[10px] ${labelClass}`} title={label}>{label}</span>
                 </div>
               ))}
             </div>
