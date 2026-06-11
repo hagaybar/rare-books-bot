@@ -3,6 +3,10 @@
 > Reverse-chronological listing of all historical project documents.
 > Moved here as part of docs reorganization (2026-04-01).
 
+## 2026-06-11
+
+- **spec** `specs/2026-06-11-network-ego-mode-design.md` -- Issue #31: ego-network mode (force-directed Map⟷Network toggle, breadcrumb walking; implemented)
+
 ## 2026-06-10
 
 - **plan** `plans/2026-06-10-multi-topic-recall-and-curation.md` -- Issue #2: multi-topic recall, relaxation ladder, concept bridge, curatorial routing (implemented)

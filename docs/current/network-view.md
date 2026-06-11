@@ -104,8 +104,14 @@ models in `app/api/network_models.py`.
 |----------|---------|-----------|
 | `GET /network/map` | nodes + edges for the map | `connection_types`, `min_confidence`, `century`, `place`, `role`, `limit` (≤500, default 150) |
 | `GET /network/search` | cross-script typeahead (issue #30) | `q`, `limit` |
+| `GET /network/ego/{agent_norm}` | induced 1-hop subgraph for ego mode (issue #31) | `connection_types`, `min_confidence`, `limit` (neighbour cap, default 60) |
 | `GET /network/agent/{agent_norm}` | full node detail (works, connections, `name_alt`) | path is the agent_norm (supports `pub:` and Hebrew) |
 | `GET /network/place/{place_norm}` | books printed in a place (issue #29) | `limit` |
+
+**Ego** returns the focal node + its direct neighbours and every edge of the
+active types among that set (neighbour↔neighbour included, so clustering shows).
+Neighbours beyond `limit` are capped (strongest edge, then connection_count) and
+flagged via `meta.truncated`. Shares `_map_node_from_row` with `/map`.
 
 **Search** UNIONs a direct name match with a fan-out through `agent_aliases`
 (variant/word-reorder/cross-script) joined back to nodes, so
@@ -121,7 +127,11 @@ only for alias hits (SQLite MIN()-bare-column rule prefers the direct match).
 ## 7. Frontend
 
 `frontend/src/`:
-- `pages/Network.tsx` — page shell, data fetch, URL state (issue #24), panel routing
+- `pages/Network.tsx` — page shell, data fetch, URL state (issue #24), Map/Network
+  view toggle (issue #31), panel routing
+- `components/network/EgoView.tsx` — force-directed 1-hop ego graph
+  (`react-force-graph-2d`); non-geographic peer of MapView (issue #31)
+- `components/network/Breadcrumbs.tsx` — the ego-walk trail (issue #31)
 - `components/network/MapView.tsx` — deck.gl (`ScatterplotLayer` nodes,
   `ArcLayer` edges, `TextLayer` labels with `characterSet:'auto'`) over a
   maplibre/react-map-gl basemap; pickable arcs with "why connected" tooltips;
@@ -181,12 +191,13 @@ issue #17, where search was dead in every environment). When adding a new
 
 ## 10. History & roadmap
 
-Built out across issues #17–#30 (see the 2026-06-11 network review at
+Built out across issues #17–#31 (see the 2026-06-11 network review at
 `audits/2026-06-11-network-review/REPORT.md`). Tier-1 honesty fixes (search
 routing, works list, Primo, edge evidence, default view, display-name guardrail,
-stack popover) and Tier-2 collection-first edges (publishers, same_record,
-community facet, cross-script search) are shipped.
+stack popover), Tier-2 collection-first edges (publishers, same_record, community
+facet, cross-script search), and Tier-3 **ego-network mode** (#31, force-directed
+Map ⟷ Network toggle with breadcrumb walking) are shipped.
 
-Open: **#31** ego-network mode · **#32** time slider · **#33** pathfinding ·
+Open: **#32** time slider · **#33** pathfinding (the ego "find path to…" box) ·
 **#34** chat↔network loop · **#35** lift the 150-node cap · **#36** censorship
 MARC audit (deferred) · **#37** chat-handoff query template.
