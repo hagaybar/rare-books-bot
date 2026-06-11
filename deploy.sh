@@ -175,6 +175,7 @@ docker run -d \
     --restart unless-stopped \
     --env-file ~/rare-books.env \
     -v $REMOTE_DATA:/app/data \
+    -v $REMOTE_DATA/logs:/app/logs \
     -p $HOST_PORT:8000 \
     $IMAGE_NAME:\$PREV_TAG
 
