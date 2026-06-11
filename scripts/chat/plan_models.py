@@ -147,6 +147,9 @@ class ResolvedEntity(BaseModel):
     matched_values: list[str]
     match_method: str
     confidence: float
+    # Variants the planner supplied to the resolve step (issue #3 fallback:
+    # a Hebrew query_name may carry its only Latin-script token here).
+    query_variants: list[str] = Field(default_factory=list)
 
 
 class RecordSet(BaseModel):

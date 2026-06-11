@@ -522,6 +522,7 @@ def _handle_resolve_agent(
             matched_values=matched_canonical,
             match_method=match_method,
             confidence=confidence,
+            query_variants=list(params.variants),
         )
     finally:
         conn.close()
@@ -634,6 +635,7 @@ def _handle_resolve_publisher(
             matched_values=matched_canonical,
             match_method=match_method,
             confidence=confidence,
+            query_variants=list(params.variants),
         )
     finally:
         conn.close()
@@ -655,6 +657,78 @@ def _is_topical_contains(f: Filter) -> bool:
     These are recall constraints; everything else (year, place, language,
     agent…) is a hard constraint that relaxation must never loosen."""
     return f.field in _TOPICAL_CONTAINS_FIELDS and f.op == FilterOp.CONTAINS and not f.negate
+
+
+_FALLBACK_CONTAINS_FIELDS = {
+    FilterField.AGENT_NORM, FilterField.PUBLISHER, FilterField.IMPRINT_PLACE,
+    FilterField.TITLE, FilterField.SUBJECT,
+}
+
+
+# Twin fields for cross-field probes: printers/publishers are frequently
+# catalogued as the other entity type (Bomberg the agent vs Bomberg the press).
+_TWIN_FIELD = {
+    FilterField.PUBLISHER: FilterField.AGENT_NORM,
+    FilterField.AGENT_NORM: FilterField.PUBLISHER,
+}
+
+
+# Trade words that appear in countless printer/publisher names — probing them
+# floods the recovery union with noise ('דפוס' alone matches 220 imprints).
+_FALLBACK_STOPWORDS = {
+    "דפוס", "בית", "הוצאת", "press", "printing", "officina", "typographia",
+    "typis", "imprimerie", "verlag", "editions", "edition", "house",
+    "publishers", "publisher", "and", "the", "des", "der", "van", "von",
+}
+
+
+def _fallback_tokens(ref: str, step_results: Dict[int, StepResult]) -> List[str]:
+    """Candidate probe tokens for an unresolvable $step_N reference.
+
+    Longest token (len>2) of the resolve step's query_name plus of each
+    planner-supplied variant — a Hebrew query_name often carries its only
+    Latin-script token in the variants ('דפוס פלנטין' + ['Plantin']).
+    Deduplicated, capped at 5.
+    """
+    match = _STEP_REF_RE.match(ref)
+    sr = step_results.get(int(match.group(1))) if match else None
+    if sr is None:
+        return []
+    sources = [getattr(sr.data, "query_name", None) or ""]
+    sources += list(getattr(sr.data, "query_variants", []) or [])
+    tokens: List[str] = []
+    for s in sources:
+        cands = [
+            tok for tok in re.split(r"\W+", s)
+            if len(tok) > 2 and tok.casefold() not in _FALLBACK_STOPWORDS
+        ]
+        for tok in sorted(cands, key=len, reverse=True):
+            if tok not in tokens:
+                tokens.append(tok)
+    return tokens[:5]
+
+
+def _unresolved_ref_fallback(
+    f: Filter,
+    ref: str,
+    step_results: Dict[int, StepResult],
+) -> Optional[Filter]:
+    """Issue #3: build a CONTAINS probe for an unresolvable $step_N filter.
+
+    When entity resolution found nothing, the literal '$step_N' string must
+    never be queried. Probe the same field with CONTAINS on the first token
+    candidate ('Daniel Bomberg' -> 'bomberg', which matches the
+    comma-inverted 'bomberg, daniel'). Returns None when no usable name
+    exists or the field doesn't support CONTAINS — caller drops the filter.
+    Further candidates (variants, twin field) are tried by the final rung
+    in _handle_retrieve.
+    """
+    if f.negate or f.field not in _FALLBACK_CONTAINS_FIELDS:
+        return None
+    tokens = _fallback_tokens(ref, step_results)
+    if not tokens:
+        return None
+    return f.model_copy(update={"op": FilterOp.CONTAINS, "value": tokens[0]})
 
 
 def _normalize_multivalue_filters(
@@ -707,7 +781,9 @@ def _run_filter_query(
     multi_value_map: Optional[Dict[int, List[str]]] = None,
 ) -> List[str]:
     """Build and run one filter query; returns matching mms_ids (sorted)."""
-    from scripts.query.db_adapter import build_where_clause, build_join_clauses
+    from scripts.query.db_adapter import (
+        build_where_clause, build_join_clauses, normalize_filter_value,
+    )
     from scripts.schemas.query_plan import QueryPlan
 
     if not filters:
@@ -729,7 +805,11 @@ def _run_filter_query(
                 )
                 del sql_params[param_key]
                 for k, v in zip(mv_keys, all_values):
-                    sql_params[k] = v
+                    # Issue #4: multi-value bindings must get the same
+                    # field normalization as the scalar path — e.g.
+                    # 'bomberg, daniel' can never equal the comma-stripped
+                    # SQL expression without it.
+                    sql_params[k] = normalize_filter_value(f.field, v, f.op)
 
     scope_clause = ""
     if scope_ids is not None:
@@ -830,6 +910,9 @@ def _handle_retrieve(
     # Resolve $step_N references in filter values
     resolved_filters = []
     multi_value_map: Dict[int, List[str]] = {}  # filter_index -> all resolved values
+    unresolved_notes: List[str] = []
+    fallback_indices: set = set()
+    fallback_refs: Dict[int, str] = {}
     for f in params.filters:
         if isinstance(f.value, str):
             match = _STEP_REF_RE.match(f.value)
@@ -842,6 +925,25 @@ def _handle_retrieve(
                     if len(values) > 1:
                         multi_value_map[len(resolved_filters) - 1] = values
                     continue
+                # Issue #3: resolution failed — NEVER query the literal
+                # '$step_N' string (it can match nothing, and the ladder
+                # would protect it as a hard filter).
+                fallback = _unresolved_ref_fallback(f, f.value, step_results)
+                if fallback is not None:
+                    resolved_filters.append(fallback)
+                    fallback_indices.add(len(resolved_filters) - 1)
+                    fallback_refs[len(resolved_filters) - 1] = f.value
+                    unresolved_notes.append(
+                        f"{f.value} ({f.field.value}) could not be resolved; "
+                        f"probing {fallback.field.value} CONTAINS "
+                        f"'{fallback.value}' instead"
+                    )
+                else:
+                    unresolved_notes.append(
+                        f"{f.value} ({f.field.value}) could not be resolved; "
+                        f"filter dropped"
+                    )
+                continue
         resolved_filters.append(f)
 
     # Resolve scope
@@ -862,9 +964,60 @@ def _handle_retrieve(
     conn = _get_conn(db_path)
     try:
         mms_ids = _run_filter_query(conn, resolved_filters, scope_ids, multi_value_map)
-        relaxations: List[str] = []
-        if not mms_ids:
-            mms_ids, relaxations = _relax_and_retry(conn, resolved_filters, scope_ids)
+        relaxations: List[str] = list(unresolved_notes)
+        if not mms_ids and resolved_filters:
+            ladder_ids, ladder_notes = _relax_and_retry(conn, resolved_filters, scope_ids)
+            mms_ids = ladder_ids
+            relaxations.extend(ladder_notes)
+        if fallback_indices:
+            # Unresolved-entity recovery: UNION every candidate probe — each
+            # name/variant token on its own field AND the twin field
+            # (publisher<->agent_norm; printers are catalogued as both).
+            # Union, not first-hit: a 1-record accidental hit must not block
+            # a 23-record recovery on the twin field. Hard filters stay ANDed
+            # inside every probe, so precision is bounded.
+            remaining = [
+                flt for i, flt in enumerate(resolved_filters)
+                if i not in fallback_indices
+            ]
+
+            def _try(filters: List[Filter]) -> List[str]:
+                probe_mv: Dict[int, List[str]] = {}
+                normalized = _normalize_multivalue_filters(list(filters), probe_mv)
+                return _run_filter_query(conn, normalized, scope_ids, probe_mv or None)
+
+            union: set = set(mms_ids)
+            for idx in sorted(fallback_indices):
+                base = resolved_filters[idx]
+                ref = fallback_refs.get(idx, "$step_?")
+                tokens = _fallback_tokens(ref, step_results) or [str(base.value)]
+                fields = [base.field]
+                twin = _TWIN_FIELD.get(base.field)
+                if twin is not None:
+                    fields.append(twin)
+                for fld in fields:
+                    for token in tokens:
+                        if fld == base.field and token == base.value:
+                            continue  # already counted by the strict pass
+                        probe = base.model_copy(update={"field": fld, "value": token})
+                        ids = _try(remaining + [probe])
+                        if ids:
+                            relaxations.append(
+                                f"{ref} recovered {len(ids)} records via "
+                                f"{fld.value} CONTAINS '{token}'"
+                            )
+                            union |= set(ids)
+            if union:
+                mms_ids = sorted(union)
+
+            # Last resort: nothing recovered — drop the probes entirely.
+            if not mms_ids and remaining:
+                mms_ids = _try(remaining)
+                if mms_ids:
+                    relaxations.append(
+                        "unresolved-entity probe matched nothing; dropped it "
+                        "and searched on the remaining filters"
+                    )
         return RecordSet(
             mms_ids=mms_ids,
             total_count=len(mms_ids),
