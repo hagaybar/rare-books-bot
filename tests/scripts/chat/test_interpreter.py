@@ -812,3 +812,38 @@ class TestPromptClarificationLanguage:
     def test_prompt_requires_clarification_in_user_language(self):
         from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
         assert "clarification in the language of the user's query" in INTERPRETER_SYSTEM_PROMPT
+
+
+class TestIssue5EmptyPlans:
+    """Issue #5 forensics (2026-06-11): the LLM intermittently emits params
+    JSON with a missing closing brace; _convert_llm_plan silently dropped the
+    step, producing empty plans at 0.9 confidence. The parser must repair
+    unbalanced brackets, and any step that still drops must be recorded."""
+
+    def test_parse_repairs_missing_closing_brace(self):
+        from scripts.chat.interpreter import _parse_json_params
+        # the exact malformed string captured from gpt-4.1-mini (q27 #3)
+        raw = '{"filters":[{"field":"language","op":"EQUALS","value":"ita"}]'
+        parsed = _parse_json_params(raw)
+        assert parsed["filters"][0]["value"] == "ita"
+
+    def test_parse_repairs_missing_bracket_and_brace(self):
+        from scripts.chat.interpreter import _parse_json_params
+        raw = '{"filters":[{"field":"subject","op":"CONTAINS","value":"art"'
+        parsed = _parse_json_params(raw)
+        assert parsed["filters"][0]["field"] == "subject"
+
+    def test_dropped_steps_are_recorded_on_plan(self):
+        from scripts.chat.interpreter import _convert_llm_plan, InterpretationPlanLLM
+        llm_plan = InterpretationPlanLLM(
+            intents=["retrieval"], reasoning="t", confidence=0.9,
+            execution_steps=[
+                {"action": "retrieve", "params": "totally not json {{{", "label": "bad"},
+                {"action": "no_such_action", "params": "{}", "label": "worse"},
+            ],
+            directives=[],
+        )
+        plan = _convert_llm_plan(llm_plan)
+        assert plan.execution_steps == []
+        assert len(plan.dropped_steps) == 2
+        assert "bad" in plan.dropped_steps[0] or "0" in plan.dropped_steps[0]

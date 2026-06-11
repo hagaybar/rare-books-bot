@@ -1,0 +1,86 @@
+[
+ {
+  "qid": "q14",
+  "attempt": 1,
+  "steps": 2,
+  "dropped": [],
+  "records": 42
+ },
+ {
+  "qid": "q14",
+  "attempt": 2,
+  "steps": 2,
+  "dropped": [],
+  "records": 42
+ },
+ {
+  "qid": "q14",
+  "attempt": 3,
+  "steps": 2,
+  "dropped": [],
+  "records": 42
+ },
+ {
+  "qid": "q27",
+  "attempt": 1,
+  "steps": 1,
+  "dropped": [],
+  "records": 103
+ },
+ {
+  "qid": "q27",
+  "attempt": 2,
+  "steps": 1,
+  "dropped": [],
+  "records": 103
+ },
+ {
+  "qid": "q27",
+  "attempt": 3,
+  "steps": 1,
+  "dropped": [],
+  "records": 103
+ },
+ {
+  "qid": "q29",
+  "attempt": 1,
+  "steps": 3,
+  "dropped": [],
+  "records": 55
+ },
+ {
+  "qid": "q29",
+  "attempt": 2,
+  "steps": 2,
+  "dropped": [],
+  "records": 55
+ },
+ {
+  "qid": "q29",
+  "attempt": 3,
+  "steps": 3,
+  "dropped": [],
+  "records": 55
+ },
+ {
+  "qid": "q30",
+  "attempt": 1,
+  "steps": 1,
+  "dropped": [],
+  "records": 109
+ },
+ {
+  "qid": "q30",
+  "attempt": 2,
+  "steps": 1,
+  "dropped": [],
+  "records": 109
+ },
+ {
+  "qid": "q30",
+  "attempt": 3,
+  "steps": 1,
+  "dropped": [],
+  "records": 109
+ }
+]
