@@ -40,7 +40,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
 
   const containerClass = mobile
     ? 'bg-white'
-    : 'w-80 bg-white border-l shadow-lg overflow-y-auto flex-shrink-0';
+    : 'w-80 bg-white border-l shadow-lg overflow-y-auto flex-shrink-0 h-full';
 
   return (
     <div className={containerClass}>

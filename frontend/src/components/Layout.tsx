@@ -17,7 +17,7 @@ export default function Layout() {
   }, [isChat, setSidebarCollapsed]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50">
       {/* Desktop sidebar — hidden on mobile */}
       <div className="hidden md:block">
         <Sidebar />

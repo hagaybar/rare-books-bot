@@ -105,7 +105,8 @@ export default function Network() {
 
   const { data: egoData, isLoading: egoLoading } = useQuery({
     queryKey: ['network-ego', focusAgent, connectionTypes, minConfidence],
-    queryFn: () => fetchEgo(focusAgent!, { connectionTypes, minConfidence }),
+    // Cap the ring at a legible size by default; the panel shows "X of N".
+    queryFn: () => fetchEgo(focusAgent!, { connectionTypes, minConfidence, limit: 24 }),
     enabled: viewMode === 'ego' && !!focusAgent,
     placeholderData: (prev) => prev,
   });
@@ -169,7 +170,7 @@ export default function Network() {
     connectionTypes.length;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Page header — compact on mobile */}
       <div className="px-4 pt-3 pb-1 flex items-center justify-between">
         <div className="min-w-0">
@@ -277,8 +278,8 @@ export default function Network() {
 
       {viewMode === 'ego' && <Breadcrumbs />}
 
-      <div className="flex flex-1 relative overflow-hidden">
-        <div className="flex-1 relative">
+      <div className="flex flex-1 relative overflow-hidden min-h-0">
+        <div className="flex-1 relative min-h-0">
           {viewMode === 'ego' ? (
             egoData ? (
               <EgoView

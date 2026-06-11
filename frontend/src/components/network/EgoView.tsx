@@ -12,12 +12,13 @@ interface Props {
   onNodeClick: (node: MapNode) => void;
 }
 
-interface GNode { id: string; node: MapNode; x?: number; y?: number }
+interface GNode { id: string; node: MapNode; x?: number; y?: number; fx?: number; fy?: number }
 interface GLink { source: string; target: string; edge: MapEdge }
 
 const rgb = (c: [number, number, number]) => `rgb(${c[0]},${c[1]},${c[2]})`;
 
-/** Force-directed 1-hop ego graph (issue #31). Non-geographic peer of MapView. */
+/** Force-directed 1-hop ego graph (issue #31). Non-geographic peer of MapView.
+ *  Focal node is pinned at the centre; the view auto-fits on load and re-centre. */
 export default function EgoView({ data, colorBy, communities, onNodeClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,37 +36,64 @@ export default function EgoView({ data, colorBy, communities, onNodeClick }: Pro
     return () => ro.disconnect();
   }, []);
 
-  const graphData = useMemo(() => ({
-    nodes: data.nodes.map((n): GNode => ({ id: n.agent_norm, node: n })),
-    links: data.edges.map((e): GLink => ({ source: e.source, target: e.target, edge: e })),
-  }), [data]);
+  const graphData = useMemo(() => {
+    const nodes = data.nodes.map((n): GNode => {
+      const g: GNode = { id: n.agent_norm, node: n };
+      if (n.agent_norm === data.focal) { g.fx = 0; g.fy = 0; } // pin focal at centre
+      return g;
+    });
+    const links = data.edges.map((e): GLink => ({ source: e.source, target: e.target, edge: e }));
+    return { nodes, links };
+  }, [data]);
+
+  // Spread the ring out a bit and keep it compact + centred on the focal.
+  useEffect(() => {
+    const fg = fgRef.current;
+    if (!fg) return;
+    fg.d3Force('charge')?.strength(-220);
+    fg.d3Force('link')?.distance(70);
+    fg.d3ReheatSimulation?.();
+  }, [data]);
+
+  const fit = () => fgRef.current?.zoomToFit(500, 80);
+
+  // Re-fit whenever the focal node or the container size changes.
+  useEffect(() => {
+    if (size.width === 0) return;
+    const t = setTimeout(fit, 280);
+    return () => clearTimeout(t);
+  }, [data, size]);
 
   const nodeColor = (gn: GNode): string =>
     gn.node.node_type === 'publisher'
       ? rgb(PUBLISHER_COLOR)
       : rgb(getAgentColor(gn.node, colorBy, communityColors));
 
-  const radius = (gn: GNode) => (gn.id === data.focal ? 7 : 4);
-
+  const radius = (gn: GNode) => (gn.id === data.focal ? 9 : 6);
   const onlyFocal = data.nodes.length <= 1;
 
   return (
-    <div ref={containerRef} className="w-full h-full bg-slate-50 relative">
+    // Absolute-fill (not h-full) so the canvas height never feeds back into the
+    // flex row's content height — otherwise min-height:auto lets it grow without
+    // bound (issue #31). The parent `.flex-1.relative` is the positioning context.
+    <div ref={containerRef} className="absolute inset-0 bg-slate-50">
       {size.width > 0 && (
         <ForceGraph2D
           ref={fgRef}
           width={size.width}
           height={size.height}
           graphData={graphData}
-          cooldownTicks={100}
-          onEngineStop={() => fgRef.current?.zoomToFit(400, 70)}
-          nodeRelSize={4}
-          nodeLabel={(n: object) => (n as GNode).node.display_name}
+          cooldownTicks={120}
+          onEngineStop={fit}
+          minZoom={0.4}
+          maxZoom={6}
+          nodeRelSize={6}
+          nodeLabel={() => ''}
           linkColor={(l: object) => {
             const cfg = CONNECTION_TYPE_CONFIG[(l as GLink).edge.type as keyof typeof CONNECTION_TYPE_CONFIG];
             return cfg ? rgb(cfg.color) : 'rgba(148,163,184,0.6)';
           }}
-          linkWidth={1.2}
+          linkWidth={1.4}
           linkLabel={(l: object) => {
             const e = (l as GLink).edge;
             return e.relationship || e.evidence || e.type;
@@ -75,7 +103,7 @@ export default function EgoView({ data, colorBy, communities, onNodeClick }: Pro
             const gn = n as GNode;
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(gn.x ?? 0, gn.y ?? 0, radius(gn) + 2, 0, 2 * Math.PI);
+            ctx.arc(gn.x ?? 0, gn.y ?? 0, radius(gn) + 3, 0, 2 * Math.PI);
             ctx.fill();
           }}
           nodeCanvasObjectMode={() => 'replace'}
@@ -83,27 +111,42 @@ export default function EgoView({ data, colorBy, communities, onNodeClick }: Pro
             const gn = n as GNode;
             const isFocal = gn.id === data.focal;
             const r = radius(gn);
+            const x = gn.x ?? 0;
+            const y = gn.y ?? 0;
+            // node
             ctx.beginPath();
-            ctx.arc(gn.x ?? 0, gn.y ?? 0, r, 0, 2 * Math.PI);
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
             ctx.fillStyle = nodeColor(gn);
             ctx.fill();
-            if (isFocal) {
-              ctx.lineWidth = 2 / scale;
-              ctx.strokeStyle = '#111827';
-              ctx.stroke();
-            }
-            // Label: always for focal, otherwise once zoomed in (keeps it legible)
-            if (isFocal || scale > 1.3) {
-              const fontSize = Math.max(11 / scale, 2);
-              ctx.font = `${isFocal ? 600 : 400} ${fontSize}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'top';
-              ctx.fillStyle = '#374151';
-              ctx.fillText(gn.node.display_name, gn.x ?? 0, (gn.y ?? 0) + r + 1);
-            }
+            ctx.lineWidth = (isFocal ? 2.5 : 1) / scale;
+            ctx.strokeStyle = isFocal ? '#111827' : '#ffffff';
+            ctx.stroke();
+            // label with a white halo for legibility
+            const label = gn.node.display_name;
+            const fontSize = Math.max((isFocal ? 13 : 11) / scale, 3);
+            ctx.font = `${isFocal ? 600 : 400} ${fontSize}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.lineWidth = 3 / scale;
+            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+            ctx.strokeText(label, x, y + r + 1.5 / scale);
+            ctx.fillStyle = '#1f2937';
+            ctx.fillText(label, x, y + r + 1.5 / scale);
           }}
         />
       )}
+
+      {/* Recenter / fit button — always a way back to the framed view */}
+      <button
+        onClick={fit}
+        className="absolute top-3 right-3 z-10 bg-white/90 hover:bg-white border border-gray-300 rounded-lg shadow-sm px-2.5 py-1.5 text-xs font-medium text-gray-700 flex items-center gap-1"
+        title="Fit graph to view"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15m11.25 5.25v-4.5m0 4.5h-4.5m4.5 0L15 15" />
+        </svg>
+        Recenter
+      </button>
 
       {onlyFocal && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
