@@ -17,6 +17,7 @@ class MapNode(BaseModel):
     has_wikipedia: bool = False
     primary_role: str | None = None
     node_type: str = "person"  # 'person' | 'publisher' (issue #27)
+    community: str | None = None  # intellectual-community color facet (issue #28)
 
 
 class MapEdge(BaseModel):
@@ -33,8 +34,7 @@ class MapMeta(BaseModel):
     total_agents: int
     showing: int
     total_edges: int
-    category_limited: bool = False
-    category_total: int = 0
+    communities: list[str] = Field(default_factory=list)  # legend palette order (issue #28)
 
 
 class MapResponse(BaseModel):
