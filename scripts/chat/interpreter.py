@@ -176,7 +176,7 @@ Available filter fields:
 - imprint_place: City of publication (Venice, London, Paris)
 - country: Country of publication (Germany, France, Italy)
 - year: Publication year range (requires start and end years, op=RANGE)
-- language: Language code (lat=Latin, heb=Hebrew, eng=English, fre=French, ger=German, ita=Italian, spa=Spanish)
+- language: Language code (lat=Latin, heb=Hebrew, eng=English, fre=French, ger=German, ita=Italian, spa=Spanish, yid=Yiddish, dut=Dutch). Use EXACT ISO 639-2 codes — 'yid' not 'ydd'.
 - title: Title search (partial match, use CONTAINS)
 - subject: Subject heading search (partial match, use CONTAINS)
   IMPORTANT: Use subject filters for bibliographic/domain terms that describe a
@@ -678,12 +678,44 @@ def _repair_json_string(s: str) -> str:
     return "".join(result)
 
 
-def _parse_json_params(raw: str) -> dict:
-    """Parse a JSON params string, repairing Hebrew gershayim if needed.
+def _balance_json_string(raw: str) -> str:
+    """Append missing closing brackets/braces to truncated JSON.
 
-    Tries ``json.loads`` first.  On ``JSONDecodeError``, attempts to
-    repair unescaped internal quotes and retries.  If repair also fails,
-    the original error is raised.
+    Issue #5 root cause: the LLM intermittently emits params with the final
+    ``}`` (or ``}]``) missing — e.g. ``{"filters":[{...}]`` — and the whole
+    step was silently dropped. Tracks the opener stack outside string
+    literals and appends the missing closers in order.
+    """
+    stack: list[str] = []
+    in_string = False
+    escaped = False
+    for ch in raw:
+        if escaped:
+            escaped = False
+            continue
+        if ch == "\\":
+            escaped = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch in "{[":
+            stack.append("}" if ch == "{" else "]")
+        elif ch in "}]" and stack and stack[-1] == ch:
+            stack.pop()
+    closers = "".join(reversed(stack))
+    return raw + ('"' if in_string else "") + closers
+
+
+def _parse_json_params(raw: str) -> dict:
+    """Parse a JSON params string, repairing common LLM malformations.
+
+    Tries ``json.loads`` first. On ``JSONDecodeError``, attempts (in order):
+    unescaped internal quotes (Hebrew gershayim), then unbalanced
+    brackets/braces (truncated output — issue #5), then both combined.
+    If every repair fails, the original error is raised.
 
     Args:
         raw: JSON-encoded params string from the LLM.
@@ -697,11 +729,16 @@ def _parse_json_params(raw: str) -> dict:
     try:
         return json.loads(raw)
     except json.JSONDecodeError as original_err:
-        repaired = _repair_json_string(raw)
-        try:
-            return json.loads(repaired)
-        except json.JSONDecodeError:
-            raise original_err
+        for candidate in (
+            _repair_json_string(raw),
+            _balance_json_string(raw),
+            _balance_json_string(_repair_json_string(raw)),
+        ):
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+        raise original_err
 
 
 def _convert_llm_step(llm_step: ExecutionStepLLM) -> ExecutionStep:
@@ -817,6 +854,7 @@ def _convert_llm_plan(llm_plan: InterpretationPlanLLM) -> InterpretationPlan:
     # Track original-index -> new-index for surviving steps
     old_to_new: dict[int, int] = {}
 
+    dropped: list[str] = []
     for i, llm_step in enumerate(llm_plan.execution_steps):
         try:
             typed_steps.append(_convert_llm_step(llm_step))
@@ -824,6 +862,9 @@ def _convert_llm_plan(llm_plan: InterpretationPlanLLM) -> InterpretationPlan:
         except (ValueError, KeyError, TypeError) as exc:
             logger.warning(
                 "Skipping step %d (action=%r): %s", i, llm_step.action, exc
+            )
+            dropped.append(
+                f"step {i} ({llm_step.label or llm_step.action}): {exc}"
             )
             continue
 
@@ -861,6 +902,7 @@ def _convert_llm_plan(llm_plan: InterpretationPlanLLM) -> InterpretationPlan:
         directives=typed_directives,
         confidence=llm_plan.confidence,
         clarification=llm_plan.clarification,
+        dropped_steps=dropped,
     )
 
 

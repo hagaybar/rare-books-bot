@@ -287,6 +287,11 @@ class InterpretationPlan(BaseModel):
     directives: list[ScholarlyDirective]
     confidence: float = Field(ge=0.0, le=1.0)
     clarification: str | None = None
+    # Steps the LLM emitted but conversion had to discard (issue #5):
+    # "step <i> (<label>): <reason>". Empty when conversion was clean.
+    # A retrieval plan with empty execution_steps and non-empty
+    # dropped_steps means interpretation FAILED, not "nothing found".
+    dropped_steps: list[str] = Field(default_factory=list)
 
 
 # ============================================================================

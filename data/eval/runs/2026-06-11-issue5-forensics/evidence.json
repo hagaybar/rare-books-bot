@@ -1,0 +1,228 @@
+[
+ {
+  "query_id": "q14",
+  "attempt": 1,
+  "raw_steps": 2,
+  "raw_actions": [
+   "retrieve",
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"subject\",\"op\":\"CONTAINS\",\"value\":\"napoleon\"}],\"scope\":\"full_collection\"}",
+   "{\"filters\":[{\"field\":\"title\",\"op\":\"CONTAINS\",\"value\":\"napoleon\"}],\"scope\":\"full_collection\"}"
+  ],
+  "raw_intents": [
+   "retrieval",
+   "topical"
+  ],
+  "raw_confidence": 0.85,
+  "raw_clarification": null,
+  "converted_steps": 2,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q14",
+  "attempt": 2,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"subject\",\"op\":\"CONTAINS\",\"value\":\"napoleon\"}]}"
+  ],
+  "raw_intents": [
+   "retrieval",
+   "topical"
+  ],
+  "raw_confidence": 0.85,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q14",
+  "attempt": 3,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"subject\",\"op\":\"CONTAINS\",\"value\":\"Napoleon\"}],\"scope\":\"full_collection\"}"
+  ],
+  "raw_intents": [
+   "retrieval",
+   "topical"
+  ],
+  "raw_confidence": 0.85,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q27",
+  "attempt": 1,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"language\",\"op\":\"EQUALS\",\"value\":\"ita\"}],\"scope\":\"full_collection\"}"
+  ],
+  "raw_intents": [
+   "retrieval"
+  ],
+  "raw_confidence": 0.95,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q27",
+  "attempt": 2,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"language\",\"op\":\"EQUALS\",\"value\":\"ita\"}]}"
+  ],
+  "raw_intents": [
+   "retrieval"
+  ],
+  "raw_confidence": 0.9,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q27",
+  "attempt": 3,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"language\",\"op\":\"EQUALS\",\"value\":\"ita\"}]"
+  ],
+  "raw_intents": [
+   "retrieval"
+  ],
+  "raw_confidence": 0.95,
+  "raw_clarification": null,
+  "converted_steps": 0,
+  "drop_warnings": [
+   "Skipping step 0 (action='retrieve'): Expecting ',' delimiter: line 1 column 62 (char 61)"
+  ]
+ },
+ {
+  "query_id": "q29",
+  "attempt": 1,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"language\",\"op\":\"EQUALS\",\"value\":\"yid\"}],\"scope\":\"full_collection\"}"
+  ],
+  "raw_intents": [
+   "retrieval",
+   "topical"
+  ],
+  "raw_confidence": 0.95,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q29",
+  "attempt": 2,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"language\",\"op\":\"EQUALS\",\"value\":\"ydd\"}],\"scope\":\"full_collection\"}"
+  ],
+  "raw_intents": [
+   "retrieval",
+   "overview"
+  ],
+  "raw_confidence": 0.9,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q29",
+  "attempt": 3,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"language\",\"op\":\"EQUALS\",\"value\":\"ydd\"}]}"
+  ],
+  "raw_intents": [
+   "retrieval",
+   "overview"
+  ],
+  "raw_confidence": 0.9,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q30",
+  "attempt": 1,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"imprint_place\",\"op\":\"EQUALS\",\"value\":\"jerusalem\"}],\"scope\":\"full_collection\"}"
+  ],
+  "raw_intents": [
+   "retrieval"
+  ],
+  "raw_confidence": 0.9,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q30",
+  "attempt": 2,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"imprint_place\",\"op\":\"EQUALS\",\"value\":\"jerusalem\"}],\"scope\":\"full_collection\"}"
+  ],
+  "raw_intents": [
+   "retrieval"
+  ],
+  "raw_confidence": 0.95,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ },
+ {
+  "query_id": "q30",
+  "attempt": 3,
+  "raw_steps": 1,
+  "raw_actions": [
+   "retrieve"
+  ],
+  "raw_params": [
+   "{\"filters\":[{\"field\":\"imprint_place\",\"op\":\"EQUALS\",\"value\":\"jerusalem\"}],\"scope\":\"full_collection\"}"
+  ],
+  "raw_intents": [
+   "retrieval"
+  ],
+  "raw_confidence": 0.95,
+  "raw_clarification": null,
+  "converted_steps": 1,
+  "drop_warnings": []
+ }
+]
