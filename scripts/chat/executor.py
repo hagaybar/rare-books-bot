@@ -1390,8 +1390,8 @@ def _handle_sample(
 
     Strategies:
     - "earliest": ORDER BY date_start ASC LIMIT n
-    - "notable": Use curation_engine.score_for_curation() if available,
-      else fall back to earliest.
+    - "notable": curation_engine.select_curated_items() — deterministic
+      quality + diversity scoring (issue #6).
     - "diverse": Sample across decades/places for variety.
 
     Returns RecordSet with the sampled mms_ids.
@@ -1464,8 +1464,47 @@ def _handle_sample(
                     break
                 round_num += 1
 
+        elif params.strategy == "notable":
+            # Issue #6: this branch previously fell through to "earliest" and
+            # the curation engine was never called. Score every candidate in
+            # scope with the deterministic curation engine (temporal,
+            # enrichment, subject richness, visual material) and select with
+            # decade/place/language diversity.
+            from scripts.chat.curation_engine import select_curated_items
+
+            sql = (
+                f"SELECT r.mms_id AS record_id, "
+                f"  (SELECT t.value FROM titles t WHERE t.record_id = r.id "
+                f"   ORDER BY CASE t.title_type WHEN 'main' THEN 0 ELSE 1 END "
+                f"   LIMIT 1) AS title, "
+                f"  MIN(i.date_start) AS date_start, "
+                f"  MIN(i.place_norm) AS place_norm, "
+                f"  MIN(i.publisher_norm) AS publisher, "
+                f"  (SELECT a.agent_norm FROM agents a WHERE a.record_id = r.id "
+                f"   ORDER BY a.agent_index LIMIT 1) AS author, "
+                f"  (SELECT GROUP_CONCAT(pd.value, ' ') FROM physical_descriptions pd "
+                f"   WHERE pd.record_id = r.id) AS physical_description, "
+                f"  (SELECT l.code FROM languages l WHERE l.record_id = r.id "
+                f"   LIMIT 1) AS language, "
+                f"  (SELECT GROUP_CONCAT(s.value, '||') FROM subjects s "
+                f"   WHERE s.record_id = r.id) AS subjects_concat "
+                f"FROM records r "
+                f"LEFT JOIN imprints i ON i.record_id = r.id "
+                f"WHERE {scope_where} "
+                f"GROUP BY r.mms_id"
+            )
+            rows = conn.execute(sql, scope_params).fetchall()
+            candidates = []
+            for row in rows:
+                c = dict(row)
+                concat = c.pop("subjects_concat", None)
+                c["subjects"] = concat.split("||") if concat else []
+                candidates.append(c)
+            curated = select_curated_items(candidates, n=params.n)
+            mms_ids = [item["record_id"] for item in curated]
+
         else:
-            # "notable" or unknown strategy -- fall back to earliest
+            # unknown strategy -- fall back to earliest
             sql = (
                 f"SELECT DISTINCT r.mms_id, MIN(i.date_start) AS d "
                 f"FROM records r "

@@ -213,6 +213,12 @@ def test_db(tmp_path):
 
         INSERT INTO physical_descriptions VALUES
             (201, 4, '2 v. : ill., 10 folded maps', '["300"]');
+        INSERT INTO imprints VALUES
+            (6, 4, 0, '1714', 'Amsterdam', 'visscher', NULL, '["264"]',
+             1714, 1714, '1714', 0.99, 'exact',
+             'amsterdam', 'Amsterdam', 0.95, 'place_alias_map',
+             'visscher', 'Visscher', 0.95, 'publisher_authority',
+             'ne', 'netherlands');
 
         INSERT INTO titles VALUES
             (1, 1, 'main', 'Shulchan Aruch', '["245"]');
@@ -1299,3 +1305,30 @@ class TestFallbackVariantsAndCrossField:
         assert "990001234" in rs.mms_ids
         assert "990005678" in rs.mms_ids
         assert any("agent_norm" in n for n in rs.relaxations)
+
+
+class TestNotableSampleUsesCurationEngine:
+    """Issue #6: the 'notable' strategy must call the curation engine, not
+    silently fall back to 'earliest' (the N oldest items)."""
+
+    def _plan(self, strategy, n=3):
+        return InterpretationPlan(
+            intents=["curation"], reasoning="t", confidence=0.9, directives=[],
+            execution_steps=[ExecutionStep(
+                action=StepAction.SAMPLE,
+                params=SampleParams(scope="full_collection", n=n, strategy=strategy),
+                label="s")],
+        )
+
+    def test_notable_differs_from_earliest(self, test_db):
+        notable = execute_plan(self._plan("notable"), test_db).steps_completed[0].data
+        earliest = execute_plan(self._plan("earliest"), test_db).steps_completed[0].data
+        assert len(notable.mms_ids) == 3
+        assert set(notable.mms_ids) != set(earliest.mms_ids), (
+            "notable returned exactly the N oldest items — engine not wired")
+
+    def test_notable_rewards_visual_material(self, test_db):
+        # record 4 ('990111111') has '10 folded maps' + rich subject but NO
+        # imprint; pure-earliest can never pick it, the engine should.
+        notable = execute_plan(self._plan("notable"), test_db).steps_completed[0].data
+        assert "990111111" in notable.mms_ids

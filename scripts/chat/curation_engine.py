@@ -13,19 +13,27 @@ Scoring weights (from spec):
 Addresses historian evaluation failure Q20 (curated exhibit: 1/25 -> 12/25).
 """
 
+import re
 from typing import Any, Dict, Optional
 
 from scripts.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
-# Default weights per spec
+# Weights rebalanced 2026-06-11 (issue #6): visual material added — for a
+# teaching collection, show-and-tell value (maps, plates, facsimiles) is a
+# first-class curation signal (871 records carry it).
 DEFAULT_WEIGHTS: Dict[str, float] = {
-    "temporal": 0.3,
-    "enrichment": 0.3,
-    "diversity": 0.2,
-    "subject_richness": 0.2,
+    "temporal": 0.25,
+    "enrichment": 0.20,
+    "diversity": 0.20,
+    "subject_richness": 0.15,
+    "visual": 0.20,
 }
+
+# Physical-description markers of visual/teaching material (MARC 300).
+_VISUAL_STRONG_RE = re.compile(r"map|plate|facsim|port\.", re.IGNORECASE)
+_VISUAL_BASIC_RE = re.compile(r"\bill|engrav|woodcut|diagr", re.IGNORECASE)
 
 # Temporal scoring boundaries
 _INCUNABULA_CUTOFF = 1500  # Pre-1500 is incunabula era (highest temporal score)
@@ -47,17 +55,20 @@ def _compute_temporal_score(candidate: dict) -> float:
     if date_start is None:
         return 0.3  # Unknown date gets a neutral score
 
+    # Curve recalibrated 2026-06-11 (issue #6): the collection's mass is
+    # 16th-19th c. (only 11 records pre-1500), so the 17th-c. core must not
+    # be scored away by an incunabula-era curve.
     if date_start < _INCUNABULA_CUTOFF:
         return 1.0
     elif date_start < _EARLY_MODERN_CUTOFF:
-        # Linear scale 1.0 -> 0.7 across 1500-1599
-        return 1.0 - 0.3 * (date_start - _INCUNABULA_CUTOFF) / (_EARLY_MODERN_CUTOFF - _INCUNABULA_CUTOFF)
+        # 1500-1599: 1.0 -> 0.85
+        return 1.0 - 0.15 * (date_start - _INCUNABULA_CUTOFF) / (_EARLY_MODERN_CUTOFF - _INCUNABULA_CUTOFF)
     elif date_start < _MODERN_CUTOFF:
-        # Linear scale 0.7 -> 0.3 across 1600-1799
-        return 0.7 - 0.4 * (date_start - _EARLY_MODERN_CUTOFF) / (_MODERN_CUTOFF - _EARLY_MODERN_CUTOFF)
+        # 1600-1799: 0.85 -> 0.4
+        return 0.85 - 0.45 * (date_start - _EARLY_MODERN_CUTOFF) / (_MODERN_CUTOFF - _EARLY_MODERN_CUTOFF)
     else:
-        # Post-1800: low but non-zero
-        return max(0.1, 0.3 - 0.1 * (date_start - _MODERN_CUTOFF) / 100)
+        # Post-1800: declining, floor 0.15
+        return max(0.15, 0.4 - 0.1 * (date_start - _MODERN_CUTOFF) / 100)
 
 
 def _compute_enrichment_score(candidate: dict) -> float:
@@ -122,6 +133,20 @@ def _compute_subject_richness(candidate: dict) -> float:
         return 1.0
 
 
+def _compute_visual_material_score(candidate: dict) -> float:
+    """Score show-and-tell value from the physical description (MARC 300).
+
+    Maps, plates, portraits, facsimiles are the strongest signals for a
+    teaching/exhibit selection; illustrations/engravings count for less.
+    """
+    pd = candidate.get("physical_description") or ""
+    if _VISUAL_STRONG_RE.search(pd):
+        return 1.0
+    if _VISUAL_BASIC_RE.search(pd):
+        return 0.6
+    return 0.0
+
+
 # =============================================================================
 # Diversity-aware selection
 # =============================================================================
@@ -131,10 +156,11 @@ def _compute_diversity_bonus(
     candidate: dict,
     seen_decades: set,
     seen_places: set,
+    seen_languages: set = frozenset(),
 ) -> float:
     """Compute diversity bonus for a candidate given already-selected dimensions.
 
-    New decades and places receive a bonus. Returns 0.0-1.0.
+    New decades, places, and languages receive a bonus. Returns 0.0-1.0.
     """
     bonus = 0.0
 
@@ -142,11 +168,15 @@ def _compute_diversity_bonus(
     if date_start is not None:
         decade = date_start // 10 * 10
         if decade not in seen_decades:
-            bonus += 0.5
+            bonus += 0.34
 
     place = candidate.get("place_norm")
     if place and place not in seen_places:
-        bonus += 0.5
+        bonus += 0.33
+
+    language = candidate.get("language")
+    if language and language not in seen_languages:
+        bonus += 0.33
 
     return min(bonus, 1.0)
 
@@ -177,6 +207,12 @@ def _generate_significance(candidate: dict, score: float) -> str:
     if author:
         parts.append(f"by {author}")
 
+    pd = candidate.get("physical_description") or ""
+    if _VISUAL_STRONG_RE.search(pd):
+        parts.append("with maps/plates — strong visual teaching material")
+    elif _VISUAL_BASIC_RE.search(pd):
+        parts.append("illustrated")
+
     if not parts:
         parts.append("Selected for collection diversity")
 
@@ -206,6 +242,7 @@ def score_for_curation(candidate: dict, db_path=None) -> float:
     temporal = _compute_temporal_score(candidate)
     enrichment = _compute_enrichment_score(candidate)
     subject = _compute_subject_richness(candidate)
+    visual = _compute_visual_material_score(candidate)
     # Diversity bonus is 0.0 in standalone scoring (no context)
     diversity = 0.0
 
@@ -214,6 +251,7 @@ def score_for_curation(candidate: dict, db_path=None) -> float:
         weights["temporal"] * temporal
         + weights["enrichment"] * enrichment
         + weights["subject_richness"] * subject
+        + weights["visual"] * visual
         + weights["diversity"] * diversity
     )
     return round(min(max(score, 0.0), 1.0), 6)
@@ -252,6 +290,7 @@ def select_curated_items(
     selected = []
     seen_decades: set = set()
     seen_places: set = set()
+    seen_languages: set = set()
 
     while len(selected) < n and scored:
         best_idx = 0
@@ -259,7 +298,8 @@ def select_curated_items(
 
         for i, item in enumerate(scored):
             c = item["candidate"]
-            diversity = _compute_diversity_bonus(c, seen_decades, seen_places)
+            diversity = _compute_diversity_bonus(
+                c, seen_decades, seen_places, seen_languages)
             total = (
                 item["base_score"] * (1.0 - DEFAULT_WEIGHTS["diversity"])
                 + DEFAULT_WEIGHTS["diversity"] * diversity
@@ -278,6 +318,9 @@ def select_curated_items(
         place = c.get("place_norm")
         if place:
             seen_places.add(place)
+        language = c.get("language")
+        if language:
+            seen_languages.add(language)
 
         # Report the base score (diversity influences selection order, not
         # the reported score -- ensures identical candidates get identical scores)
