@@ -2,11 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { fetchMapData, fetchAgentDetail, fetchPlaceDetail, fetchEgo } from '../api/network';
+import { fetchMapData, fetchAgentDetail, fetchPlaceDetail, fetchEgo, fetchPath } from '../api/network';
 import { useNetworkStore } from '../stores/networkStore';
 import MapView from '../components/network/MapView';
 import EgoView from '../components/network/EgoView';
 import Breadcrumbs from '../components/network/Breadcrumbs';
+import PathFinder from '../components/network/PathFinder';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
 import PlacePanel from '../components/network/PlacePanel';
@@ -137,6 +138,15 @@ export default function Network() {
 
   const handleExplore = (norm: string, displayName: string) =>
     enterEgo({ agent_norm: norm, display_name: displayName });
+
+  // Pathfinding (issue #33): from the current ego focal to a chosen target.
+  const [pathTarget, setPathTarget] = useState<string | null>(null);
+  useEffect(() => { setPathTarget(null); }, [focusAgent]); // stale path on re-center
+  const { data: pathData, isFetching: pathLoading } = useQuery({
+    queryKey: ['network-path', focusAgent, pathTarget, connectionTypes, minConfidence],
+    queryFn: () => fetchPath(focusAgent!, pathTarget!, { connectionTypes, minConfidence }),
+    enabled: viewMode === 'ego' && !!focusAgent && !!pathTarget,
+  });
 
   // Show toast on API error (map retains last successful data via placeholderData)
   useEffect(() => {
@@ -277,6 +287,16 @@ export default function Network() {
       )}
 
       {viewMode === 'ego' && <Breadcrumbs />}
+      {viewMode === 'ego' && focusAgent && (
+        <PathFinder
+          sourceName={nameFor(focusAgent)}
+          path={pathTarget ? pathData ?? null : null}
+          loading={pathLoading}
+          onSelectTarget={setPathTarget}
+          onClear={() => setPathTarget(null)}
+          onNodeClick={(norm, displayName) => { selectAgent(norm); pushEgo({ agent_norm: norm, display_name: displayName }); }}
+        />
+      )}
 
       <div className="flex flex-1 relative overflow-hidden min-h-0">
         <div className="flex-1 relative min-h-0">

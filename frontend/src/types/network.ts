@@ -142,6 +142,15 @@ export interface EgoResponse {
   meta: EgoMeta;
 }
 
+export interface PathResponse {
+  source: string;
+  target: string;
+  found: boolean;
+  hops: number;
+  nodes: MapNode[]; // in path order (issue #33)
+  edges: MapEdge[]; // one per hop, source→target along the path
+}
+
 export interface AgentConnection {
   agent_norm: string;
   display_name: string;
