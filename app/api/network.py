@@ -2,6 +2,7 @@
 import json
 import logging
 import sqlite3
+from collections import defaultdict, deque
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -17,6 +18,7 @@ from app.api.network_models import (
     MapMeta,
     MapNode,
     MapResponse,
+    PathResponse,
     PlaceDetail,
 )
 
@@ -467,6 +469,116 @@ async def get_ego_network(
                 total_neighbors=total_neighbors,
                 showing=len(nodes),
             ),
+        )
+    finally:
+        conn.close()
+
+
+@router.get("/path", response_model=PathResponse)
+async def find_path(
+    source: str = Query(...),
+    target: str = Query(...),
+    connection_types: str = Query("same_record,printed_by,teacher_student"),
+    min_confidence: float = Query(0.5, ge=0.0, le=1.0),
+    max_hops: int = Query(8, ge=1, le=12),
+) -> PathResponse:
+    """Shortest path between two agents, each hop evidenced (issue #33).
+
+    Breadth-first over the (non-category) edges of the active types — BFS yields
+    the fewest-hops route. Each consecutive pair is annotated with its strongest
+    edge's relationship + evidence, oriented along the path. ``found`` is false
+    when the two agents are in different components within ``max_hops``.
+    """
+    types = [t.strip() for t in connection_types.split(",") if t.strip()]
+    invalid = set(types) - VALID_CONNECTION_TYPES
+    if invalid:
+        raise HTTPException(400, f"Invalid connection types: {invalid}")
+    if not types:
+        types = list(VALID_CONNECTION_TYPES)
+
+    conn = _get_db()
+    try:
+        for norm in (source, target):
+            exists = conn.execute(
+                "SELECT 1 FROM network_agents WHERE agent_norm = ?", (norm,)
+            ).fetchone()
+            if not exists:
+                raise HTTPException(404, f"Agent not found: {norm}")
+
+        def node_for(norm: str) -> MapNode:
+            row = conn.execute(
+                "SELECT * FROM network_agents WHERE agent_norm = ?", (norm,)
+            ).fetchone()
+            return _map_node_from_row(row)
+
+        if source == target:
+            return PathResponse(
+                source=source, target=target, found=True, hops=0,
+                nodes=[node_for(source)], edges=[],
+            )
+
+        # Adjacency over the active edge types
+        tph = ",".join("?" for _ in types)
+        adj: dict[str, set[str]] = defaultdict(set)
+        for s, t in conn.execute(
+            f"""SELECT source_agent_norm, target_agent_norm FROM network_edges
+                WHERE connection_type IN ({tph}) AND confidence >= ?""",
+            (*types, min_confidence),
+        ).fetchall():
+            adj[s].add(t)
+            adj[t].add(s)
+
+        # BFS with a depth bound
+        parent: dict[str, str | None] = {source: None}
+        depth = {source: 0}
+        q = deque([source])
+        while q:
+            cur = q.popleft()
+            if cur == target:
+                break
+            if depth[cur] >= max_hops:
+                continue
+            for nb in adj.get(cur, ()):  # noqa: E501
+                if nb not in parent:
+                    parent[nb] = cur
+                    depth[nb] = depth[cur] + 1
+                    q.append(nb)
+
+        if target not in parent:
+            return PathResponse(source=source, target=target, found=False)
+
+        # Reconstruct source -> target
+        chain: list[str] = []
+        cur: str | None = target
+        while cur is not None:
+            chain.append(cur)
+            cur = parent[cur]
+        chain.reverse()
+
+        # Best edge for each hop, oriented along the path
+        edges: list[MapEdge] = []
+        for a, b in zip(chain, chain[1:]):
+            er = conn.execute(
+                f"""SELECT connection_type, confidence, relationship, evidence, bidirectional
+                    FROM network_edges
+                    WHERE ((source_agent_norm = ? AND target_agent_norm = ?)
+                        OR (source_agent_norm = ? AND target_agent_norm = ?))
+                      AND connection_type IN ({tph}) AND confidence >= ?
+                    ORDER BY confidence DESC LIMIT 1""",
+                (a, b, b, a, *types, min_confidence),
+            ).fetchone()
+            edges.append(MapEdge(
+                source=a, target=b,
+                type=er["connection_type"] if er else "",
+                confidence=er["confidence"] if er else 0.0,
+                relationship=er["relationship"] if er else None,
+                evidence=er["evidence"] if er else None,
+                bidirectional=bool(er["bidirectional"]) if er else True,
+            ))
+
+        return PathResponse(
+            source=source, target=target, found=True, hops=len(chain) - 1,
+            nodes=[node_for(n) for n in chain], edges=edges,
         )
     finally:
         conn.close()

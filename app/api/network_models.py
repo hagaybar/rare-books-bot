@@ -56,6 +56,15 @@ class EgoResponse(BaseModel):
     meta: EgoMeta
 
 
+class PathResponse(BaseModel):
+    source: str
+    target: str
+    found: bool = False
+    hops: int = 0
+    nodes: list[MapNode] = Field(default_factory=list)  # in path order (issue #33)
+    edges: list[MapEdge] = Field(default_factory=list)  # one per hop, source→target along the path
+
+
 class AgentConnection(BaseModel):
     agent_norm: str
     display_name: str
