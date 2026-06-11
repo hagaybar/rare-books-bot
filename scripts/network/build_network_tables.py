@@ -361,6 +361,117 @@ def build_same_record_edges(conn: sqlite3.Connection) -> int:
     return after - before
 
 
+PUBLISHER_PREFIX = "pub:"
+
+
+def _city_from_location(location: str) -> str:
+    """First city token of a publisher location ('Venice, Italy' -> 'venice')."""
+    return re.split(r"[,/]", location)[0].strip().lower()
+
+
+def _publisher_record_count(conn: sqlite3.Connection, pid: int, name_lower: str) -> int:
+    return conn.execute(
+        """SELECT COUNT(DISTINCT i.record_id) FROM imprints i
+           WHERE i.publisher_norm = ?
+              OR i.publisher_norm IN (
+                  SELECT variant_form_lower FROM publisher_variants WHERE authority_id = ?)""",
+        (name_lower, pid),
+    ).fetchone()[0]
+
+
+def build_publisher_nodes(conn: sqlite3.Connection, geocodes: dict[str, dict]) -> int:
+    """Promote printing houses to first-class network nodes (issue #27).
+
+    Seeds from publisher_authorities (curated names, dates, locations);
+    keeps only houses that can be geocoded AND actually appear in the
+    collection's imprints. Idempotent (INSERT OR REPLACE on a 'pub:'-prefixed
+    key so it never collides with a person agent_norm). Adds a node_type
+    column if missing.
+    """
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(network_agents)")}
+    if "node_type" not in cols:
+        conn.execute(
+            "ALTER TABLE network_agents ADD COLUMN node_type TEXT DEFAULT 'person'"
+        )
+    rows = conn.execute(
+        """SELECT id, canonical_name, canonical_name_lower, location, date_start, date_end
+           FROM publisher_authorities
+           WHERE location IS NOT NULL AND location != ''"""
+    ).fetchall()
+    inserted = 0
+    for pid, name, name_lower, location, ds, de in rows:
+        geo = geocodes.get(_city_from_location(location))
+        if not geo:
+            continue
+        rc = _publisher_record_count(conn, pid, name_lower)
+        if rc == 0:
+            continue
+        conn.execute(
+            """INSERT OR REPLACE INTO network_agents
+                   (agent_norm, display_name, place_norm, lat, lon,
+                    birth_year, death_year, occupations, primary_role,
+                    has_wikipedia, record_count, connection_count, node_type)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (PUBLISHER_PREFIX + name_lower, name, _city_from_location(location),
+             geo["lat"], geo["lon"], ds, de, '["printing house"]', "publisher",
+             0, rc, 0, "publisher"),
+        )
+        inserted += 1
+    return inserted
+
+
+def build_printed_by_edges(conn: sqlite3.Connection) -> int:
+    """Edges from a person to the printing house that printed their work (issue #27)."""
+    have = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+    if not {"publisher_authorities", "network_agents", "records"} <= have:
+        return 0
+    rows = conn.execute(
+        """SELECT a.agent_norm AS person, pa.canonical_name_lower AS pub,
+                  r.mms_id AS mms_id,
+                  (SELECT t.value FROM titles t
+                   WHERE t.record_id = i.record_id AND t.title_type='main' LIMIT 1) AS title
+           FROM publisher_authorities pa
+           JOIN imprints i ON (
+               i.publisher_norm = pa.canonical_name_lower
+               OR i.publisher_norm IN (
+                   SELECT variant_form_lower FROM publisher_variants WHERE authority_id = pa.id))
+           JOIN agents a ON a.record_id = i.record_id
+           JOIN records r ON r.id = i.record_id
+           JOIN network_agents nap ON nap.agent_norm = ?||pa.canonical_name_lower
+           JOIN network_agents naa ON naa.agent_norm = a.agent_norm
+                AND naa.node_type = 'person'""",
+        (PUBLISHER_PREFIX,),
+    ).fetchall()
+    pairs: dict[tuple[str, str], dict] = {}
+    for person, pub, mms_id, title in rows:
+        agg = pairs.setdefault((person, PUBLISHER_PREFIX + pub), {"records": {}})
+        if mms_id not in agg["records"]:
+            agg["records"][mms_id] = title
+    payload = []
+    for (person, pubkey), agg in pairs.items():
+        recs = list(agg["records"].items())
+        sample = next((t for _m, t in recs if t), None) or recs[0][0]
+        n = len(recs)
+        ev = f"printed “{sample}” ({recs[0][0]})"
+        if n > 1:
+            ev += f" and {n - 1} more"
+        payload.append((person, pubkey, "printed_by", min(0.7 + 0.1 * n, 1.0),
+                        "printed by", 0, ev))
+    before = conn.execute(
+        "SELECT COUNT(*) FROM network_edges WHERE connection_type='printed_by'").fetchone()[0]
+    conn.executemany(
+        """INSERT OR IGNORE INTO network_edges
+               (source_agent_norm, target_agent_norm, connection_type,
+                confidence, relationship, bidirectional, evidence)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        payload,
+    )
+    after = conn.execute(
+        "SELECT COUNT(*) FROM network_edges WHERE connection_type='printed_by'").fetchone()[0]
+    return after - before
+
+
 def _build_co_publication_edges(conn: sqlite3.Connection) -> int:
     """Find agent pairs sharing >= 2 records."""
     conn.execute("""

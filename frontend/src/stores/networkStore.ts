@@ -24,7 +24,7 @@ interface NetworkState {
 const DEFAULT_STATE = {
   // Curated meaningful default (issue #21): not empty (no arcs), not the
   // wikilink hairball. Documented collection/teaching relationships.
-  connectionTypes: ['same_record', 'teacher_student', 'co_publication'] as ConnectionType[],
+  connectionTypes: ['same_record', 'printed_by', 'teacher_student'] as ConnectionType[],
   minConfidence: 0.5,
   century: null as number | null,
   place: null as string | null,

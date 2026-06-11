@@ -37,6 +37,10 @@ export default function Legend({ colorBy, activeTypes }: Props) {
           ))}
         </div>
         <div className="mt-1 text-gray-400 border-t pt-1">Size = connections</div>
+        <div className="mt-1 flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0 ring-2 ring-amber-900" style={{ backgroundColor: 'rgb(202,138,4)' }} />
+          <span className="text-gray-600">Printing house</span>
+        </div>
         <div className="mt-1.5 border-t pt-1.5">
           <div className="font-semibold text-gray-700 mb-1">Edge Types</div>
           <div className="space-y-0.5">

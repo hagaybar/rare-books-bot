@@ -167,3 +167,54 @@ def test_same_record_skips_non_network_agents(db):
         INSERT INTO network_agents VALUES ('in_network, a', 'A');
     """)
     assert build_same_record_edges(conn) == 0
+
+
+def test_publisher_nodes_and_printed_by(db):
+    """Issue #27: printing houses become nodes; authors link via printed_by."""
+    from scripts.network.build_network_tables import (
+        build_publisher_nodes, build_printed_by_edges, PUBLISHER_PREFIX,
+    )
+    conn = db
+    conn.row_factory = sqlite3.Row
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY, mms_id TEXT);
+        CREATE TABLE IF NOT EXISTS network_agents (
+            agent_norm TEXT PRIMARY KEY, display_name TEXT, place_norm TEXT,
+            lat REAL, lon REAL, birth_year INTEGER, death_year INTEGER,
+            occupations TEXT, primary_role TEXT, has_wikipedia INTEGER DEFAULT 0,
+            record_count INTEGER DEFAULT 0, connection_count INTEGER DEFAULT 0,
+            node_type TEXT DEFAULT 'person');
+        CREATE TABLE IF NOT EXISTS network_edges (
+            source_agent_norm TEXT, target_agent_norm TEXT, connection_type TEXT,
+            confidence REAL, relationship TEXT, bidirectional INTEGER DEFAULT 0, evidence TEXT,
+            UNIQUE(source_agent_norm, target_agent_norm, connection_type));
+        CREATE TABLE publisher_authorities (
+            id INTEGER PRIMARY KEY, canonical_name TEXT, canonical_name_lower TEXT,
+            type TEXT, date_start INTEGER, date_end INTEGER, location TEXT);
+        CREATE TABLE publisher_variants (
+            id INTEGER PRIMARY KEY, authority_id INTEGER, variant_form_lower TEXT);
+
+        ALTER TABLE imprints ADD COLUMN publisher_norm TEXT;
+        INSERT INTO publisher_authorities VALUES
+            (1, 'Daniel Bomberg, Venice', 'daniel bomberg, venice', 'printing_house', 1516, 1549, 'Venice, Italy');
+        INSERT INTO records VALUES (300, '990012345678900146');
+        INSERT INTO imprints VALUES (10, 300, 'venice', 1520, 'daniel bomberg, venice');
+        INSERT INTO agents VALUES (90, 300, 'pirke, avot', 'P', 'u:p', 'author');
+        INSERT INTO network_agents (agent_norm, display_name, node_type) VALUES ('pirke, avot', 'Pirke Avot author', 'person');
+    """)
+
+    geocodes = {"venice": {"lat": 45.44, "lon": 12.32, "display_name": "Venice"}}
+    n = build_publisher_nodes(conn, geocodes)
+    assert n == 1
+    pub = conn.execute("SELECT * FROM network_agents WHERE node_type='publisher'").fetchone()
+    assert pub["agent_norm"] == PUBLISHER_PREFIX + "daniel bomberg, venice"
+    assert pub["display_name"] == "Daniel Bomberg, Venice"
+    assert pub["record_count"] == 1
+    assert pub["lat"] == 45.44
+
+    e = build_printed_by_edges(conn)
+    assert e == 1
+    edge = conn.execute("SELECT * FROM network_edges WHERE connection_type='printed_by'").fetchone()
+    assert edge["source_agent_norm"] == "pirke, avot"
+    assert edge["target_agent_norm"] == PUBLISHER_PREFIX + "daniel bomberg, venice"
+    assert "990012345678900146" in edge["evidence"]

@@ -30,7 +30,7 @@ DB_PATH = Path("data/index/bibliographic.db")
 
 VALID_CONNECTION_TYPES = {
     "teacher_student", "wikilink", "llm_extraction", "category", "co_publication",
-    "same_place_period", "same_record",
+    "same_place_period", "same_record", "printed_by",
 }
 
 
@@ -47,6 +47,33 @@ def _primo_url(mms_id: str) -> str | None:
         return generate_primo_url(mms_id)
     except ImportError:
         return None
+
+
+def _works_for_publisher(conn: sqlite3.Connection, name_lower: str, limit: int = 25) -> list[AgentWork]:
+    """Books a printing house published (issue #27)."""
+    rows = conn.execute(
+        """SELECT DISTINCT r.mms_id AS mms_id,
+                  (SELECT t.value FROM titles t WHERE t.record_id = r.id
+                   ORDER BY CASE t.title_type WHEN 'main' THEN 0 ELSE 1 END LIMIT 1) AS title,
+                  i.date_label AS date_label, i.place_display AS place_display,
+                  i.publisher_display AS publisher_display, i.date_start AS sort_date
+           FROM imprints i JOIN records r ON r.id = i.record_id
+           WHERE i.publisher_norm = ?
+              OR i.publisher_norm IN (
+                  SELECT pv.variant_form_lower FROM publisher_variants pv
+                  JOIN publisher_authorities pa ON pa.id = pv.authority_id
+                  WHERE pa.canonical_name_lower = ?)
+           GROUP BY r.mms_id
+           ORDER BY sort_date IS NULL, sort_date ASC
+           LIMIT ?""",
+        (name_lower, name_lower, limit),
+    ).fetchall()
+    return [
+        AgentWork(mms_id=r["mms_id"], title=r["title"], date_label=r["date_label"],
+                  place_display=r["place_display"], publisher_display=r["publisher_display"],
+                  role_norm="published", primo_url=_primo_url(r["mms_id"]))
+        for r in rows
+    ]
 
 
 def _works_for_agent(conn: sqlite3.Connection, agent_norm: str, limit: int = 25) -> list[AgentWork]:
@@ -181,6 +208,7 @@ async def get_network_map(
                 record_count=r["record_count"],
                 has_wikipedia=bool(r["has_wikipedia"]),
                 primary_role=r["primary_role"],
+                node_type=(r["node_type"] if "node_type" in r.keys() else "person") or "person",
             ))
 
         # Get edges between returned agents
@@ -386,8 +414,12 @@ async def get_agent_detail(agent_norm: str) -> AgentDetail:
                 confidence=er["confidence"],
             ))
 
-        # Collection holdings (issue #18) + correct Primo links (issue #19)
-        works = _works_for_agent(conn, agent_norm)
+        # Collection holdings (issue #18/#27) + correct Primo links (issue #19)
+        node_type = (row["node_type"] if "node_type" in row.keys() else "person") or "person"
+        if node_type == "publisher" and agent_norm.startswith("pub:"):
+            works = _works_for_publisher(conn, agent_norm[len("pub:"):])
+        else:
+            works = _works_for_agent(conn, agent_norm)
         primo_url = works[0].primo_url if works else None
 
         # External links
@@ -423,6 +455,7 @@ async def get_agent_detail(agent_norm: str) -> AgentDetail:
             works=works,
             primo_url=primo_url,
             external_links=external_links,
+            node_type=node_type,
         )
     finally:
         conn.close()

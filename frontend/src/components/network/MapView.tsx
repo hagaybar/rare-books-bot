@@ -107,7 +107,7 @@ export default function MapView({
         getPosition: (d) => jitteredPositions.get(d.agent_norm) ?? [d.lon ?? 0, d.lat ?? 0],
         getRadius: (d) => {
           const base = 4 + Math.min(d.connection_count / 10, 10);
-          return base;
+          return d.node_type === 'publisher' ? base + 4 : base;
         },
         getFillColor: (d) => {
           const color = getAgentColor(d, colorBy);
@@ -119,12 +119,13 @@ export default function MapView({
         getLineColor: (d) => {
           if (d.agent_norm === selectedAgent) return [255, 255, 255, 255];
           if (selectedAgent && connectedAgents.has(d.agent_norm)) return [255, 255, 255, 180];
+          if (d.node_type === 'publisher') return [120, 53, 15, 230];
           return [0, 0, 0, 0];
         },
         getLineWidth: (d) => {
           if (d.agent_norm === selectedAgent) return 2;
           if (selectedAgent && connectedAgents.has(d.agent_norm)) return 1;
-          return 0;
+          return d.node_type === 'publisher' ? 1.5 : 0;
         },
         stroked: true,
         lineWidthUnits: 'pixels',
@@ -217,9 +218,12 @@ export default function MapView({
   );
 
   const labelNodes = useMemo(() => {
-    return [...nodes]
+    const publishers = nodes.filter((n) => n.node_type === 'publisher');
+    const people = nodes
+      .filter((n) => n.node_type !== 'publisher')
       .sort((a, b) => b.connection_count - a.connection_count)
-      .slice(0, 15);
+      .slice(0, 12);
+    return [...publishers, ...people];
   }, [nodes]);
 
   const labelLayer = useMemo(
@@ -276,8 +280,9 @@ export default function MapView({
               n.birth_year || n.death_year
                 ? ` (${n.birth_year ?? '?'}\u2013${n.death_year ?? '?'})`
                 : '';
+            const kind = n.node_type === 'publisher' ? 'Printing house\n' : '';
             return {
-              text: `${n.display_name}${years}\n${n.place_norm ?? ''}\n${n.connection_count} connections\u00B7 ${n.record_count} records`,
+              text: `${kind}${n.display_name}${years}\n${n.place_norm ?? ''}\n${n.connection_count} connections\u00B7 ${n.record_count} records`,
             };
           }
           if ('source' in object && 'target' in object) {
