@@ -150,6 +150,20 @@ def test_search_resolves_cross_script_via_alias(client):
     assert hit["matched_alias"] and "maimonides" in hit["matched_alias"].lower()
 
 
+def test_agent_detail_includes_alt_script_name(client):
+    """Issue #30: a Latin-labeled Hebrew node exposes its Hebrew form as name_alt."""
+    resp = client.get("/network/agent/משה בן מימון")
+    assert resp.status_code == 200
+    assert resp.json()["name_alt"] == "משה בן מימון"
+
+
+def test_agent_detail_no_alt_when_single_script(client):
+    """A node with no opposite-script alias reports name_alt=None."""
+    resp = client.get("/network/agent/smith, john")
+    assert resp.status_code == 200
+    assert resp.json()["name_alt"] is None
+
+
 def test_search_direct_match_reports_no_alias(client):
     """A plain name match carries no matched_alias (nothing to disambiguate)."""
     resp = client.get("/network/search?q=smith")

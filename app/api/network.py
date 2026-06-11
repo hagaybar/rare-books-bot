@@ -78,6 +78,35 @@ def _works_for_publisher(conn: sqlite3.Connection, name_lower: str, limit: int =
     ]
 
 
+def _has_hebrew(s: str) -> bool:
+    return any("֐" <= ch <= "׿" for ch in s)
+
+
+def _alt_script_name(
+    conn: sqlite3.Connection, agent_norm: str, display_name: str
+) -> str | None:
+    """A name form in the opposite script from display_name (issue #30).
+
+    If the visible label is Latin we surface a Hebrew alias (and vice versa),
+    so a Latin-labeled Hebrew scholar still shows their Hebrew name. Prefers a
+    `cross_script` alias; ignores forms equal to the display name.
+    """
+    want_hebrew = not _has_hebrew(display_name)
+    rows = conn.execute(
+        """SELECT sa.alias_form
+           FROM agents ag
+           JOIN agent_authorities aa ON aa.authority_uri = ag.authority_uri
+           JOIN agent_aliases sa ON sa.authority_id = aa.id
+           WHERE ag.agent_norm = ?
+           ORDER BY CASE sa.alias_type WHEN 'cross_script' THEN 0 ELSE 1 END""",
+        (agent_norm,),
+    ).fetchall()
+    for (form,) in rows:
+        if form and _has_hebrew(form) == want_hebrew and form.strip().lower() != display_name.strip().lower():
+            return form
+    return None
+
+
 def _works_for_agent(conn: sqlite3.Connection, agent_norm: str, limit: int = 25) -> list[AgentWork]:
     """The collection's books for an agent, newest-cataloguing first (issue #18)."""
     rows = conn.execute(
@@ -451,9 +480,15 @@ async def get_agent_detail(agent_norm: str) -> AgentDetail:
             if ae_row["viaf_id"]:
                 external_links["viaf"] = f"https://viaf.org/viaf/{ae_row['viaf_id']}"
 
+        name_alt = (
+            None if node_type == "publisher"
+            else _alt_script_name(conn, agent_norm, row["display_name"])
+        )
+
         return AgentDetail(
             agent_norm=agent_norm,
             display_name=row["display_name"],
+            name_alt=name_alt,
             lat=row["lat"],
             lon=row["lon"],
             place_norm=row["place_norm"],
