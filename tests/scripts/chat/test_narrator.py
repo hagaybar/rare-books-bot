@@ -280,3 +280,21 @@ class TestConfidenceBoundary:
         from scripts.chat.narrator import low_confidence_notice
         plan = TestLowConfidenceNotice()._plan(0.75)
         assert low_confidence_notice("books about art", plan) == ""
+
+
+class TestNoDeadFollowupContent:
+    """Issue #12 rider: the prompt builders still shipped FOLLOW-UP HINT DATA
+    and a 'Suggest follow-ups' instruction — pure token waste since the
+    feature was removed (schema has nowhere to put them)."""
+
+    def test_lean_prompt_has_no_followup_content(self):
+        from scripts.chat.narrator import build_lean_narrator_prompt
+        prompt = build_lean_narrator_prompt("who was Karo?", _make_karo_result())
+        assert "FOLLOW-UP HINT" not in prompt
+        assert "Suggest follow-ups" not in prompt
+
+    def test_full_prompt_has_no_followup_content(self):
+        from scripts.chat.narrator import _build_narrator_prompt
+        prompt = _build_narrator_prompt("who was Karo?", _make_karo_result())
+        assert "FOLLOW-UP HINT" not in prompt
+        assert "Suggest follow-ups" not in prompt
