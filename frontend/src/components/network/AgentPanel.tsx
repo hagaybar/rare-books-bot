@@ -6,10 +6,11 @@ interface Props {
   agent: AgentDetail;
   onClose: () => void;
   onAgentClick: (agentNorm: string) => void;
+  onPlaceSelect?: (placeNorm: string) => void;
   mobile?: boolean;
 }
 
-export default function AgentPanel({ agent, onClose, onAgentClick, mobile }: Props) {
+export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect, mobile }: Props) {
   const [expandedSummary, setExpandedSummary] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -50,7 +51,12 @@ export default function AgentPanel({ agent, onClose, onAgentClick, mobile }: Pro
             </h2>
             {years && (
               <p className="text-sm text-gray-500">
-                {years} &middot; {agent.place_norm ?? 'Unknown'}
+                {years} &middot;{' '}
+                {agent.place_norm && onPlaceSelect ? (
+                  <button onClick={() => onPlaceSelect(agent.place_norm!)} className="text-blue-600 hover:text-blue-800 capitalize" dir="auto">
+                    {agent.place_norm}
+                  </button>
+                ) : (agent.place_norm ?? 'Unknown')}
               </p>
             )}
             {agent.occupations.length > 0 && (

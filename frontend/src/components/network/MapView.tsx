@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useRef } from 'react';
+import { useMemo, useCallback, useRef, useState } from 'react';
 import MapGL, { NavigationControl } from 'react-map-gl/maplibre';
 import { DeckGL } from '@deck.gl/react';
 import { ArcLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
@@ -12,6 +12,7 @@ interface Props {
   selectedAgent: string | null;
   onAgentClick: (node: MapNode) => void;
   onBackgroundClick: () => void;
+  onPlaceSelect?: (placeNorm: string) => void;
   isLoading: boolean;
   colorBy: ColorByMode;
 }
@@ -32,11 +33,14 @@ export default function MapView({
   selectedAgent,
   onAgentClick,
   onBackgroundClick,
+  onPlaceSelect,
   isLoading,
   colorBy,
 }: Props) {
   // Track whether a deck.gl object was picked on this click
   const pickedRef = useRef(false);
+  // Popover for a clicked stack of co-located agents (issue #23)
+  const [stack, setStack] = useState<{ x: number; y: number; nodes: MapNode[] } | null>(null);
 
   // Build a lookup for node positions (use JavaScript's built-in Map, not the react-map-gl component)
   const nodeMap = useMemo(() => {
@@ -84,6 +88,17 @@ export default function MapView({
     return positions;
   }, [nodes]);
 
+  // Co-located agents per coordinate (issue #23)
+  const coLocated = useMemo(() => {
+    const m = new globalThis.Map<string, MapNode[]>();
+    for (const n of nodes) {
+      const key = `${n.lat},${n.lon}`;
+      if (!m.has(key)) m.set(key, []);
+      m.get(key)!.push(n);
+    }
+    return m;
+  }, [nodes]);
+
   const scatterLayer = useMemo(
     () =>
       new ScatterplotLayer<MapNode>({
@@ -118,7 +133,13 @@ export default function MapView({
         onClick: (info) => {
           if (info.object) {
             pickedRef.current = true;
-            onAgentClick(info.object);
+            const here = coLocated.get(`${info.object.lat},${info.object.lon}`) ?? [info.object];
+            if (here.length > 1) {
+              setStack({ x: info.x, y: info.y, nodes: here });
+            } else {
+              setStack(null);
+              onAgentClick(info.object);
+            }
           }
         },
         updateTriggers: {
@@ -128,7 +149,7 @@ export default function MapView({
           getLineWidth: [selectedAgent],
         },
       }),
-    [nodes, selectedAgent, connectedAgents, onAgentClick, colorBy, jitteredPositions]
+    [nodes, selectedAgent, connectedAgents, onAgentClick, colorBy, jitteredPositions, coLocated]
   );
 
   const arcLayer = useMemo(
@@ -232,6 +253,7 @@ export default function MapView({
       pickedRef.current = false;
       return;
     }
+    setStack(null);
     onBackgroundClick();
   }, [onBackgroundClick]);
 
@@ -273,6 +295,45 @@ export default function MapView({
           <NavigationControl position="top-left" />
         </MapGL>
       </DeckGL>
+
+      {/* Stacked-agents popover (issue #23) */}
+      {stack && (
+        <div
+          className="absolute z-20 bg-white rounded-lg shadow-xl border border-gray-200 text-sm w-64 max-h-72 overflow-hidden flex flex-col"
+          style={{ left: Math.min(stack.x + 8, 600), top: Math.min(stack.y + 8, 400) }}
+        >
+          <div className="px-3 py-2 border-b flex items-center justify-between bg-gray-50">
+            <span className="font-medium text-gray-700 capitalize truncate" dir="auto">
+              {stack.nodes[0].place_norm ?? 'This location'} — {stack.nodes.length} agents
+            </span>
+            <button onClick={() => setStack(null)} className="text-gray-400 hover:text-gray-600 ml-2 leading-none">&times;</button>
+          </div>
+          {onPlaceSelect && stack.nodes[0].place_norm && (
+            <button
+              onClick={() => { onPlaceSelect(stack.nodes[0].place_norm!); setStack(null); }}
+              className="px-3 py-2 text-left text-blue-600 hover:bg-blue-50 border-b text-xs"
+            >
+              📚 Books printed in {stack.nodes[0].place_norm} &rarr;
+            </button>
+          )}
+          <ul className="overflow-y-auto">
+            {stack.nodes
+              .slice()
+              .sort((a, b) => b.connection_count - a.connection_count)
+              .map((n) => (
+                <li key={n.agent_norm}>
+                  <button
+                    onClick={() => { onAgentClick(n); setStack(null); }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-gray-50 flex justify-between items-center gap-2"
+                  >
+                    <span className="truncate" dir="auto">{n.display_name}</span>
+                    <span className="text-xs text-gray-400 shrink-0">{n.connection_count}</span>
+                  </button>
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
