@@ -78,7 +78,7 @@ Every response--even internal ones--must be grounded in:
 ```
 data/              # marc_source/, canonical/, index/, runs/, qa/, chat/
 data/eval/          # model config, benchmark queries, evaluation runs
-docs/current/      # 11 topic files -- single source of truth per area
+docs/current/      # 12 topic files -- single source of truth per area
 docs/history/      # Historical journal -- audits, reports, plans, specs
 docs/superpowers/  # Skill output targets (specs/, plans/)
 docs/testing/      # Manual testing guide
@@ -123,6 +123,7 @@ Detailed documentation lives in `docs/current/`. Consult these files for impleme
 | Architecture | docs/current/architecture.md | Project structure, key classes, model index |
 | Data Model | docs/current/data-model.md | End-to-end data flow, schemas, strengths/weaknesses |
 | Data Quality | docs/current/data-quality.md | Quality checks, fix scripts, sampling protocol, remediation |
+| Network View | docs/current/network-view.md | Map explorer: nodes/edges, publishers, community facet, cross-script search, /network API |
 
 ## Documentation Maintenance Protocol
 
