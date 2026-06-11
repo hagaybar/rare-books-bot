@@ -285,6 +285,7 @@ class M3NetworkColumns:
         HAS_WIKIPEDIA = "has_wikipedia"
         RECORD_COUNT = "record_count"
         CONNECTION_COUNT = "connection_count"
+        NODE_TYPE = "node_type"  # issue #27 (publisher nodes)
 
     class NetworkEdges:
         SOURCE_AGENT_NORM = "source_agent_norm"
