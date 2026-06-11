@@ -7,10 +7,11 @@ interface Props {
   onClose: () => void;
   onAgentClick: (agentNorm: string) => void;
   onPlaceSelect?: (placeNorm: string) => void;
+  onExplore?: (agentNorm: string, displayName: string) => void;
   mobile?: boolean;
 }
 
-export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect, mobile }: Props) {
+export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect, onExplore, mobile }: Props) {
   const [expandedSummary, setExpandedSummary] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -194,9 +195,17 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
             ))}
           </ul>
         )}
+        {onExplore && (
+          <button
+            onClick={() => onExplore(agent.agent_norm, agent.display_name)}
+            className="text-sm text-blue-600 hover:text-blue-800 block mt-3 font-medium"
+          >
+            Explore connections &rarr;
+          </button>
+        )}
         <a
           href={`/chat?q=${encodeURIComponent(`books ${isPublisher ? 'printed by' : 'by'} ${agent.display_name}`)}`}
-          className="text-sm text-blue-500 hover:text-blue-700 block mt-3"
+          className="text-sm text-blue-500 hover:text-blue-700 block mt-2"
         >
           Ask about this {isPublisher ? 'house' : 'figure'} in Chat &rarr;
         </a>
