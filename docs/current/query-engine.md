@@ -166,6 +166,17 @@ Defined in `scripts/query/models.py`:
 
 ---
 
+## Unresolved Entity Recovery (issues #3, #4)
+
+When a `resolve_agent`/`resolve_publisher` step finds nothing, the dependent retrieve must never query the literal `$step_N` string. Instead (`scripts/chat/executor.py`):
+
+1. **Token probes**: CONTAINS probes built from the resolve step's `query_name` and its planner-supplied variants (`ResolvedEntity.query_variants`) — a Hebrew name ("דפוס פלנטין") typically carries its only Latin-script token in the variants ("Plantin"). Generic trade words (דפוס, press, officina…) are stoplisted.
+2. **Twin-field probes**: publisher↔agent_norm cross-probes (printers are catalogued as both — "Daniel Bomberg" the agent vs "daniel bomberg, venice" the publisher).
+3. **Union, not first hit**: all probe hits are unioned (hard filters stay ANDed inside each probe), so a 1-record accidental match can't block a 12-record recovery.
+4. **Last resort**: drop the probe, keep remaining hard filters; honest empty if nothing remains.
+
+Every move is recorded in `RecordSet.relaxations`. Multi-value resolved bindings pass `normalize_filter_value` (comma'd canonical names like "bomberg, daniel" match the comma-stripped SQL expression). Acceptance: `tests/integration/test_unresolved_ref_recovery.py` replays the stored 2026-06-10 zero-result plans deterministically.
+
 ## Relaxation Ladder & Concept Bridge
 
 Multi-concept queries (e.g., "art, maps and cartography") previously returned 0 records because all filters are ANDed (`scripts/query/db_adapter.py` joins every condition with `AND`) and the catalog's vocabulary rarely matches the user's concept words. Issue #2 fixed this with a **deterministic, LLM-free relaxation ladder** in the scholar-pipeline executor (`scripts/chat/executor.py`).
