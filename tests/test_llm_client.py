@@ -90,3 +90,45 @@ async def test_structured_completion_passes_model_to_litellm():
 
         call_kwargs = mock_litellm.acompletion.call_args[1]
         assert call_kwargs["model"] == "anthropic/claude-sonnet-4-6"
+
+
+@pytest.mark.asyncio
+async def test_streaming_completion_logs_usage():
+    """Issue #12: streaming calls were never cost-logged — narrator_streaming
+    had 0 entries in 4,616 log lines, and per-user quotas missed every
+    streamed token (the default UI path)."""
+    def _chunk(text):
+        c = MagicMock()
+        c.choices = [MagicMock()]
+        c.choices[0].delta.content = text
+        c.usage = None
+        return c
+
+    usage_chunk = MagicMock()
+    usage_chunk.choices = []  # OpenAI's include_usage final chunk has no choices
+    usage_chunk.usage.prompt_tokens = 120
+    usage_chunk.usage.completion_tokens = 45
+
+    async def fake_stream():
+        for c in (_chunk("Hello "), _chunk("world"), usage_chunk):
+            yield c
+
+    with (
+        patch("litellm.acompletion", new_callable=AsyncMock, return_value=fake_stream()) as mock_acomp,
+        patch("scripts.models.llm_client.log_llm_call") as mock_log,
+    ):
+        chunks = []
+        async for ch in streaming_completion(
+            model="gpt-4.1", system="sys", user="usr", call_type="narrator_streaming"
+        ):
+            chunks.append(ch)
+
+    assert "".join(chunks) == "Hello world"
+    # usage must be requested from the provider
+    assert mock_acomp.call_args.kwargs.get("stream_options") == {"include_usage": True}
+    # and the call must be logged with real token counts
+    mock_log.assert_called_once()
+    logged = mock_log.call_args.kwargs
+    assert logged["call_type"] == "narrator_streaming"
+    assert logged["response"].usage.prompt_tokens == 120
+    assert logged["response"].usage.completion_tokens == 45

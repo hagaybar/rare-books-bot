@@ -237,9 +237,37 @@ async def streaming_completion(
         model=model,
         messages=messages,
         stream=True,
+        # Issue #12: ask the provider for token usage (arrives as a final
+        # chunk with empty choices) so streamed calls are cost-logged and
+        # count against per-user quotas like every other call.
+        stream_options={"include_usage": True},
     )
 
+    usage = None
+    full_text: list = []
     async for chunk in response:
+        chunk_usage = getattr(chunk, "usage", None)
+        if chunk_usage:
+            usage = chunk_usage
+        if not chunk.choices:
+            continue  # the usage-only final chunk has no choices
         delta = chunk.choices[0].delta.content
         if delta:
+            full_text.append(delta)
             yield delta
+
+    # Log cost + feed the token accumulator (quota accounting) exactly like
+    # non-streaming calls. Never let logging break the stream's consumer.
+    try:
+        from types import SimpleNamespace
+
+        log_llm_call(
+            call_type=call_type,
+            model=model,
+            system_prompt=system,
+            user_prompt=user,
+            response=SimpleNamespace(usage=usage, text="".join(full_text)),
+            extra_metadata=extra_metadata,
+        )
+    except Exception:
+        logger.warning("streaming usage logging failed", exc_info=True)
