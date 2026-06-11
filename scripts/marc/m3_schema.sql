@@ -97,6 +97,7 @@ CREATE TABLE subjects (
     authority_uri TEXT,  -- Authority URI from $0 (e.g., NLI/VIAF/LC authority link)
     parts TEXT NOT NULL,  -- JSON object of structured parts
     source TEXT NOT NULL,  -- JSON array of MARC sources with occurrence
+    value_he TEXT,  -- Hebrew equivalent heading (fix_19 bilingual search)
     FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE
 );
 
@@ -199,45 +200,46 @@ CREATE INDEX idx_physical_descriptions_record_id ON physical_descriptions(record
 -- FULL-TEXT SEARCH (FTS5 virtual table for titles and subjects)
 -- ==============================================================================
 
--- Full-text search on titles
+-- Full-text search on titles (external content; issue #9: the previous
+-- definition declared mms_id/title_type columns the titles table lacks,
+-- which broke every UPDATE/DELETE. Query paths join via rowid only.)
 CREATE VIRTUAL TABLE titles_fts USING fts5(
-    mms_id UNINDEXED,
-    title_type UNINDEXED,
     value,
     content=titles,
     content_rowid=id
 );
 
--- Triggers to keep FTS table in sync
+-- External-content FTS requires the 'delete'-command trigger form
 CREATE TRIGGER titles_fts_insert AFTER INSERT ON titles BEGIN
-    INSERT INTO titles_fts(rowid, mms_id, title_type, value)
-    SELECT NEW.id, r.mms_id, NEW.title_type, NEW.value
-    FROM records r WHERE r.id = NEW.record_id;
+    INSERT INTO titles_fts(rowid, value) VALUES (new.id, new.value);
 END;
 
 CREATE TRIGGER titles_fts_delete AFTER DELETE ON titles BEGIN
-    DELETE FROM titles_fts WHERE rowid = OLD.id;
+    INSERT INTO titles_fts(titles_fts, rowid, value)
+    VALUES ('delete', old.id, old.value);
 END;
 
 CREATE TRIGGER titles_fts_update AFTER UPDATE ON titles BEGIN
-    DELETE FROM titles_fts WHERE rowid = OLD.id;
-    INSERT INTO titles_fts(rowid, mms_id, title_type, value)
-    SELECT NEW.id, r.mms_id, NEW.title_type, NEW.value
-    FROM records r WHERE r.id = NEW.record_id;
+    INSERT INTO titles_fts(titles_fts, rowid, value)
+    VALUES ('delete', old.id, old.value);
+    INSERT INTO titles_fts(rowid, value) VALUES (new.id, new.value);
 END;
 
--- Full-text search on subjects
+-- Full-text search on subjects (contentless + contentless_delete so the
+-- standard delete/update triggers are legal — issue #9; indexes the
+-- bilingual concatenation value + value_he, fix_19)
 CREATE VIRTUAL TABLE subjects_fts USING fts5(
-    mms_id UNINDEXED,
+    mms_id,
     value,
-    content=subjects,
-    content_rowid=id
+    content='',
+    contentless_delete=1
 );
 
 -- Triggers for subjects FTS
 CREATE TRIGGER subjects_fts_insert AFTER INSERT ON subjects BEGIN
     INSERT INTO subjects_fts(rowid, mms_id, value)
-    SELECT NEW.id, r.mms_id, NEW.value
+    SELECT NEW.id, r.mms_id,
+           NEW.value || ' ' || COALESCE(NEW.value_he, '')
     FROM records r WHERE r.id = NEW.record_id;
 END;
 
@@ -248,7 +250,8 @@ END;
 CREATE TRIGGER subjects_fts_update AFTER UPDATE ON subjects BEGIN
     DELETE FROM subjects_fts WHERE rowid = OLD.id;
     INSERT INTO subjects_fts(rowid, mms_id, value)
-    SELECT NEW.id, r.mms_id, NEW.value
+    SELECT NEW.id, r.mms_id,
+           NEW.value || ' ' || COALESCE(NEW.value_he, '')
     FROM records r WHERE r.id = NEW.record_id;
 END;
 

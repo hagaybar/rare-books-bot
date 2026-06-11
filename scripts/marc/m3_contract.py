@@ -37,6 +37,13 @@ class M3Tables:
     AGENT_AUTHORITIES = "agent_authorities"
     AGENT_ALIASES = "agent_aliases"
 
+    # Network / enrichment tables (added by the network + wikipedia work)
+    NETWORK_AGENTS = "network_agents"
+    NETWORK_EDGES = "network_edges"
+    RECORD_SCOPE_FLAGS = "record_scope_flags"
+    WIKIPEDIA_CACHE = "wikipedia_cache"
+    WIKIPEDIA_CONNECTIONS = "wikipedia_connections"
+
     # FTS5 virtual tables
     TITLES_FTS = "titles_fts"
     SUBJECTS_FTS = "subjects_fts"
@@ -112,6 +119,7 @@ class M3Columns:
         AUTHORITY_URI = "authority_uri"
         PARTS = "parts"
         SOURCE = "source"
+        VALUE_HE = "value_he"  # Hebrew equivalent (fix_19 bilingual search)
 
     # agents table (M1 raw + M2 normalized)
     class Agents:
@@ -260,6 +268,71 @@ class M3Columns:
 
 
 # Commonly used table aliases in SQL queries
+class M3NetworkColumns:
+    """Columns of the network / wikipedia enrichment tables (contracted
+    2026-06-11 — they existed in the DB without contract coverage)."""
+
+    class NetworkAgents:
+        AGENT_NORM = "agent_norm"
+        DISPLAY_NAME = "display_name"
+        PLACE_NORM = "place_norm"
+        LAT = "lat"
+        LON = "lon"
+        BIRTH_YEAR = "birth_year"
+        DEATH_YEAR = "death_year"
+        OCCUPATIONS = "occupations"
+        PRIMARY_ROLE = "primary_role"
+        HAS_WIKIPEDIA = "has_wikipedia"
+        RECORD_COUNT = "record_count"
+        CONNECTION_COUNT = "connection_count"
+
+    class NetworkEdges:
+        SOURCE_AGENT_NORM = "source_agent_norm"
+        TARGET_AGENT_NORM = "target_agent_norm"
+        CONNECTION_TYPE = "connection_type"
+        CONFIDENCE = "confidence"
+        RELATIONSHIP = "relationship"
+        BIDIRECTIONAL = "bidirectional"
+        EVIDENCE = "evidence"
+
+    class RecordScopeFlags:
+        ID = "id"
+        RECORD_ID = "record_id"
+        FLAG = "flag"
+        REASON = "reason"
+        CREATED_AT = "created_at"
+
+    class WikipediaCache:
+        ID = "id"
+        WIKIDATA_ID = "wikidata_id"
+        WIKIPEDIA_TITLE = "wikipedia_title"
+        SUMMARY_EXTRACT = "summary_extract"
+        CATEGORIES = "categories"
+        SEE_ALSO_TITLES = "see_also_titles"
+        ARTICLE_WIKILINKS = "article_wikilinks"
+        SECTIONS_JSON = "sections_json"
+        NAME_VARIANTS = "name_variants"
+        PAGE_ID = "page_id"
+        REVISION_ID = "revision_id"
+        LANGUAGE = "language"
+        FETCHED_AT = "fetched_at"
+        EXPIRES_AT = "expires_at"
+
+    class WikipediaConnections:
+        ID = "id"
+        SOURCE_AGENT_NORM = "source_agent_norm"
+        TARGET_AGENT_NORM = "target_agent_norm"
+        SOURCE_WIKIDATA_ID = "source_wikidata_id"
+        TARGET_WIKIDATA_ID = "target_wikidata_id"
+        RELATIONSHIP = "relationship"
+        TAGS = "tags"
+        CONFIDENCE = "confidence"
+        SOURCE_TYPE = "source_type"
+        EVIDENCE = "evidence"
+        BIDIRECTIONAL = "bidirectional"
+        CREATED_AT = "created_at"
+
+
 class M3Aliases:
     """Common table aliases used in M4 query builder."""
     RECORDS = "r"
@@ -306,6 +379,11 @@ EXPECTED_SCHEMA = {
     M3Tables.PUBLISHER_VARIANTS: _get_class_string_attrs(M3Columns.PublisherVariants),
     M3Tables.AGENT_AUTHORITIES: _get_class_string_attrs(M3Columns.AgentAuthorities),
     M3Tables.AGENT_ALIASES: _get_class_string_attrs(M3Columns.AgentAliases),
+    M3Tables.NETWORK_AGENTS: _get_class_string_attrs(M3NetworkColumns.NetworkAgents),
+    M3Tables.NETWORK_EDGES: _get_class_string_attrs(M3NetworkColumns.NetworkEdges),
+    M3Tables.RECORD_SCOPE_FLAGS: _get_class_string_attrs(M3NetworkColumns.RecordScopeFlags),
+    M3Tables.WIKIPEDIA_CACHE: _get_class_string_attrs(M3NetworkColumns.WikipediaCache),
+    M3Tables.WIKIPEDIA_CONNECTIONS: _get_class_string_attrs(M3NetworkColumns.WikipediaConnections),
 }
 
 
