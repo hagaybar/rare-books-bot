@@ -1,0 +1,790 @@
+[
+ {
+  "query_id": "q03",
+  "total_records": 115,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 4474,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.0
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.5
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 1519,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.0
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 2,
+      "completeness": 2,
+      "combined": 2.25
+     },
+     "full_41": {
+      "accuracy": 2,
+      "completeness": 2,
+      "combined": 2.25
+     },
+     "full_mini": {
+      "accuracy": 2,
+      "completeness": 4,
+      "combined": 3.25
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q05",
+  "total_records": 19,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 7355,
+    "deterministic": {
+     "cited_ids": 1,
+     "hallucinated_ids": [],
+     "title_coverage": 0.263
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 3,
+      "combined": 3.5
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 4,
+      "combined": 4.25
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 4710,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.053
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 3,
+      "combined": 3.5
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.5
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q08",
+  "total_records": 122,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 3997,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.1
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.25
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.5
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 2356,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.033
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 2,
+      "completeness": 2,
+      "combined": 2.5
+     },
+     "full_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.25
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q10",
+  "total_records": 215,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 5156,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.067
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 4,
+      "completeness": 3,
+      "combined": 4.0
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 3024,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.0
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 2,
+      "completeness": 2,
+      "combined": 2.5
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 4,
+      "combined": 4.25
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q12",
+  "total_records": 20,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 5436,
+    "deterministic": {
+     "cited_ids": 6,
+     "hallucinated_ids": [],
+     "title_coverage": 0.25
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.5
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 4,
+      "combined": 4.25
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 3756,
+    "deterministic": {
+     "cited_ids": 3,
+     "hallucinated_ids": [],
+     "title_coverage": 0.3
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.25
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 4,
+      "combined": 4.25
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q20",
+  "total_records": 13,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 6723,
+    "deterministic": {
+     "cited_ids": 2,
+     "hallucinated_ids": [],
+     "title_coverage": 0.846
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 3,
+      "combined": 3.0
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 2672,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.692
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 3,
+      "combined": 3.25
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.5
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q22",
+  "total_records": 12,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 6832,
+    "deterministic": {
+     "cited_ids": 2,
+     "hallucinated_ids": [],
+     "title_coverage": 0.917
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 4,
+      "completeness": 4,
+      "combined": 4.25
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 4950,
+    "deterministic": {
+     "cited_ids": 1,
+     "hallucinated_ids": [],
+     "title_coverage": 0.25
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 3,
+      "combined": 3.5
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q31",
+  "total_records": 158,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 4938,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.2
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 3412,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.2
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 4,
+      "combined": 4.25
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.5
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q37",
+  "total_records": 62,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 2705,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.133
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 2,
+      "completeness": 1,
+      "combined": 2.25
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 1155,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.133
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 2,
+      "completeness": 1,
+      "combined": 2.0
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q41",
+  "total_records": 115,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 3408,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.0
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.25
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 1968,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.0
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.0
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.5
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q43",
+  "total_records": 4,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 3596,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.75
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 5,
+      "combined": 4.5
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 2037,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.75
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q47",
+  "total_records": 3,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 2500,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.333
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 2109,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.333
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 5.0
+     },
+     "full_41": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 5,
+      "combined": 4.75
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q50",
+  "skipped": "zero grounding"
+ },
+ {
+  "query_id": "q56",
+  "total_records": 253,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 3056,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.033
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.0
+     },
+     "full_41": {
+      "accuracy": 3,
+      "completeness": 2,
+      "combined": 3.0
+     },
+     "full_mini": {
+      "accuracy": 4,
+      "completeness": 3,
+      "combined": 4.0
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 2827,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.133
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 2,
+      "completeness": 2,
+      "combined": 2.5
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 4,
+      "combined": 4.25
+     },
+     "full_mini": {
+      "accuracy": 4,
+      "completeness": 3,
+      "combined": 3.75
+     }
+    }
+   }
+  }
+ },
+ {
+  "query_id": "q57",
+  "total_records": 601,
+  "narratives": {
+   "gpt-4.1": {
+    "len": 2021,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.0
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 2,
+      "completeness": 1,
+      "combined": 2.25
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 5,
+      "combined": 4.5
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.75
+     }
+    }
+   },
+   "gpt-4.1-mini": {
+    "len": 1837,
+    "deterministic": {
+     "cited_ids": 0,
+     "hallucinated_ids": [],
+     "title_coverage": 0.0
+    },
+    "judges": {
+     "thin_41": {
+      "accuracy": 2,
+      "completeness": 2,
+      "combined": 2.25
+     },
+     "full_41": {
+      "accuracy": 4,
+      "completeness": 5,
+      "combined": 4.5
+     },
+     "full_mini": {
+      "accuracy": 5,
+      "completeness": 4,
+      "combined": 4.5
+     }
+    }
+   }
+  }
+ }
+]
