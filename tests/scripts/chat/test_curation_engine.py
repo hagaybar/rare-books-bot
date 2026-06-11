@@ -397,3 +397,50 @@ class TestCurationScorerClass:
         # Dimension coverage should be tracked
         assert "dimension_coverage" in result
         assert isinstance(result["dimension_coverage"], dict)
+
+
+class TestPedagogicalSignals:
+    """Issue #6: curation must reward show-and-tell value (visual material),
+    span languages, and fit this collection's 16th-19th-c. mass (not an
+    incunabula-era curve)."""
+
+    def _candidate(self, rid="r1", **kw):
+        base = {"record_id": rid, "date_start": 1650, "place_norm": "venice",
+                "subjects": ["Printing"], "publisher": "p", "title": "A long enough title",
+                "author": "someone", "description": None}
+        base.update(kw)
+        return base
+
+    def test_visual_material_raises_score(self):
+        from scripts.chat.curation_engine import score_for_curation
+        plain = self._candidate()
+        visual = self._candidate(physical_description="2 v. : ill., 10 folded maps")
+        assert score_for_curation(visual) > score_for_curation(plain)
+
+    def test_significance_mentions_visual_material(self):
+        from scripts.chat.curation_engine import select_curated_items
+        items = select_curated_items(
+            [self._candidate(physical_description="ill., maps, plates")], n=1)
+        assert "map" in items[0]["significance"].lower() or "plate" in items[0]["significance"].lower()
+
+    def test_temporal_curve_fits_collection_mass(self):
+        from scripts.chat.curation_engine import _compute_temporal_score
+        # 17th-century core of the collection must not be scored away
+        assert _compute_temporal_score({"date_start": 1650}) >= 0.55
+        # but antiquity ordering still holds
+        assert (_compute_temporal_score({"date_start": 1490})
+                > _compute_temporal_score({"date_start": 1550})
+                > _compute_temporal_score({"date_start": 1650})
+                > _compute_temporal_score({"date_start": 1850}))
+
+    def test_language_adds_diversity_dimension(self):
+        from scripts.chat.curation_engine import select_curated_items
+        # 3 identical-score candidates: two Latin, one Hebrew -> with n=2 the
+        # Hebrew one must be picked (new language dimension), not two Latins.
+        cands = [
+            self._candidate("lat1", language="lat"),
+            self._candidate("lat2", language="lat"),
+            self._candidate("heb1", language="heb"),
+        ]
+        picked = {i["record_id"] for i in select_curated_items(cands, n=2)}
+        assert "heb1" in picked
