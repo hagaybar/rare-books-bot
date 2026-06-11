@@ -2,16 +2,18 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { fetchMapData, fetchAgentDetail } from '../api/network';
+import { fetchMapData, fetchAgentDetail, fetchPlaceDetail } from '../api/network';
 import { useNetworkStore } from '../stores/networkStore';
 import MapView from '../components/network/MapView';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
+import PlacePanel from '../components/network/PlacePanel';
 import Legend from '../components/network/Legend';
 import type { MapNode } from '../types/network';
 
 export default function Network() {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { connectionTypes, minConfidence, century, place, role, agentLimit, colorBy } =
@@ -75,6 +77,16 @@ export default function Network() {
     enabled: !!selectedAgent,
   });
 
+  const { data: placeDetail } = useQuery({
+    queryKey: ['network-place', selectedPlace],
+    queryFn: () => fetchPlaceDetail(selectedPlace!),
+    enabled: !!selectedPlace,
+  });
+
+  // Selecting an agent and a place are mutually exclusive in the side panel.
+  const selectAgent = (norm: string) => { setSelectedPlace(null); setSelectedAgent(norm); };
+  const selectPlace = (norm: string) => { setSelectedAgent(null); setSelectedPlace(norm); };
+
   // Show toast on API error (map retains last successful data via placeholderData)
   useEffect(() => {
     if (error) toast.error(`Map data error: ${String(error)}`);
@@ -92,11 +104,12 @@ export default function Network() {
   }, [selectedAgent]);
 
   const handleAgentClick = (node: MapNode) => {
-    setSelectedAgent(node.agent_norm);
+    selectAgent(node.agent_norm);
   };
 
   const handleClosePanel = () => {
     setSelectedAgent(null);
+    setSelectedPlace(null);
   };
 
   // Count active filters for the badge
@@ -200,6 +213,7 @@ export default function Network() {
             selectedAgent={selectedAgent}
             onAgentClick={handleAgentClick}
             onBackgroundClick={handleClosePanel}
+            onPlaceSelect={selectPlace}
             isLoading={isLoading}
             colorBy={colorBy}
           />
@@ -217,10 +231,27 @@ export default function Network() {
         {/* Desktop agent panel — sidebar */}
         {selectedAgent && agentDetail && (
           <div className="hidden md:block">
-            <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={(norm) => setSelectedAgent(norm)} />
+            <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={selectAgent} onPlaceSelect={selectPlace} />
+          </div>
+        )}
+        {/* Desktop place panel — sidebar */}
+        {selectedPlace && placeDetail && (
+          <div className="hidden md:block">
+            <PlacePanel place={placeDetail} onClose={handleClosePanel} />
           </div>
         )}
       </div>
+
+      {/* Mobile place panel — bottom sheet */}
+      {selectedPlace && placeDetail && (
+        <div className="md:hidden fixed inset-0 z-30" onClick={handleClosePanel}>
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute bottom-14 left-0 right-0 bg-white rounded-t-2xl shadow-xl max-h-[75vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center pt-2 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full" /></div>
+            <PlacePanel place={placeDetail} onClose={handleClosePanel} mobile />
+          </div>
+        </div>
+      )}
 
       {/* Mobile agent panel — bottom sheet */}
       {selectedAgent && agentDetail && (
@@ -234,7 +265,7 @@ export default function Network() {
             <div className="flex justify-center pt-2 pb-1">
               <div className="w-10 h-1 bg-gray-300 rounded-full" />
             </div>
-            <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={(norm) => setSelectedAgent(norm)} mobile />
+            <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={selectAgent} onPlaceSelect={selectPlace} mobile />
           </div>
         </div>
       )}
