@@ -236,6 +236,41 @@ def test_ego_unknown_agent_404(client):
     assert resp.status_code == 404
 
 
+def test_path_finds_shortest_with_evidence(client):
+    """Issue #33: shortest path between two agents, each hop evidenced."""
+    resp = client.get("/network/path?source=ego, n3&target=ego, n2&connection_types=same_record")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["found"] is True
+    assert [n["agent_norm"] for n in data["nodes"]] == ["ego, n3", "ego, center", "ego, n2"]
+    assert data["hops"] == 2
+    # one edge per hop, each carrying evidence (an MMS id)
+    assert len(data["edges"]) == 2
+    assert all(e["evidence"] for e in data["edges"])
+
+
+def test_path_same_node_is_zero_hops(client):
+    resp = client.get("/network/path?source=ego, center&target=ego, center&connection_types=same_record")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["found"] is True and data["hops"] == 0
+    assert [n["agent_norm"] for n in data["nodes"]] == ["ego, center"]
+
+
+def test_path_none_when_disconnected(client):
+    """Maimonides has no same_record edges -> unreachable from the ego cluster."""
+    resp = client.get("/network/path?source=ego, center&target=משה בן מימון&connection_types=same_record")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["found"] is False
+    assert data["nodes"] == [] and data["edges"] == []
+
+
+def test_path_unknown_agent_404(client):
+    resp = client.get("/network/path?source=nobody&target=ego, center&connection_types=same_record")
+    assert resp.status_code == 404
+
+
 def test_map_nodes_and_meta_carry_community(client):
     """Issue #28: nodes expose their community and meta lists the palette order."""
     resp = client.get("/network/map")
