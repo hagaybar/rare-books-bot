@@ -1,6 +1,6 @@
 # Data Quality
 
-> Last verified: 2026-04-12
+> Last verified: 2026-06-11
 > Source of truth for: Quality checks, fix scripts, sampling protocol, remediation processes
 
 ## 1. Overview
@@ -261,6 +261,37 @@ bash scripts/qa/fixes/run_quick_wins.sh
 - **What it does**: Adds a `value_he` column to the subjects table. Translates 3,094+ subject headings into Hebrew using a component-based approach (base terms + subdivisions translated independently, then composed). Rebuilds the `subjects_fts` FTS5 index to include Hebrew values for bilingual search. Coverage: 78.4% of unique headings, 83.6% of subject rows.
 - **Verification**: `SELECT COUNT(*) FROM subjects WHERE value_he IS NOT NULL;` should return ~3,094+.
 - **Dimension**: Subject Coverage (Tier 2)
+
+### Network fixes (issues #9, #22, #26–#28)
+
+These operate on the materialized `network_*` tables behind the Network view. They share a **dry-run-by-default** contract: run without flags to preview counts, add `--apply` to write (taking a `.pre-fixNN.bak` backup first). They use `--db <path>` (not `--db-path`).
+
+#### Fix 20: Rebuild FTS Indexes
+- **Problem**: `subjects_fts` / `titles_fts` FTS5 indexes drifted out of parity with their base tables (issue #9).
+- **Fix script**: `scripts/qa/fixes/fix_20_rebuild_fts.py` (companion check: `scripts/qa/fts_parity_check.py`).
+- **What it does**: Drops and rebuilds the FTS5 contentless indexes from the base tables, restoring count parity and round-trip search.
+- **Verification**: `python3 scripts/qa/fts_parity_check.py` reports parity.
+
+#### Fix 21: Repair Network Display Names
+- **Problem**: ~39 network nodes were labeled with a **book title** instead of the person (e.g. Joseph Karo shown as "Kessef Mishneh") because the display-name fallback took an authority label that matched a catalog title (issue #22, §A7).
+- **Fix script**: `scripts/qa/fixes/fix_21_repair_network_display_names.py`
+- **What it does**: Corruption-signature only — repairs nodes whose current name is a minority/work entity, preferring the most-frequent authority person name. Surgical, not a rebuild.
+
+#### Fix 22: Add `same_record` Edges
+- **Problem**: The network's edges were 99.7% Wikipedia-derived; agents co-occurring on the **same catalogue record** were never materialized (issue #26).
+- **Fix script**: `scripts/qa/fixes/fix_22_add_same_record_edges.py`
+- **What it does**: Adds ~2,202 role-typed, MMS-evidenced `same_record` edges and recomputes `connection_count`. Connects ~850 previously-isolated agents.
+
+#### Fix 23: Add Publisher/Printing-House Nodes
+- **Problem**: Printing houses (Bomberg, Plantin, Aldine, Soncino…) — the hubs of a hand-press collection — were not network nodes (issue #27, §A4). Requires `data/normalization/place_geocodes.json` present (on prod: `docker cp` into `/app/data/normalization/`, since `deploy.sh` excludes `data/`).
+- **Fix script**: `scripts/qa/fixes/fix_23_add_publisher_nodes.py`
+- **What it does**: Promotes curated `publisher_authorities` to `network_agents` rows (`node_type='publisher'`, geocoded, `pub:` key prefix), and links authors to the house via `printed_by` edges. ~51 nodes, ~351 edges.
+
+#### Fix 24: Community Facet + same_place_period Anachronism
+- **Problem**: (a) 22,132 `category` edges (76% of all edges) were mostly Wikipedia maintenance noise rendered as arcs; (b) `same_place_period` used imprint dates as activity dates, so posthumous reprints made dead agents "active" (issue #28, §A5/§A11).
+- **Fix script**: `scripts/qa/fixes/fix_24_category_facet_and_anachronism.py`
+- **What it does**: Adds `network_agents.community` and assigns each node its most-specific allow-listed category (top-20 by membership; maintenance categories denied) — category becomes a **coloring facet**, not an arc. Re-derives `same_place_period` with lifespan clamping (`[birth_year, death_year]`). Result: 402 nodes colored / 20 communities; `same_place_period` 438 → 75 (0 lifespan violations).
+- **Note**: Adds `network_agents.community` — must stay registered in `scripts/marc/m3_contract.py` (the schema-contract test enforces this).
 
 ## 4. Sampling Protocol
 
