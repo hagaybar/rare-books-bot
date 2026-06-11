@@ -1,23 +1,34 @@
 import { useState } from 'react';
 import type { ColorByMode, ConnectionType } from '../../types/network';
-import { CENTURY_COLORS, ROLE_COLORS, OCCUPATION_COLORS, CONNECTION_TYPE_CONFIG } from '../../types/network';
+import {
+  CENTURY_COLORS, ROLE_COLORS, OCCUPATION_COLORS, CONNECTION_TYPE_CONFIG,
+  buildCommunityColorMap, COMMUNITY_OTHER_COLOR,
+} from '../../types/network';
 
 interface Props {
   colorBy: ColorByMode;
   activeTypes?: ConnectionType[];
+  communities?: string[];
 }
 
-const PALETTES: Record<ColorByMode, { label: string; entries: Record<string, [number, number, number]> }> = {
+const STATIC_PALETTES: Partial<Record<ColorByMode, { label: string; entries: Record<string, [number, number, number]> }>> = {
   century: { label: 'Life Period', entries: CENTURY_COLORS },
   role: { label: 'Role', entries: ROLE_COLORS },
   occupation: { label: 'Occupation', entries: OCCUPATION_COLORS },
 };
 
-export default function Legend({ colorBy, activeTypes }: Props) {
+export default function Legend({ colorBy, activeTypes, communities }: Props) {
   const active = activeTypes ?? [];
   const shownEdgeTypes = (Object.entries(CONNECTION_TYPE_CONFIG) as [ConnectionType, typeof CONNECTION_TYPE_CONFIG[ConnectionType]][])
     .filter(([type]) => active.length === 0 || active.includes(type));
-  const palette = PALETTES[colorBy];
+  const isCommunity = colorBy === 'community';
+  const palette = isCommunity
+    ? {
+        label: 'Community',
+        entries: { ...buildCommunityColorMap(communities ?? []), Other: COMMUNITY_OTHER_COLOR },
+      }
+    : (STATIC_PALETTES[colorBy] ?? STATIC_PALETTES.century!);
+  const gridCols = isCommunity ? 'grid-cols-1 max-w-[230px]' : 'grid-cols-2';
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -25,14 +36,14 @@ export default function Legend({ colorBy, activeTypes }: Props) {
       {/* Desktop: always visible */}
       <div className="hidden md:block absolute bottom-12 left-3 bg-white/90 backdrop-blur-sm rounded-lg shadow-md px-3 py-2 z-10 text-xs">
         <div className="font-semibold text-gray-700 mb-1">{palette.label}</div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+        <div className={`grid ${gridCols} gap-x-4 gap-y-0.5`}>
           {Object.entries(palette.entries).map(([label, color]) => (
-            <div key={label} className="flex items-center gap-1.5">
+            <div key={label} className="flex items-center gap-1.5 min-w-0">
               <span
                 className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0"
                 style={{ backgroundColor: `rgb(${color[0]},${color[1]},${color[2]})` }}
               />
-              <span className="text-gray-600">{label}</span>
+              <span className="text-gray-600 truncate" title={label}>{label}</span>
             </div>
           ))}
         </div>
@@ -75,14 +86,14 @@ export default function Legend({ colorBy, activeTypes }: Props) {
                 </svg>
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+            <div className={`grid ${gridCols} gap-x-3 gap-y-0.5`}>
               {Object.entries(palette.entries).map(([label, color]) => (
-                <div key={label} className="flex items-center gap-1">
+                <div key={label} className="flex items-center gap-1 min-w-0">
                   <span
                     className="w-2 h-2 rounded-full inline-block flex-shrink-0"
                     style={{ backgroundColor: `rgb(${color[0]},${color[1]},${color[2]})` }}
                   />
-                  <span className="text-gray-600 text-[10px]">{label}</span>
+                  <span className="text-gray-600 text-[10px] truncate" title={label}>{label}</span>
                 </div>
               ))}
             </div>

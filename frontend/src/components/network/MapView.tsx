@@ -3,7 +3,7 @@ import MapGL, { NavigationControl } from 'react-map-gl/maplibre';
 import { DeckGL } from '@deck.gl/react';
 import { ArcLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import type { MapNode, MapEdge, ColorByMode } from '../../types/network';
-import { CONNECTION_TYPE_CONFIG, getAgentColor } from '../../types/network';
+import { CONNECTION_TYPE_CONFIG, getAgentColor, buildCommunityColorMap } from '../../types/network';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
   onPlaceSelect?: (placeNorm: string) => void;
   isLoading: boolean;
   colorBy: ColorByMode;
+  communities?: string[];
 }
 
 const INITIAL_VIEW_STATE = {
@@ -36,9 +37,14 @@ export default function MapView({
   onPlaceSelect,
   isLoading,
   colorBy,
+  communities,
 }: Props) {
   // Track whether a deck.gl object was picked on this click
   const pickedRef = useRef(false);
+  const communityColors = useMemo(
+    () => buildCommunityColorMap(communities ?? []),
+    [communities]
+  );
   // Popover for a clicked stack of co-located agents (issue #23)
   const [stack, setStack] = useState<{ x: number; y: number; nodes: MapNode[] } | null>(null);
 
@@ -110,7 +116,7 @@ export default function MapView({
           return d.node_type === 'publisher' ? base + 4 : base;
         },
         getFillColor: (d) => {
-          const color = getAgentColor(d, colorBy);
+          const color = getAgentColor(d, colorBy, communityColors);
           if (d.agent_norm === selectedAgent) return [...color, 255];
           if (selectedAgent && connectedAgents.has(d.agent_norm)) return [...color, 220];
           if (selectedAgent) return [156, 163, 175, 50];
@@ -145,12 +151,12 @@ export default function MapView({
         },
         updateTriggers: {
           getRadius: [selectedAgent],
-          getFillColor: [selectedAgent, colorBy],
+          getFillColor: [selectedAgent, colorBy, communityColors],
           getLineColor: [selectedAgent],
           getLineWidth: [selectedAgent],
         },
       }),
-    [nodes, selectedAgent, connectedAgents, onAgentClick, colorBy, jitteredPositions, coLocated]
+    [nodes, selectedAgent, connectedAgents, onAgentClick, colorBy, jitteredPositions, coLocated, communityColors]
   );
 
   const arcLayer = useMemo(
