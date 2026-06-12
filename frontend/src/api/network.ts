@@ -104,7 +104,15 @@ export async function searchNetworkAgents(query: string): Promise<NetworkSearchR
 
 export interface PlaceDetail {
   place_norm: string;
+  place_display: string | null;
   total: number;
+  agent_count: number;
+  year_min: number | null;
+  year_max: number | null;
+  decades: { decade: number; count: number }[];
+  top_publishers: { name: string; count: number }[];
+  top_agents: { agent_norm: string; display_name: string; count: number }[];
+  top_subjects: { subject: string; count: number }[];
   works: AgentWork[];
 }
 

@@ -308,7 +308,7 @@ export default function MapView({
         data: cityLabelData,
         getPosition: (d) => [d.lon, d.lat],
         getText: (d) => {
-          const name = (d.place_display || d.place_norm);
+          const name = d.place_norm; // normalized — place_display is the raw title-page wording
           const cap = name.charAt(0).toUpperCase() + name.slice(1);
           return `${cap} (${d.record_count})`;
         },
@@ -359,7 +359,7 @@ export default function MapView({
           if ('record_count' in object && 'place_norm' in object && !('agent_norm' in object)) {
             const p = object as PlaceMarker;
             const span = p.year_min && p.year_max ? `\n${p.year_min}–${p.year_max}` : '';
-            return { text: `${p.place_display || p.place_norm}\n${p.record_count} books · ${p.agent_count} people${span}\nClick to see what was printed here` };
+            return { text: `${p.place_norm.charAt(0).toUpperCase() + p.place_norm.slice(1)}\n${p.record_count} books · ${p.agent_count} people${span}\nClick to see what was printed here` };
           }
           if ('agent_norm' in object) {
             const n = object as MapNode;
