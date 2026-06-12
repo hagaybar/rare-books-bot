@@ -1,5 +1,5 @@
 # Chatbot API
-> Last verified: 2026-06-10
+> Last verified: 2026-06-12
 > Source of truth for: HTTP chat endpoints, model comparison, session management, Hebrew/bilingual support, clarification flow, and API configuration
 
 ## Overview
@@ -251,6 +251,7 @@ The executor provides the narrator with rich grounding data beyond basic record 
 - **Title variants**: Uniform and variant titles shown as "Also known as: ..."
 - **Expanded notes**: Notes from MARC tags 504 (bibliography), 505 (contents), and 590 (shelf marks) in addition to 500/520.
 - **Truncation feedback**: When results are truncated, the narrator is told "Showing N of M total records" and instructed to acknowledge this to the user.
+- **Aggregation honesty** (issue #42): every `aggregate` step computes a companion `COUNT(DISTINCT)` so `AggregationResult` carries `distinct_values` and `facets_truncated` alongside the top-K facets. `GroundingData.aggregation_meta` forwards these per field, and both narrator prompt builders render "N distinct values total — showing top K" on every aggregation block. Evidence rule 12 instructs the narrator to answer "how many X?" from N (never by counting visible facets) and to treat bracketed values like `[sine nomine]` as unattributed-record counts, not real entities.
 
 ### Features
 
