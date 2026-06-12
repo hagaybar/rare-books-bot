@@ -23,6 +23,7 @@ import { getRoleLevel } from '../components/AuthGuard';
 import MessageBubble from '../components/chat/MessageBubble';
 import FollowUpChips from '../components/chat/FollowUpChips';
 import HistoryList from '../components/chat/HistoryList';
+import { FeedbackDialog } from '../components/chat/FeedbackDialog';
 import CompareMode from '../components/CompareMode';
 
 // ---------------------------------------------------------------------------
@@ -81,6 +82,7 @@ export default function Chat() {
   const [restoredSessionId, setRestoredSessionId] = useState<string | null>(null);
   const [tokenSaving, setTokenSaving] = useState(true);
   const [compareMode, setCompareMode] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   // Compare mode is available to admin users only
   const canCompare = user ? getRoleLevel(user.role) >= getRoleLevel('admin') : false;
@@ -112,7 +114,7 @@ export default function Chat() {
         if (!res.ok) return;
         const data = await res.json();
         const restored: ChatMessage[] = (data.messages || []).map(
-          (msg: { role: string; content: string; timestamp: string }, i: number) => ({
+          (msg: { role: string; content: string; timestamp: string; db_id?: number }, i: number) => ({
             id: `restored-${i}`,
             role: msg.role as 'user' | 'assistant',
             content: msg.content,
@@ -121,7 +123,7 @@ export default function Chat() {
             clarificationNeeded: null,
             phase: null,
             confidence: null,
-            metadata: {},
+            metadata: typeof msg.db_id === 'number' ? { message_db_id: msg.db_id } : {},
             timestamp: new Date(msg.timestamp),
             streamingState: 'complete' as StreamingState,
           }),
@@ -698,7 +700,23 @@ export default function Chat() {
               </button>
             )}
           </div>
-          <div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setFeedbackOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                text-gray-600 bg-gray-100 rounded-lg
+                hover:bg-gray-200 hover:text-red-700 transition-colors"
+              title="Report a problem with the chatbot"
+            >
+              ⚑ Report a problem
+            </button>
+            <FeedbackDialog
+              open={feedbackOpen}
+              onOpenChange={setFeedbackOpen}
+              kind="general"
+              sessionId={sessionId ?? undefined}
+            />
             {!isEmpty && (
               <button
                 type="button"

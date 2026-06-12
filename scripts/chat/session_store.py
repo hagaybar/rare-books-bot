@@ -162,7 +162,7 @@ class SessionStore:
         conn = self._get_connection()
         cursor = conn.execute(
             """
-            SELECT role, content, query_plan, candidate_set, timestamp
+            SELECT role, content, query_plan, candidate_set, timestamp, id
             FROM chat_messages
             WHERE session_id = ?
             ORDER BY timestamp ASC
@@ -178,17 +178,21 @@ class SessionStore:
                 query_plan=json.loads(row[2]) if row[2] else None,
                 candidate_set=json.loads(row[3]) if row[3] else None,
                 timestamp=datetime.fromisoformat(row[4]),
+                db_id=row[5],
             )
             messages.append(msg)
 
         return messages
 
-    def add_message(self, session_id: str, message: Message) -> None:
+    def add_message(self, session_id: str, message: Message) -> int:
         """Add message to session.
 
         Args:
             session_id: Session identifier
             message: Message to add
+
+        Returns:
+            The chat_messages row id of the inserted message
 
         Raises:
             ValueError: If session doesn't exist
@@ -200,7 +204,7 @@ class SessionStore:
         conn = self._get_connection()
 
         # Insert message
-        conn.execute(
+        cursor = conn.execute(
             """
             INSERT INTO chat_messages
             (session_id, role, content, query_plan, candidate_set, timestamp)
@@ -236,6 +240,8 @@ class SessionStore:
             "Added message to session",
             extra={"session_id": session_id, "role": message.role},
         )
+
+        return cursor.lastrowid
 
     def update_context(self, session_id: str, context: Dict[str, Any]) -> None:
         """Update session context.

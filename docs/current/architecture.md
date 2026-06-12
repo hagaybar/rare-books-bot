@@ -1,5 +1,5 @@
 # Architecture
-> Last verified: 2026-04-13
+> Last verified: 2026-06-12
 > Source of truth for: Project structure, core modules, data model index, and key architectural patterns
 
 ## Project Structure
@@ -9,6 +9,7 @@ app/                          # CLI interface (Typer) and FastAPI backend
   api/                        # FastAPI endpoints
     main.py                   # Core app: /chat, /chat/compare, /chat/history, /health, /sessions, WebSocket
     compare.py                # Model A/B comparison endpoint
+    feedback_routes.py        # /feedback endpoints: mark-as-problematic reports -> GitHub issues
     metadata.py               # Metadata workbench endpoints (12 routes)
     diagnostics.py            # QA/diagnostics endpoints
     models.py                 # API request/response models
@@ -43,6 +44,9 @@ scripts/                      # Core library organized by function
     feedback_loop.py          # Correction application
     review_log.py             # JSONL audit trail
     agents/                   # 4 specialist agents
+  feedback/                   # "Mark as problematic" chat feedback
+    report_store.py           # Save-first report persistence (feedback_reports + data/feedback/<id>.json)
+    github_client.py          # Best-effort GitHub issue creation (GITHUB_TOKEN, FEEDBACK_REPO)
   enrichment/                 # Wikidata/Wikipedia enrichment
     models.py                 # Enrichment data models
   normalization/              # Alias map generation
@@ -241,6 +245,8 @@ LLM-facing variants: `ExecutionStepLLM`, `ScholarlyDirectiveLLM`, `Interpretatio
 **Authentication** (6 models): `LoginRequest`, `TokenResponse`, `UserInfo`, `CreateUserRequest`, `UpdateUserRequest`, `UserListItem`
 
 **Metadata Quality** (33 models): Coverage, issues, unmapped values, clusters, corrections, Primo URLs, agent chat, publisher authorities.
+
+**Feedback** (2 models, `app/api/feedback_routes.py`): `FeedbackRequest`, `FeedbackResponse` — mark-as-problematic reports backed by `scripts/feedback/` (the chat API exposes `metadata.message_db_id` so the frontend can flag a specific message).
 
 ### File Summary
 

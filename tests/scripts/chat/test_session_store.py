@@ -362,3 +362,17 @@ def test_list_user_sessions_ordering(store):
     assert sessions[0] == session3.session_id
     assert sessions[1] == session2.session_id
     assert sessions[2] == session1.session_id
+
+
+def test_restored_messages_carry_db_id(store):
+    """Restored sessions must expose chat_messages.id so the frontend can
+    target per-message feedback reports (mark-as-problematic spec)."""
+    session = store.create_session(user_id="user123")
+    first_id = store.add_message(
+        session.session_id, Message(role="user", content="q"))
+    second_id = store.add_message(
+        session.session_id, Message(role="assistant", content="a"))
+
+    restored = store.get_session(session.session_id)
+
+    assert [m.db_id for m in restored.messages] == [first_id, second_id]

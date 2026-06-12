@@ -127,6 +127,9 @@ class Message(BaseModel):
     query_plan: Optional[QueryPlan] = None
     candidate_set: Optional[CandidateSet] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # chat_messages.id — set when loading from the store; lets the frontend
+    # target per-message feedback reports on restored sessions
+    db_id: Optional[int] = None
 
     model_config = ConfigDict(
         json_encoders={datetime: lambda v: v.isoformat()}

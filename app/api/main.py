@@ -24,6 +24,7 @@ from slowapi.errors import RateLimitExceeded
 from app.api.auth_deps import require_role
 from app.api.auth_routes import router as auth_router
 from app.api.diagnostics import router as diagnostics_router
+from app.api.feedback_routes import router as feedback_router
 from app.api.metadata import router as metadata_router
 from app.api.metadata_corrections import router as corrections_router
 from app.api.metadata_enrichment import router as enrichment_router
@@ -354,6 +355,9 @@ app.include_router(diagnostics_router)
 
 # Register network map explorer router (auth enforced via router-level dependency)
 app.include_router(network_router)
+
+# Register feedback router (mark-as-problematic; auth via require_role dependency)
+app.include_router(feedback_router)
 
 
 def get_session_store() -> SessionStore:
@@ -709,10 +713,11 @@ async def _run_scholar_pipeline(
             confidence=plan.confidence,
             metadata={"intents": plan.intents, "reasoning": plan.reasoning},
         )
-        store.add_message(
+        msg_db_id = store.add_message(
             session.session_id,
             Message(role="assistant", content=plan.clarification),
         )
+        response.metadata["message_db_id"] = msg_db_id
         logger.info(
             "Scholar pipeline: returning clarification (confidence < 0.7)",
             extra={"session_id": session.session_id, "confidence": plan.confidence},
@@ -776,10 +781,11 @@ async def _run_scholar_pipeline(
     )
 
     # Store assistant message in session
-    store.add_message(
+    msg_db_id = store.add_message(
         session.session_id,
         Message(role="assistant", content=scholar_response.narrative),
     )
+    response.metadata["message_db_id"] = msg_db_id
 
     return ChatResponseAPI(success=True, response=response, error=None)
 
@@ -1034,13 +1040,14 @@ async def websocket_chat(websocket: WebSocket):
                 confidence=plan.confidence,
                 metadata={"intents": plan.intents, "reasoning": plan.reasoning},
             )
-            store.add_message(
+            msg_db_id = store.add_message(
                 session_id,
                 Message(role="assistant", content=plan.clarification),
             )
             await websocket.send_json({
                 "type": "complete",
-                "response": response.model_dump()
+                "response": response.model_dump(),
+                "message_db_id": msg_db_id,
             })
             return
 
@@ -1115,8 +1122,9 @@ async def websocket_chat(websocket: WebSocket):
 
         # Save session message BEFORE sending "complete", but don't let
         # a session-store failure prevent the client from receiving results.
+        msg_db_id = None
         try:
-            store.add_message(
+            msg_db_id = store.add_message(
                 session_id,
                 Message(role="assistant", content=narrative),
             )
@@ -1125,7 +1133,8 @@ async def websocket_chat(websocket: WebSocket):
 
         await websocket.send_json({
             "type": "complete",
-            "response": response.model_dump()
+            "response": response.model_dump(),
+            "message_db_id": msg_db_id,
         })
 
         # ---- Post-response security: Token recording + audit ----
