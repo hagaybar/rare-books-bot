@@ -7,7 +7,7 @@ import logging
 import pytest
 import sqlite3
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from scripts.schemas import QueryPlan, Filter, FilterField, FilterOp, CandidateSet, Evidence
 from scripts.query.execute import (
@@ -511,3 +511,83 @@ class TestEvidenceExtractionFailure:
             extraction_error="something went wrong",
         )
         assert error_ev.extraction_error == "something went wrong"
+
+
+class TestAgentEvidenceProvenance:
+    """Agent evidence must carry the real MARC source from provenance_json (issue #43).
+
+    The M3 agents table stores provenance as ``[{"source": "100[0]$a"}]`` —
+    the ``source`` value is a STRING. The extractor previously assumed a dict
+    shape ({"tag": ..., "occurrence": ...}), hit AttributeError, and silently
+    collapsed every agent evidence source to marc:unknown.
+    """
+
+    class FakeRow:
+        def __init__(self, data):
+            self.data = data
+        def __getitem__(self, key):
+            return self.data[key]
+        def keys(self):
+            return self.data.keys()
+        def get(self, key, default=None):
+            return self.data.get(key, default)
+
+    def test_agent_norm_source_from_string_provenance(self):
+        """String-shaped provenance (the real DB shape) must yield the MARC tag."""
+        filter_obj = Filter(field=FilterField.AGENT_NORM, op=FilterOp.CONTAINS, value="maimonides")
+        row = self.FakeRow({
+            "agent_norm": "maimonides, moses",
+            "agent_confidence": 0.8,
+            "agent_provenance": '[{"source": "100[0]$a"}]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.agents.agent_norm (marc:100[0]$a)"
+        assert evidence.value == "maimonides, moses"
+        assert evidence.confidence == 0.8
+
+    def test_agent_norm_source_from_dict_provenance(self):
+        """Legacy dict-shaped provenance must keep working (tag[occurrence])."""
+        filter_obj = Filter(field=FilterField.AGENT_NORM, op=FilterOp.EQUALS, value="x")
+        row = self.FakeRow({
+            "agent_norm": "x",
+            "agent_confidence": 0.8,
+            "agent_provenance": '[{"source": {"tag": "700", "occurrence": 1}}]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.agents.agent_norm (marc:700[1])"
+
+    def test_agent_norm_source_unknown_when_provenance_missing(self):
+        """No provenance at all must still degrade to marc:unknown, not crash."""
+        filter_obj = Filter(field=FilterField.AGENT_NORM, op=FilterOp.EQUALS, value="x")
+        row = self.FakeRow({"agent_norm": "x", "agent_confidence": 0.8})
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.agents.agent_norm (marc:unknown)"
+
+    def test_agent_role_source_from_string_provenance(self):
+        filter_obj = Filter(field=FilterField.AGENT_ROLE, op=FilterOp.EQUALS, value="printer")
+        row = self.FakeRow({
+            "agent_role_norm": "printer",
+            "agent_role_confidence": 0.9,
+            "agent_provenance": '[{"source": "700[1]$e"}]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.agents.role_norm (marc:700[1]$e)"
+
+    def test_agent_type_source_from_string_provenance(self):
+        filter_obj = Filter(field=FilterField.AGENT_TYPE, op=FilterOp.EQUALS, value="corporate")
+        row = self.FakeRow({
+            "agent_type": "corporate",
+            "agent_provenance": '[{"source": "710[0]$a"}]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.agents.agent_type (marc:710[0]$a)"
+
+    def test_deprecated_agent_field_source_from_string_provenance(self):
+        filter_obj = Filter(field=FilterField.AGENT, op=FilterOp.CONTAINS, value="buxtorf")
+        row = self.FakeRow({
+            "agent_raw": "Buxtorf, Johann,",
+            "agent_confidence": 0.8,
+            "agent_provenance": '[{"source": "100[0]$a"}]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.agents.agent_raw (marc:100[0]$a)"
