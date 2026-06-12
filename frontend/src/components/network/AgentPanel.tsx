@@ -21,6 +21,13 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
       ? `${agent.birth_year ?? '?'}\u2013${agent.death_year ?? '?'}`
       : null;
 
+  // A pre-formulated, scholar-grade query for the chat hand-off (issue #37) \u2014
+  // answerable richly by the pipeline as-is, not a bare keyword search.
+  const name = agent.display_name;
+  const chatQuery = isPublisher
+    ? `Profile the ${name} press in this collection \u2014 what did we hold that it printed, over what date range, and which authors cluster around it?`
+    : `Tell me about ${name} in this collection \u2014 which ${agent.record_count ? `of our ${agent.record_count} ` : ''}works are by or about them, where and when were they printed, and how do they connect to other figures in the network?`;
+
   // Group connections by type
   const groupedConnections = agent.connections.reduce(
     (acc, conn) => {
@@ -204,7 +211,7 @@ export default function AgentPanel({ agent, onClose, onAgentClick, onPlaceSelect
           </button>
         )}
         <a
-          href={`/chat?q=${encodeURIComponent(`books ${isPublisher ? 'printed by' : 'by'} ${agent.display_name}`)}`}
+          href={`/chat?q=${encodeURIComponent(chatQuery)}`}
           className="text-sm text-blue-500 hover:text-blue-700 block mt-2"
         >
           Ask about this {isPublisher ? 'house' : 'figure'} in Chat &rarr;
