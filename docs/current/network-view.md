@@ -1,6 +1,19 @@
 # Network View
 
-> Last verified: 2026-06-11
+> Last verified: 2026-06-12
+
+**Design axis (2026-06-12):** the map is **places-first** — it opens on
+aggregated printing *cities* (the axis a map is natively good at); the
+people-dot network is an opt-in layer, and other axes (time, topic, people)
+get their own visualizations rather than being forced onto the map. Clicking a
+city opens **CityView**, a full-page profile (decade histogram, top printers,
+notable people → ego network, top subjects, books). A ranked/searchable city
+finder (CityToolbar) is the navigational device for overlapping circles. In
+cities mode the people-network filters are hidden. Display names use the
+normalized `place_norm`, never the raw `place_display` ("Te Amsterdam").
+Endpoints: `GET /network/places` (markers) and the enriched
+`GET /network/place/{place_norm}` (profile: decades, top_publishers,
+top_agents, top_subjects, span).
 
 The Network view is a map-based explorer for the people, printing houses, and
 relationships behind the collection. It renders agents as geo-located nodes over
