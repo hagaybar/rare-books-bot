@@ -51,7 +51,10 @@ export default function CityToolbar({ places, onSelect }: Props) {
         {open && shown.length > 0 && (
           <ul
             className="absolute top-full left-0 mt-1 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto"
-            onMouseDown={() => { if (blurTimer.current) clearTimeout(blurTimer.current); }}
+            // preventDefault keeps the input focused while pressing a list item —
+            // otherwise blur's close-timer unmounts the list mid-click and the
+            // click lands on nothing (only reproducible at human click speed).
+            onMouseDown={(e) => e.preventDefault()}
           >
             {!query.trim() && (
               <li className="px-3 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
