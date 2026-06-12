@@ -37,6 +37,7 @@ Expected: `{"status": "healthy", "database_connected": true, "session_store_ok":
 | [E. Evidence & Traceability](#e-evidence--traceability) | MARC field citation accuracy |
 | [F. Edge Cases & Error Handling](#f-edge-cases--error-handling) | Robustness testing |
 | [G. WebSocket Streaming](#g-websocket-streaming) | Real-time response testing |
+| [H. Feedback / Mark as Problematic](#h-feedback--mark-as-problematic) | Report-a-problem flow → GitHub issues |
 
 ---
 
@@ -692,6 +693,89 @@ not json
 - `{"type": "error", "message": "..."}` received
 - Connection closes after error
 - Server stays running
+
+---
+
+## H. Feedback / Mark as Problematic
+
+Manual checklist for the "mark as problematic" flow (no FE test infra; spec: `docs/superpowers/specs/2026-06-12-mark-as-problematic-design.md`). Requires the frontend running and a logged-in user with `limited` role or higher.
+
+### H1. Flag a message — with comment
+
+**Steps:**
+1. Run any chat query and wait for the assistant answer to finish streaming
+2. Click the flag/"Report" action on the assistant message
+3. Type a comment and submit
+
+**Inspect:**
+- Dialog shows the public-visibility warning: "Your conversation in this session plus technical traces will be sent to the developers. The report summary (your query, an answer excerpt, and your comment) will be publicly visible on GitHub."
+- With `GITHUB_TOKEN` set: success toast "Report sent — thanks! Issue opened." and a new `user-reported` issue in the feedback repo (slim body: query, answer excerpt ≤300 chars, comment, Report ID — no full traces)
+- Server side: row in `feedback_reports` (sessions.db) + payload JSON at `data/feedback/fb_*.json` containing all session turns with `query_plan`/`candidate_set`
+
+**Good Result:** report persisted, issue created, payload file exists
+
+---
+
+### H2. Flag a message — without comment
+
+**Steps:** same as H1 but leave the comment empty.
+
+**Good Result:** submit succeeds (comment optional for per-message reports); issue/report created as in H1
+
+---
+
+### H3. General feedback — comment required
+
+**Steps:**
+1. Click the header "⚑ Report a problem" button
+2. Try to submit with an empty comment
+
+**Inspect:**
+- Empty comment is rejected (submit blocked / validation error) — comment is required in general mode
+- After typing a comment, submit succeeds; issue title starts with `[feedback]`
+
+**Good Result:** cannot submit general feedback without a comment
+
+---
+
+### H4. Token unset → pending toast
+
+**Setup:** restart the server with `GITHUB_TOKEN` unset.
+
+**Steps:** flag any message and submit.
+
+**Inspect:**
+- Toast: "Report saved — it will sync to GitHub later."
+- `POST /feedback` response has `"github_issue_url": null`
+- `sqlite3 data/chat/sessions.db "SELECT id, sync_status FROM feedback_reports ORDER BY created_at DESC LIMIT 1"` → `pending`
+
+**Good Result:** report saved with `sync_status='pending'`; no error shown to the user
+
+---
+
+### H5. Admin sync of pending reports
+
+**Setup:** at least one `pending` report (from H4); restart with `GITHUB_TOKEN` set; admin JWT.
+
+**Steps:**
+```bash
+curl -s -X POST http://localhost:8000/feedback/sync -H "Authorization: Bearer <admin-token>" | jq .
+```
+
+**Inspect:**
+- Response like `{"synced": 1, "remaining": 0}`
+- `GET /feedback` (admin) shows the report as `synced` with a `github_issue_url`
+- The GitHub issue exists with the `user-reported` label
+
+**Good Result:** all pending reports synced; statuses updated
+
+---
+
+### H6. Public-visibility warning text
+
+**Steps:** open the dialog in both modes (message flag and header button).
+
+**Good Result:** both modes display a warning that the report summary will be publicly visible on GitHub (per-message mode mentions conversation + technical traces being sent to the developers; general mode notes traces are attached when a session is open)
 
 ---
 

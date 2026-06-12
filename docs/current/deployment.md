@@ -1,5 +1,5 @@
 # Deployment
-> Last verified: 2026-04-01
+> Last verified: 2026-06-12
 > Source of truth for: Production deployment infrastructure, Docker configuration, deploy commands, server setup, SSL, nginx, and troubleshooting
 
 ## Production Environment
@@ -48,7 +48,7 @@ SQLite databases (Docker volume /app/data)
 |-----------|---------|
 | Container | `rare-books` on port 8001, proxied by host nginx |
 | Data volume | `~/rare-books-data` mounted to `/app/data` (SQLite DBs, logs) |
-| Env file | `~/rare-books.env` (OPENAI_API_KEY, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD) |
+| Env file | `~/rare-books.env` (OPENAI_API_KEY, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD; optional GITHUB_TOKEN, FEEDBACK_REPO for feedback sync) |
 | Deploy script | `./deploy.sh` at repo root |
 | Dockerfile | Multi-stage: Node 20 builds frontend, Python 3.12 runs API (2 uvicorn workers) |
 | Nginx configs | `docker/cenlib-rare-books.conf` (host), `docker/nginx.conf` (reference) |
@@ -198,6 +198,13 @@ BIBLIOGRAPHIC_DB_PATH=/app/data/index/bibliographic.db
 ADMIN_EMAIL=<admin-username>
 ADMIN_PASSWORD=<admin-password-min-8-chars>
 ```
+
+Optional variables for the feedback ("mark as problematic") GitHub sync:
+
+| Variable | Notes |
+|----------|-------|
+| `GITHUB_TOKEN` | Fine-grained PAT, `issues:write` on the feedback repo only. Optional — without it, feedback reports stay `pending` and can be synced later via `POST /feedback/sync`. Never commit or log this value. |
+| `FEEDBACK_REPO` | Target repo for feedback issues (default `hagaybar/rare-books-bot`). |
 
 Lock permissions:
 ```bash

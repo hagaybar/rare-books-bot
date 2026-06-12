@@ -1,5 +1,5 @@
 # Streaming Responses
-> Last verified: 2026-04-12
+> Last verified: 2026-06-12
 > Source of truth for: WebSocket streaming protocol, message types, narrative streaming, client integration, and chatbot testing procedures
 
 ## Overview
@@ -32,7 +32,7 @@ The WebSocket endpoint provides real-time streaming for progressive query result
 | `thinking` | During interpret/execute/narrate stages | `{ text: string, stage?: string }` |
 | `stream_start` | Before narrative streaming begins | `{}` |
 | `stream_chunk` | Each narrative text chunk | `{ text: string }` |
-| `complete` | Processing finished | `{ response: ChatResponse }` |
+| `complete` | Processing finished | `{ response: ChatResponse, message_db_id: number }` |
 | `error` | Error occurred | `{ message: string }` (connection closes after) |
 
 ### Thinking Messages
@@ -50,13 +50,13 @@ After execution, the narrator generates a natural language response. This is str
 
 1. `stream_start` signals that narrative chunks are about to arrive
 2. Multiple `stream_chunk` messages deliver the narrative text incrementally
-3. `complete` carries the final `ChatResponse` with the full narrative, candidate set, and metadata
+3. `complete` carries the final `ChatResponse` with the full narrative, candidate set, and metadata, plus a top-level `message_db_id` — the backend `chat_messages.id` of the saved assistant message, used by the frontend feedback "Report" button (`POST /feedback`)
 
 ```json
 {"type": "stream_start"}
 {"type": "stream_chunk", "text": "I found 15 books matching"}
 {"type": "stream_chunk", "text": " your query about Oxford..."}
-{"type": "complete", "response": { ... }}
+{"type": "complete", "response": { ... }, "message_db_id": 42}
 ```
 
 ---

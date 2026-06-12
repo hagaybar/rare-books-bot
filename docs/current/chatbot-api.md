@@ -41,6 +41,7 @@ Send a natural language query, get results.
 - Creates new session if `session_id` not provided
 - Automatically routes through M4 query pipeline (compile + execute)
 - Returns clarification prompt if query is ambiguous (see Clarification Flow below)
+- `response.metadata.message_db_id` carries the backend `chat_messages.id` of the persisted assistant message (also on clarification responses); the frontend uses it to report a specific message via `POST /feedback`. The WebSocket `complete` event carries the same value as a top-level `message_db_id` field (see docs/current/streaming.md)
 
 ### POST /chat/compare
 
@@ -102,6 +103,53 @@ Get session details and message history.
 
 Expire a session.
 
+### POST /feedback
+
+Report a problematic chat message or general feedback ("mark as problematic"). Reports become slim GitHub issues in the public feedback repo; the full debug payload (every session turn with its `query_plan` + `candidate_set`) stays server-side at `data/feedback/<report_id>.json`.
+
+**File**: `app/api/feedback_routes.py` (store: `scripts/feedback/report_store.py`, GitHub: `scripts/feedback/github_client.py`)
+
+**Request**:
+```json
+{
+  "kind": "message",
+  "session_id": "uuid",
+  "message_id": 42,
+  "comment": "optional tester comment"
+}
+```
+
+**Kind rules**:
+- `kind: "message"` -- `session_id` + `message_id` (the backend `chat_messages.id`, exposed as `metadata.message_db_id`) required; comment optional
+- `kind: "general"` -- comment required; `session_id` optional (attached for context when present)
+- Violations are rejected with 422 (Pydantic model validation)
+
+**Response**:
+```json
+{
+  "report_id": "fb_20260612T101500Z_a1b2c3",
+  "github_issue_url": "https://github.com/hagaybar/rare-books-bot/issues/17"
+}
+```
+
+**Save-first semantics**: the report row (`feedback_reports` in sessions.db) and payload JSON are persisted *before* any GitHub call. Issue creation is best-effort: if `GITHUB_TOKEN` is unset or the API call fails, the report stays `sync_status='pending'` and `github_issue_url` is `null`. Each successful POST also piggybacks a retry of up to 3 oldest pending reports.
+
+- Requires `limited` role or higher (same gate as POST /chat)
+- Ownership: non-admin users may only report their own sessions (403 otherwise; 404 for unknown sessions)
+- Rate limited to 5 reports/min/user (429 when exceeded)
+- Every report is audit-logged (`feedback_report` action)
+- Payload assembly failure never loses the report: the row + comment are saved and the error is noted in the payload JSON
+
+### GET /feedback
+
+Admin only. List all feedback reports (newest first, limit 100) including `sync_status` (`pending`/`synced`) and GitHub issue URL/number.
+
+### POST /feedback/sync
+
+Admin only. Retry GitHub issue creation for all pending reports.
+
+**Response**: `{"synced": 2, "remaining": 0}`
+
 ---
 
 ## Configuration
@@ -111,6 +159,9 @@ Expire a session.
 | `SESSIONS_DB_PATH` | `data/chat/sessions.db` | Path to sessions database |
 | `BIBLIOGRAPHIC_DB_PATH` | `data/index/bibliographic.db` | Path to bibliographic database |
 | `OPENAI_API_KEY` | (required) | Required for LLM calls (used by litellm) |
+| `GITHUB_TOKEN` | (unset) | Optional -- enables /feedback GitHub issue sync; without it reports stay `pending` |
+| `FEEDBACK_REPO` | `hagaybar/rare-books-bot` | Target repo for feedback issues |
+| `FEEDBACK_DIR` | `data/feedback` | Directory for full report payload JSON files |
 
 ---
 
