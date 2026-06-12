@@ -650,6 +650,18 @@ async def get_places(min_books: int = Query(1, ge=1)) -> list[PlaceMarker]:
                ORDER BY record_count DESC""",
             (min_books,),
         ).fetchall()
+
+        # Per-city decade histogram — lets the time slider size circles by books
+        # printed *within the window* (cities genuinely swell and fade).
+        decades_by_place: dict[str, list[DecadeCount]] = defaultdict(list)
+        for pn, dec, n in conn.execute(
+            """SELECT place_norm, (date_start/10)*10 AS dec, COUNT(DISTINCT record_id)
+               FROM imprints
+               WHERE place_norm IS NOT NULL AND date_start IS NOT NULL
+               GROUP BY place_norm, dec ORDER BY dec"""
+        ).fetchall():
+            decades_by_place[pn].append(DecadeCount(decade=dec, count=n))
+
         return [
             PlaceMarker(
                 place_norm=r["place_norm"],
@@ -657,6 +669,7 @@ async def get_places(min_books: int = Query(1, ge=1)) -> list[PlaceMarker]:
                 lat=r["lat"], lon=r["lon"],
                 record_count=r["record_count"], agent_count=r["agent_count"],
                 year_min=r["year_min"], year_max=r["year_max"],
+                decades=decades_by_place.get(r["place_norm"], []),
             )
             for r in rows
         ]

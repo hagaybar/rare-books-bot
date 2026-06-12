@@ -269,8 +269,11 @@ export default function MapView({
   );
 
   // ---- Place-first "cities" layer: one circle per printing city, sized by holdings ----
+  // record_count may be re-weighted to a time window upstream; zero-count cities
+  // shrink to radius 0 (kept in the array so deck.gl animates the transition).
   const cityData = places ?? [];
-  const cityRadius = (p: PlaceMarker) => 5 + Math.sqrt(p.record_count) * 1.9;
+  const cityRadius = (p: PlaceMarker) =>
+    p.record_count === 0 ? 0 : 5 + Math.sqrt(p.record_count) * 1.9;
   const cityLayer = useMemo(
     () =>
       new ScatterplotLayer<PlaceMarker>({
@@ -281,12 +284,14 @@ export default function MapView({
         radiusUnits: 'pixels',
         getFillColor: [37, 99, 235, 180],
         getLineColor: [255, 255, 255, 230],
-        getLineWidth: 1.5,
+        getLineWidth: (d) => (d.record_count === 0 ? 0 : 1.5),
         lineWidthUnits: 'pixels',
         stroked: true,
         pickable: true,
+        transitions: { getRadius: 450 }, // cities swell/fade as the window moves
+        updateTriggers: { getRadius: [cityData], getLineWidth: [cityData] },
         onClick: (info) => {
-          if (info.object) {
+          if (info.object && info.object.record_count > 0) {
             pickedRef.current = true;
             onPlaceSelect?.(info.object.place_norm);
           }
@@ -297,7 +302,8 @@ export default function MapView({
 
   // City labels: "City (N)", denser as you zoom in (avoids early clutter).
   const cityLabelData = useMemo(() => {
-    const sorted = [...cityData].sort((a, b) => b.record_count - a.record_count);
+    const sorted = cityData.filter((p) => p.record_count > 0)
+      .sort((a, b) => b.record_count - a.record_count);
     const count = zoom <= 3 ? 8 : zoom <= 4 ? 14 : zoom <= 5 ? 30 : zoom <= 6 ? 60 : sorted.length;
     return sorted.slice(0, count);
   }, [cityData, zoom]);

@@ -144,6 +144,7 @@ export interface PlaceMarker {
   agent_count: number;
   year_min: number | null;
   year_max: number | null;
+  decades: { decade: number; count: number }[]; // time-slider weights
 }
 
 export interface EgoMeta {

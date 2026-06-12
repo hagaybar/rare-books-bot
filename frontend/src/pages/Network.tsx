@@ -194,6 +194,22 @@ export default function Network() {
   const citiesActive = viewMode === 'map' && mapLayer === 'cities';
   const cityOpen = citiesActive && !!selectedPlace && !!placeDetail;
 
+  // Time window on cities: re-weight each circle by books printed *within the
+  // window* (decade resolution). Stable array order + zero counts (instead of
+  // filtering) so deck.gl can animate radius transitions per city.
+  const timedPlaces = useMemo(() => {
+    if (!places) return places;
+    if (!timeMode || !citiesActive) return places;
+    const end = windowStart + windowWidth;
+    return places.map((p) => ({
+      ...p,
+      record_count: p.decades.reduce(
+        (sum, d) => (d.decade + 9 >= windowStart && d.decade <= end ? sum + d.count : sum),
+        0,
+      ),
+    }));
+  }, [places, timeMode, citiesActive, windowStart, windowWidth]);
+
   // From a city profile, "notable person" jumps into their ego world.
   const handleCityPerson = (norm: string, displayName: string) => {
     setSelectedPlace(null);
@@ -387,7 +403,7 @@ export default function Network() {
             <MapView
               nodes={timeFiltered.nodes}
               edges={timeFiltered.edges}
-              places={places}
+              places={timedPlaces}
               mapLayer={mapLayer}
               selectedAgent={selectedAgent}
               onAgentClick={handleAgentClick}
@@ -428,8 +444,8 @@ export default function Network() {
             <Legend colorBy={colorBy} activeTypes={connectionTypes} communities={mapData?.meta.communities} />
           )}
 
-          {/* Time slider (people layer only for now) — issue #32 */}
-          {viewMode === 'map' && mapLayer === 'people' && !timeMode && mapData && (
+          {/* Time slider — issue #32; on cities it re-weights circles per window */}
+          {viewMode === 'map' && !cityOpen && !timeMode && mapData && (
             <button
               onClick={openTimeline}
               className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-gray-300 rounded-full shadow-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white"
@@ -440,14 +456,16 @@ export default function Network() {
               Play through time
             </button>
           )}
-          {viewMode === 'map' && mapLayer === 'people' && timeMode && mapData && (
+          {viewMode === 'map' && !cityOpen && timeMode && mapData && (
             <TimeSlider
               min={yearMin}
               max={yearMax}
               windowStart={windowStart}
               windowWidth={windowWidth}
               playing={playing}
-              activeCount={timeFiltered.nodes.length}
+              activeLabel={citiesActive
+                ? `${timedPlaces?.filter((p) => p.record_count > 0).length ?? 0} cities · ${timedPlaces?.reduce((s, p) => s + p.record_count, 0) ?? 0} books`
+                : `${timeFiltered.nodes.length} active`}
               onStartChange={(y) => { setPlaying(false); setWindowStart(y); }}
               onWidthChange={setWindowWidth}
               onTogglePlay={() => setPlaying((p) => !p)}
