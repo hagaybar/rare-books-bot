@@ -174,9 +174,14 @@ async def get_network_map(
     century: int | None = Query(None, description="Filter by century (e.g., 16 for 1500s)"),
     place: str | None = Query(None, description="Filter by place_norm"),
     role: str | None = Query(None, description="Filter by agent role"),
-    limit: int = Query(150, ge=1, le=500),
+    limit: int = Query(500, ge=1, le=3000),
 ) -> MapResponse:
-    """Return filtered nodes and edges for the network map."""
+    """Return filtered nodes and edges for the network map.
+
+    The node cap is generous (issue #35): the whole graph is ~2,714 nodes /
+    ~6.8k non-category edges — small for deck.gl — so readability is managed by
+    zoom-aware label culling client-side, not an arbitrary server cap.
+    """
     types = [t.strip() for t in connection_types.split(",") if t.strip()]
 
     # Handle empty types — return nodes only, no edges

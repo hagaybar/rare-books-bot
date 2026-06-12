@@ -41,7 +41,7 @@ const DEFAULT_STATE = {
   century: null as number | null,
   place: null as string | null,
   role: null as string | null,
-  agentLimit: 150,
+  agentLimit: 500, // issue #35: 150 was an arbitrary cap; the full graph is ~2,714
   colorBy: 'century' as ColorByMode,
 };
 
