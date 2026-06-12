@@ -610,12 +610,37 @@ def _convert_filter_dict(f: dict) -> Filter:
         )
         op_str = "IN"
 
+    # Fix (issue #44): LLM sometimes emits year EQUALS <v>, but the SQL
+    # adapter supports only RANGE for year — the step would die with
+    # "Unsupported operation FilterOp.EQUALS for year". Coerce a parseable
+    # single year to the degenerate RANGE start=end. $step_N references and
+    # unparseable values are left untouched.
+    start = f.get("start")
+    end = f.get("end")
+    if (
+        f.get("field") == "year"
+        and op_str == "EQUALS"
+        and value is not None
+        and not (isinstance(value, str) and _STEP_REF_RE.match(value))
+    ):
+        try:
+            year = int(str(value).strip())
+        except ValueError:
+            pass
+        else:
+            logger.warning(
+                "year EQUALS %r — coercing to RANGE %d-%d", value, year, year
+            )
+            op_str = "RANGE"
+            start = end = year
+            value = None
+
     return Filter(
         field=FilterField(f["field"]),
         op=FilterOp(op_str),
         value=value,
-        start=f.get("start"),
-        end=f.get("end"),
+        start=start,
+        end=end,
         negate=f.get("negate", False),
         confidence=f.get("confidence"),
         notes=f.get("notes"),

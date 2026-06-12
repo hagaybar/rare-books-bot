@@ -773,6 +773,55 @@ class TestPromptCoordinateTopics:
         assert f.field.value == "physical_desc"
 
 
+class TestYearEqualsCoercion:
+    """Issue #44: the LLM emits year EQUALS <v>, but the SQL adapter supports
+    only RANGE for year — db_adapter raised ValueError and the step died as a
+    silent empty result (diagnostic TEST-DATE-04: a correct gematria
+    conversion תקס"ה -> 1805 was destroyed by the IR gap). Coerce at the
+    conversion boundary to a degenerate RANGE."""
+
+    def test_year_equals_string_coerced_to_range(self):
+        from scripts.chat.interpreter import _convert_filter_dict
+        f = _convert_filter_dict({"field": "year", "op": "EQUALS", "value": "1805"})
+        assert f.op.value == "RANGE"
+        assert f.start == 1805
+        assert f.end == 1805
+        assert f.value is None
+
+    def test_year_equals_int_coerced_to_range(self):
+        from scripts.chat.interpreter import _convert_filter_dict
+        f = _convert_filter_dict({"field": "year", "op": "EQUALS", "value": 1650})
+        assert f.op.value == "RANGE"
+        assert f.start == 1650
+        assert f.end == 1650
+
+    def test_year_equals_preserves_negate(self):
+        from scripts.chat.interpreter import _convert_filter_dict
+        f = _convert_filter_dict(
+            {"field": "year", "op": "EQUALS", "value": "1805", "negate": True}
+        )
+        assert f.op.value == "RANGE"
+        assert f.negate is True
+
+    def test_year_equals_step_ref_left_alone(self):
+        from scripts.chat.interpreter import _convert_filter_dict
+        f = _convert_filter_dict({"field": "year", "op": "EQUALS", "value": "$step_0"})
+        assert f.op.value == "EQUALS"
+        assert f.value == "$step_0"
+
+    def test_year_equals_unparseable_left_alone(self):
+        from scripts.chat.interpreter import _convert_filter_dict
+        f = _convert_filter_dict({"field": "year", "op": "EQUALS", "value": "uncertain"})
+        assert f.op.value == "EQUALS"
+        assert f.value == "uncertain"
+
+    def test_non_year_equals_not_coerced(self):
+        from scripts.chat.interpreter import _convert_filter_dict
+        f = _convert_filter_dict({"field": "publisher", "op": "EQUALS", "value": "1805"})
+        assert f.op.value == "EQUALS"
+        assert f.value == "1805"
+
+
 class TestPromptFilterDiscipline:
     """The prompt must forbid invented constraints, malformed multi-value
     filters, and concept-words routed as agent names (printing-houses case)."""
