@@ -139,6 +139,8 @@ only for alias hits (SQLite MIN()-bare-column rule prefers the direct match).
 - `components/network/Breadcrumbs.tsx` — the ego-walk trail (issue #31)
 - `components/network/PathFinder.tsx` — "find path to…" box + evidence-labeled
   chain, shown in ego mode (issue #33)
+- `components/network/TimeSlider.tsx` — sliding imprint-date window + play
+  animation, shown in map mode (issue #32)
 - `components/network/MapView.tsx` — deck.gl (`ScatterplotLayer` nodes,
   `ArcLayer` edges, `TextLayer` labels with `characterSet:'auto'`) over a
   maplibre/react-map-gl basemap; pickable arcs with "why connected" tooltips;
@@ -215,5 +217,12 @@ The **network→chat hand-off** works end-to-end (#37): the agent panel composes
 scholar-grade query and `Chat.tsx` auto-runs a `?q=` param once on mount. This is
 the chat→network direction of the #34 loop.
 
-Open: **#32** time slider · **#34** chat→map direction (plot a CandidateSet's
-imprint places) · **#36** censorship MARC audit (deferred).
+The **time slider** (#32) is a map-mode sliding window over imprint dates: `/map`
+returns `active_start`/`active_end` per node (one UNION subquery covering people
+via agents→imprints and publishers via `imprints.publisher_norm`) plus
+`meta.year_min`/`year_max`; `Network.tsx` filters nodes/edges to the window
+client-side for smooth drag + play animation — watch printing migrate across the
+centuries.
+
+Open: **#34** chat→map direction (plot a CandidateSet's imprint places) ·
+**#36** censorship MARC audit (deferred).
