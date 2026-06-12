@@ -153,3 +153,21 @@ async def post_feedback(req: FeedbackRequest,
     except Exception:
         pass
     return FeedbackResponse(report_id=report.id, github_issue_url=issue_url)
+
+
+@router.get("")
+async def list_feedback(user: dict = Depends(require_role("admin"))):
+    # async for the same event-loop-thread reason as post_feedback above.
+    store = _get_store()
+    return [vars(r) for r in store.list_reports()]
+
+
+@router.post("/sync")
+async def sync_feedback(user: dict = Depends(require_role("admin"))):
+    # async for the same event-loop-thread reason as post_feedback above.
+    store = _get_store()
+    synced = 0
+    for pending in store.list_pending():
+        if _try_sync(store, pending):
+            synced += 1
+    return {"synced": synced, "remaining": len(store.list_pending())}

@@ -67,6 +67,14 @@ def client(_app_env):
 
 
 @pytest.fixture(scope="function")
+def admin_client(_app_env):
+    """Authenticated client with an admin user (token via tests/app/conftest.py)."""
+    token = make_test_token(role="admin", user_id=1, username="testadmin")
+    with TestClient(app, cookies={"access_token": token}) as test_client:
+        yield test_client
+
+
+@pytest.fixture(scope="function")
 def anon_client(_app_env):
     """Client with no auth cookie."""
     with TestClient(app) as test_client:
@@ -148,3 +156,27 @@ class TestPostFeedback:
             "/feedback", json={"kind": "message", "session_id": sid, "message_id": mid}
         )
         assert resp.json()["github_issue_url"].endswith("/12")
+
+
+class TestAdminEndpoints:
+    def test_list_requires_admin(self, client):  # client = limited role
+        assert client.get("/feedback").status_code == 403
+
+    def test_admin_lists_reports(self, admin_client, own_session_with_message, client, monkeypatch):
+        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+        sid, mid = own_session_with_message
+        client.post("/feedback", json={"kind": "message", "session_id": sid, "message_id": mid})
+        resp = admin_client.get("/feedback")
+        assert resp.status_code == 200
+        assert resp.json()[0]["sync_status"] == "pending"
+
+    def test_admin_sync_retries_pending(self, admin_client, client,
+                                        own_session_with_message, monkeypatch):
+        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+        sid, mid = own_session_with_message
+        client.post("/feedback", json={"kind": "message", "session_id": sid, "message_id": mid})
+        import scripts.feedback.github_client as gc
+        monkeypatch.setattr(gc, "create_issue",
+                            lambda *a, **k: ("https://github.com/o/r/issues/1", 1))
+        resp = admin_client.post("/feedback/sync")
+        assert resp.json()["synced"] >= 1
