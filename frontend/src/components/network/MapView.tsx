@@ -47,6 +47,9 @@ export default function MapView({
   );
   // Popover for a clicked stack of co-located agents (issue #23)
   const [stack, setStack] = useState<{ x: number; y: number; nodes: MapNode[] } | null>(null);
+  // Rounded zoom drives zoom-aware label density (issue #35) — rounding keeps
+  // pans from re-rendering and only re-tiers on a whole zoom-level change.
+  const [zoom, setZoom] = useState(Math.round(INITIAL_VIEW_STATE.zoom));
 
   // Build a lookup for node positions (use JavaScript's built-in Map, not the react-map-gl component)
   const nodeMap = useMemo(() => {
@@ -223,14 +226,19 @@ export default function MapView({
     [edges, nodeMap, selectedAgent, jitteredPositions]
   );
 
+  // Zoom-aware label density (issue #35): publishers always labelled; people
+  // labels grow as you zoom in, so the full node set stays readable without an
+  // arbitrary node cap. Always sorted by connection_count so the most important
+  // names surface first.
+  const peopleLabelCount = zoom <= 4 ? 10 : zoom === 5 ? 24 : zoom === 6 ? 50 : zoom === 7 ? 90 : 150;
   const labelNodes = useMemo(() => {
     const publishers = nodes.filter((n) => n.node_type === 'publisher');
     const people = nodes
       .filter((n) => n.node_type !== 'publisher')
       .sort((a, b) => b.connection_count - a.connection_count)
-      .slice(0, 12);
+      .slice(0, peopleLabelCount);
     return [...publishers, ...people];
-  }, [nodes]);
+  }, [nodes, peopleLabelCount]);
 
   const labelLayer = useMemo(
     () =>
@@ -277,6 +285,10 @@ export default function MapView({
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
+        onViewStateChange={({ viewState }: any) => {
+          const z = Math.round(viewState.zoom);
+          setZoom((prev) => (prev === z ? prev : z)); // only re-tier on level change
+        }}
         layers={[arcLayer, scatterLayer, labelLayer]}
         getTooltip={({ object }: any) => {
           if (!object) return null;

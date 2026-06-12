@@ -50,7 +50,7 @@ export default function Network() {
     if (century) next.century = String(century);
     if (role) next.role = role;
     if (minConfidence !== 0.5) next.conf = String(minConfidence);
-    if (agentLimit !== 150) next.limit = String(agentLimit);
+    if (agentLimit !== 500) next.limit = String(agentLimit);
     if (colorBy !== 'century') next.color = colorBy;
     setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps

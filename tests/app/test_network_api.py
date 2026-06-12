@@ -152,6 +152,12 @@ def test_get_map_invalid_type(client):
     assert resp.status_code == 400
 
 
+def test_map_limit_can_exceed_500(client):
+    """Issue #35: the node cap is lifted to the full graph; large limits are OK."""
+    resp = client.get("/network/map?limit=2714")
+    assert resp.status_code == 200
+
+
 def test_category_is_not_a_valid_arc_type(client):
     """Issue #28: category retired from arcs; requesting it is a 400."""
     resp = client.get("/network/map?connection_types=category")

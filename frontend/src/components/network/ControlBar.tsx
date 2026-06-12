@@ -372,8 +372,8 @@ function AgentSlider({ mobile }: { mobile?: boolean }) {
         <input
           type="range"
           min={50}
-          max={500}
-          step={10}
+          max={2714}
+          step={50}
           value={localValue}
           onChange={(e) => {
             const val = Number(e.target.value);
@@ -392,8 +392,8 @@ function AgentSlider({ mobile }: { mobile?: boolean }) {
       <input
         type="range"
         min={50}
-        max={500}
-        step={10}
+        max={2714}
+        step={50}
         value={localValue}
         onChange={(e) => {
           const val = Number(e.target.value);
