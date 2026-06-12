@@ -211,5 +211,9 @@ and readability is managed by **zoom-aware label density** in MapView
 (publishers always labelled; people labels grow 10→150 as you zoom in) rather
 than an arbitrary cap.
 
-Open: **#32** time slider · **#34** chat↔network loop · **#36** censorship MARC
-audit (deferred) · **#37** chat-handoff query template.
+The **network→chat hand-off** works end-to-end (#37): the agent panel composes a
+scholar-grade query and `Chat.tsx` auto-runs a `?q=` param once on mount. This is
+the chat→network direction of the #34 loop.
+
+Open: **#32** time slider · **#34** chat→map direction (plot a CandidateSet's
+imprint places) · **#36** censorship MARC audit (deferred).
