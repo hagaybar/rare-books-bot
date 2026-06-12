@@ -11,6 +11,7 @@ import PathFinder from '../components/network/PathFinder';
 import TimeSlider from '../components/network/TimeSlider';
 import CityView from '../components/network/CityView';
 import CityToolbar from '../components/network/CityToolbar';
+import Tour, { type TourStep } from '../components/network/Tour';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
 import Legend from '../components/network/Legend';
@@ -216,6 +217,74 @@ export default function Network() {
     sessionStorage.removeItem('chatMapOverlay');
   };
 
+  // Driven onboarding tour (issue #38): spotlights elements AND navigates the
+  // UI between steps, so new users experience the flow rather than read it.
+  const [tourOpen, setTourOpen] = useState(false);
+  const tourSteps: TourStep[] = useMemo(() => [
+    {
+      target: '[data-tour="map-area"]',
+      title: 'Where this collection was printed',
+      body: 'Every circle is a printing city, sized by how many of our books were printed there. The map is the front door — Paris, London, Amsterdam, Venice…',
+      before: () => {
+        useNetworkStore.getState().setViewMode('map');
+        useNetworkStore.getState().setMapLayer('cities');
+        setSelectedAgent(null); setSelectedPlace(null); setTimeMode(false);
+      },
+    },
+    {
+      target: '[data-tour="city-finder"]',
+      title: 'Find any city',
+      body: 'Click a circle directly, or pick from this ranked list — no hunting for tiny dots in the European cluster.',
+    },
+    {
+      target: '[data-tour="city-view"]',
+      title: 'A city’s profile',
+      body: 'We opened Venice for you: when printing happened there, the printers and notable people, what subjects were printed, and the books themselves.',
+      before: () => selectPlace('venice'),
+    },
+    {
+      target: '[data-tour="ego-reading"]',
+      title: 'A person’s world — with a reading',
+      body: 'Clicking a person opens their network. This card interprets its shape — Buchon’s web of medieval authors marks him as an editor resurrecting older texts. "Interpret with AI" goes deeper.',
+      before: () => handleCityPerson('buchon, j. a. c', 'Jean Alexandre Buchon'),
+    },
+    {
+      target: '[data-tour="connection-toggles"]',
+      title: 'Choose the relationships',
+      body: 'These toggles pick which connection types are drawn — shared books, printed-by, teacher & student, Wikipedia mentions. The lens you look through.',
+    },
+    {
+      target: '[data-tour="pathfinder"]',
+      title: 'How are two people connected?',
+      body: 'Ask for the shortest path between the current figure and anyone else — each hop labeled with its evidence.',
+    },
+    {
+      target: '[data-tour="time-button"]',
+      title: 'Play through time',
+      body: 'Back on the map: press play and watch printing migrate across the centuries — Venice fades as Amsterdam and Paris rise. Enjoy exploring!',
+      before: () => {
+        useNetworkStore.getState().setViewMode('map');
+        useNetworkStore.getState().setMapLayer('cities');
+        setSelectedAgent(null); setSelectedPlace(null);
+      },
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], []);
+  const closeTour = (completed: boolean) => {
+    setTourOpen(false);
+    try { localStorage.setItem('rb-network-tour-done', completed ? 'done' : 'skipped'); } catch { /* private mode */ }
+  };
+  // Offer the tour once per browser, but never over a deep link.
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('rb-network-tour-done')) return;
+    } catch { return; }
+    if (searchParams.get('agent') || searchParams.get('session') || searchParams.get('overlay')) return;
+    const t = setTimeout(() => setTourOpen(true), 1500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Time window on cities: re-weight each circle by books printed *within the
   // window* (decade resolution). Stable array order + zero counts (instead of
   // filtering) so deck.gl can animate radius transitions per city.
@@ -298,6 +367,17 @@ export default function Network() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ml-2">
+        {/* Guided tour entry (issue #38) */}
+        <button
+          onClick={() => setTourOpen(true)}
+          className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 text-sm text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50"
+          title="Take a 2-minute guided tour"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+          </svg>
+          Tour
+        </button>
         {/* Map / Network view toggle (issue #31) */}
         <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden text-sm" role="group" aria-label="View mode">
           <button
@@ -410,7 +490,7 @@ export default function Network() {
       )}
 
       <div className="flex flex-1 relative overflow-hidden min-h-0">
-        <div className="flex-1 relative min-h-0">
+        <div className="flex-1 relative min-h-0" data-tour="map-area">
           {viewMode === 'ego' ? (
             egoData ? (
               <EgoView
@@ -488,6 +568,7 @@ export default function Network() {
           {viewMode === 'map' && !cityOpen && !chatOverlay && !timeMode && mapData && (
             <button
               onClick={openTimeline}
+              data-tour="time-button"
               className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-gray-300 rounded-full shadow-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white"
             >
               <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -546,6 +627,8 @@ export default function Network() {
           </div>
         </div>
       )}
+
+      {tourOpen && <Tour steps={tourSteps} onClose={closeTour} />}
 
       {/* Footer — compact on mobile */}
       <div className="px-4 py-2 bg-gray-50 border-t text-xs md:text-sm text-gray-500 flex justify-between">

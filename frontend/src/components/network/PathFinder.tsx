@@ -39,7 +39,7 @@ export default function PathFinder({ sourceName, path, loading, onSelectTarget, 
   const clear = () => { setQuery(''); setResults([]); onClear(); };
 
   return (
-    <div className="px-4 py-2 bg-white border-b text-sm">
+    <div className="px-4 py-2 bg-white border-b text-sm" data-tour="pathfinder">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-gray-500">Find path from</span>
         <span className="font-medium text-gray-900 max-w-[180px] truncate" title={sourceName}>

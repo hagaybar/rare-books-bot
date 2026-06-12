@@ -64,6 +64,10 @@ interface ControlBarProps {
 }
 
 export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
+  // Century/Role/Agents act only on the MAP query — hide them in ego mode,
+  // where they read as live controls but do nothing (issue #38 confusion).
+  const viewMode = useNetworkStore((s) => s.viewMode);
+  const mapOnly = viewMode !== 'ego';
   const {
     connectionTypes,
     toggleConnectionType,
@@ -202,7 +206,7 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
       </div>
 
       {/* Connection type toggles — tiered */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap" data-tour="connection-toggles">
         <span className="text-sm font-medium text-gray-700">Connections:</span>
         {(Object.entries(CONNECTION_TYPE_CONFIG) as [ConnectionType, typeof CONNECTION_TYPE_CONFIG[ConnectionType]][])
           .filter(([, config]) => config.tier === 'primary')
@@ -248,7 +252,8 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
           })}
       </div>
 
-      {/* Century filter */}
+      {/* Century filter (map-only) */}
+      {mapOnly && (
       <div className="flex items-center gap-1">
         <span className="text-sm text-gray-600">Century:</span>
         <select
@@ -263,8 +268,10 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
           ))}
         </select>
       </div>
+      )}
 
-      {/* Role filter */}
+      {/* Role filter (map-only) */}
+      {mapOnly && (
       <div className="flex items-center gap-1">
         <span className="text-sm text-gray-600">Role:</span>
         <select
@@ -279,6 +286,7 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
           ))}
         </select>
       </div>
+      )}
 
       {/* Min confidence (issue #25) */}
       <div className="flex items-center gap-1">
@@ -292,8 +300,8 @@ export default function ControlBar({ mobile, onAgentSelect }: ControlBarProps) {
         <span className="text-xs text-gray-500 w-6">{minConfidence.toFixed(1)}</span>
       </div>
 
-      {/* Agent count slider (debounced to avoid rapid API calls while dragging) */}
-      <AgentSlider />
+      {/* Agent count slider (map-only; debounced) */}
+      {mapOnly && <AgentSlider />}
 
       {/* Reset (issue #25) */}
       <button
