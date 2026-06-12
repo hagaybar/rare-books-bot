@@ -448,3 +448,40 @@ def test_interpret_unknown_agent_404(client):
     resp = client.post("/network/interpret",
                        json={"agent_norm": "nobody, here", "connection_types": []})
     assert resp.status_code == 404
+
+
+def test_topics_aggregates_and_merges_roots(client, mock_db):
+    """Topic constellation: headings aggregate by tidy form; 'Bible.' and
+    'Bible' merge into one root; counts and peak decade present."""
+    import sqlite3
+    conn = sqlite3.connect(str(mock_db))
+    conn.executescript("""
+        INSERT INTO subjects VALUES (3, 100, 'Bible. -- Pentateuch -- Commentaries.', NULL);
+        INSERT INTO subjects VALUES (4, 100, 'Bible -- Texts', 'תנ"ך');
+    """)
+    conn.commit(); conn.close()
+
+    resp = client.get("/network/topics")
+    assert resp.status_code == 200
+    topics = resp.json()
+    by_subject = {t["subject"]: t for t in topics}
+    assert by_subject["Optics"]["count"] == 1
+    assert by_subject["Optics"]["root"] == "Optics"
+    assert by_subject["Optics"]["peak_decade"] == 1550
+    # trailing-period variants merge under one root
+    bible_roots = {t["root"] for t in topics if t["root"].startswith("Bible")}
+    assert bible_roots == {"Bible"}
+    assert by_subject["Bible — Texts"]["value_he"] == 'תנ"ך'
+
+
+def test_topic_profile_mirrors_place_profile(client):
+    """Clicking a bubble: when/where/who/books for one subject."""
+    resp = client.get("/network/topic/Optics")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["subject"] == "Optics"
+    assert data["total"] == 1
+    assert {"decade": 1550, "count": 1} in data["decades"]
+    assert any(p["name"] == "amsterdam" for p in data["top_places"])
+    assert any(a["display_name"] == "John Smith" for a in data["top_agents"])
+    assert any(w["mms_id"] == "990001112220304146" for w in data["works"])

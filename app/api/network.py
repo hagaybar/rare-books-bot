@@ -31,6 +31,8 @@ from app.api.network_models import (
     PlaceDetail,
     PlaceMarker,
     SubjectCount,
+    TopicDetail,
+    TopicMarker,
 )
 
 logger = logging.getLogger(__name__)
@@ -801,6 +803,147 @@ async def get_places(min_books: int = Query(1, ge=1)) -> list[PlaceMarker]:
             )
             for r in rows
         ]
+    finally:
+        conn.close()
+
+
+# Tidy subject form used consistently across both topic endpoints: strip
+# trailing periods/spaces (merging 'Bible.' with 'Bible') and render LCSH
+# ' -- ' subdivisions as ' — ' for display.
+_TIDY_SUBJECT_SQL = "replace(replace(rtrim(value, '. '), ' -- ', ' — '), '. — ', ' — ')"
+
+# Form/genre roots: what the books ARE, vs. topical roots (what they're ABOUT).
+_FORM_ROOTS = {
+    "Limited editions", "Rare books", "Book collecting", "Bibliomania",
+    "Facsimiles", "Miniature books", "Illustrated books", "Fine books",
+    "Incunabula",
+}
+
+
+def _topic_root(subject: str) -> str:
+    head = subject.split(" — ", 1)[0]
+    return head.rstrip(". ")
+
+
+@router.get("/topics", response_model=list[TopicMarker])
+async def get_topics(limit: int = Query(120, ge=10, le=400)) -> list[TopicMarker]:
+    """Aggregated subject headings for the topic constellation.
+
+    One marker per tidy heading (top `limit` by holdings): book count, the
+    merged LCSH root, the decade with most books (drives the era color), and
+    the Hebrew form where one exists.
+    """
+    conn = _get_db()
+    try:
+        rows = conn.execute(
+            f"""SELECT {_TIDY_SUBJECT_SQL} AS subj,
+                       COUNT(DISTINCT record_id) AS n,
+                       MAX(value_he) AS he
+                FROM subjects
+                WHERE value IS NOT NULL AND TRIM(value) != ''
+                GROUP BY subj
+                ORDER BY n DESC
+                LIMIT ?""",
+            (limit,),
+        ).fetchall()
+
+        # Peak decade per heading (mode of imprint decades)
+        peaks: dict[str, tuple[int, int]] = {}
+        for subj, dec, n in conn.execute(
+            f"""SELECT {_TIDY_SUBJECT_SQL} AS subj, (i.date_start/10)*10 AS dec,
+                       COUNT(DISTINCT s.record_id) AS n
+                FROM subjects s JOIN imprints i ON i.record_id = s.record_id
+                WHERE i.date_start IS NOT NULL
+                GROUP BY subj, dec"""
+        ).fetchall():
+            if subj not in peaks or n > peaks[subj][1]:
+                peaks[subj] = (dec, n)
+
+        out = []
+        for r in rows:
+            root = _topic_root(r["subj"])
+            out.append(TopicMarker(
+                subject=r["subj"], root=root, count=r["n"],
+                peak_decade=peaks.get(r["subj"], (None, 0))[0],
+                value_he=r["he"],
+                kind="form" if root in _FORM_ROOTS else "topic",
+            ))
+        return out
+    finally:
+        conn.close()
+
+
+@router.get("/topic/{subject:path}", response_model=TopicDetail)
+async def get_topic_detail(subject: str, limit: int = Query(50, ge=1, le=200)) -> TopicDetail:
+    """Topic profile — when/where/who/books for one subject heading."""
+    conn = _get_db()
+    try:
+        total, he = conn.execute(
+            f"""SELECT COUNT(DISTINCT record_id), MAX(value_he)
+                FROM subjects WHERE {_TIDY_SUBJECT_SQL} = ?""",
+            (subject,),
+        ).fetchone()
+        if not total:
+            raise HTTPException(404, f"Subject not found: {subject}")
+
+        decades = [
+            DecadeCount(decade=r[0], count=r[1])
+            for r in conn.execute(
+                f"""SELECT (i.date_start/10)*10 AS dec, COUNT(DISTINCT s.record_id)
+                    FROM subjects s JOIN imprints i ON i.record_id = s.record_id
+                    WHERE {_TIDY_SUBJECT_SQL} = ? AND i.date_start IS NOT NULL
+                    GROUP BY dec ORDER BY dec""",
+                (subject,),
+            ).fetchall()
+        ]
+        top_places = [
+            NameCount(name=r[0], count=r[1])
+            for r in conn.execute(
+                f"""SELECT i.place_norm, COUNT(DISTINCT s.record_id) AS n
+                    FROM subjects s JOIN imprints i ON i.record_id = s.record_id
+                    WHERE {_TIDY_SUBJECT_SQL} = ? AND i.place_norm IS NOT NULL
+                      AND i.place_norm NOT IN ('[sine loco]', '')
+                    GROUP BY i.place_norm ORDER BY n DESC LIMIT 8""",
+                (subject,),
+            ).fetchall()
+        ]
+        top_agents = [
+            AgentCount(agent_norm=r[0], display_name=r[1], count=r[2])
+            for r in conn.execute(
+                f"""SELECT a.agent_norm, na.display_name, COUNT(DISTINCT s.record_id) AS n
+                    FROM subjects s
+                    JOIN agents a ON a.record_id = s.record_id
+                    JOIN network_agents na ON na.agent_norm = a.agent_norm
+                    WHERE {_TIDY_SUBJECT_SQL} = ?
+                    GROUP BY a.agent_norm ORDER BY n DESC LIMIT 8""",
+                (subject,),
+            ).fetchall()
+        ]
+        works = [
+            AgentWork(
+                mms_id=r["mms_id"], title=r["title"], date_label=r["date_label"],
+                place_display=r["place_display"], publisher_display=r["publisher_display"],
+                primo_url=_primo_url(r["mms_id"]),
+            )
+            for r in conn.execute(
+                f"""SELECT DISTINCT rec.mms_id AS mms_id,
+                           (SELECT t.value FROM titles t WHERE t.record_id = rec.id
+                            ORDER BY CASE t.title_type WHEN 'main' THEN 0 ELSE 1 END LIMIT 1) AS title,
+                           (SELECT i.date_label FROM imprints i WHERE i.record_id = rec.id LIMIT 1) AS date_label,
+                           (SELECT i.place_display FROM imprints i WHERE i.record_id = rec.id LIMIT 1) AS place_display,
+                           (SELECT i.publisher_display FROM imprints i WHERE i.record_id = rec.id LIMIT 1) AS publisher_display,
+                           (SELECT i2.date_start FROM imprints i2 WHERE i2.record_id = rec.id LIMIT 1) AS sort_date
+                    FROM subjects s JOIN records rec ON rec.id = s.record_id
+                    WHERE {_TIDY_SUBJECT_SQL} = ?
+                    ORDER BY sort_date IS NULL, sort_date ASC
+                    LIMIT ?""",
+                (subject, limit),
+            ).fetchall()
+        ]
+        return TopicDetail(
+            subject=subject, value_he=he, total=total, decades=decades,
+            top_places=top_places, top_agents=top_agents, works=works,
+        )
     finally:
         conn.close()
 

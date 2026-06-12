@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { fetchMapData, fetchAgentDetail, fetchPlaceDetail, fetchEgo, fetchPath, fetchPlaces } from '../api/network';
+import { fetchMapData, fetchAgentDetail, fetchPlaceDetail, fetchEgo, fetchPath, fetchPlaces, fetchTopics, fetchTopicDetail } from '../api/network';
 import { useNetworkStore } from '../stores/networkStore';
 import MapView from '../components/network/MapView';
 import EgoView from '../components/network/EgoView';
@@ -12,6 +12,8 @@ import TimeSlider from '../components/network/TimeSlider';
 import CityView from '../components/network/CityView';
 import CityToolbar from '../components/network/CityToolbar';
 import Tour, { type TourStep } from '../components/network/Tour';
+import TopicsView from '../components/network/TopicsView';
+import TopicView from '../components/network/TopicView';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
 import Legend from '../components/network/Legend';
@@ -217,6 +219,21 @@ export default function Network() {
     sessionStorage.removeItem('chatMapOverlay');
   };
 
+  // Topic constellation (third axis: what the collection is ABOUT)
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const { data: topics } = useQuery({
+    queryKey: ['network-topics'],
+    queryFn: fetchTopics,
+    enabled: viewMode === 'topics',
+    staleTime: 10 * 60 * 1000,
+  });
+  const { data: topicDetail } = useQuery({
+    queryKey: ['network-topic', selectedTopic],
+    queryFn: () => fetchTopicDetail(selectedTopic!),
+    enabled: !!selectedTopic,
+  });
+  const goTopics = () => { setSelectedTopic(null); setViewMode('topics'); };
+
   // Driven onboarding tour (issue #38): spotlights elements AND navigates the
   // UI between steps, so new users experience the flow rather than read it.
   const [tourOpen, setTourOpen] = useState(false);
@@ -368,10 +385,12 @@ export default function Network() {
       <div className="px-4 pt-3 pb-1 flex items-center justify-between">
         <div className="min-w-0">
           <h1 className="text-xl font-semibold text-gray-900 md:text-xl text-base truncate">
-            {citiesActive ? 'Where This Collection Was Printed' : 'Scholarly Network Map'}
+            {viewMode === 'topics' ? 'What This Collection Is About' : citiesActive ? 'Where This Collection Was Printed' : 'Scholarly Network Map'}
           </h1>
           <p className="text-sm text-gray-500 hidden md:block">
-            {citiesActive
+            {viewMode === 'topics'
+              ? 'Subject bubbles sized by holdings, grouped by theme, colored by the era of peak printing — click one to explore'
+              : citiesActive
               ? `${places?.length ?? '…'} printing cities, sized by how many of our books were printed there — click one to explore`
               : `Explore connections between ${mapData?.meta.total_agents?.toLocaleString() ?? '...'} historical figures across Europe and the Middle East`}
           </p>
@@ -405,10 +424,17 @@ export default function Network() {
           >
             Network
           </button>
+          <button
+            onClick={goTopics}
+            aria-pressed={viewMode === 'topics'}
+            className={`px-3 py-1.5 border-l border-gray-300 ${viewMode === 'topics' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+          >
+            Topics
+          </button>
         </div>
 
         {/* Mobile filter toggle button (people-network filters — hidden in cities mode) */}
-        {!citiesActive && (
+        {viewMode !== 'topics' && !citiesActive && (
         <button
           onClick={() => setFiltersOpen(!filtersOpen)}
           className="md:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 active:bg-gray-100 shrink-0"
@@ -427,8 +453,9 @@ export default function Network() {
         </div>
       </div>
 
-      {/* Cities mode: a slim city finder. People/ego: the full network controls. */}
-      {citiesActive ? (
+      {/* Cities mode: a slim city finder. People/ego: the full network
+          controls. Topics has its own toolbar inside the view. */}
+      {viewMode === 'topics' ? null : citiesActive ? (
         <CityToolbar places={places ?? []} onSelect={selectPlace} />
       ) : (
         <div className="hidden md:block">
@@ -502,7 +529,19 @@ export default function Network() {
 
       <div className="flex flex-1 relative overflow-hidden min-h-0">
         <div className="flex-1 relative min-h-0" data-tour="map-area">
-          {viewMode === 'ego' ? (
+          {viewMode === 'topics' ? (
+            <>
+              <TopicsView topics={topics ?? []} onSelect={setSelectedTopic} />
+              {selectedTopic && topicDetail && (
+                <TopicView
+                  topic={topicDetail}
+                  onBack={() => setSelectedTopic(null)}
+                  onPersonClick={(n, d) => { setSelectedTopic(null); handleCityPerson(n, d); }}
+                  onPlaceClick={(norm) => { setSelectedTopic(null); selectPlace(norm); }}
+                />
+              )}
+            </>
+          ) : viewMode === 'ego' ? (
             egoData ? (
               <EgoView
                 data={egoData}
@@ -558,7 +597,7 @@ export default function Network() {
             </div>
           )}
 
-          {(viewMode === 'ego' || mapLayer === 'people') && (
+          {(viewMode === 'ego' || (viewMode === 'map' && mapLayer === 'people')) && (
             <Legend colorBy={colorBy} activeTypes={connectionTypes} communities={mapData?.meta.communities} />
           )}
 
