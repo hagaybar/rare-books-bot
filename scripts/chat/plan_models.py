@@ -171,11 +171,17 @@ class AggregationResult(BaseModel):
     """Output of ``aggregate``.
 
     Each facet is a dict with ``value`` and ``count`` keys.
+    ``distinct_values`` is the true number of distinct values in scope;
+    ``facets_truncated`` is True when ``facets`` shows fewer than that,
+    so downstream consumers never mistake a top-K slice for the whole
+    population (issue #42).
     """
 
     field: str
     facets: list[dict]
     total_records: int
+    distinct_values: int = 0
+    facets_truncated: bool = False
 
 
 class ConnectionGraph(BaseModel):
@@ -374,6 +380,9 @@ class GroundingData(BaseModel):
     records: list[RecordSummary] = Field(default_factory=list)
     agents: list[AgentSummary] = Field(default_factory=list)
     aggregations: dict[str, list] = Field(default_factory=dict)
+    # Per-field {"distinct_values": int, "facets_truncated": bool} so the
+    # narrator can state the true population size next to a top-K facet list.
+    aggregation_meta: dict[str, dict] = Field(default_factory=dict)
     links: list[GroundingLink] = Field(default_factory=list)
     publishers: list[PublisherDetail] = Field(default_factory=list)
     connections: list[dict] = Field(default_factory=list)

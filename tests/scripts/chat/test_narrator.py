@@ -155,6 +155,32 @@ def test_narrate_grounding_passthrough():
     assert result.grounding.records[0].mms_id == "990001234"
 
 
+def test_aggregation_prompts_state_distinct_total():
+    """Both narrator prompts mark truncated facet lists with the true distinct
+    count (issue #42) so the LLM never reads top-K as the whole population."""
+    from scripts.chat.narrator import build_lean_narrator_prompt, _build_narrator_prompt
+
+    facets = [
+        {"value": f"press {i}", "count": 30 - i} for i in range(25)
+    ]
+    exec_result = _make_execution_result(
+        grounding=GroundingData(
+            records=[], agents=[], links=[],
+            aggregations={"publisher": facets},
+            aggregation_meta={
+                "publisher": {"distinct_values": 2130, "facets_truncated": True},
+            },
+        ),
+        original_query="how many printing houses are in the collection?",
+    )
+
+    lean = build_lean_narrator_prompt(exec_result.original_query, exec_result)
+    assert "2130 distinct values total — showing top 5" in lean
+
+    full = _build_narrator_prompt(exec_result.original_query, exec_result)
+    assert "2130 distinct values total — showing top 20" in full
+
+
 def test_narrate_fallback_on_llm_failure():
     """When LLM fails, narrator returns a structured summary."""
     from scripts.chat.narrator import narrate
