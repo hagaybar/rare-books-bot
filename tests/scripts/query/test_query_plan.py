@@ -87,6 +87,42 @@ class TestFilter:
         with pytest.raises(ValidationError, match="Input should be a valid string"):
             Filter(field=FilterField.LANGUAGE, op=FilterOp.IN, value=["lat", 123, "eng"])
 
+    def test_equals_empty_string_value_fails(self):
+        """EQUALS with empty-string value should fail (issue #49).
+
+        An empty-string filter validates, executes, matches nothing, and
+        returns a silent 0 — hiding a planning failure as an empty result.
+        """
+        with pytest.raises(ValidationError, match="non-empty"):
+            Filter(field=FilterField.IMPRINT_PLACE, op=FilterOp.EQUALS, value="")
+
+    def test_equals_whitespace_only_value_fails(self):
+        """EQUALS with whitespace-only value should fail (issue #49)."""
+        with pytest.raises(ValidationError, match="non-empty"):
+            Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="   ")
+
+    def test_contains_empty_string_value_fails(self):
+        """CONTAINS with empty-string value should fail (issue #49)."""
+        with pytest.raises(ValidationError, match="non-empty"):
+            Filter(field=FilterField.TITLE, op=FilterOp.CONTAINS, value="")
+
+    def test_in_with_empty_string_member_fails(self):
+        """IN with an empty/whitespace-only member should fail (issue #49)."""
+        with pytest.raises(ValidationError, match="non-empty"):
+            Filter(field=FilterField.LANGUAGE, op=FilterOp.IN, value=["lat", ""])
+        with pytest.raises(ValidationError, match="non-empty"):
+            Filter(field=FilterField.LANGUAGE, op=FilterOp.IN, value=["  "])
+
+    def test_sine_loco_sentinel_value_validates(self):
+        """The '[sine loco]' absence sentinel is a real DB value, not empty —
+        it must pass validation (issue #49)."""
+        f = Filter(
+            field=FilterField.IMPRINT_PLACE,
+            op=FilterOp.EQUALS,
+            value="[sine loco]",
+        )
+        assert f.value == "[sine loco]"
+
     def test_filter_with_confidence(self):
         """Filter with valid confidence should validate."""
         f = Filter(

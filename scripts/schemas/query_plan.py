@@ -66,6 +66,12 @@ class Filter(BaseModel):
         rejected HERE with a clear message instead of dying later in SQL
         generation as an unhandled ValueError (the failure class issue #44
         fixed for year EQUALS).
+
+        Empty-string contract (issue #49): EQUALS/CONTAINS values and IN
+        list members must be non-empty after stripping whitespace.  An
+        empty-string filter validates against the type contract, executes,
+        matches nothing, and returns a silent 0 — absence is reified in the
+        DB as a sentinel (e.g. imprint_place '[sine loco]'), never as ''.
         """
         import re
         _step_ref = re.compile(r"^\$step_\d+$")
@@ -122,6 +128,14 @@ class Filter(BaseModel):
                 raise ValueError(f"{self.op} operation requires value")
             if not isinstance(self.value, str):
                 raise ValueError(f"{self.op} operation requires value to be a string")
+            if not self.value.strip():
+                raise ValueError(
+                    f"{self.op.value} operation requires a non-empty value: "
+                    f"an empty-string filter matches nothing and hides a "
+                    f"planning failure as a silent 0 (issue #49). Absence is "
+                    f"reified as a sentinel value (e.g. imprint_place "
+                    f"'[sine loco]'), never as an empty string"
+                )
 
         elif self.op == FilterOp.IN:
             if self.value is None:
@@ -135,6 +149,12 @@ class Filter(BaseModel):
                     raise ValueError("IN operation requires a non-empty list")
                 if not all(isinstance(v, str) for v in self.value):
                     raise ValueError("IN operation requires all values to be strings")
+                if any(not v.strip() for v in self.value):
+                    raise ValueError(
+                        "IN operation requires non-empty string values: "
+                        "empty-string members match nothing and hide a "
+                        "planning failure as a silent 0 (issue #49)"
+                    )
             else:
                 raise ValueError("IN operation requires value to be a list")
 
