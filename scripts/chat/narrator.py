@@ -220,14 +220,21 @@ async def narrate_streaming(
             query, execution_result, chunk_callback, model, api_key,
             token_saving=token_saving,
         )
-        # Post-streaming: extract confidence via lightweight call
-        confidence = await _extract_streaming_meta(query, narrative, api_key)
+        # Post-streaming: extract confidence via lightweight call.
+        # On failure confidence is None with an explicit reason — never
+        # a fabricated value (data-model rule: null + reason).
+        confidence, confidence_reason = await _extract_streaming_meta(
+            query, narrative, api_key
+        )
+        metadata: dict = {"model": model, "streamed": True}
+        if confidence_reason is not None:
+            metadata["confidence_reason"] = confidence_reason
         response = ScholarResponse(
             narrative=narrative,
             suggested_followups=[],
             grounding=execution_result.grounding,
             confidence=confidence,
-            metadata={"model": model, "streamed": True},
+            metadata=metadata,
         )
         return response
     except Exception:
@@ -242,13 +249,18 @@ async def _extract_streaming_meta(
     query: str,
     narrative: str,
     api_key: Optional[str] = None,
-) -> float:
+) -> tuple[Optional[float], Optional[str]]:
     """Extract a confidence score after streaming completes.
 
     Makes a lightweight structured-output call via litellm to get a real
     confidence rating instead of a hardcoded default. Uses the
     meta_extraction model from model-config.json.
-    Falls back to a default on any failure.
+
+    Returns:
+        ``(confidence, reason)``. On success the reason is None. On any
+        failure the confidence is None with an explicit reason — a
+        fabricated score is never returned (data-model rule: store
+        null + reason, never invent values).
     """
     try:
         config = load_config()
@@ -265,10 +277,15 @@ async def _extract_streaming_meta(
             call_type="narrator_meta",
         )
         meta: StreamingMetaLLM = result.parsed
-        return meta.confidence
-    except Exception:
-        logger.debug("Post-streaming meta extraction failed; using defaults")
-        return 0.85
+        return meta.confidence, None
+    except Exception as exc:
+        reason = f"meta_extraction_failed: {type(exc).__name__}: {exc}"
+        logger.warning(
+            "Post-streaming meta extraction failed; confidence is "
+            "unavailable (None), not fabricated: %s",
+            reason,
+        )
+        return None, reason
 
 
 # =============================================================================

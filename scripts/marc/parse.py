@@ -3,7 +3,9 @@
 This module implements M1: MARC XML → Canonical JSONL
 """
 
+import json
 import traceback
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 from collections import Counter
@@ -15,6 +17,42 @@ from .models import (
     CanonicalRecord, ImprintData, AgentData, SubjectData, NoteData,
     SourcedValue, SourceMetadata, ExtractionReport
 )
+
+# Default directory for per-run error logs (project hard rule: on MARC
+# parse failure, log the error to data/runs/ and stop).
+DEFAULT_RUNS_DIR = Path("data/runs")
+
+
+class MarcParseError(Exception):
+    """Raised when the MARC XML source file cannot be parsed at all.
+
+    Per the project hard rules, a whole-file parse failure must be logged
+    to ``data/runs/`` and must stop the pipeline — never proceed with
+    zero records.
+    """
+
+
+def _write_parse_failure_log(
+    marc_xml_path: Path, exc: Exception, runs_dir: Path
+) -> Path:
+    """Write a timestamped parse-failure log under *runs_dir*.
+
+    Returns the path of the log file that was written.
+    """
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")
+    log_path = runs_dir / f"marc_parse_failure_{timestamp}.json"
+    payload = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "source_file": marc_xml_path.name,
+        "source_path": str(marc_xml_path),
+        "error": f"{type(exc).__name__}: {exc}",
+        "traceback": traceback.format_exc(),
+    }
+    log_path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    return log_path
 
 
 def _make_source_ref(tag: str, occurrence: int, subfield: str) -> str:
@@ -731,7 +769,8 @@ def parse_marc_record(record: pymarc.Record, source_file: Optional[str] = None) 
 def parse_marc_xml_file(
     marc_xml_path: Path,
     output_path: Path,
-    report_path: Optional[Path] = None
+    report_path: Optional[Path] = None,
+    runs_dir: Optional[Path] = None,
 ) -> ExtractionReport:
     """Parse MARC XML file and output canonical JSONL.
 
@@ -739,9 +778,16 @@ def parse_marc_xml_file(
         marc_xml_path: Path to input MARC XML file
         output_path: Path to output JSONL file (one record per line)
         report_path: Optional path for extraction report JSON
+        runs_dir: Directory for parse-failure error logs
+            (default: ``data/runs``)
 
     Returns:
         ExtractionReport with extraction statistics
+
+    Raises:
+        MarcParseError: If the XML file cannot be parsed at all. The error
+            is also written to a timestamped log under *runs_dir* — the
+            pipeline must stop rather than proceed with zero records.
     """
     canonical_records = []
     failed_records = []
@@ -763,12 +809,18 @@ def parse_marc_xml_file(
         'missing_imprints': []
     }
 
-    # Parse MARC XML file
+    # Parse MARC XML file.  A whole-file failure is fatal: log to
+    # data/runs/ and raise — never proceed with zero records.
     try:
         records = parse_xml_to_array(str(marc_xml_path))
     except Exception as e:
-        print(f"Failed to parse XML file: {e}")
-        records = []
+        log_path = _write_parse_failure_log(
+            marc_xml_path, e, runs_dir or DEFAULT_RUNS_DIR
+        )
+        raise MarcParseError(
+            f"Failed to parse MARC XML file '{marc_xml_path}': "
+            f"{type(e).__name__}: {e} (error log: {log_path})"
+        ) from e
 
     for record in records:
         try:
@@ -914,7 +966,11 @@ if __name__ == "__main__":
     report_file = Path("data/canonical/extraction_report.json")
 
     print(f"Parsing {input_file}...")
-    report = parse_marc_xml_file(input_file, output_file, report_file)
+    try:
+        report = parse_marc_xml_file(input_file, output_file, report_file)
+    except MarcParseError as exc:
+        print(f"ERROR: {exc}")
+        sys.exit(1)
 
     print("\nExtraction Report:")
     print(f"  Source file: {report.source_file}")

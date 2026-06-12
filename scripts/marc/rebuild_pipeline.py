@@ -47,14 +47,18 @@ def run_m1_parse(marc_xml: Path, output: Path, report: Path) -> bool:
     print(f"Output: {output}")
     print()
 
-    from scripts.marc.parse import parse_marc_xml_file
+    from scripts.marc.parse import MarcParseError, parse_marc_xml_file
 
     start = time.time()
-    report_obj = parse_marc_xml_file(
-        marc_xml_path=marc_xml,
-        output_path=output,
-        report_path=report
-    )
+    try:
+        report_obj = parse_marc_xml_file(
+            marc_xml_path=marc_xml,
+            output_path=output,
+            report_path=report
+        )
+    except MarcParseError as exc:
+        print(f"\nERROR: M1 parse failed — pipeline stopped: {exc}")
+        return False
     elapsed = time.time() - start
 
     print(f"\nM1 Complete in {elapsed:.1f}s")

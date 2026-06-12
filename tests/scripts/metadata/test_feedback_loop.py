@@ -452,6 +452,19 @@ class TestRenormalizeRecords:
         count = loop._renormalize_records("date", "1680", "1680")
         assert count == 0
 
+    def test_db_error_raises_instead_of_returning_zero(self, tmp_dir: Path):
+        """A DB failure must surface as CorrectionApplyError, never as 0 rows
+        updated (issue #55)."""
+        from scripts.metadata.feedback_loop import CorrectionApplyError
+
+        broken = FeedbackLoop(
+            db_path=tmp_dir / "no_such_dir" / "db.sqlite",  # unopenable
+            alias_map_dir=tmp_dir,
+            review_log_path=tmp_dir / "review_log.jsonl",
+        )
+        with pytest.raises(CorrectionApplyError):
+            broken._renormalize_records("place", "Paris :", "paris")
+
 
 # ---------------------------------------------------------------------------
 # Tests: atomic write (tmp file cleanup)

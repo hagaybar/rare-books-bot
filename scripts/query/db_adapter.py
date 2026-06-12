@@ -19,15 +19,22 @@ logger = logging.getLogger(__name__)
 _schema_validated = False
 
 # Module-level cache for agent alias table existence check.
-# None = not yet checked; True/False = cached result.
+# None = not yet positively detected; True = tables confirmed present.
+# Negative/error outcomes are never cached (re-probed each call) so a
+# transient DB error cannot disable alias expansion for the process
+# lifetime (issue #55).
 _agent_alias_tables_present: bool | None = None
 
 
 def _agent_alias_tables_exist(conn: sqlite3.Connection) -> bool:
     """Check whether the agent_aliases and agent_authorities tables exist.
 
-    The result is cached at module level so the check runs at most once
-    per process.
+    Only a *positive* detection is cached at module level. A transient
+    probe error (locked DB, bad connection, I/O hiccup) must not disable
+    alias expansion for the process lifetime: it logs a warning, returns
+    False for this call only, and re-probes on the next call. A successful
+    probe that finds the tables absent is also re-probed (cheap
+    sqlite_master query) so a later schema migration is picked up.
 
     Args:
         conn: Active database connection
@@ -48,11 +55,21 @@ def _agent_alias_tables_exist(conn: sqlite3.Connection) -> bool:
               AND name IN ('agent_aliases', 'agent_authorities')
             """
         ).fetchone()
-        _agent_alias_tables_present = (row[0] == 2)
-    except Exception:
-        _agent_alias_tables_present = False
+    except Exception as exc:
+        logger.warning(
+            "Agent alias table availability probe failed (%s: %s); "
+            "alias expansion disabled for this query only — will re-probe "
+            "on the next call",
+            type(exc).__name__,
+            exc,
+        )
+        return False
 
-    return _agent_alias_tables_present
+    present = row[0] == 2
+    if present:
+        # Cache only positive detection (see docstring).
+        _agent_alias_tables_present = True
+    return present
 
 
 def reset_agent_alias_cache() -> None:

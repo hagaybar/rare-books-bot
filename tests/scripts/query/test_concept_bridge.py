@@ -31,6 +31,25 @@ def test_unknown_term_returns_empty():
     assert expand_concept("astronomy-of-the-incas") == []
 
 
+def test_missing_map_returns_empty_and_warns_once(tmp_path, caplog):
+    """Disabled bridge (missing map) must be visible: one warning per path
+    (issue #55)."""
+    import logging
+
+    from scripts.query import concept_bridge
+
+    concept_bridge._warned_paths.clear()
+    try:
+        missing = tmp_path / "absent_map.json"
+        with caplog.at_level(logging.WARNING, logger="scripts.query.concept_bridge"):
+            assert load_concept_map(missing) == {}
+            assert load_concept_map(missing) == {}
+        warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+        assert len(warnings) == 1
+    finally:
+        concept_bridge._warned_paths.clear()
+
+
 def test_expansion_fields_are_valid_filter_fields():
     from scripts.schemas.query_plan import FilterField
     valid = {f.value for f in FilterField}
