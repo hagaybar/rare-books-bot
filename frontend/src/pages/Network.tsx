@@ -417,6 +417,7 @@ export default function Network() {
                 data={egoData}
                 colorBy={colorBy}
                 communities={mapData?.meta.communities}
+                connectionTypes={connectionTypes}
                 onNodeClick={handleEgoNodeClick}
               />
             ) : (

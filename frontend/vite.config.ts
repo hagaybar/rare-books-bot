@@ -63,6 +63,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/network/interpret': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/auth': {
         target: 'http://localhost:8000',
         changeOrigin: true

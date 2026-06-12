@@ -397,3 +397,54 @@ def test_place_detail_carries_city_profile(client):
     assert any(p["agent_norm"] == "pub:elzevir" for p in data["top_publishers"])
     assert any(a["display_name"] == "John Smith" for a in data["top_agents"])
     assert any(s["subject"] == "Optics" for s in data["top_subjects"])
+
+
+def test_interpret_requires_limited_role(client, mock_db):
+    """Guests can browse the network but cannot spend LLM calls (like /chat)."""
+    from fastapi.testclient import TestClient
+    from app.api.main import app
+    from tests.app.conftest import make_test_token
+
+    guest = TestClient(app, cookies={"access_token": make_test_token(role="guest")})
+    resp = guest.post("/network/interpret",
+                      json={"agent_norm": "ego, center", "connection_types": ["same_record"]})
+    assert resp.status_code == 403
+
+
+def test_interpret_returns_portrait_and_caches(client, monkeypatch):
+    """The AI portrait is generated once per (agent, edge-types) and cached."""
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+    import app.api.network as network_mod
+
+    network_mod._portrait_cache.clear()
+    parsed = SimpleNamespace(
+        epithet="The man who resurrected the chroniclers",
+        reading="A test reading grounded in the supplied data.",
+        next_thread="Follow Ego N1, his closest co-author.",
+    )
+    mock_llm = AsyncMock(return_value=SimpleNamespace(parsed=parsed))
+    monkeypatch.setattr(network_mod, "structured_completion", mock_llm)
+
+    body = {"agent_norm": "ego, center", "connection_types": ["same_record"]}
+    r1 = client.post("/network/interpret", json=body)
+    assert r1.status_code == 200
+    data = r1.json()
+    assert data["epithet"].startswith("The man who")
+    assert data["reading"]
+    assert data["next_thread"]
+    assert data["cached"] is False
+
+    r2 = client.post("/network/interpret", json=body)
+    assert r2.json()["cached"] is True
+    assert mock_llm.await_count == 1  # second hit served from cache
+
+    # the prompt must carry real network facts, not just the name
+    sent_user_prompt = mock_llm.call_args.kwargs["user"]
+    assert "Ego N1" in sent_user_prompt and "same_record" in sent_user_prompt
+
+
+def test_interpret_unknown_agent_404(client):
+    resp = client.post("/network/interpret",
+                       json={"agent_norm": "nobody, here", "connection_types": []})
+    assert resp.status_code == 404

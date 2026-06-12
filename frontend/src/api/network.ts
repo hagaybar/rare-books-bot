@@ -87,6 +87,25 @@ export async function fetchPath(
   return handleResponse<PathResponse>(res);
 }
 
+export interface NetworkPortrait {
+  epithet: string;
+  reading: string;
+  next_thread: string;
+  cached: boolean;
+}
+
+export async function interpretEgo(
+  agentNorm: string,
+  connectionTypes: string[],
+): Promise<NetworkPortrait> {
+  const res = await authenticatedFetch(`${BASE}/interpret`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agent_norm: agentNorm, connection_types: connectionTypes }),
+  });
+  return handleResponse<NetworkPortrait>(res);
+}
+
 export async function fetchPlaces(): Promise<PlaceMarker[]> {
   const res = await authenticatedFetch(`${BASE}/places`);
   return handleResponse<PlaceMarker[]>(res);

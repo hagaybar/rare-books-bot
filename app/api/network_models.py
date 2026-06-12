@@ -73,6 +73,25 @@ class PlaceMarker(BaseModel):
     decades: list["DecadeCount"] = Field(default_factory=list)  # time-slider weights
 
 
+class NetworkPortraitLLM(BaseModel):
+    """LLM output schema for the ego-network portrait (creative AI layer)."""
+    epithet: str  # e.g. "The man who resurrected the chroniclers" (<= ~8 words)
+    reading: str  # 2-3 grounded sentences interpreting the network shape
+    next_thread: str  # one concrete suggestion naming a neighbour to explore
+
+
+class InterpretRequest(BaseModel):
+    agent_norm: str
+    connection_types: list[str] = Field(default_factory=list)
+
+
+class NetworkPortrait(BaseModel):
+    epithet: str
+    reading: str
+    next_thread: str
+    cached: bool = False
+
+
 class PathResponse(BaseModel):
     source: str
     target: str
