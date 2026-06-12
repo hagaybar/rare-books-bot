@@ -91,3 +91,20 @@ ON user_goals(session_id);
 -- Index for phase lookups
 CREATE INDEX IF NOT EXISTS idx_sessions_phase
 ON chat_sessions(phase);
+
+-- Feedback reports: "Mark as problematic" (spec 2026-06-12)
+CREATE TABLE IF NOT EXISTS feedback_reports (
+    id TEXT PRIMARY KEY,
+    session_id TEXT,
+    message_id INTEGER,
+    kind TEXT NOT NULL CHECK(kind IN ('message','general')),
+    user_id TEXT,
+    comment TEXT,
+    payload_path TEXT NOT NULL,
+    github_issue_url TEXT,
+    github_issue_number INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'pending'
+        CHECK(sync_status IN ('pending','synced')),
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_feedback_sync ON feedback_reports(sync_status);
