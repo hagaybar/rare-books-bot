@@ -20,6 +20,7 @@ from app.api.network_models import (
     MapResponse,
     PathResponse,
     PlaceDetail,
+    PlaceMarker,
 )
 
 logger = logging.getLogger(__name__)
@@ -613,6 +614,48 @@ async def find_path(
             source=source, target=target, found=True, hops=len(chain) - 1,
             nodes=[node_for(n) for n in chain], edges=edges,
         )
+    finally:
+        conn.close()
+
+
+@router.get("/places", response_model=list[PlaceMarker])
+async def get_places(min_books: int = Query(1, ge=1)) -> list[PlaceMarker]:
+    """Aggregated printing cities for the place-first map.
+
+    One marker per geocoded `imprints.place_norm`, sized by how many books were
+    printed there — the legible "where is this collection from" overview. Coords
+    come from any agent already geocoded to that place.
+    """
+    conn = _get_db()
+    try:
+        rows = conn.execute(
+            """SELECT i.place_norm AS place_norm,
+                      COUNT(DISTINCT i.record_id) AS record_count,
+                      (SELECT na.lat FROM network_agents na
+                       WHERE na.place_norm = i.place_norm AND na.lat IS NOT NULL LIMIT 1) AS lat,
+                      (SELECT na.lon FROM network_agents na
+                       WHERE na.place_norm = i.place_norm AND na.lon IS NOT NULL LIMIT 1) AS lon,
+                      (SELECT i2.place_display FROM imprints i2
+                       WHERE i2.place_norm = i.place_norm AND i2.place_display IS NOT NULL LIMIT 1) AS place_display,
+                      (SELECT COUNT(*) FROM network_agents na2 WHERE na2.place_norm = i.place_norm) AS agent_count,
+                      MIN(i.date_start) AS year_min, MAX(i.date_start) AS year_max
+               FROM imprints i
+               WHERE i.place_norm IS NOT NULL AND i.place_norm NOT IN ('[sine loco]', '')
+               GROUP BY i.place_norm
+               HAVING lat IS NOT NULL AND record_count >= ?
+               ORDER BY record_count DESC""",
+            (min_books,),
+        ).fetchall()
+        return [
+            PlaceMarker(
+                place_norm=r["place_norm"],
+                place_display=r["place_display"],
+                lat=r["lat"], lon=r["lon"],
+                record_count=r["record_count"], agent_count=r["agent_count"],
+                year_min=r["year_min"], year_max=r["year_max"],
+            )
+            for r in rows
+        ]
     finally:
         conn.close()
 

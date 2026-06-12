@@ -277,6 +277,17 @@ def test_path_unknown_agent_404(client):
     assert resp.status_code == 404
 
 
+def test_places_aggregates_printing_cities(client):
+    """Place-first map: /places returns geocoded cities sized by book count."""
+    resp = client.get("/network/places")
+    assert resp.status_code == 200
+    places = resp.json()
+    ams = next((p for p in places if p["place_norm"] == "amsterdam"), None)
+    assert ams is not None
+    assert ams["record_count"] == 1
+    assert ams["lat"] is not None and ams["lon"] is not None
+
+
 def test_map_nodes_carry_active_imprint_span(client):
     """Issue #32: each node carries its imprint-year span; meta carries the domain."""
     resp = client.get("/network/map")
