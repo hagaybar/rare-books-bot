@@ -194,6 +194,28 @@ export default function Network() {
   const citiesActive = viewMode === 'map' && mapLayer === 'cities';
   const cityOpen = citiesActive && !!selectedPlace && !!placeDetail;
 
+  // Chat -> map overlay (issue #34): a result set handed off via sessionStorage.
+  const [chatOverlay, setChatOverlay] = useState<{
+    label: string; total: number; located: number; places: Record<string, number>;
+  } | null>(null);
+  useEffect(() => {
+    if (searchParams.get('overlay') !== 'chat') return;
+    try {
+      const raw = sessionStorage.getItem('chatMapOverlay');
+      if (raw) {
+        setChatOverlay(JSON.parse(raw));
+        useNetworkStore.getState().setViewMode('map');
+        useNetworkStore.getState().setMapLayer('cities');
+      }
+    } catch { /* malformed payload — ignore */ }
+    // ?overlay= itself is stripped by the agent-sync effect (the last URL writer).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const clearChatOverlay = () => {
+    setChatOverlay(null);
+    sessionStorage.removeItem('chatMapOverlay');
+  };
+
   // Time window on cities: re-weight each circle by books printed *within the
   // window* (decade resolution). Stable array order + zero counts (instead of
   // filtering) so deck.gl can animate radius transitions per city.
@@ -231,12 +253,15 @@ export default function Network() {
     if (error) toast.error(`Map data error: ${String(error)}`);
   }, [error]);
 
-  // Keep ?agent= in sync with the selection.
+  // Keep ?agent= in sync with the selection. This is the last URL writer in the
+  // mount batch, so it also strips the one-shot ?overlay= trigger (issue #34) —
+  // earlier deletions get clobbered by this updater's `prev`.
   useEffect(() => {
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev);
       if (selectedAgent) p.set('agent', selectedAgent);
       else p.delete('agent');
+      p.delete('overlay');
       return p;
     }, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -404,6 +429,7 @@ export default function Network() {
               nodes={timeFiltered.nodes}
               edges={timeFiltered.edges}
               places={timedPlaces}
+              cityHighlight={citiesActive ? chatOverlay?.places ?? null : null}
               mapLayer={mapLayer}
               selectedAgent={selectedAgent}
               onAgentClick={handleAgentClick}
@@ -444,8 +470,21 @@ export default function Network() {
             <Legend colorBy={colorBy} activeTypes={connectionTypes} communities={mapData?.meta.communities} />
           )}
 
+          {/* Chat-results overlay banner (issue #34) */}
+          {citiesActive && !cityOpen && chatOverlay && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-amber-50 border border-amber-300 rounded-full shadow-md px-4 py-2 text-sm text-amber-900 max-w-[min(92%,640px)]">
+              <span className="truncate">
+                From chat: <span className="font-medium">“{chatOverlay.label}”</span>
+                {' — '}{chatOverlay.located} of {chatOverlay.total} results located
+              </span>
+              <button onClick={clearChatOverlay} className="shrink-0 text-amber-700 hover:text-amber-900 font-medium" title="Clear and return to the full map">
+                ✕
+              </button>
+            </div>
+          )}
+
           {/* Time slider — issue #32; on cities it re-weights circles per window */}
-          {viewMode === 'map' && !cityOpen && !timeMode && mapData && (
+          {viewMode === 'map' && !cityOpen && !chatOverlay && !timeMode && mapData && (
             <button
               onClick={openTimeline}
               className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-gray-300 rounded-full shadow-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white"
@@ -456,7 +495,7 @@ export default function Network() {
               Play through time
             </button>
           )}
-          {viewMode === 'map' && !cityOpen && timeMode && mapData && (
+          {viewMode === 'map' && !cityOpen && !chatOverlay && timeMode && mapData && (
             <TimeSlider
               min={yearMin}
               max={yearMax}

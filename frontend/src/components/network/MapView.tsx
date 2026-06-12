@@ -10,6 +10,7 @@ interface Props {
   nodes: MapNode[];
   edges: MapEdge[];
   places?: PlaceMarker[];
+  cityHighlight?: Record<string, number> | null; // chat-results overlay (issue #34)
   mapLayer?: MapLayer;
   selectedAgent: string | null;
   onAgentClick: (node: MapNode) => void;
@@ -41,6 +42,7 @@ export default function MapView({
   colorBy,
   communities,
   places,
+  cityHighlight = null,
   mapLayer = 'people',
 }: Props) {
   // Track whether a deck.gl object was picked on this click
@@ -271,9 +273,16 @@ export default function MapView({
   // ---- Place-first "cities" layer: one circle per printing city, sized by holdings ----
   // record_count may be re-weighted to a time window upstream; zero-count cities
   // shrink to radius 0 (kept in the array so deck.gl animates the transition).
+  // With a chat overlay (issue #34) result cities render amber sized by their
+  // result count; the rest stay as small dim context dots.
   const cityData = places ?? [];
-  const cityRadius = (p: PlaceMarker) =>
-    p.record_count === 0 ? 0 : 5 + Math.sqrt(p.record_count) * 1.9;
+  const effCount = (p: PlaceMarker) =>
+    cityHighlight ? (cityHighlight[p.place_norm] ?? 0) : p.record_count;
+  const cityRadius = (p: PlaceMarker) => {
+    const n = effCount(p);
+    if (n > 0) return 5 + Math.sqrt(n) * (cityHighlight ? 3 : 1.9);
+    return cityHighlight ? 2 : 0; // dim context dot under an overlay; hidden otherwise
+  };
   const cityLayer = useMemo(
     () =>
       new ScatterplotLayer<PlaceMarker>({
@@ -282,31 +291,41 @@ export default function MapView({
         getPosition: (d) => [d.lon, d.lat],
         getRadius: cityRadius,
         radiusUnits: 'pixels',
-        getFillColor: [37, 99, 235, 180],
+        getFillColor: (d) =>
+          cityHighlight
+            ? (effCount(d) > 0 ? [217, 119, 6, 210] : [148, 163, 184, 90])
+            : [37, 99, 235, 180],
         getLineColor: [255, 255, 255, 230],
-        getLineWidth: (d) => (d.record_count === 0 ? 0 : 1.5),
+        getLineWidth: (d) => (effCount(d) === 0 ? 0 : 1.5),
         lineWidthUnits: 'pixels',
         stroked: true,
         pickable: true,
         transitions: { getRadius: 450 }, // cities swell/fade as the window moves
-        updateTriggers: { getRadius: [cityData], getLineWidth: [cityData] },
+        updateTriggers: {
+          getRadius: [cityData, cityHighlight],
+          getFillColor: [cityHighlight],
+          getLineWidth: [cityData, cityHighlight],
+        },
         onClick: (info) => {
-          if (info.object && info.object.record_count > 0) {
+          if (info.object && effCount(info.object) > 0) {
             pickedRef.current = true;
             onPlaceSelect?.(info.object.place_norm);
           }
         },
       }),
-    [cityData, onPlaceSelect]
+    [cityData, onPlaceSelect, cityHighlight]
   );
 
   // City labels: "City (N)", denser as you zoom in (avoids early clutter).
+  // Under a chat overlay, label every result city (sets are small).
   const cityLabelData = useMemo(() => {
-    const sorted = cityData.filter((p) => p.record_count > 0)
-      .sort((a, b) => b.record_count - a.record_count);
+    const sorted = cityData.filter((p) => effCount(p) > 0)
+      .sort((a, b) => effCount(b) - effCount(a));
+    if (cityHighlight) return sorted;
     const count = zoom <= 3 ? 8 : zoom <= 4 ? 14 : zoom <= 5 ? 30 : zoom <= 6 ? 60 : sorted.length;
     return sorted.slice(0, count);
-  }, [cityData, zoom]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityData, zoom, cityHighlight]);
   const cityLabelLayer = useMemo(
     () =>
       new TextLayer<PlaceMarker>({
@@ -316,7 +335,7 @@ export default function MapView({
         getText: (d) => {
           const name = d.place_norm; // normalized — place_display is the raw title-page wording
           const cap = name.charAt(0).toUpperCase() + name.slice(1);
-          return `${cap} (${d.record_count})`;
+          return `${cap} (${effCount(d)})`;
         },
         getSize: 12,
         getColor: [30, 41, 59, 235],
@@ -330,8 +349,10 @@ export default function MapView({
         outlineColor: [255, 255, 255, 230],
         billboard: false,
         sizeUnits: 'pixels',
+        updateTriggers: { getText: [cityHighlight], getPixelOffset: [cityHighlight] },
       }),
-    [cityLabelData]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cityLabelData, cityHighlight]
   );
 
   // Handle background clicks via the MapGL onClick (fires for all map clicks).
