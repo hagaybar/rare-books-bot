@@ -114,7 +114,7 @@ export default function Chat() {
         if (!res.ok) return;
         const data = await res.json();
         const restored: ChatMessage[] = (data.messages || []).map(
-          (msg: { role: string; content: string; timestamp: string }, i: number) => ({
+          (msg: { role: string; content: string; timestamp: string; db_id?: number }, i: number) => ({
             id: `restored-${i}`,
             role: msg.role as 'user' | 'assistant',
             content: msg.content,
@@ -123,7 +123,7 @@ export default function Chat() {
             clarificationNeeded: null,
             phase: null,
             confidence: null,
-            metadata: {},
+            metadata: typeof msg.db_id === 'number' ? { message_db_id: msg.db_id } : {},
             timestamp: new Date(msg.timestamp),
             streamingState: 'complete' as StreamingState,
           }),

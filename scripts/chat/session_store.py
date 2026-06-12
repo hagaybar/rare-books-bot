@@ -162,7 +162,7 @@ class SessionStore:
         conn = self._get_connection()
         cursor = conn.execute(
             """
-            SELECT role, content, query_plan, candidate_set, timestamp
+            SELECT role, content, query_plan, candidate_set, timestamp, id
             FROM chat_messages
             WHERE session_id = ?
             ORDER BY timestamp ASC
@@ -178,6 +178,7 @@ class SessionStore:
                 query_plan=json.loads(row[2]) if row[2] else None,
                 candidate_set=json.loads(row[3]) if row[3] else None,
                 timestamp=datetime.fromisoformat(row[4]),
+                db_id=row[5],
             )
             messages.append(msg)
 
