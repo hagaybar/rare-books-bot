@@ -15,6 +15,16 @@ Endpoints: `GET /network/places` (markers) and the enriched
 `GET /network/place/{place_norm}` (profile: decades, top_publishers,
 top_agents, top_subjects, span).
 
+**Ego interpretation (creative AI layer):** every ego view carries a free
+deterministic **archetype badge** (`readEgoShape` in EgoView — Gateway to older
+texts / Printing house at work / Circle of contemporaries / Quiet corner /
+Mixed web, with a stats-grounded one-liner), plus an optional **AI portrait**
+for `limited`+ roles: `POST /network/interpret` builds a compact server-side
+context and returns `{epithet, reading, next_thread}` from the
+interpreter-stage model, cached per (figure, edge-type set) so each figure
+costs at most one LLM call ever. `next_thread` becomes a click into the named
+neighbour's ego.
+
 **Cross-axis pivots are the core interaction** (user: "we need more like
 this"): every mention is a door. City → press (top_publishers resolve to their
 `pub:` node → ego), city → person (notable people → ego), anything → city
