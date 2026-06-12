@@ -18,6 +18,8 @@ class MapNode(BaseModel):
     primary_role: str | None = None
     node_type: str = "person"  # 'person' | 'publisher' (issue #27)
     community: str | None = None  # intellectual-community color facet (issue #28)
+    active_start: int | None = None  # earliest imprint year (issue #32)
+    active_end: int | None = None  # latest imprint year (issue #32)
 
 
 class MapEdge(BaseModel):
@@ -35,6 +37,8 @@ class MapMeta(BaseModel):
     showing: int
     total_edges: int
     communities: list[str] = Field(default_factory=list)  # legend palette order (issue #28)
+    year_min: int | None = None  # imprint-date domain for the time slider (issue #32)
+    year_max: int | None = None
 
 
 class MapResponse(BaseModel):

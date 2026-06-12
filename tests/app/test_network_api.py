@@ -37,7 +37,7 @@ def mock_db(tmp_path):
         CREATE TABLE imprints (
             id INTEGER PRIMARY KEY, record_id INTEGER, place_norm TEXT,
             date_start INTEGER, date_label TEXT, place_display TEXT,
-            publisher_display TEXT
+            publisher_display TEXT, publisher_norm TEXT
         );
         CREATE TABLE authority_enrichment (
             id INTEGER PRIMARY KEY, authority_uri TEXT, wikidata_id TEXT,
@@ -74,7 +74,7 @@ def mock_db(tmp_path):
             ('smith, john', 'jones, mary', 'teacher_student', 0.85,
              'teacher of', 0, 'documented in authority record');
         INSERT INTO agents VALUES (1, 100, 'smith, john', 'uri:smith', 'author');
-        INSERT INTO imprints VALUES (1, 100, 'amsterdam', 1550, '1550', 'Amsterdam', 'Elzevir');
+        INSERT INTO imprints VALUES (1, 100, 'amsterdam', 1550, '1550', 'Amsterdam', 'Elzevir', 'elzevir');
         INSERT INTO authority_enrichment VALUES
             (1, 'uri:smith', 'Q111', 'https://en.wikipedia.org/wiki/John_Smith',
              'V123', '{"birth_year":1500}', 'John Smith');
@@ -275,6 +275,18 @@ def test_path_none_when_disconnected(client):
 def test_path_unknown_agent_404(client):
     resp = client.get("/network/path?source=nobody&target=ego, center&connection_types=same_record")
     assert resp.status_code == 404
+
+
+def test_map_nodes_carry_active_imprint_span(client):
+    """Issue #32: each node carries its imprint-year span; meta carries the domain."""
+    resp = client.get("/network/map")
+    assert resp.status_code == 200
+    data = resp.json()
+    smith = next(n for n in data["nodes"] if n["agent_norm"] == "smith, john")
+    assert smith["active_start"] == 1550
+    assert smith["active_end"] == 1550
+    assert data["meta"]["year_min"] is not None
+    assert data["meta"]["year_max"] is not None
 
 
 def test_map_nodes_and_meta_carry_community(client):
