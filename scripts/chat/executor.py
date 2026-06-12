@@ -705,8 +705,13 @@ _TOPICAL_CONTAINS_FIELDS = {FilterField.SUBJECT, FilterField.TITLE, FilterField.
 # arrive malformed (op IN, or one comma-joined string) and must be repaired.
 _MULTIVALUE_FIELDS = {FilterField.IMPRINT_PLACE, FilterField.COUNTRY, FilterField.PUBLISHER}
 
-# db_adapter abbreviates this field in its SQL parameter names.
-_PARAM_SUFFIX = {FilterField.IMPRINT_PLACE.value: "place"}
+# db_adapter abbreviates these fields in its SQL parameter names
+# (issue #56 B7: 'language' was missing, silently narrowing multi-value
+# language filters to their first value on the $step_N path).
+_PARAM_SUFFIX = {
+    FilterField.IMPRINT_PLACE.value: "place",
+    FilterField.LANGUAGE.value: "lang",
+}
 
 
 def _is_topical_contains(f: Filter) -> bool:
@@ -854,7 +859,24 @@ def _run_filter_query(
             suffix = _PARAM_SUFFIX.get(f.field.value, f.field.value)
             param_key = f"filter_{filter_idx}_{suffix}"
             if param_key in sql_params:
-                old_cond = f"LOWER(:{param_key})"
+                # db_adapter wraps text-field params in LOWER(); code-valued
+                # fields (language) bind the param bare (issue #56 B7).
+                old_lower = f"= LOWER(:{param_key})"
+                old_plain = f"= :{param_key}"
+                if old_lower in where_clause:
+                    placeholder = "LOWER(:{k})"
+                    old_cond = old_lower
+                elif old_plain in where_clause:
+                    placeholder = ":{k}"
+                    old_cond = old_plain
+                else:
+                    # Unknown SQL shape — leave the single-value condition
+                    # intact rather than deleting its bound param.
+                    logger.warning(
+                        "multi-value rewrite: no rewritable condition for "
+                        "param %r; keeping first value only", param_key,
+                    )
+                    continue
                 # Issue #4: multi-value bindings must get the same field
                 # normalization as the scalar path ('bomberg, daniel' can never
                 # equal the comma-stripped SQL expression without it). BUT the
@@ -869,9 +891,11 @@ def _run_filter_query(
                         if form and form not in seen_vals:
                             seen_vals.add(form)
                             bound.append((f"mv_{filter_idx}_{i}_{j}", form))
-                multi_placeholders = ", ".join(f"LOWER(:{k})" for k, _ in bound)
+                multi_placeholders = ", ".join(
+                    placeholder.format(k=k) for k, _ in bound
+                )
                 where_clause = where_clause.replace(
-                    f"= {old_cond}", f"IN ({multi_placeholders})"
+                    old_cond, f"IN ({multi_placeholders})"
                 )
                 del sql_params[param_key]
                 for k, form in bound:
@@ -1175,6 +1199,16 @@ def _handle_aggregate(
                 f"WHERE {scope_where} AND i.place_norm IS NOT NULL AND i.place_norm != '' "
                 "GROUP BY i.place_norm ORDER BY count DESC LIMIT ?"
             ),
+            # Issue #56 B8: country is a first-class facet on
+            # imprints.country_name — it used to alias to "place",
+            # silently returning city facets.
+            "country": (
+                "SELECT i.country_name AS value, "
+                "COUNT(DISTINCT r.mms_id) AS count "
+                "FROM records r JOIN imprints i ON r.id = i.record_id "
+                f"WHERE {scope_where} AND i.country_name IS NOT NULL AND i.country_name != '' "
+                "GROUP BY i.country_name ORDER BY count DESC LIMIT ?"
+            ),
             "publisher": (
                 "SELECT i.publisher_norm AS value, "
                 "COUNT(DISTINCT r.mms_id) AS count "
@@ -1210,7 +1244,6 @@ def _handle_aggregate(
             "imprint_place": "place",
             "city": "place",
             "location": "place",
-            "country": "place",
             "date": "date_decade",
             "year": "date_decade",
             "decade": "date_decade",
@@ -1243,6 +1276,11 @@ def _handle_aggregate(
                 "SELECT COUNT(DISTINCT i.place_norm) AS cnt "
                 "FROM records r JOIN imprints i ON r.id = i.record_id "
                 f"WHERE {scope_where} AND i.place_norm IS NOT NULL AND i.place_norm != ''"
+            ),
+            "country": (
+                "SELECT COUNT(DISTINCT i.country_name) AS cnt "
+                "FROM records r JOIN imprints i ON r.id = i.record_id "
+                f"WHERE {scope_where} AND i.country_name IS NOT NULL AND i.country_name != ''"
             ),
             "publisher": (
                 "SELECT COUNT(DISTINCT i.publisher_norm) AS cnt "

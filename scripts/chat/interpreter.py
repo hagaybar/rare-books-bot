@@ -579,7 +579,14 @@ def _convert_filter_dict(f: dict) -> Filter:
 
     Handles common LLM mistakes:
     - IN filter with a plain string value -> wraps in a list
+    - IN filter with non-string list members (e.g. year ints) -> stringified
     - EQUALS/CONTAINS filter with a list value -> converts to IN
+    - year EQUALS/CONTAINS with a parseable year -> degenerate RANGE (#44)
+
+    Combinations that cannot be coerced into an executable shape (e.g.
+    year EQUALS with an unparseable value) are rejected by Filter
+    validation with a clear message (issue #56) — the caller skips the
+    step and records the reason in dropped_steps.
 
     Args:
         f: Raw filter dictionary from the LLM output.
@@ -610,16 +617,22 @@ def _convert_filter_dict(f: dict) -> Filter:
         )
         op_str = "IN"
 
-    # Fix (issue #44): LLM sometimes emits year EQUALS <v>, but the SQL
-    # adapter supports only RANGE for year — the step would die with
-    # "Unsupported operation FilterOp.EQUALS for year". Coerce a parseable
-    # single year to the degenerate RANGE start=end. $step_N references and
-    # unparseable values are left untouched.
+    # Fix (issue #56): LLM emits JSON numbers in IN lists (year IN
+    # [1525, 1530]) — the validator requires strings. Stringify members.
+    if op_str == "IN" and isinstance(value, list):
+        value = [str(v) for v in value]
+
+    # Fix (issue #44, extended by #56 to CONTAINS): LLM sometimes emits
+    # year EQUALS/CONTAINS <v>, but the SQL adapter supports only RANGE/IN
+    # for year. Coerce a parseable single year to the degenerate RANGE
+    # start=end. $step_N references and unparseable values are left for
+    # Filter validation to reject loudly (issue #56 B3) — they must never
+    # reach SQL generation.
     start = f.get("start")
     end = f.get("end")
     if (
         f.get("field") == "year"
-        and op_str == "EQUALS"
+        and op_str in ("EQUALS", "CONTAINS")
         and value is not None
         and not (isinstance(value, str) and _STEP_REF_RE.match(value))
     ):
@@ -629,7 +642,7 @@ def _convert_filter_dict(f: dict) -> Filter:
             pass
         else:
             logger.warning(
-                "year EQUALS %r — coercing to RANGE %d-%d", value, year, year
+                "year %s %r — coercing to RANGE %d-%d", op_str, value, year, year
             )
             op_str = "RANGE"
             start = end = year

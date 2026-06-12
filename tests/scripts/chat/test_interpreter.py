@@ -803,17 +803,48 @@ class TestYearEqualsCoercion:
         assert f.op.value == "RANGE"
         assert f.negate is True
 
-    def test_year_equals_step_ref_left_alone(self):
+    def test_year_equals_step_ref_rejected_loudly(self):
+        """Issue #56 B3: a $step_N year EQUALS bypassed the #44 coercion and
+        died as an unhandled ValueError in SQL generation. No step produces
+        years, so the filter is nonsense: Filter validation now rejects it
+        with a clear message and the step is dropped (recorded in
+        dropped_steps), never reaching SQL."""
         from scripts.chat.interpreter import _convert_filter_dict
-        f = _convert_filter_dict({"field": "year", "op": "EQUALS", "value": "$step_0"})
-        assert f.op.value == "EQUALS"
-        assert f.value == "$step_0"
+        with pytest.raises(ValueError, match="year"):
+            _convert_filter_dict({"field": "year", "op": "EQUALS", "value": "$step_0"})
 
-    def test_year_equals_unparseable_left_alone(self):
+    def test_year_equals_unparseable_rejected_loudly(self):
+        """Issue #56 B3: same — unparseable values must be rejected at
+        validation, not silently produce a wrong-empty CandidateSet."""
         from scripts.chat.interpreter import _convert_filter_dict
-        f = _convert_filter_dict({"field": "year", "op": "EQUALS", "value": "uncertain"})
-        assert f.op.value == "EQUALS"
-        assert f.value == "uncertain"
+        with pytest.raises(ValueError, match="year"):
+            _convert_filter_dict({"field": "year", "op": "EQUALS", "value": "uncertain"})
+
+    def test_year_contains_parseable_coerced_to_range(self):
+        """Issue #56: the #44 coercion is extended to CONTAINS."""
+        from scripts.chat.interpreter import _convert_filter_dict
+        f = _convert_filter_dict({"field": "year", "op": "CONTAINS", "value": "1525"})
+        assert f.op.value == "RANGE"
+        assert f.start == 1525
+        assert f.end == 1525
+
+    def test_step_with_unparseable_year_filter_is_dropped_not_crashed(self):
+        """A retrieve step carrying a rejected filter must be skipped loudly
+        (dropped_steps), not crash plan conversion."""
+        from scripts.chat.interpreter import _convert_llm_plan
+        from scripts.chat.plan_models import ExecutionStepLLM
+        llm_plan = _make_llm_plan(
+            execution_steps=[
+                ExecutionStepLLM(
+                    action="retrieve",
+                    params='{"filters": [{"field": "year", "op": "EQUALS", "value": "uncertain"}]}',
+                    label="bad year",
+                ),
+            ],
+        )
+        plan = _convert_llm_plan(llm_plan)
+        assert plan.execution_steps == []
+        assert any("year" in d for d in plan.dropped_steps)
 
     def test_non_year_equals_not_coerced(self):
         from scripts.chat.interpreter import _convert_filter_dict
