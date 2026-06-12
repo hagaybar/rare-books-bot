@@ -110,3 +110,12 @@ class TestCreateReport:
         got = fs.get_report(r.id)
         assert got.github_issue_url.endswith("/9")
         assert got.sync_status == "synced"
+
+
+class TestAddMessageReturnsId:
+    def test_add_message_returns_db_id(self, store_db):
+        ss = SessionStore(store_db)
+        s = ss.create_session(user_id="t")
+        first = ss.add_message(s.session_id, Message(role="user", content="a"))
+        second = ss.add_message(s.session_id, Message(role="assistant", content="b"))
+        assert isinstance(first, int) and second == first + 1

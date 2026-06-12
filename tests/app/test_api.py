@@ -374,3 +374,34 @@ def test_websocket_streaming_batches(client):
         # May have stream_start and stream_chunk messages (narrative streaming)
         stream_chunks = [m for m in messages if m["type"] == "stream_chunk"]
         # stream_chunks may be empty if the query triggers clarification
+
+
+def test_chat_response_metadata_has_message_db_id(client, monkeypatch):
+    """POST /chat metadata carries the persisted chat_messages row id.
+
+    Stubs the interpreter (clarification short-circuit) and moderation so the
+    real handler + session store run without any LLM or network calls.
+    """
+    from scripts.chat.plan_models import InterpretationPlan
+
+    async def fake_interpret(message, context=None):
+        return InterpretationPlan(
+            intents=["RETRIEVE"],
+            reasoning="test stub",
+            execution_steps=[],
+            directives=[],
+            confidence=0.4,
+            clarification="Which Livorno printer do you mean?",
+        )
+
+    async def fake_moderation(text):
+        return True, None
+
+    monkeypatch.setattr("app.api.main.interpret", fake_interpret)
+    monkeypatch.setattr("app.api.main.check_moderation", fake_moderation)
+
+    resp = client.post("/chat", json={"message": "books printed in Livorno"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["success"] is True
+    assert isinstance(body["response"]["metadata"].get("message_db_id"), int)

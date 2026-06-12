@@ -709,10 +709,11 @@ async def _run_scholar_pipeline(
             confidence=plan.confidence,
             metadata={"intents": plan.intents, "reasoning": plan.reasoning},
         )
-        store.add_message(
+        msg_db_id = store.add_message(
             session.session_id,
             Message(role="assistant", content=plan.clarification),
         )
+        response.metadata["message_db_id"] = msg_db_id
         logger.info(
             "Scholar pipeline: returning clarification (confidence < 0.7)",
             extra={"session_id": session.session_id, "confidence": plan.confidence},
@@ -776,10 +777,11 @@ async def _run_scholar_pipeline(
     )
 
     # Store assistant message in session
-    store.add_message(
+    msg_db_id = store.add_message(
         session.session_id,
         Message(role="assistant", content=scholar_response.narrative),
     )
+    response.metadata["message_db_id"] = msg_db_id
 
     return ChatResponseAPI(success=True, response=response, error=None)
 
@@ -1034,13 +1036,14 @@ async def websocket_chat(websocket: WebSocket):
                 confidence=plan.confidence,
                 metadata={"intents": plan.intents, "reasoning": plan.reasoning},
             )
-            store.add_message(
+            msg_db_id = store.add_message(
                 session_id,
                 Message(role="assistant", content=plan.clarification),
             )
             await websocket.send_json({
                 "type": "complete",
-                "response": response.model_dump()
+                "response": response.model_dump(),
+                "message_db_id": msg_db_id,
             })
             return
 
@@ -1115,8 +1118,9 @@ async def websocket_chat(websocket: WebSocket):
 
         # Save session message BEFORE sending "complete", but don't let
         # a session-store failure prevent the client from receiving results.
+        msg_db_id = None
         try:
-            store.add_message(
+            msg_db_id = store.add_message(
                 session_id,
                 Message(role="assistant", content=narrative),
             )
@@ -1125,7 +1129,8 @@ async def websocket_chat(websocket: WebSocket):
 
         await websocket.send_json({
             "type": "complete",
-            "response": response.model_dump()
+            "response": response.model_dump(),
+            "message_db_id": msg_db_id,
         })
 
         # ---- Post-response security: Token recording + audit ----
