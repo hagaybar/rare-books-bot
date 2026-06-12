@@ -82,7 +82,17 @@ export default function CityView({ city, onBack, onPersonClick }: Props) {
               <ul className="space-y-1">
                 {city.top_publishers.map((p) => (
                   <li key={p.name} className="flex justify-between gap-2 text-sm">
-                    <span className="text-gray-800 truncate" title={p.name}><bdi dir="auto">{p.name}</bdi></span>
+                    {p.agent_norm ? (
+                      <button
+                        onClick={() => onPersonClick(p.agent_norm!, p.name)}
+                        className="text-blue-600 hover:text-blue-800 hover:underline truncate text-start"
+                        title={`Explore the ${p.name} press's network`}
+                      >
+                        <bdi dir="auto">{p.name}</bdi>
+                      </button>
+                    ) : (
+                      <span className="text-gray-800 truncate" title={p.name}><bdi dir="auto">{p.name}</bdi></span>
+                    )}
                     <span className="text-gray-400 tabular-nums shrink-0">{p.count}</span>
                   </li>
                 ))}
@@ -115,10 +125,15 @@ export default function CityView({ city, onBack, onPersonClick }: Props) {
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What was printed here</h3>
               <div className="flex flex-wrap gap-1.5">
                 {city.top_subjects.map((s) => (
-                  <span key={s.subject} className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded-full">
-                    <bdi dir="auto" className="max-w-[180px] truncate" title={tidySubject(s.subject)}>{tidySubject(s.subject)}</bdi>
+                  <a
+                    key={s.subject}
+                    href={`/chat?q=${encodeURIComponent(`Tell me about the books on "${tidySubject(s.subject)}" printed in ${name} in this collection — what do we hold, from when, and by whom?`)}`}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded-full hover:bg-blue-50 hover:text-blue-700"
+                    title={`Ask in chat about ${tidySubject(s.subject)} printed in ${name}`}
+                  >
+                    <bdi dir="auto" className="max-w-[180px] truncate">{tidySubject(s.subject)}</bdi>
                     <span className="text-slate-400 tabular-nums">{s.count}</span>
-                  </span>
+                  </a>
                 ))}
               </div>
             </div>

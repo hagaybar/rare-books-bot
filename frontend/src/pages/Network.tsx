@@ -13,7 +13,6 @@ import CityView from '../components/network/CityView';
 import CityToolbar from '../components/network/CityToolbar';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
-import PlacePanel from '../components/network/PlacePanel';
 import Legend from '../components/network/Legend';
 import type { MapNode } from '../types/network';
 
@@ -91,7 +90,13 @@ export default function Network() {
 
   // Selecting an agent and a place are mutually exclusive in the side panel.
   const selectAgent = (norm: string) => { setSelectedPlace(null); setSelectedAgent(norm); };
-  const selectPlace = (norm: string) => { setSelectedAgent(null); setSelectedPlace(norm); };
+  // Any place mention pivots to the full city profile (CityView), wherever you are.
+  const selectPlace = (norm: string) => {
+    setSelectedAgent(null);
+    useNetworkStore.getState().setViewMode('map');
+    useNetworkStore.getState().setMapLayer('cities');
+    setSelectedPlace(norm);
+  };
 
   // Ego-network mode (issue #31)
   const viewMode = useNetworkStore((s) => s.viewMode);
@@ -465,24 +470,7 @@ export default function Network() {
             <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={selectAgent} onPlaceSelect={selectPlace} onExplore={handleExplore} />
           </div>
         )}
-        {/* Desktop place panel — sidebar (people/ego modes; cities mode uses CityView) */}
-        {!citiesActive && selectedPlace && placeDetail && (
-          <div className="hidden md:block">
-            <PlacePanel place={placeDetail} onClose={handleClosePanel} />
-          </div>
-        )}
       </div>
-
-      {/* Mobile place panel — bottom sheet */}
-      {!citiesActive && selectedPlace && placeDetail && (
-        <div className="md:hidden fixed inset-0 z-30" onClick={handleClosePanel}>
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="absolute bottom-14 left-0 right-0 bg-white rounded-t-2xl shadow-xl max-h-[75vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-center pt-2 pb-1"><div className="w-10 h-1 bg-gray-300 rounded-full" /></div>
-            <PlacePanel place={placeDetail} onClose={handleClosePanel} mobile />
-          </div>
-        </div>
-      )}
 
       {/* Mobile agent panel — bottom sheet */}
       {selectedAgent && agentDetail && (

@@ -713,10 +713,25 @@ async def get_place_detail(place_norm: str, limit: int = Query(50, ge=1, le=200)
             ).fetchall()
         ]
         # 's.n.' = sine nomine (no recorded printer) — noise, not a printer
+        def _publisher_node(pub_norm: str) -> str | None:
+            """Resolve an imprint publisher_norm to its pub: network node, if any."""
+            row = conn.execute(
+                """SELECT na.agent_norm FROM network_agents na
+                   WHERE na.agent_norm = 'pub:' || ?
+                      OR na.agent_norm = 'pub:' || (
+                          SELECT pa.canonical_name_lower FROM publisher_variants pv
+                          JOIN publisher_authorities pa ON pa.id = pv.authority_id
+                          WHERE pv.variant_form_lower = ? LIMIT 1)
+                   LIMIT 1""",
+                (pub_norm, pub_norm),
+            ).fetchone()
+            return row[0] if row else None
+
         top_publishers = [
-            NameCount(name=r[0], count=r[1])
+            NameCount(name=r[1] or r[0], count=r[2], agent_norm=_publisher_node(r[0]))
             for r in conn.execute(
-                """SELECT COALESCE(publisher_display, publisher_norm), COUNT(DISTINCT record_id) n
+                """SELECT publisher_norm, COALESCE(publisher_display, publisher_norm),
+                          COUNT(DISTINCT record_id) n
                    FROM imprints
                    WHERE LOWER(place_norm) = LOWER(?) AND publisher_norm IS NOT NULL
                      AND publisher_norm NOT IN ('s.n.', 's. n.', '[s.n.]')

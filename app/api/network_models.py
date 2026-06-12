@@ -128,6 +128,7 @@ class DecadeCount(BaseModel):
 class NameCount(BaseModel):
     name: str
     count: int
+    agent_norm: str | None = None  # network node (e.g. pub:…) when one exists — enables pivots
 
 
 class AgentCount(BaseModel):
