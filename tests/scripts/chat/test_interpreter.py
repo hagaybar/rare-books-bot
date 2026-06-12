@@ -21,6 +21,7 @@ from scripts.chat.plan_models import (
     AggregateParams,
     SessionContext,
 )
+from tests.scripts.chat.llm_step_factory import make_step_llm
 from scripts.schemas.query_plan import Filter, FilterField, FilterOp
 from scripts.chat.models import Message
 
@@ -45,7 +46,14 @@ def _make_plan(**overrides) -> InterpretationPlan:
 
 
 def _make_llm_plan(**overrides) -> InterpretationPlanLLM:
-    """Build an InterpretationPlanLLM (raw LLM output format)."""
+    """Build an InterpretationPlanLLM (raw LLM output format).
+
+    Uses ``model_construct`` (no validation): conversion tests exercise
+    ``_convert_llm_plan`` against arbitrary inputs — including the loose
+    stand-ins ``make_step_llm`` produces for unknown actions, which simulate a
+    non-strict provider bypassing the schema (the belt-and-suspenders path).
+    Schema-level validation has its own tests in ``test_plan_models``.
+    """
     defaults = dict(
         intents=["retrieval"],
         reasoning="Test plan",
@@ -55,7 +63,7 @@ def _make_llm_plan(**overrides) -> InterpretationPlanLLM:
         clarification=None,
     )
     defaults.update(overrides)
-    return InterpretationPlanLLM(**defaults)
+    return InterpretationPlanLLM.model_construct(**defaults)
 
 
 # =============================================================================
@@ -73,7 +81,7 @@ class TestConvertLLMPlan:
         llm_plan = _make_llm_plan(
             intents=["retrieval"],
             execution_steps=[
-                ExecutionStepLLM(
+                make_step_llm(
                     action="retrieve",
                     params=json.dumps({
                         "filters": [
@@ -100,7 +108,7 @@ class TestConvertLLMPlan:
         llm_plan = _make_llm_plan(
             intents=["entity_exploration"],
             execution_steps=[
-                ExecutionStepLLM(
+                make_step_llm(
                     action="resolve_agent",
                     params=json.dumps({"name": "Joseph Karo", "variants": ["Caro, Joseph"]}),
                     label="Resolve Karo",
@@ -121,7 +129,7 @@ class TestConvertLLMPlan:
 
         llm_plan = _make_llm_plan(
             execution_steps=[
-                ExecutionStepLLM(
+                make_step_llm(
                     action="aggregate",
                     params=json.dumps({"field": "date_decade", "scope": "$step_0", "limit": 20}),
                     label="Temporal distribution",
@@ -141,12 +149,12 @@ class TestConvertLLMPlan:
 
         llm_plan = _make_llm_plan(
             execution_steps=[
-                ExecutionStepLLM(
+                make_step_llm(
                     action="retrieve",
                     params=json.dumps({"filters": []}),
                     label="S0",
                 ),
-                ExecutionStepLLM(
+                make_step_llm(
                     action="aggregate",
                     params=json.dumps({"field": "date_decade", "scope": "$step_0"}),
                     label="S1",
@@ -196,12 +204,12 @@ class TestConvertLLMPlan:
 
         llm_plan = _make_llm_plan(
             execution_steps=[
-                ExecutionStepLLM(
+                make_step_llm(
                     action="nonexistent_action",
                     params=json.dumps({"foo": "bar"}),
                     label="Bad step",
                 ),
-                ExecutionStepLLM(
+                make_step_llm(
                     action="retrieve",
                     params=json.dumps({"filters": []}),
                     label="Good step",
@@ -220,12 +228,12 @@ class TestConvertLLMPlan:
 
         llm_plan = _make_llm_plan(
             execution_steps=[
-                ExecutionStepLLM(
+                make_step_llm(
                     action="resolve_agent",
                     params=json.dumps({"name": "Karo"}),
                     label="Resolve",
                 ),
-                ExecutionStepLLM(
+                make_step_llm(
                     action="retrieve",
                     params=json.dumps({
                         "filters": [
@@ -560,7 +568,7 @@ class TestHebrewGershayimRepair:
 
         # The escaped form: \" inside the Hebrew string
         params_json = '{"name": "Maimonides", "variants": ["\\u05e8\\u05de\\u05d1\\"\\u05dd", "Rambam"]}'
-        step = ExecutionStepLLM(
+        step = make_step_llm(
             action="resolve_agent",
             params=params_json,
             label="Resolve Rambam",
@@ -570,22 +578,24 @@ class TestHebrewGershayimRepair:
         assert len(result.params.variants) == 2
 
     def test_convert_step_with_hebrew_gershayim(self):
-        r"""Broken gershayim (unescaped \" inside string value) is repaired."""
+        r"""Issue #14: gershayim can no longer break step params at all.
+
+        Under the discriminated union, params arrive as real JSON values from
+        the constrained decoder — a quote inside רמב"ם is just a character in a
+        string, never a JSON delimiter. Assert the value survives conversion
+        verbatim. (The repair ladder still guards directive params, which stay
+        string-typed — covered by the _repair_json_string tests below.)"""
         from scripts.chat.interpreter import _convert_llm_step
 
-        # Broken form: the raw " inside רמב"ם is NOT escaped
-        # This is: {"name": "Maimonides", "variants": ["רמב"ם", "Rambam"]}
-        params_json = '{"name": "Maimonides", "variants": ["\u05e8\u05de\u05d1"\u05dd", "Rambam"]}'
-        step = ExecutionStepLLM(
+        step = make_step_llm(
             action="resolve_agent",
-            params=params_json,
+            params={"name": "Maimonides", "variants": ['רמב"ם', "Rambam"]},
             label="Resolve Rambam",
         )
         result = _convert_llm_step(step)
         assert result.params.name == "Maimonides"
+        assert result.params.variants[0] == 'רמב"ם'
         assert len(result.params.variants) == 2
-        # The first variant should contain the gershayim character
-        assert '"' in result.params.variants[0] or '\u05dd' in result.params.variants[0]
 
     def test_repair_json_string_basic(self):
         """_repair_json_string fixes interior quotes."""
@@ -639,20 +649,20 @@ class TestStepIndexRemapping:
         llm_plan = _make_llm_plan(
             execution_steps=[
                 # Step 0: invalid action -- will be skipped
-                ExecutionStepLLM(
+                make_step_llm(
                     action="nonexistent_action",
                     params=json.dumps({"foo": "bar"}),
                     label="Bad step",
                 ),
                 # Step 1: depends on step 0 (which is skipped)
-                ExecutionStepLLM(
+                make_step_llm(
                     action="retrieve",
                     params=json.dumps({"filters": []}),
                     label="Retrieve",
                     depends_on=[0],
                 ),
                 # Step 2: depends on step 1 (which becomes new index 0)
-                ExecutionStepLLM(
+                make_step_llm(
                     action="aggregate",
                     params=json.dumps({"field": "date_decade", "scope": "$step_1"}),
                     label="Aggregate",
@@ -682,12 +692,12 @@ class TestStepIndexRemapping:
 
         llm_plan = _make_llm_plan(
             execution_steps=[
-                ExecutionStepLLM(
+                make_step_llm(
                     action="resolve_agent",
                     params=json.dumps({"name": "Karo"}),
                     label="Resolve",
                 ),
-                ExecutionStepLLM(
+                make_step_llm(
                     action="retrieve",
                     params=json.dumps({
                         "filters": [
@@ -712,19 +722,19 @@ class TestStepIndexRemapping:
         llm_plan = _make_llm_plan(
             execution_steps=[
                 # Step 0: valid
-                ExecutionStepLLM(
+                make_step_llm(
                     action="retrieve",
                     params=json.dumps({"filters": []}),
                     label="S0",
                 ),
                 # Step 1: invalid -- skipped
-                ExecutionStepLLM(
+                make_step_llm(
                     action="nonexistent_action",
                     params=json.dumps({"x": 1}),
                     label="Bad",
                 ),
                 # Step 2: depends on step 0 (unchanged) and step 1 (dropped)
-                ExecutionStepLLM(
+                make_step_llm(
                     action="aggregate",
                     params=json.dumps({"field": "date_decade", "scope": "$step_0"}),
                     label="S2",
@@ -833,15 +843,35 @@ class TestIssue5EmptyPlans:
         parsed = _parse_json_params(raw)
         assert parsed["filters"][0]["field"] == "subject"
 
+    def test_malformed_step_params_are_unrepresentable_under_strict_schema(self):
+        """Issue #14: the discriminated union makes the issue-#5 failure mode
+        impossible by construction — string params don't validate at all."""
+        import pytest as _pytest
+        from pydantic import ValidationError
+        from scripts.chat.plan_models import InterpretationPlanLLM
+        with _pytest.raises(ValidationError):
+            InterpretationPlanLLM(
+                intents=["retrieval"], reasoning="t", confidence=0.9,
+                execution_steps=[
+                    {"action": "retrieve", "params": "totally not json {{{",
+                     "label": "bad", "depends_on": []},
+                ],
+                directives=[],
+            )
+
     def test_dropped_steps_are_recorded_on_plan(self):
-        from scripts.chat.interpreter import _convert_llm_plan, InterpretationPlanLLM
-        llm_plan = InterpretationPlanLLM(
-            intents=["retrieval"], reasoning="t", confidence=0.9,
+        """Belt-and-suspenders: a NON-strict provider bypassing the schema
+        still gets its junk steps dropped AND recorded (issue #5 observability
+        kept after #14)."""
+        from types import SimpleNamespace
+        from scripts.chat.interpreter import _convert_llm_plan
+        llm_plan = _make_llm_plan(
             execution_steps=[
-                {"action": "retrieve", "params": "totally not json {{{", "label": "bad"},
-                {"action": "no_such_action", "params": "{}", "label": "worse"},
+                SimpleNamespace(action="retrieve", params="totally not json {{{",
+                                label="bad", depends_on=[]),
+                SimpleNamespace(action="no_such_action", params={}, label="worse",
+                                depends_on=[]),
             ],
-            directives=[],
         )
         plan = _convert_llm_plan(llm_plan)
         assert plan.execution_steps == []
@@ -876,17 +906,13 @@ class TestUnionScopeValidationAndRemap:
 
     def test_remap_drops_skipped_member_and_renumbers(self):
         from scripts.chat.interpreter import _convert_llm_plan
-        from scripts.chat.plan_models import InterpretationPlanLLM
-        llm_plan = InterpretationPlanLLM(
-            intents=["curation"], reasoning="t", confidence=0.9, directives=[],
+        llm_plan = _make_llm_plan(
+            intents=["curation"],
             execution_steps=[
-                {"action": "retrieve", "label": "a",
-                 "params": '{"filters":[{"field":"subject","op":"CONTAINS","value":"art"}]}'},
-                {"action": "no_such_action", "label": "bad", "params": "{}"},
-                {"action": "retrieve", "label": "b",
-                 "params": '{"filters":[{"field":"subject","op":"CONTAINS","value":"maps"}]}'},
-                {"action": "sample", "label": "s",
-                 "params": '{"scope": "$step_0+$step_1+$step_2", "n": 5}'},
+                make_step_llm("retrieve", '{"filters":[{"field":"subject","op":"CONTAINS","value":"art"}]}', label="a"),
+                make_step_llm("no_such_action", "{}", label="bad"),
+                make_step_llm("retrieve", '{"filters":[{"field":"subject","op":"CONTAINS","value":"maps"}]}', label="b"),
+                make_step_llm("sample", '{"scope": "$step_0+$step_1+$step_2", "n": 5}', label="s"),
             ])
         plan = _convert_llm_plan(llm_plan)
         # bad step dropped: old 0->0, old 2->1, old 3->2
@@ -896,14 +922,12 @@ class TestUnionScopeValidationAndRemap:
 
     def test_union_with_all_members_dropped_becomes_full_collection(self):
         from scripts.chat.interpreter import _convert_llm_plan
-        from scripts.chat.plan_models import InterpretationPlanLLM
-        llm_plan = InterpretationPlanLLM(
-            intents=["curation"], reasoning="t", confidence=0.9, directives=[],
+        llm_plan = _make_llm_plan(
+            intents=["curation"],
             execution_steps=[
-                {"action": "no_such_action", "label": "bad1", "params": "{}"},
-                {"action": "no_such_action2", "label": "bad2", "params": "{}"},
-                {"action": "sample", "label": "s",
-                 "params": '{"scope": "$step_0+$step_1", "n": 5}'},
+                make_step_llm("no_such_action", "{}", label="bad1"),
+                make_step_llm("no_such_action2", "{}", label="bad2"),
+                make_step_llm("sample", '{"scope": "$step_0+$step_1", "n": 5}', label="s"),
             ])
         plan = _convert_llm_plan(llm_plan)
         assert plan.execution_steps[0].params.scope == "full_collection"

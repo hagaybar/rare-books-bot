@@ -132,3 +132,20 @@ async def test_streaming_completion_logs_usage():
     assert logged["call_type"] == "narrator_streaming"
     assert logged["response"].usage.prompt_tokens == 120
     assert logged["response"].usage.completion_tokens == 45
+
+
+def test_response_format_rewrites_discriminated_unions_for_strict_mode():
+    """Issue #14: pydantic emits oneOf+discriminator for tagged unions, but
+    OpenAI strict mode only supports anyOf and rejects the discriminator
+    keyword — the rewriter must translate, recursively."""
+    import json
+    from scripts.chat.plan_models import InterpretationPlanLLM
+    from scripts.models.llm_client import pydantic_to_response_format
+
+    rf = pydantic_to_response_format(InterpretationPlanLLM)
+    blob = json.dumps(rf)
+    assert '"oneOf"' not in blob
+    assert '"discriminator"' not in blob
+    items = rf["json_schema"]["schema"]["properties"]["execution_steps"]["items"]
+    assert "anyOf" in items
+    assert len(items["anyOf"]) == 7  # one member per executor action

@@ -69,21 +69,39 @@ def _enforce_strict_objects(schema: dict) -> None:
     - additionalProperties: false on every object
     - required: must list ALL properties (OpenAI strict mode rejects schemas
       where a property key exists but isn't in required)
+    - oneOf → anyOf, discriminator dropped: pydantic emits oneOf+discriminator
+      for tagged unions (issue #14), but OpenAI strict mode supports only
+      anyOf and rejects the discriminator keyword. The per-member ``const``
+      action literals keep the union unambiguous without it.
     """
     if not isinstance(schema, dict):
         return
+    if "oneOf" in schema and "anyOf" not in schema:
+        schema["anyOf"] = schema.pop("oneOf")
+    schema.pop("discriminator", None)
     if schema.get("type") == "object":
         schema["additionalProperties"] = False
         props = schema.get("properties", {})
         if props:
             schema["required"] = sorted(props.keys())
-    for key in ("properties", "items", "allOf", "anyOf", "oneOf"):
+    # "properties" maps names -> schemas; "items" IS a schema (visiting only
+    # its .values() used to skip the items node itself, leaving e.g. a union's
+    # oneOf/discriminator untouched); allOf/anyOf/oneOf are lists of schemas.
+    props = schema.get("properties")
+    if isinstance(props, dict):
+        for sub in props.values():
+            if isinstance(sub, dict):
+                _enforce_strict_objects(sub)
+    items = schema.get("items")
+    if isinstance(items, dict):
+        _enforce_strict_objects(items)
+    elif isinstance(items, list):  # tuple-typed arrays
+        for sub in items:
+            if isinstance(sub, dict):
+                _enforce_strict_objects(sub)
+    for key in ("allOf", "anyOf", "oneOf"):
         val = schema.get(key)
-        if isinstance(val, dict):
-            for sub in val.values():
-                if isinstance(sub, dict):
-                    _enforce_strict_objects(sub)
-        elif isinstance(val, list):
+        if isinstance(val, list):
             for item in val:
                 if isinstance(item, dict):
                     _enforce_strict_objects(item)

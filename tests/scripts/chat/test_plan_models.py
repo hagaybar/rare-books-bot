@@ -11,6 +11,7 @@ def test_step_action_enum_values():
     assert StepAction.RETRIEVE == "retrieve"
     assert StepAction.AGGREGATE == "aggregate"
 
+from tests.scripts.chat.llm_step_factory import make_step_llm
 
 def test_resolve_agent_params_valid():
     from scripts.chat.plan_models import ResolveAgentParams
@@ -211,15 +212,34 @@ def test_connection_graph():
 
 
 def test_llm_facing_step_model():
-    """ExecutionStepLLM uses string action and JSON-string params for OpenAI schema."""
-    from scripts.chat.plan_models import ExecutionStepLLM
-    step = ExecutionStepLLM(
+    """Issue #14: ExecutionStepLLM is a discriminated union — params are real
+    nested objects whose shape is fixed by the action."""
+    import pytest
+    from pydantic import TypeAdapter, ValidationError
+    from scripts.chat.plan_models import ExecutionStepLLM, ResolveAgentParamsLLM
+
+    step = make_step_llm(
         action="resolve_agent",
         params='{"name": "Joseph Karo", "variants": []}',
         label="Resolve Karo",
     )
     assert step.action == "resolve_agent"
-    assert isinstance(step.params, str)
+    assert isinstance(step.params, ResolveAgentParamsLLM)
+
+    adapter = TypeAdapter(ExecutionStepLLM)
+    # String params are unrepresentable (the issue-#5 failure class)
+    with pytest.raises(ValidationError):
+        adapter.validate_python({
+            "action": "resolve_agent", "params": '{"name": "Karo"}',
+            "label": "x", "depends_on": [],
+        })
+    # Mismatched action↔params pairing is rejected by the discriminator
+    with pytest.raises(ValidationError):
+        adapter.validate_python({
+            "action": "resolve_agent",
+            "params": {"filters": [], "scope": "full_collection"},
+            "label": "x", "depends_on": [],
+        })
 
 
 def test_llm_facing_plan_model():
@@ -229,7 +249,7 @@ def test_llm_facing_plan_model():
         intents=["retrieval"],
         reasoning="Simple query",
         execution_steps=[
-            ExecutionStepLLM(
+            make_step_llm(
                 action="retrieve",
                 params='{"filters": [], "scope": "full_collection"}',
                 label="Find books",

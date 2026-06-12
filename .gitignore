@@ -169,3 +169,4 @@ frontend/.a5c/
 
 # Docs-sync artifacts (ephemeral, per-commit analysis)
 docs-sync/artifacts/
+.playwright-mcp/

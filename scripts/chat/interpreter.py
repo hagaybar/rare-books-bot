@@ -87,7 +87,8 @@ Classify the query into one or more intents (mixed intents are supported):
 
 # EXECUTION STEP TYPES
 
-Each step has an `action` (string) and `params` (JSON-encoded string).  Available actions:
+Each step has an `action` and a `params` **object** whose shape is fixed by the
+action (the schema enforces the pairing).  Available actions:
 
 ## resolve_agent
 Look up a person (author, printer, translator) in the agent authority tables.
@@ -343,7 +344,7 @@ Query: "Hebrew books printed in Venice in the 16th century"
   "intents": ["retrieval"],
   "reasoning": "Clear bibliographic query with language, place, and date filters.",
   "execution_steps": [
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"language\", \"op\": \"EQUALS\", \"value\": \"heb\"}, {\"field\": \"imprint_place\", \"op\": \"EQUALS\", \"value\": \"venice\"}, {\"field\": \"year\", \"op\": \"RANGE\", \"start\": 1501, \"end\": 1600}]}", "label": "Hebrew books from Venice, 16th century", "depends_on": []}
+    {"action": "retrieve", "params": {"filters": [{"field": "language", "op": "EQUALS", "value": "heb"}, {"field": "imprint_place", "op": "EQUALS", "value": "venice"}, {"field": "year", "op": "RANGE", "start": 1501, "end": 1600}], "scope": "full_collection"}, "label": "Hebrew books from Venice, 16th century", "depends_on": []}
   ],
   "directives": [],
   "confidence": 0.95,
@@ -356,10 +357,10 @@ Query: "Who was Joseph Karo?"
   "intents": ["entity_exploration"],
   "reasoning": "User asks about Joseph Karo — need to resolve the agent, find works, and provide scholarly context.",
   "execution_steps": [
-    {"action": "resolve_agent", "params": "{\"name\": \"Joseph Karo\", \"variants\": [\"\\u05e7\\u05d0\\u05e8\\u05d5, \\u05d9\\u05d5\\u05e1\\u05e3 \\u05d1\\u05df \\u05d0\\u05e4\\u05e8\\u05d9\\u05dd\", \"Caro, Joseph\"]}", "label": "Resolve Karo", "depends_on": []},
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"agent_norm\", \"op\": \"EQUALS\", \"value\": \"$step_0\"}]}", "label": "Find works by Karo", "depends_on": [0]},
-    {"action": "enrich", "params": "{\"targets\": \"$step_0\", \"fields\": [\"bio\", \"links\"]}", "label": "Get biographical data", "depends_on": [0]},
-    {"action": "find_connections", "params": "{\"agents\": [\"$step_0\"], \"depth\": 1}", "label": "Find connected figures", "depends_on": [0]}
+    {"action": "resolve_agent", "params": {"name": "Joseph Karo", "variants": ["קארו, יוסף בן אפרים", "Caro, Joseph"]}, "label": "Resolve Karo", "depends_on": []},
+    {"action": "retrieve", "params": {"filters": [{"field": "agent_norm", "op": "EQUALS", "value": "$step_0"}], "scope": "full_collection"}, "label": "Find works by Karo", "depends_on": [0]},
+    {"action": "enrich", "params": {"targets": "$step_0", "fields": ["bio", "links"]}, "label": "Get biographical data", "depends_on": [0]},
+    {"action": "find_connections", "params": {"agents": ["$step_0"], "depth": 1}, "label": "Find connected figures", "depends_on": [0]}
   ],
   "directives": [
     {"directive": "expand", "params": "{\"focus\": \"Joseph Karo\", \"aspect\": \"biographical and intellectual significance\"}", "label": "Expand on Karo"},
@@ -375,10 +376,10 @@ Query: "Compare Venice and Amsterdam as Hebrew printing centers"
   "intents": ["comparison", "analytical"],
   "reasoning": "Comparative query requiring two retrievals and cross-analysis.",
   "execution_steps": [
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"imprint_place\", \"op\": \"EQUALS\", \"value\": \"venice\"}, {\"field\": \"language\", \"op\": \"EQUALS\", \"value\": \"heb\"}]}", "label": "Hebrew books from Venice", "depends_on": []},
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"imprint_place\", \"op\": \"EQUALS\", \"value\": \"amsterdam\"}, {\"field\": \"language\", \"op\": \"EQUALS\", \"value\": \"heb\"}]}", "label": "Hebrew books from Amsterdam", "depends_on": []},
-    {"action": "aggregate", "params": "{\"field\": \"date_decade\", \"scope\": \"$step_0\"}", "label": "Venice temporal distribution", "depends_on": [0]},
-    {"action": "aggregate", "params": "{\"field\": \"date_decade\", \"scope\": \"$step_1\"}", "label": "Amsterdam temporal distribution", "depends_on": [1]}
+    {"action": "retrieve", "params": {"filters": [{"field": "imprint_place", "op": "EQUALS", "value": "venice"}, {"field": "language", "op": "EQUALS", "value": "heb"}], "scope": "full_collection"}, "label": "Hebrew books from Venice", "depends_on": []},
+    {"action": "retrieve", "params": {"filters": [{"field": "imprint_place", "op": "EQUALS", "value": "amsterdam"}, {"field": "language", "op": "EQUALS", "value": "heb"}], "scope": "full_collection"}, "label": "Hebrew books from Amsterdam", "depends_on": []},
+    {"action": "aggregate", "params": {"field": "date_decade", "scope": "$step_0", "limit": 20}, "label": "Venice temporal distribution", "depends_on": [0]},
+    {"action": "aggregate", "params": {"field": "date_decade", "scope": "$step_1", "limit": 20}, "label": "Amsterdam temporal distribution", "depends_on": [1]}
   ],
   "directives": [
     {"directive": "compare", "params": "{\"set_a\": \"$step_0\", \"set_b\": \"$step_1\", \"lens\": \"printing center development\"}", "label": "Compare the two centers"},
@@ -416,8 +417,8 @@ Query: "ספרי תפילה שנדפסו באיטליה"
   "intents": ["retrieval"],
   "reasoning": "Hebrew query for prayer books printed in Italy. Search subjects for תפילה and titles for תפילה/סידור/מחזור.",
   "execution_steps": [
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"subject\", \"op\": \"CONTAINS\", \"value\": \"תפילה\"}, {\"field\": \"country\", \"op\": \"EQUALS\", \"value\": \"italy\"}]}", "label": "Prayer books from Italy (by subject)", "depends_on": []},
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"title\", \"op\": \"CONTAINS\", \"value\": \"תפילה\"}, {\"field\": \"country\", \"op\": \"EQUALS\", \"value\": \"italy\"}]}", "label": "Prayer books from Italy (by title)", "depends_on": []}
+    {"action": "retrieve", "params": {"filters": [{"field": "subject", "op": "CONTAINS", "value": "תפילה"}, {"field": "country", "op": "EQUALS", "value": "italy"}], "scope": "full_collection"}, "label": "Prayer books from Italy (by subject)", "depends_on": []},
+    {"action": "retrieve", "params": {"filters": [{"field": "title", "op": "CONTAINS", "value": "תפילה"}, {"field": "country", "op": "EQUALS", "value": "italy"}], "scope": "full_collection"}, "label": "Prayer books from Italy (by title)", "depends_on": []}
   ],
   "directives": [
     {"directive": "synthesize", "params": "{\"sets\": [\"$step_0\", \"$step_1\"], \"note\": \"Merge subject-based and title-based results\"}", "label": "Combine results"}
@@ -433,10 +434,10 @@ Query: "שיעור שעוסק באמנות, מפות וקרטוגרפיה. מה 
   "reasoning": "Curatorial request (מה תציע לי להראות) for a lesson on three coordinate topics: art, maps, cartography. One retrieve step per concept using catalog vocabulary, then curate a notable sample over the union.",
   "confidence": 0.85,
   "execution_steps": [
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"subject\", \"op\": \"CONTAINS\", \"value\": \"art\"}]}", "label": "Books on art", "depends_on": []},
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"subject\", \"op\": \"CONTAINS\", \"value\": \"geography\"}]}", "label": "Geography & cartography", "depends_on": []},
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"physical_desc\", \"op\": \"CONTAINS\", \"value\": \"map\"}]}", "label": "Items physically containing maps", "depends_on": []},
-    {"action": "sample", "params": "{\"scope\": \"$step_0+$step_1+$step_2\", \"n\": 12, \"strategy\": \"notable\"}", "label": "Curate notable items for the lesson", "depends_on": [0, 1, 2]}
+    {"action": "retrieve", "params": {"filters": [{"field": "subject", "op": "CONTAINS", "value": "art"}], "scope": "full_collection"}, "label": "Books on art", "depends_on": []},
+    {"action": "retrieve", "params": {"filters": [{"field": "subject", "op": "CONTAINS", "value": "geography"}], "scope": "full_collection"}, "label": "Geography & cartography", "depends_on": []},
+    {"action": "retrieve", "params": {"filters": [{"field": "physical_desc", "op": "CONTAINS", "value": "map"}], "scope": "full_collection"}, "label": "Items physically containing maps", "depends_on": []},
+    {"action": "sample", "params": {"scope": "$step_0+$step_1+$step_2", "n": 12, "strategy": "notable"}, "label": "Curate notable items for the lesson", "depends_on": [0, 1, 2]}
   ],
   "directives": [
     {"directive": "synthesize", "params": "{\"sets\": [\"$step_3\"], \"note\": \"Present as a curated lesson set: why each item serves a lesson on art, maps and cartography\"}", "label": "Lesson framing"}
@@ -450,9 +451,9 @@ Query: "מה יש באוסף פייטלוביץ'?"
   "intents": ["retrieval", "overview"],
   "reasoning": "User asks about the Faitlovitch collection. Collections are stored as corporate agents. Search agent_norm for the collection name with agent_type=corporate.",
   "execution_steps": [
-    {"action": "retrieve", "params": "{\"filters\": [{\"field\": \"agent_norm\", \"op\": \"CONTAINS\", \"value\": \"פיטלוביץ\"}, {\"field\": \"agent_type\", \"op\": \"EQUALS\", \"value\": \"corporate\"}]}", "label": "Faitlovitch collection items", "depends_on": []},
-    {"action": "aggregate", "params": "{\"field\": \"subject\", \"scope\": \"$step_0\", \"limit\": 15}", "label": "Subject distribution", "depends_on": [0]},
-    {"action": "aggregate", "params": "{\"field\": \"language\", \"scope\": \"$step_0\"}", "label": "Language distribution", "depends_on": [0]}
+    {"action": "retrieve", "params": {"filters": [{"field": "agent_norm", "op": "CONTAINS", "value": "פיטלוביץ"}, {"field": "agent_type", "op": "EQUALS", "value": "corporate"}], "scope": "full_collection"}, "label": "Faitlovitch collection items", "depends_on": []},
+    {"action": "aggregate", "params": {"field": "subject", "scope": "$step_0", "limit": 15}, "label": "Subject distribution", "depends_on": [0]},
+    {"action": "aggregate", "params": {"field": "language", "scope": "$step_0", "limit": 20}, "label": "Language distribution", "depends_on": [0]}
   ],
   "directives": [
     {"directive": "contextualize", "params": "{\"theme\": \"The Faitlovitch collection and Beta Israel manuscript heritage\"}", "label": "Collection context"}
@@ -754,26 +755,21 @@ def _parse_json_params(raw: str) -> dict:
 def _convert_llm_step(llm_step: ExecutionStepLLM) -> ExecutionStep:
     """Convert a single LLM step to a typed ExecutionStep.
 
-    Args:
-        llm_step: Step with string action and dict params.
-
-    Returns:
-        Typed ExecutionStep.
+    Since issue #14 the LLM emits a discriminated step union whose ``params``
+    are already-validated nested objects (Filters included), so conversion is
+    a mechanical re-shape into the executor-side typed models — no JSON
+    parsing, no repair ladder, no action↔params pairing risk. The repair
+    ladder (``_parse_json_params``) remains in use for directive params,
+    which stay string-typed by design.
 
     Raises:
-        ValueError: If the action is unknown or params don't match.
+        ValueError: If the action is unknown (belt-and-suspenders — a
+            non-strict provider could bypass the schema constraint).
     """
     action = StepAction(llm_step.action)
     params_model = _ACTION_PARAMS_MODEL[action]
-    raw_params = _parse_json_params(llm_step.params) if isinstance(llm_step.params, str) else dict(llm_step.params)
-
-    # Special handling for RetrieveParams: convert filter dicts to Filter objects
-    if action == StepAction.RETRIEVE and "filters" in raw_params:
-        raw_params["filters"] = [
-            _convert_filter_dict(f) for f in raw_params["filters"]
-        ]
-
-    typed_params = params_model(**raw_params)
+    # Filter objects survive a model_dump round-trip; params_model re-validates.
+    typed_params = params_model(**llm_step.params.model_dump())
 
     return ExecutionStep(
         action=action,
@@ -879,7 +875,9 @@ def _convert_llm_plan(llm_plan: InterpretationPlanLLM) -> InterpretationPlan:
         try:
             typed_steps.append(_convert_llm_step(llm_step))
             old_to_new[i] = len(typed_steps) - 1
-        except (ValueError, KeyError, TypeError) as exc:
+        except (ValueError, KeyError, TypeError, AttributeError) as exc:
+            # AttributeError: a non-strict provider may emit params as a raw
+            # string (no .model_dump) — belt-and-suspenders per issue #14.
             logger.warning(
                 "Skipping step %d (action=%r): %s", i, llm_step.action, exc
             )
@@ -898,13 +896,15 @@ def _convert_llm_plan(llm_plan: InterpretationPlanLLM) -> InterpretationPlan:
         ]
         _remap_step_refs_in_params(step.params, old_to_new)
 
-    # Convert LLM directives (JSON string params) to typed directives
+    # Convert LLM directives (JSON string params) to typed directives.
+    # Directives stay string-typed by design (free-form), so the repair
+    # ladder still guards them (issue #14 keeps it for exactly this field).
     typed_directives: list[ScholarlyDirective] = []
     for d in llm_plan.directives:
         params_dict = {}
         if d.params:
             try:
-                params_dict = json.loads(d.params) if isinstance(d.params, str) else dict(d.params)
+                params_dict = _parse_json_params(d.params) if isinstance(d.params, str) else dict(d.params)
             except (json.JSONDecodeError, TypeError):
                 params_dict = {}
         typed_directives.append(

@@ -22,7 +22,7 @@ Models are organized into five groups:
 from __future__ import annotations
 
 from enum import Enum
-from typing import Union
+from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, Field
 
@@ -432,26 +432,124 @@ class ScholarResponse(BaseModel):
 # ============================================================================
 
 
-class ExecutionStepLLM(BaseModel):
-    """Simplified execution step schema for the LLM.
+# LLM-facing param models (issue #14). One per action, with every field
+# required (OpenAI strict mode lists all properties as required anyway, so the
+# schema is honest about what the model must emit). Grammar-constrained
+# decoding over these nested objects makes malformed params IMPOSSIBLE by
+# construction — the truncated-JSON class of bug behind issue #5 cannot occur.
+# ``Filter`` is shared with the typed side, so filters are schema-level too.
 
-    Uses ``str`` action and a JSON-encoded ``str`` for params instead
-    of typed unions, which are compatible with the OpenAI Responses API
-    (which requires ``additionalProperties: false`` on all objects).
-    The interpreter converts these to typed ``ExecutionStep`` objects.
-    """
 
-    action: str
-    params: str  # JSON-encoded dict; parsed in _convert_llm_plan()
+class ResolveAgentParamsLLM(BaseModel):
+    name: str
+    variants: list[str]
+
+
+class ResolvePublisherParamsLLM(BaseModel):
+    name: str
+    variants: list[str]
+
+
+class RetrieveParamsLLM(BaseModel):
+    filters: list[Filter]
+    scope: str
+
+
+class AggregateParamsLLM(BaseModel):
+    field: str
+    scope: str
+    limit: int
+
+
+class FindConnectionsParamsLLM(BaseModel):
+    agents: list[str]
+    depth: int
+
+
+class EnrichParamsLLM(BaseModel):
+    targets: str
+    fields: list[str]
+
+
+class SampleParamsLLM(BaseModel):
+    scope: str
+    n: int
+    strategy: str
+
+
+# One step type per action, discriminated by the ``action`` literal — the
+# schema itself guarantees the action↔params pairing.
+
+
+class ResolveAgentStepLLM(BaseModel):
+    action: Literal["resolve_agent"]
+    params: ResolveAgentParamsLLM
     label: str
-    depends_on: list[int] = Field(default_factory=list)
+    depends_on: list[int]
+
+
+class ResolvePublisherStepLLM(BaseModel):
+    action: Literal["resolve_publisher"]
+    params: ResolvePublisherParamsLLM
+    label: str
+    depends_on: list[int]
+
+
+class RetrieveStepLLM(BaseModel):
+    action: Literal["retrieve"]
+    params: RetrieveParamsLLM
+    label: str
+    depends_on: list[int]
+
+
+class AggregateStepLLM(BaseModel):
+    action: Literal["aggregate"]
+    params: AggregateParamsLLM
+    label: str
+    depends_on: list[int]
+
+
+class FindConnectionsStepLLM(BaseModel):
+    action: Literal["find_connections"]
+    params: FindConnectionsParamsLLM
+    label: str
+    depends_on: list[int]
+
+
+class EnrichStepLLM(BaseModel):
+    action: Literal["enrich"]
+    params: EnrichParamsLLM
+    label: str
+    depends_on: list[int]
+
+
+class SampleStepLLM(BaseModel):
+    action: Literal["sample"]
+    params: SampleParamsLLM
+    label: str
+    depends_on: list[int]
+
+
+ExecutionStepLLM = Annotated[
+    Union[
+        ResolveAgentStepLLM,
+        ResolvePublisherStepLLM,
+        RetrieveStepLLM,
+        AggregateStepLLM,
+        FindConnectionsStepLLM,
+        EnrichStepLLM,
+        SampleStepLLM,
+    ],
+    Field(discriminator="action"),
+]
 
 
 class ScholarlyDirectiveLLM(BaseModel):
     """LLM-facing version of ScholarlyDirective.
 
-    Uses ``str`` for params to satisfy OpenAI structured output
-    requirements (``additionalProperties: false``).
+    Directives are deliberately free-form (new directive types need no code
+    change), so ``params`` stays a JSON-encoded string — the repair ladder in
+    the interpreter still guards this one field.
     """
 
     directive: str
@@ -462,9 +560,9 @@ class ScholarlyDirectiveLLM(BaseModel):
 class InterpretationPlanLLM(BaseModel):
     """LLM output schema for the Interpreter.
 
-    Uses ``ExecutionStepLLM`` (string action + JSON params) instead
-    of the typed ``ExecutionStep`` union. The interpreter validates
-    and converts this to a typed ``InterpretationPlan``.
+    ``execution_steps`` is a discriminated union of per-action step types
+    (issue #14): params are real nested objects, so constrained decoding
+    guarantees their JSON validity and the action↔params pairing.
     """
 
     intents: list[str]
