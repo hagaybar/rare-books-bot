@@ -9,11 +9,13 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import type { ChatMessage, GroundingData } from '../../types/chat';
+import { useAppStore } from '../../stores/appStore';
 import CandidateCard from '../shared/CandidateCard';
 import ConfidenceBadge from '../shared/ConfidenceBadge';
 import GroundingSources from './GroundingSources';
 import PhaseIndicator from './PhaseIndicator';
 import ThinkingBlock from './ThinkingBlock';
+import { FeedbackDialog } from './FeedbackDialog';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -53,7 +55,16 @@ export default function MessageBubble({
 }: MessageBubbleProps) {
   const [queryDetailsOpen, setQueryDetailsOpen] = useState(false);
   const [narrativeOpen, setNarrativeOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const sessionId = useAppStore((s) => s.sessionId);
+  const navigate = useNavigate();
   const isUser = message.role === 'user';
+
+  // Strip any followup section the LLM embedded in the narrative text
+  const cleanedContent = useMemo(
+    () => stripTrailingFollowups(message.content),
+    [message.content],
+  );
 
   // ---- User message ----
   if (isUser) {
@@ -72,7 +83,6 @@ export default function MessageBubble({
   const isStreamComplete = message.streamingState === 'complete' || !message.streamingState;
   const thinkingSteps = message.thinkingSteps ?? [];
 
-  const navigate = useNavigate();
   const candidates = message.candidateSet?.candidates ?? [];
 
   // Chat -> map (issue #34): plot this result set's printing places as an
@@ -96,6 +106,12 @@ export default function MessageBubble({
   const filtersCount = message.metadata?.filters_count as number | undefined;
   const agentNarrative = message.metadata?.agent_narrative as string | undefined;
 
+  // DB row id of this assistant message (for "Mark as problematic" reports).
+  // Absent for restored/legacy sessions -- the Report button is then disabled.
+  const messageDbId = typeof message.metadata?.message_db_id === 'number'
+    ? message.metadata.message_db_id
+    : undefined;
+
   // Extract grounding data from metadata (may be undefined)
   const grounding = message.metadata?.grounding as GroundingData | undefined;
   const hasGrounding =
@@ -103,12 +119,6 @@ export default function MessageBubble({
     ((grounding.records?.length ?? 0) > 0 ||
      (grounding.agents?.length ?? 0) > 0 ||
      (grounding.links?.length ?? 0) > 0);
-
-  // Strip any followup section the LLM embedded in the narrative text
-  const cleanedContent = useMemo(
-    () => stripTrailingFollowups(message.content),
-    [message.content],
-  );
 
   return (
     <div className="flex justify-start">
@@ -199,6 +209,31 @@ export default function MessageBubble({
               >
                 {queryDetailsOpen ? 'Hide' : 'Show'} query details ({filtersCount} filter{filtersCount !== 1 ? 's' : ''})
               </button>
+            )}
+            {isStreamComplete && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setReportOpen(true)}
+                  disabled={messageDbId === undefined}
+                  className="text-[11px] text-gray-400 hover:text-red-600 font-medium transition-colors
+                    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-gray-400"
+                  title={
+                    messageDbId === undefined
+                      ? 'Reporting unavailable for this message'
+                      : 'Report this result as problematic'
+                  }
+                >
+                  ⚑ Report
+                </button>
+                <FeedbackDialog
+                  open={reportOpen}
+                  onOpenChange={setReportOpen}
+                  kind="message"
+                  sessionId={sessionId ?? undefined}
+                  messageDbId={messageDbId}
+                />
+              </>
             )}
           </div>
           {queryDetailsOpen && message.candidateSet && (
