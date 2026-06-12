@@ -68,6 +68,12 @@ EVIDENCE RULES (non-negotiable):
 11. When agent relationships are discovered, mention them to enrich the
     scholarly narrative (e.g., teacher-student connections, co-publication
     patterns).
+12. Aggregation evidence states the true population size ("N distinct
+    values total — showing top K"). Answer "how many X?" questions from
+    that N — NEVER by counting the listed facets, which are only the top K.
+    Bracketed facet values such as "[publisher unknown]" or "[sine nomine]"
+    count unattributed records; they are not real entities and must not be
+    named as presses, places, or people.
 
 RESPONSE LANGUAGE:
 - Respond in the language of the user's query: a Hebrew question gets a
@@ -639,7 +645,8 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
     - Includes up to 2 agents per record (role-relevant)
     - Includes up to 2 subjects per record only if query mentions a subject
     - Selects 0-3 agent profiles total (not all)
-    - Caps aggregations to top 5 per field and drops single-value fields
+    - Caps aggregations to top 5 per field (marking the true distinct total,
+      issue #42) and drops single-value fields
     - Drops the AVAILABLE LINKS section entirely
 
     Args:
@@ -747,12 +754,18 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
     # --- Aggregations (top 5 per field, drop single-value fields) ---
     aggregations = result.grounding.aggregations
     if aggregations:
+        agg_meta = result.grounding.aggregation_meta
         agg_lines: list[str] = []
         for field, facets in aggregations.items():
-            # Drop fields with only 1 value
-            if len(facets) <= 1:
+            meta = agg_meta.get(field, {})
+            distinct = max(meta.get("distinct_values", 0), len(facets))
+            # Drop fields with only 1 value — unless it hides a larger set
+            if len(facets) <= 1 and distinct <= 1:
                 continue
-            field_lines = [f"  {field}:"]
+            shown = min(len(facets), 5)
+            field_lines = [
+                f"  {field}: {distinct} distinct values total — showing top {shown}"
+            ]
             for facet in facets[:5]:
                 if isinstance(facet, dict):
                     field_lines.append(
@@ -938,9 +951,15 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
     # --- Aggregations ---
     aggregations = result.grounding.aggregations
     if aggregations:
+        agg_meta = result.grounding.aggregation_meta
         sections.append("AGGREGATION RESULTS:")
         for field, facets in aggregations.items():
-            sections.append(f"  {field}:")
+            meta = agg_meta.get(field, {})
+            distinct = max(meta.get("distinct_values", 0), len(facets))
+            shown = min(len(facets), 20)
+            sections.append(
+                f"  {field}: {distinct} distinct values total — showing top {shown}"
+            )
             for facet in facets[:20]:  # cap display
                 if isinstance(facet, dict):
                     sections.append(f"    - {facet.get('value', '?')}: {facet.get('count', '?')}")

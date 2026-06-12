@@ -659,6 +659,28 @@ def test_handle_aggregate(test_db):
     assert venice_facets[0]["count"] == 2
 
 
+def test_handle_aggregate_reports_distinct_total(test_db):
+    """aggregate carries the true distinct-value count even when facets are
+    truncated by limit (issue #42: 'exactly 5 printing houses' confabulation)."""
+    from scripts.chat.executor import _handle_aggregate
+
+    truncated = _handle_aggregate(
+        AggregateParams(field="publisher", scope="full_collection", limit=2),
+        test_db, step_results={}, session_context=None,
+    )
+    assert len(truncated.facets) == 2
+    # Fixture has at least bragadin, proops, bomberg, visscher
+    assert truncated.distinct_values >= 4
+    assert truncated.facets_truncated is True
+
+    full = _handle_aggregate(
+        AggregateParams(field="publisher", scope="full_collection", limit=100),
+        test_db, step_results={}, session_context=None,
+    )
+    assert full.distinct_values == len(full.facets)
+    assert full.facets_truncated is False
+
+
 def test_handle_enrich(test_db):
     """enrich fetches authority_enrichment data for resolved agents."""
     from scripts.chat.executor import _handle_enrich

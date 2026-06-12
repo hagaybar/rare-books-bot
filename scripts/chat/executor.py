@@ -1230,6 +1230,44 @@ def _handle_aggregate(
         rows = conn.execute(sql_template, scope_params + [params.limit]).fetchall()
         facets = [{"value": row["value"], "count": row["count"]} for row in rows]
 
+        # True population size — always computed so a LIMITed facet list is
+        # never mistaken for the complete set of values (issue #42). Each
+        # entry mirrors the FROM/WHERE/GROUP BY expression of field_map.
+        distinct_map = {
+            "date_decade": (
+                "SELECT COUNT(DISTINCT i.date_start / 10 * 10) AS cnt "
+                "FROM records r JOIN imprints i ON r.id = i.record_id "
+                f"WHERE {scope_where} AND i.date_start IS NOT NULL"
+            ),
+            "place": (
+                "SELECT COUNT(DISTINCT i.place_norm) AS cnt "
+                "FROM records r JOIN imprints i ON r.id = i.record_id "
+                f"WHERE {scope_where} AND i.place_norm IS NOT NULL AND i.place_norm != ''"
+            ),
+            "publisher": (
+                "SELECT COUNT(DISTINCT i.publisher_norm) AS cnt "
+                "FROM records r JOIN imprints i ON r.id = i.record_id "
+                f"WHERE {scope_where} AND i.publisher_norm IS NOT NULL AND i.publisher_norm != ''"
+            ),
+            "language": (
+                "SELECT COUNT(DISTINCT l.code) AS cnt "
+                "FROM records r JOIN languages l ON r.id = l.record_id "
+                f"WHERE {scope_where}"
+            ),
+            "subject": (
+                "SELECT COUNT(DISTINCT s.value) AS cnt "
+                "FROM records r JOIN subjects s ON r.id = s.record_id "
+                f"WHERE {scope_where}"
+            ),
+            "agent": (
+                "SELECT COUNT(DISTINCT a.agent_norm) AS cnt "
+                "FROM records r JOIN agents a ON r.id = a.record_id "
+                f"WHERE {scope_where}"
+            ),
+        }
+        distinct_row = conn.execute(distinct_map[normalized_field], scope_params).fetchone()
+        distinct_values = distinct_row["cnt"] if distinct_row else len(facets)
+
         # Count total records in scope
         total_sql = f"SELECT COUNT(DISTINCT r.mms_id) AS cnt FROM records r WHERE {scope_where}"
         total_row = conn.execute(total_sql, scope_params).fetchone()
@@ -1239,6 +1277,8 @@ def _handle_aggregate(
             field=params.field,
             facets=facets,
             total_records=total_records,
+            distinct_values=distinct_values,
+            facets_truncated=distinct_values > len(facets),
         )
     finally:
         conn.close()
@@ -1668,11 +1708,16 @@ def _collect_grounding(
                 if step_idx not in mms_to_steps[mms_id]:
                     mms_to_steps[mms_id].append(step_idx)
 
-    # 2. Collect aggregation results
+    # 2. Collect aggregation results (+ true population size, issue #42)
     aggregations: Dict[str, list] = {}
+    aggregation_meta: Dict[str, dict] = {}
     for step_idx, sr in step_results.items():
         if isinstance(sr.data, AggregationResult) and sr.data.facets:
             aggregations[sr.data.field] = sr.data.facets
+            aggregation_meta[sr.data.field] = {
+                "distinct_values": sr.data.distinct_values,
+                "facets_truncated": sr.data.facets_truncated,
+            }
 
     # 3. Collect agent summaries from enrich steps
     agent_summaries: List[AgentSummary] = []
@@ -1689,6 +1734,7 @@ def _collect_grounding(
             records=[],
             agents=agent_summaries,
             aggregations=aggregations,
+            aggregation_meta=aggregation_meta,
             links=[lnk for a in agent_summaries for lnk in a.links],
         ), False, 0
 
@@ -2046,6 +2092,7 @@ def _collect_grounding(
             records=records,
             agents=agent_summaries,
             aggregations=aggregations,
+            aggregation_meta=aggregation_meta,
             links=links,
             publishers=publisher_details,
         ), truncated, total_record_count
