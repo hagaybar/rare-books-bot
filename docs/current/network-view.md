@@ -25,6 +25,15 @@ interpreter-stage model, cached per (figure, edge-type set) so each figure
 costs at most one LLM call ever. `next_thread` becomes a click into the named
 neighbour's ego.
 
+**Topic Constellation (third axis):** a `Topics` toggle beside Map | Network
+opens the subject view — packed bubbles (d3-hierarchy) grouped by LCSH root
+(`Bible.`/`Bible` merged), sized by holdings, colored by era of peak printing,
+form/genre headings dash-ringed. Click → a topic profile (decade histogram,
+where → CityView, who → ego, chat pivot, books). Endpoints:
+`GET /network/topics`, `GET /network/topic/{subject}`. Known data wart: 117
+`subjects.value_he` rows carry U+FFFD mojibake (fix_19 encoding) — suppressed
+in UI, data fix pending approval.
+
 **Cross-axis pivots are the core interaction** (user: "we need more like
 this"): every mention is a door. City → press (top_publishers resolve to their
 `pub:` node → ego), city → person (notable people → ego), anything → city
