@@ -24,6 +24,7 @@ from slowapi.errors import RateLimitExceeded
 from app.api.auth_deps import require_role
 from app.api.auth_routes import router as auth_router
 from app.api.diagnostics import router as diagnostics_router
+from app.api.feedback_routes import router as feedback_router
 from app.api.metadata import router as metadata_router
 from app.api.metadata_corrections import router as corrections_router
 from app.api.metadata_enrichment import router as enrichment_router
@@ -354,6 +355,9 @@ app.include_router(diagnostics_router)
 
 # Register network map explorer router (auth enforced via router-level dependency)
 app.include_router(network_router)
+
+# Register feedback router (mark-as-problematic; auth via require_role dependency)
+app.include_router(feedback_router)
 
 
 def get_session_store() -> SessionStore:
