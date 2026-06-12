@@ -8,9 +8,15 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.auth_deps import require_role
+from scripts.models.config import get_model, load_config
+from scripts.models.llm_client import structured_completion
+
 from app.api.network_models import (
     AgentConnection,
     AgentCount,
+    InterpretRequest,
+    NetworkPortrait,
+    NetworkPortraitLLM,
     AgentDetail,
     AgentWork,
     DecadeCount,
@@ -620,6 +626,128 @@ async def find_path(
         )
     finally:
         conn.close()
+
+
+# Portraits are deterministic per (figure, edge-type set) — generate once, ever.
+_portrait_cache: dict[tuple[str, str], NetworkPortrait] = {}
+
+_PORTRAIT_SYSTEM = """You are a rare-books scholar writing a miniature portrait of a figure,
+based ONLY on the network facts supplied (their dates, occupations, the people
+they share catalogue records with, how, and our holdings). Never invent facts.
+
+Return:
+- epithet: a vivid title of at most 8 words capturing their role in THIS
+  collection (e.g. "The man who resurrected the chroniclers").
+- reading: 2-3 sentences interpreting the SHAPE of their network — e.g. a
+  19th-century figure linked to medieval authors through shared books is an
+  editor/translator of older texts; note striking date gaps, roles
+  (translated/edited/printed), and clusters. Grounded, scholarly, plain.
+- next_thread: ONE sentence proposing a single named neighbour to explore next
+  and why. Use a name exactly as given.
+
+Match the user's language conventions; names may be Hebrew — keep them verbatim."""
+
+
+@router.post(
+    "/interpret",
+    response_model=NetworkPortrait,
+    dependencies=[Depends(require_role("limited"))],  # LLM spend: same bar as /chat
+)
+async def interpret_ego(req: InterpretRequest) -> NetworkPortrait:
+    """AI portrait of a figure's ego network (creative layer over /ego).
+
+    Builds a compact, server-side context (never trusts client data), asks a
+    cheap model for an epithet + grounded reading + one next thread, and caches
+    the result per (agent, edge-type set) so each figure costs at most one call.
+    """
+    types = sorted({t for t in req.connection_types if t in VALID_CONNECTION_TYPES})
+    if not types:
+        types = sorted(VALID_CONNECTION_TYPES)
+    key = (req.agent_norm, ",".join(types))
+    if key in _portrait_cache:
+        return _portrait_cache[key].model_copy(update={"cached": True})
+
+    conn = _get_db()
+    try:
+        focal = conn.execute(
+            "SELECT * FROM network_agents WHERE agent_norm = ?", (req.agent_norm,)
+        ).fetchone()
+        if not focal:
+            raise HTTPException(404, f"Agent not found: {req.agent_norm}")
+
+        tph = ",".join("?" for _ in types)
+        edge_rows = conn.execute(
+            f"""SELECT source_agent_norm, target_agent_norm, connection_type,
+                       relationship, evidence
+                FROM network_edges
+                WHERE (source_agent_norm = ? OR target_agent_norm = ?)
+                  AND connection_type IN ({tph})""",
+            (req.agent_norm, req.agent_norm, *types),
+        ).fetchall()
+
+        neighbour_lines: list[str] = []
+        for er in edge_rows[:30]:
+            other = er["target_agent_norm"] if er["source_agent_norm"] == req.agent_norm else er["source_agent_norm"]
+            n = conn.execute(
+                "SELECT display_name, birth_year, death_year, node_type FROM network_agents WHERE agent_norm = ?",
+                (other,),
+            ).fetchone()
+            if not n:
+                continue
+            years = f" ({n['birth_year'] or '?'}–{n['death_year'] or '?'})" if (n["birth_year"] or n["death_year"]) else ""
+            kind = " [printing house]" if (n["node_type"] or "person") == "publisher" else ""
+            rel = f", {er['relationship']}" if er["relationship"] else ""
+            ev = f" — {er['evidence'][:70]}" if er["evidence"] else ""
+            neighbour_lines.append(
+                f"- {n['display_name']}{years}{kind} — via {er['connection_type']}{rel}{ev}"
+            )
+
+        node_type = (focal["node_type"] if "node_type" in focal.keys() else "person") or "person"
+        if node_type == "publisher" and req.agent_norm.startswith("pub:"):
+            works = _works_for_publisher(conn, req.agent_norm[len("pub:"):], limit=8)
+        else:
+            works = _works_for_agent(conn, req.agent_norm, limit=8)
+    finally:
+        conn.close()
+
+    try:
+        occupations = json.loads(focal["occupations"]) if focal["occupations"] else []
+    except (json.JSONDecodeError, TypeError):
+        occupations = []
+    fy = f"{focal['birth_year'] or '?'}–{focal['death_year'] or '?'}"
+    lines = [
+        f"FIGURE: {focal['display_name']} ({fy}); {node_type}; "
+        f"occupations: {', '.join(occupations) or 'unknown'}; place: {focal['place_norm'] or 'unknown'}",
+        f"OUR HOLDINGS: {focal['record_count']} records",
+        f"NETWORK ({len(neighbour_lines)} of {len(edge_rows)} connections shown; active edge types: {', '.join(types)}):",
+        *neighbour_lines,
+    ]
+    if works:
+        lines.append("SAMPLE WORKS IN OUR COLLECTION:")
+        lines += [
+            f"- {w.title or w.mms_id}" + (f" ({w.date_label})" if w.date_label else "")
+            + (f" — role: {w.role_norm}" if w.role_norm else "")
+            for w in works
+        ]
+
+    config = load_config()
+    result = await structured_completion(
+        model=get_model(config, "interpreter"),
+        system=_PORTRAIT_SYSTEM,
+        user="\n".join(lines),
+        response_schema=NetworkPortraitLLM,
+        call_type="network_portrait",
+    )
+    portrait = NetworkPortrait(
+        epithet=result.parsed.epithet,
+        reading=result.parsed.reading,
+        next_thread=result.parsed.next_thread,
+        cached=False,
+    )
+    if len(_portrait_cache) > 500:  # unbounded-growth guard
+        _portrait_cache.clear()
+    _portrait_cache[key] = portrait
+    return portrait
 
 
 @router.get("/places", response_model=list[PlaceMarker])

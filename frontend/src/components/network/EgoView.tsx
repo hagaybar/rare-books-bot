@@ -4,12 +4,56 @@ import type { MapNode, MapEdge, ColorByMode, EgoResponse } from '../../types/net
 import {
   getAgentColor, buildCommunityColorMap, CONNECTION_TYPE_CONFIG, PUBLISHER_COLOR,
 } from '../../types/network';
+import { interpretEgo, type NetworkPortrait } from '../../api/network';
+import { useAuthStore } from '../../stores/authStore';
+import { getRoleLevel } from '../AuthGuard';
 
 interface Props {
   data: EgoResponse;
   colorBy: ColorByMode;
   communities?: string[];
+  connectionTypes: string[];
   onNodeClick: (node: MapNode) => void;
+}
+
+/** Deterministic archetype of an ego network — the free tier of interpretation.
+ *  The Buchon insight generalized: certain shapes have stable meanings. */
+function readEgoShape(data: EgoResponse): { badge: string; line: string } | null {
+  const focal = data.nodes.find((n) => n.agent_norm === data.focal);
+  if (!focal) return null;
+  const neighbours = data.nodes.filter((n) => n.agent_norm !== data.focal);
+  if (neighbours.length === 0) return null;
+  if (neighbours.length <= 2) {
+    return { badge: 'A quiet corner', line: `Only ${neighbours.length} connection${neighbours.length === 1 ? '' : 's'} under the current filters — try enabling more connection types.` };
+  }
+  const roles = [...new Set(data.edges.map((e) => e.relationship).filter(Boolean))].slice(0, 3);
+  const roleNote = roles.length ? ` Roles on shared records: ${roles.join(', ')}.` : '';
+
+  if (focal.node_type === 'publisher') {
+    return { badge: 'A printing house at work', line: `${neighbours.length} people orbit this press through the books it printed.${roleNote}` };
+  }
+  const fb = focal.birth_year;
+  const dated = neighbours.filter((n) => n.birth_year != null);
+  if (fb != null && dated.length >= 3) {
+    const older = dated.filter((n) => fb - (n.birth_year as number) >= 150).length;
+    const peers = dated.filter((n) => Math.abs((n.birth_year as number) - fb) <= 60).length;
+    if (older / dated.length >= 0.6) {
+      return {
+        badge: 'A gateway to older texts',
+        line: `${older} of ${dated.length} dated connections were born 150+ years earlier — the signature of an editor, translator, or compiler bringing older works back into print.${roleNote}`,
+      };
+    }
+    if (peers / dated.length >= 0.6) {
+      return {
+        badge: 'A circle of contemporaries',
+        line: `${peers} of ${dated.length} dated connections lived within a generation or two — a working milieu of colleagues, collaborators, and rivals.${roleNote}`,
+      };
+    }
+  }
+  return {
+    badge: 'A mixed web',
+    line: `${neighbours.length} connections spanning several eras and link types — explore the strands individually.${roleNote}`,
+  };
 }
 
 interface GNode { id: string; node: MapNode; x?: number; y?: number; fx?: number; fy?: number }
@@ -19,12 +63,39 @@ const rgb = (c: [number, number, number]) => `rgb(${c[0]},${c[1]},${c[2]})`;
 
 /** Force-directed 1-hop ego graph (issue #31). Non-geographic peer of MapView.
  *  Focal node is pinned at the centre; the view auto-fits on load and re-centre. */
-export default function EgoView({ data, colorBy, communities, onNodeClick }: Props) {
+export default function EgoView({ data, colorBy, communities, connectionTypes, onNodeClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fgRef = useRef<any>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const communityColors = useMemo(() => buildCommunityColorMap(communities ?? []), [communities]);
+
+  // Interpretation: free deterministic shape-reading + optional AI portrait.
+  const shape = useMemo(() => readEgoShape(data), [data]);
+  const user = useAuthStore((s) => s.user);
+  const canInterpret = user ? getRoleLevel(user.role) >= getRoleLevel('limited') : false;
+  const [portrait, setPortrait] = useState<NetworkPortrait | null>(null);
+  const [portraitLoading, setPortraitLoading] = useState(false);
+  const [portraitError, setPortraitError] = useState(false);
+  useEffect(() => { setPortrait(null); setPortraitError(false); }, [data.focal]);
+  const askAI = async () => {
+    setPortraitLoading(true);
+    setPortraitError(false);
+    try {
+      setPortrait(await interpretEgo(data.focal, connectionTypes));
+    } catch {
+      setPortraitError(true);
+    } finally {
+      setPortraitLoading(false);
+    }
+  };
+  // The AI names ONE neighbour to explore — make it a click if we can find it.
+  const threadNode = useMemo(() => {
+    if (!portrait) return null;
+    return data.nodes.find(
+      (n) => n.agent_norm !== data.focal && portrait.next_thread.includes(n.display_name),
+    ) ?? null;
+  }, [portrait, data]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -147,6 +218,51 @@ export default function EgoView({ data, colorBy, communities, onNodeClick }: Pro
         </svg>
         Recenter
       </button>
+
+      {/* Reading card: archetype badge (free) + optional AI portrait */}
+      {shape && !onlyFocal && (
+        <div className="absolute top-3 left-3 z-10 max-w-sm bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-md px-4 py-3">
+          {!portrait ? (
+            <>
+              <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">{shape.badge}</div>
+              <p className="mt-1 text-sm text-gray-700 leading-snug">{shape.line}</p>
+              {canInterpret && (
+                <button
+                  onClick={askAI}
+                  disabled={portraitLoading}
+                  className="mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+                >
+                  {portraitLoading ? 'Reading the network…' : '✦ Interpret with AI'}
+                </button>
+              )}
+              {portraitError && (
+                <p className="mt-1 text-xs text-red-500">Interpretation failed — try again.</p>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="text-sm font-semibold text-gray-900">
+                <bdi dir="auto">{portrait.epithet}</bdi>
+              </div>
+              <p className="mt-1 text-sm text-gray-700 leading-snug">
+                <bdi dir="auto">{portrait.reading}</bdi>
+              </p>
+              <p className="mt-1.5 text-xs text-gray-500 leading-snug">
+                {threadNode ? (
+                  <button
+                    onClick={() => onNodeClick(threadNode)}
+                    className="text-indigo-600 hover:text-indigo-800 text-start"
+                  >
+                    → <bdi dir="auto">{portrait.next_thread}</bdi>
+                  </button>
+                ) : (
+                  <>→ <bdi dir="auto">{portrait.next_thread}</bdi></>
+                )}
+              </p>
+            </>
+          )}
+        </div>
+      )}
 
       {onlyFocal && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
