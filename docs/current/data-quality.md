@@ -1,6 +1,6 @@
 # Data Quality
 
-> Last verified: 2026-06-11
+> Last verified: 2026-06-12
 > Source of truth for: Quality checks, fix scripts, sampling protocol, remediation processes
 
 ## 1. Overview
@@ -302,6 +302,16 @@ These operate on the materialized `network_*` tables behind the Network view. Th
 - **Problem**: imprint norms belonging to existing authorities weren't linked as variants (issue #40 — 'דפוס אליעזר שונצינו' invisible to publisher resolution). Audit (#41): all 1,851 unmapped norms are 1-record singletons; auto token-linking REJECTED (false positives).
 - **Fix script**: `scripts/qa/fixes/fix_26_link_publisher_variants.py`
 - **What it does**: 6 curated additive variant rows — 4 punctuation-exact matches + Eliezer Soncino's two Hebrew imprints → Soncino Press. Applied 2026-06-12 (local+prod). Hebrew 'שונצינו' now resolves authority-grade.
+
+#### Fix 27: Link Hebrew Press Variants (issue #46)
+- **Problem**: gold-suite diagnostic (2026-06-12) found the 1550s Alvise Bragadin Hebrew imprints unreachable by canonical publisher queries — their `publisher_norm` is the identity Hebrew string, never linked to 'Bragadin Press, Venice'. Sweep found the same gap across six press authorities.
+- **Fix script**: `scripts/qa/fixes/fix_27_link_hebrew_press_variants.py`
+- **What it does**: 16 curated additive variant rows (Bragadin ×7, Bomberg ×2, Giustiniani ×2, Daniel Zanetti ×1, Joseph Athias ×1, Immanuel Athias ×3). Applied 2026-06-12 (local). Diagnostic TEST-STRESS-01 0→3 records; TEST-PUB-01 15→22.
+
+#### Fix 28: Create Missing Press Authorities (issue #46)
+- **Problem**: 7 Hebrew norms from the fix_27 sweep had no authority at all (or an ambiguous family assignment).
+- **Fix script**: `scripts/qa/fixes/fix_28_create_missing_press_authorities.py`
+- **What it does**: creates 3 authorities — Zanetto Zanetti (Venice, fl. 1607), Daniel Adelkind (Venice, fl. 1552), Abraham Athias (Amsterdam, fl. 1728-1739) — with fl. dates from collection evidence only (confidence 0.7, flagged for research), plus 7 variant links incl. generic 'דפוס עטיאש' → Immanuel Athias (curator decision 2026-06-12). Applied 2026-06-12 (local).
 
 ## 4. Sampling Protocol
 
