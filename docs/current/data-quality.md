@@ -313,6 +313,11 @@ These operate on the materialized `network_*` tables behind the Network view. Th
 - **Fix script**: `scripts/qa/fixes/fix_28_create_missing_press_authorities.py`
 - **What it does**: creates 3 authorities — Zanetto Zanetti (Venice, fl. 1607), Daniel Adelkind (Venice, fl. 1552), Abraham Athias (Amsterdam, fl. 1728-1739) — with fl. dates from collection evidence only (confidence 0.7, flagged for research), plus 7 variant links incl. generic 'דפוס עטיאש' → Immanuel Athias (curator decision 2026-06-12). Applied 2026-06-12 (local).
 
+#### Fix 29: Repair Agent Alias Comma-Split Fragments (issue #53)
+- **Problem**: the alias seeder (`seed_from_enrichment`) recovered grouped norms via `GROUP_CONCAT` + `split(',')`, fragmenting every comma-containing `agent_norm` — 'blanchard, théophile' existed only as the primary aliases 'blanchard' and 'théophile' (the latter attached to Théophile Gautier's authority); 1,946 norms had no alias row. User-visible: "tell me about Blanchard, Théophile" could not ground.
+- **Fix script**: `scripts/qa/fixes/fix_29_repair_agent_alias_fragments.py` (seeding code fixed in the same commit — Python-side grouping, no comma split)
+- **What it does**: deletes 3,183 fragment primary aliases (same-authority comma-segments only; enrichment-derived variant/cross-script rows untouched), inserts 1,944 missing full-norm primaries. Applied 2026-06-12 (local): 0 comma-norms left without an alias; 141 cross-authority collisions skipped + reported (duplicate-authority follow-up issue). Blanchard resolves alias_exact 0.95 → 1/1 records.
+
 ## 4. Sampling Protocol
 
 ### Purpose

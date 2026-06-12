@@ -276,27 +276,32 @@ def seed_from_enrichment(conn: sqlite3.Connection) -> Dict:
         "cross_script_aliases": 0,
     }
 
-    # 1. Group agents by authority_uri
+    # 1. Group agents by authority_uri — in Python, NOT via GROUP_CONCAT:
+    # agent_norm values contain commas ('buxtorf, johann',
+    # 'burgtheater (vienna, austria)'), so splitting a comma-joined string
+    # fragments every such norm (issue #53).
     rows = conn.execute(
-        """SELECT authority_uri, agent_type,
-                  GROUP_CONCAT(DISTINCT agent_norm) as agent_norms
+        """SELECT authority_uri, agent_type, agent_norm
            FROM agents
            WHERE authority_uri IS NOT NULL AND authority_uri != ''
-           GROUP BY authority_uri"""
+             AND agent_norm IS NOT NULL AND agent_norm != ''
+           ORDER BY id"""
     ).fetchall()
 
-    for row in rows:
-        authority_uri = row["authority_uri"] if isinstance(row, sqlite3.Row) else row[0]
-        agent_type = row["agent_type"] if isinstance(row, sqlite3.Row) else row[1]
-        agent_norms_str = row["agent_norms"] if isinstance(row, sqlite3.Row) else row[2]
+    groups: Dict[str, Dict] = {}
+    for r in rows:
+        uri = r["authority_uri"] if isinstance(r, sqlite3.Row) else r[0]
+        group = groups.setdefault(uri, {
+            "agent_type": r["agent_type"] if isinstance(r, sqlite3.Row) else r[1],
+            "agent_norms": [],
+        })
+        norm = (r["agent_norm"] if isinstance(r, sqlite3.Row) else r[2]).strip()
+        if norm and norm not in group["agent_norms"]:
+            group["agent_norms"].append(norm)
 
-        if not authority_uri:
-            continue
-
-        # Collect distinct agent_norm values for this authority_uri
-        agent_norms = [
-            n.strip() for n in agent_norms_str.split(",") if n.strip()
-        ] if agent_norms_str else []
+    for authority_uri, group in groups.items():
+        agent_type = group["agent_type"]
+        agent_norms = group["agent_norms"]
 
         if not agent_norms:
             continue
