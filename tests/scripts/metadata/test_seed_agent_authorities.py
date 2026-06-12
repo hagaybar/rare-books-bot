@@ -356,7 +356,7 @@ class TestIdempotency:
         authorities and aliases (no duplicates created)."""
         conn = _make_db()
 
-        stats1 = seed_all(conn)
+        seed_all(conn)
 
         auth_count_1 = conn.execute(
             "SELECT COUNT(*) as c FROM agent_authorities"
@@ -417,3 +417,61 @@ class TestSeedStatistics:
         assert "primary_aliases" in stats or "aliases_by_type" in stats, (
             f"Stats should report alias type breakdown, got keys: {list(stats.keys())}"
         )
+
+
+class TestCommaSafeAliasSeeding:
+    """Issue #53: GROUP_CONCAT + split(',') fragmented every comma-containing
+    agent_norm — 'buxtorf, johann' became the two primary aliases 'buxtorf'
+    and 'johann'; 'burgtheater (vienna, austria)' became 'burgtheater (vienna'
+    + 'austria)'. Full norms must be kept whole as primary aliases."""
+
+    def test_person_norm_kept_whole_as_primary_alias(self):
+        conn = _make_db()
+        seed_from_enrichment(conn)
+        forms = {
+            r["alias_form"] for r in conn.execute(
+                """SELECT aa.alias_form FROM agent_aliases aa
+                   JOIN agent_authorities a ON a.id = aa.authority_id
+                   WHERE a.authority_uri = '987007260000005171'
+                     AND aa.alias_type = 'primary'"""
+            )
+        }
+        assert "buxtorf, johann" in forms
+        assert "buxtorf" not in forms
+        assert "johann" not in forms
+
+    def test_corporate_parenthetical_not_fragmented(self):
+        conn = _make_db()
+        conn.execute(
+            """INSERT INTO agents (record_id, agent_index, agent_raw, agent_norm,
+                                   authority_uri, agent_type)
+               VALUES (99, 0, 'Burgtheater (Vienna, Austria)',
+                       'burgtheater (vienna, austria)', '987007259366505171',
+                       'corporate')"""
+        )
+        seed_from_enrichment(conn)
+        forms = {
+            r["alias_form"] for r in conn.execute(
+                """SELECT aa.alias_form FROM agent_aliases aa
+                   JOIN agent_authorities a ON a.id = aa.authority_id
+                   WHERE a.authority_uri = '987007259366505171'"""
+            )
+        }
+        assert "burgtheater (vienna, austria)" in forms
+        assert "austria)" not in forms
+        assert "burgtheater (vienna" not in forms
+
+    def test_multi_norm_group_keeps_each_full_norm(self):
+        conn = _make_db()
+        seed_from_enrichment(conn)
+        forms = {
+            r["alias_form"] for r in conn.execute(
+                """SELECT aa.alias_form FROM agent_aliases aa
+                   JOIN agent_authorities a ON a.id = aa.authority_id
+                   WHERE a.authority_uri = '987007265654005171'
+                     AND aa.alias_type = 'primary'"""
+            )
+        }
+        assert "maimonides, moses" in forms
+        assert "משה בן מימון" in forms
+        assert "moses" not in forms
