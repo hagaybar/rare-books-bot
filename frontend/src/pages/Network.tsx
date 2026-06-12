@@ -8,6 +8,7 @@ import MapView from '../components/network/MapView';
 import EgoView from '../components/network/EgoView';
 import Breadcrumbs from '../components/network/Breadcrumbs';
 import PathFinder from '../components/network/PathFinder';
+import TimeSlider from '../components/network/TimeSlider';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
 import PlacePanel from '../components/network/PlacePanel';
@@ -138,6 +139,42 @@ export default function Network() {
 
   const handleExplore = (norm: string, displayName: string) =>
     enterEgo({ agent_norm: norm, display_name: displayName });
+
+  // Time slider (issue #32): a sliding imprint-year window over the map.
+  const yearMin = mapData?.meta.year_min ?? 1450;
+  const yearMax = mapData?.meta.year_max ?? 1950;
+  const [timeMode, setTimeMode] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(100);
+  const [windowStart, setWindowStart] = useState(yearMin);
+  const [playing, setPlaying] = useState(false);
+
+  const openTimeline = () => { setWindowStart(yearMin); setTimeMode(true); setPlaying(true); };
+  const closeTimeline = () => { setTimeMode(false); setPlaying(false); };
+
+  // Animate the window forward, looping back to the start when it reaches the end.
+  useEffect(() => {
+    if (!timeMode || !playing) return;
+    const id = setInterval(() => {
+      setWindowStart((prev) => (prev + 10 > yearMax - windowWidth ? yearMin : prev + 10));
+    }, 650);
+    return () => clearInterval(id);
+  }, [timeMode, playing, yearMin, yearMax, windowWidth]);
+
+  // Nodes/edges visible under the active time window (client-side for smoothness).
+  const timeFiltered = useMemo(() => {
+    const all = { nodes: mapData?.nodes ?? [], edges: mapData?.edges ?? [] };
+    if (!timeMode) return all;
+    const end = windowStart + windowWidth;
+    const visible = new Set(
+      all.nodes
+        .filter((n) => n.active_start != null && n.active_end != null && n.active_start <= end && n.active_end >= windowStart)
+        .map((n) => n.agent_norm),
+    );
+    return {
+      nodes: all.nodes.filter((n) => visible.has(n.agent_norm)),
+      edges: all.edges.filter((e) => visible.has(e.source) && visible.has(e.target)),
+    };
+  }, [mapData, timeMode, windowStart, windowWidth]);
 
   // Pathfinding (issue #33): from the current ego focal to a chosen target.
   const [pathTarget, setPathTarget] = useState<string | null>(null);
@@ -315,8 +352,8 @@ export default function Network() {
             )
           ) : (
             <MapView
-              nodes={mapData?.nodes ?? []}
-              edges={mapData?.edges ?? []}
+              nodes={timeFiltered.nodes}
+              edges={timeFiltered.edges}
               selectedAgent={selectedAgent}
               onAgentClick={handleAgentClick}
               onBackgroundClick={handleClosePanel}
@@ -327,6 +364,33 @@ export default function Network() {
             />
           )}
           <Legend colorBy={colorBy} activeTypes={connectionTypes} communities={mapData?.meta.communities} />
+
+          {/* Time slider (map mode only) — issue #32 */}
+          {viewMode === 'map' && !timeMode && mapData && (
+            <button
+              onClick={openTimeline}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-gray-300 rounded-full shadow-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white"
+            >
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+              </svg>
+              Play through time
+            </button>
+          )}
+          {viewMode === 'map' && timeMode && mapData && (
+            <TimeSlider
+              min={yearMin}
+              max={yearMax}
+              windowStart={windowStart}
+              windowWidth={windowWidth}
+              playing={playing}
+              activeCount={timeFiltered.nodes.length}
+              onStartChange={(y) => { setPlaying(false); setWindowStart(y); }}
+              onWidthChange={setWindowWidth}
+              onTogglePlay={() => setPlaying((p) => !p)}
+              onClose={closeTimeline}
+            />
+          )}
           {/* Empty results overlay (map mode only) */}
           {viewMode === 'map' && !isLoading && mapData && mapData.nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">

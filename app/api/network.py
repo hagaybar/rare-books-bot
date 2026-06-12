@@ -32,6 +32,25 @@ router = APIRouter(
 
 DB_PATH = Path("data/index/bibliographic.db")
 
+# Per-node imprint-year span for the time slider (issue #32). One subquery
+# covers both node kinds: people via agents→imprints, publishers via
+# imprints.publisher_norm (the `pub:` agent_norm minus its 4-char prefix).
+_ACTIVE_SPAN_SELECT = """,
+    (SELECT MIN(d) FROM (
+        SELECT i.date_start d FROM agents a JOIN imprints i ON i.record_id = a.record_id
+        WHERE a.agent_norm = na.agent_norm AND i.date_start IS NOT NULL
+        UNION ALL
+        SELECT i.date_start d FROM imprints i
+        WHERE i.publisher_norm = substr(na.agent_norm, 5) AND i.date_start IS NOT NULL
+    )) AS active_start,
+    (SELECT MAX(d) FROM (
+        SELECT i.date_start d FROM agents a JOIN imprints i ON i.record_id = a.record_id
+        WHERE a.agent_norm = na.agent_norm AND i.date_start IS NOT NULL
+        UNION ALL
+        SELECT i.date_start d FROM imprints i
+        WHERE i.publisher_norm = substr(na.agent_norm, 5) AND i.date_start IS NOT NULL
+    )) AS active_end"""
+
 # 'category' is intentionally absent: issue #28 retired category from the arc
 # layer (76% maintenance noise) into a node-coloring facet (network_agents.community).
 VALID_CONNECTION_TYPES = {
@@ -164,6 +183,8 @@ def _map_node_from_row(r: sqlite3.Row, filtered_count: int = 0) -> MapNode:
         primary_role=r["primary_role"],
         node_type=(r["node_type"] if "node_type" in keys else "person") or "person",
         community=(r["community"] if "community" in keys else None),
+        active_start=(r["active_start"] if "active_start" in keys else None),
+        active_end=(r["active_end"] if "active_end" in keys else None),
     )
 
 
@@ -220,7 +241,7 @@ async def get_network_map(
         if empty_types:
             # No connection types selected — return agents sorted by record_count, no edges
             agents_sql = f"""
-                SELECT na.*, 0 as filtered_count
+                SELECT na.*, 0 as filtered_count{_ACTIVE_SPAN_SELECT}
                 FROM network_agents na
                 WHERE {where_sql}
                 ORDER BY na.record_count DESC
@@ -231,7 +252,7 @@ async def get_network_map(
             # Get top agents by connection count within selected types
             type_placeholders = ",".join("?" for _ in types)
             agents_sql = f"""
-                SELECT na.*, COALESCE(ec.edge_count, 0) as filtered_count
+                SELECT na.*, COALESCE(ec.edge_count, 0) as filtered_count{_ACTIVE_SPAN_SELECT}
                 FROM network_agents na
                 LEFT JOIN (
                     SELECT agent_norm, count(*) as edge_count FROM (
@@ -299,6 +320,11 @@ async def get_network_map(
             ).fetchall()
         ]
 
+        # Imprint-date domain for the time slider (issue #32)
+        year_min, year_max = conn.execute(
+            "SELECT MIN(date_start), MAX(date_start) FROM imprints WHERE date_start IS NOT NULL"
+        ).fetchone()
+
         return MapResponse(
             nodes=nodes,
             edges=edges,
@@ -307,6 +333,8 @@ async def get_network_map(
                 showing=len(nodes),
                 total_edges=len(edges),
                 communities=communities,
+                year_min=year_min,
+                year_max=year_max,
             ),
         )
     finally:
