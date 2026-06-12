@@ -366,7 +366,7 @@ class TestIdempotency:
         ).fetchone()["c"]
 
         # Run again
-        stats2 = seed_all(conn)
+        seed_all(conn)
 
         auth_count_2 = conn.execute(
             "SELECT COUNT(*) as c FROM agent_authorities"
