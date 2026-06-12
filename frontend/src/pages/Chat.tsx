@@ -69,7 +69,8 @@ function getWsUrl(): string {
 export default function Chat() {
   const { sessionId, setSessionId, clearSession } = useAppStore();
   const user = useAuthStore((s) => s.user);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const autoSentRef = useRef(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -570,6 +571,18 @@ export default function Chat() {
     },
     [loading, sendViaWebSocket, sendViaHttp],
   );
+
+  // Auto-run a query handed off from another view via ?q= (e.g. the Network
+  // panel's "Ask about this figure"). Fire once, then strip ?q= so a refresh
+  // or back-navigation doesn't re-send it (issue #37).
+  useEffect(() => {
+    if (autoSentRef.current) return;
+    const q = searchParams.get('q');
+    if (!q || !q.trim()) return;
+    autoSentRef.current = true;
+    setSearchParams((prev) => { prev.delete('q'); return prev; }, { replace: true });
+    handleSend(q);
+  }, [searchParams, setSearchParams, handleSend]);
 
   // ------------------------------------------------------------------
   // Input handlers
