@@ -15,6 +15,14 @@ Endpoints: `GET /network/places` (markers) and the enriched
 `GET /network/place/{place_norm}` (profile: decades, top_publishers,
 top_agents, top_subjects, span).
 
+**Cross-axis pivots are the core interaction** (user: "we need more like
+this"): every mention is a door. City → press (top_publishers resolve to their
+`pub:` node → ego), city → person (notable people → ego), anything → city
+(`selectPlace` always opens CityView; the old narrow PlacePanel was removed),
+city topic → chat (subject chips compose a `?q=` query), person/press → chat
+(#37). When adding UI that names a person, press, place, or topic, wire the
+pivot.
+
 The Network view is a map-based explorer for the people, printing houses, and
 relationships behind the collection. It renders agents as geo-located nodes over
 a basemap of Europe and the Middle East, with relationship arcs between them, a
