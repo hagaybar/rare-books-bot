@@ -63,6 +63,7 @@
 - **report** `reports/security-reaudit.md` -- Security re-audit report
 - **report** `reports/wikipedia-enrichment-summary.md` -- Wikipedia enrichment summary
 - **report** `reports/scholar-pipeline/` -- Scholar pipeline run results
+- **report** `reports/gold-suite-diagnostic-2026-06-12.md` -- Gold-standard diagnostic suite Phase 2 report (36 queries, issues #43-#52)
 
 ## 2026-03-26
 

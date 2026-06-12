@@ -1,0 +1,714 @@
+{
+  "suite_name": "gold-standard-diagnostic-suite",
+  "version": "1.1",
+  "created": "2026-06-12",
+  "layer_mapping_note": "Field names follow the diagnostic brief: expected_m3_plan = repo M4 QueryPlan (scripts/schemas/query_plan.py), expected_m4_evidence = repo M5 CandidateSet/Evidence (scripts/schemas/candidate_set.py). Filter fields/ops use the repo enums verbatim. Expected counts are ground-truth SQL counts against data/index/bibliographic.db as of 2026-06-12 (2,796 records).",
+  "language_balance_note": "v1.1: 18 Hebrew / 18 English queries. English is retained where the trap requires a Latin-script query against Hebrew-stored data (cross-script recall); Hebrew is used where the entity/subject is stored in Latin/English (reverse cross-script trap, value_he bilingual FTS), and for Hebrew phrasings of dates, negation, ambiguity, and absence.",
+  "test_cases": [
+    {
+      "test_id": "TEST-AUTH-01",
+      "category": "Cross-script agent recall (Latin query, Hebrew records)",
+      "language": "en",
+      "user_query": "Show me books by Maimonides",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "agent_norm", "op": "CONTAINS", "value": "maimonides" }
+        ],
+        "clarification_expected": false,
+        "notes": "Ideal plan also covers the Hebrew authority form, e.g. op IN over ['maimonides, moses', 'משה בן מימון'], since the DB stores 7 Latin + 15 Hebrew rows as separate agent_norm values."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.agents.agent_norm (marc:100[0])", "db.agents.agent_norm (marc:700"],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "min": 7, "ideal_with_cross_script": 22 },
+        "relaxations": "none expected"
+      },
+      "failure_trap": "Silent cross-script recall gap: system returns the 7 Latin 'maimonides, moses' records with valid evidence and reports success, while the 15 Hebrew 'משה בן מימון' records (which lack authority URIs on 12/15 rows) are silently absent. PASS at surface level, FAIL on recall."
+    },
+    {
+      "test_id": "TEST-AUTH-02",
+      "category": "Native-script agent query",
+      "language": "he",
+      "user_query": "ספרים מאת משה בן מימון",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "agent_norm", "op": "CONTAINS", "value": "משה בן מימון" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.agents.agent_norm (marc:100[0])"],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "min": 15 },
+        "relaxations": "none expected"
+      },
+      "failure_trap": "M3 'helpfully' translates the Hebrew name to 'Maimonides' before planning, flipping the recall gap of TEST-AUTH-01: only 7 Latin records return and the 15 native-script records the user literally asked for are dropped. Also checks Hebrew string survives QueryPlan JSON round-trip un-mangled."
+    },
+    {
+      "test_id": "TEST-AUTH-03",
+      "category": "Multi-factor: agent + place + role disambiguation (Hebrew query, Latin-stored agent)",
+      "language": "he",
+      "user_query": "אילו ספרים הדפיס יוסף עתיאש באמשטרדם?",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "agent_norm", "op": "CONTAINS", "value": "athias, joseph" },
+          { "field": "imprint_place", "op": "EQUALS", "value": "amsterdam" }
+        ],
+        "optional_filters": [
+          { "field": "agent_role", "op": "EQUALS", "value": "printer", "note": "if emitted, must not zero-out results due to unmapped role_norm" }
+        ],
+        "clarification_expected": false,
+        "notes": "REVERSE cross-script trap: the agent is stored ONLY in Latin ('athias, joseph', 16 records). M3 must bridge the Hebrew name יוסף עתיאש to the Latin agent_norm. Hebrew place אמשטרדם must resolve to place_norm 'amsterdam'."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.agents.agent_norm (marc:", "db.imprints.place_norm (marc:264$a)"],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "min": 1, "max": 16 },
+        "relaxations": "none expected"
+      },
+      "failure_trap": "Three traps: (1) reverse cross-script gap — Hebrew עתיאש never literal-matches the Latin-only agent_norm; silent 0 unless M3 bridges scripts. (2) Athias is a printer (700 added entry); AGENT_ROLE=printer with unmapped role_norm -> silent 0. (3) M3 drops the place filter and returns all 16 Athias records regardless of city."
+    },
+    {
+      "test_id": "TEST-AUTH-04",
+      "category": "Agent with no authority mapping (transliterated query)",
+      "language": "en",
+      "user_query": "Books by Jacob ibn Habib",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "agent_norm", "op": "CONTAINS", "value": "ibn habib" }
+        ],
+        "clarification_expected": false,
+        "notes": "Ground truth rows exist only as Hebrew 'חביב, יעקב אבן-' (3 records, authority_uri NULL). A correct system either bridges the transliteration or returns an explicit empty CandidateSet citing the executed plan."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.agents.agent_norm (marc:100[0])"],
+        "expected_count": { "min": 0, "max": 3 },
+        "empty_set_contract": "If count=0, response MUST surface the empty CandidateSet with the exact filter that produced it (per CLAUDE.md hard rule) — no narrative paraphrase, no invented results."
+      },
+      "failure_trap": "Authority-gap silent null: no alias_map entry and no authority URI bridge the Latin transliteration to the Hebrew agent_norm. The trap is the system narrating 'no books by this author in the collection' as a confident fact (or worse, free-associating) instead of reporting the empty CandidateSet + query."
+    },
+    {
+      "test_id": "TEST-AUTH-05",
+      "category": "Agent role filter (printer vs author)",
+      "language": "en",
+      "user_query": "Books printed by Aldo Manuzio",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "agent_norm", "op": "CONTAINS", "value": "manuzio" }
+        ],
+        "optional_filters": [
+          { "field": "agent_role", "op": "EQUALS", "value": "printer" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.agents.agent_norm (marc:"],
+        "role_evidence_if_filtered": "db.agents.role_norm (marc:700",
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "min": 1, "max": 23 }
+      },
+      "failure_trap": "Role-filter zeroing: 'printed by' tempts M3 into AGENT_ROLE=printer, but Manuzio rows may carry role_norm from relator terms that were unmapped (fixes 01-03 territory: trailing periods, Hebrew roles, missing relator vocab). Silent 0 with no explanation, when dropping to agent_norm-only would have returned up to 23 records."
+    },
+    {
+      "test_id": "TEST-AUTH-06",
+      "category": "Agent type discrimination (corporate vs personal)",
+      "language": "en",
+      "user_query": "Items from the Faitlovitch Collection of Ethiopic manuscripts",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "agent_norm", "op": "CONTAINS", "value": "faïtlovitch collection" },
+          { "field": "agent_type", "op": "EQUALS", "value": "corporate" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.agents.agent_norm (marc:", "db.agents.agent_type (marc:100|700)"],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "min": 1, "max": 30 }
+      },
+      "failure_trap": "Two traps: (1) diacritic mismatch — user types 'Faitlovitch', DB stores 'faïtlovitch' (ï); if agent_norm matching is not diacritic-folded, silent 0. (2) agent_type dropped — personal author Jacques Faïtlovitch (40 records) bleeds into results for the corporate Collection entity (30 records), inflating the set with wrong-entity matches."
+    },
+    {
+      "test_id": "TEST-PUB-01",
+      "category": "Publisher variant resolution (Hebrew query, alias-mapped norm)",
+      "language": "he",
+      "user_query": "ספרים שנדפסו בדפוס בראגאדין",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "publisher", "op": "CONTAINS", "value": "bragadin" }
+        ],
+        "clarification_expected": false,
+        "notes": "publisher_norm is the Latin 'bragadin press, venice' (12 records); raws include Hebrew 'נדפס במצות האדון מסיר אלוויז בראגאדין' and Latin 'G. Bragadin'. M3 must map Hebrew בראגאדין to the Latin norm (or to a variant that resolves)."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.publisher_norm (marc:260$b)"],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "min": 12 },
+        "notes": "publisher_norm = 'bragadin press, venice' covers 12 records via alias map."
+      },
+      "failure_trap": "Reverse variant-resolution: the Hebrew token בראגאדין appears only in raw imprints, while the executable norm is Latin. If M3 emits publisher CONTAINS 'בראגאדין' against publisher_norm — silent 0 despite 12 real holdings; if M4 falls back to raw matching, the Latin 'G. Bragadin' rows vanish instead. Either path loses half the press silently."
+    },
+    {
+      "test_id": "TEST-PUB-02",
+      "category": "Unmapped Hebrew publisher (fix_26 trap class) + false-high confidence",
+      "language": "en",
+      "user_query": "Books from the Proops press in Amsterdam",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "publisher", "op": "CONTAINS", "value": "proops" },
+          { "field": "imprint_place", "op": "EQUALS", "value": "amsterdam" }
+        ],
+        "clarification_expected": false,
+        "notes": "Ground-truth Proops rows exist only as Hebrew norms, e.g. 'בדפוס ובבית שלמה בן יוסף פרופס' (5) and 'בבית ובדפוס שלמה בן יוסף כ\"ץ פרופס' (4) — the Latin token 'proops' matches none of them unless publisher_variants bridges it."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.publisher_norm (marc:260$b)"],
+        "expected_count": { "min": 0, "max": 9 },
+        "confidence_audit": "Hebrew publisher_norm rows report confidence 0.95 / method publisher_alias_map even when the 'alias' is an identity mapping of an unresolved Hebrew string. Any returned Hebrew publisher evidence at >=0.90 whose norm equals its raw is an M1 Normalization Leak.",
+        "empty_set_contract": "If count=0, the empty CandidateSet and the exact publisher filter must be surfaced."
+      },
+      "failure_trap": "The fix_26 class: Hebrew imprint norms not linked as publisher_variants. Latin query silently returns 0 (or only non-Proops noise) while 9 real Proops imprints sit in the DB. Compounding leak: those rows advertise 0.95 confidence despite being un-normalized identity mappings."
+    },
+    {
+      "test_id": "TEST-PUB-03",
+      "category": "Multi-factor: publisher + topic, relaxation honesty (Hebrew query)",
+      "language": "he",
+      "user_query": "דפוסי תלמוד מבית הדפוס של דניאל בומברג",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "publisher", "op": "CONTAINS", "value": "bomberg" },
+          { "field": "subject", "op": "CONTAINS", "value": "talmud" }
+        ],
+        "clarification_expected": false,
+        "notes": "publisher_norm is Latin 'daniel bomberg, venice' (raw: דפוס דניאל בומבירגי). Hebrew בומברג must bridge to the Latin norm; Hebrew תלמוד must reach the subject layer — subjects store English headings with bilingual value_he (78.4% coverage) in subjects_fts."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.publisher_norm (marc:260$b)", "db.subjects.value (marc:650$a)"],
+        "expected_count": { "min": 1, "max": 5 },
+        "relaxations": "If the strict AND returns 0 and the ladder broadens 'talmud' (title probe / concept_bridge), every rung MUST appear in RecordSet.relaxations — silent broadening is a fail even if results look right."
+      },
+      "failure_trap": "Relaxation-ladder opacity plus double script-bridge: both the publisher (Hebrew->Latin norm) and the subject (Hebrew->English heading via value_he or concept_bridge) must cross scripts. If 'תלמוד' as a subject misses (records carry 'Hiddushim (Jewish law)' instead), the ladder may OR-union into title matches — PASS requires the broadening recorded in relaxations[]; silent expansion is the fail."
+    },
+    {
+      "test_id": "TEST-PUB-04",
+      "category": "Publisher alias-map provenance integrity",
+      "language": "en",
+      "user_query": "Editions from the Aldine Press",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "publisher", "op": "CONTAINS", "value": "aldine" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.publisher_norm (marc:260$b)"],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "min": 7 },
+        "notes": "publisher_norm = 'aldine press, venice' (7 records); raw is 'Aldus'."
+      },
+      "failure_trap": "Extraction failure on alias-resolved values: the match happens on the normalized value 'aldine press, venice', which never appears verbatim in MARC. If evidence assembly can't trace norm -> raw 'Aldus' -> 260$b/264$b, source degrades to marc:unknown. The candidate is correct but the provenance chain is broken — exactly the silent error the Answer Contract forbids."
+    },
+    {
+      "test_id": "TEST-PLACE-01",
+      "category": "Latin place query over Hebrew-script imprints",
+      "language": "en",
+      "user_query": "Books printed in Livorno",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "imprint_place", "op": "EQUALS", "value": "livorno" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.place_norm (marc:264$a)"],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "exact": 12 },
+        "confidence_audit": "place_method must be place_alias_map (0.95); raws are Hebrew 'ליוורנו'."
+      },
+      "failure_trap": "Raw-vs-norm matching: all 12 Livorno records store the place only as Hebrew 'ליוורנו' in the raw; recall depends entirely on place_norm='livorno' from the alias map. If M4 builds the SQL against place_raw (or M3 emits CONTAINS 'Livorno' against raw), result is silent 0 in a city with 12 real holdings."
+    },
+    {
+      "test_id": "TEST-PLACE-02",
+      "category": "Native-script place query",
+      "language": "he",
+      "user_query": "ספרים שנדפסו בפיורדא",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "imprint_place", "op": "EQUALS", "value": "furth" }
+        ],
+        "clarification_expected": false,
+        "notes": "M3 must resolve Hebrew פיורדא (Fürth/Fiorda) to the normalized key 'furth' (9 records)."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.place_norm (marc:264$a)"],
+        "expected_count": { "exact": 9 }
+      },
+      "failure_trap": "M3 fails to recognize the Hebrew toponym, producing either (a) an empty geographic filter — the query degrades to 'all books' and returns a massive unfiltered set, or (b) imprint_place EQUALS 'פיורדא' matched against place_norm (which stores 'furth') — silent 0. Both are silent geographic-filter failures."
+    },
+    {
+      "test_id": "TEST-PLACE-03",
+      "category": "Sine-loco semantics (absence as a value, Hebrew query)",
+      "language": "he",
+      "user_query": "ספרים ללא ציון מקום הוצאה",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "imprint_place", "op": "EQUALS", "value": "[sine loco]" }
+        ],
+        "clarification_expected": false,
+        "notes": "The DB models 'no place' as the explicit norm '[sine loco]' (41 records, Hebrew raw ח\"מ — חסר מקום) — not as NULL. The Hebrew query matches the cataloging convention the records themselves use."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.place_norm (marc:264$a)"],
+        "expected_count": { "min": 41, "notes": "41 [sine loco] + up to 19 place_method='missing' rows if the system also surfaces true NULLs with an explicit reason" }
+      },
+      "failure_trap": "Semantic inversion: M3 has no operator for 'field is absent', so it either drops the condition entirely (returns everything) or emits negate=true on a guessed value. The correct behavior — knowing absence is reified as the sentinel '[sine loco]' (raw ח\"מ) — is exactly the kind of domain mapping that fails silently."
+    },
+    {
+      "test_id": "TEST-PLACE-04",
+      "category": "Country vs city field selection + low-confidence place audit",
+      "language": "en",
+      "user_query": "Books printed in Italy in the sixteenth century",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "country", "op": "EQUALS", "value": "it" },
+          { "field": "year", "op": "RANGE", "start": 1500, "end": 1599 }
+        ],
+        "clarification_expected": false,
+        "notes": "Italy is a COUNTRY (MARC 008/15-17), not an imprint_place. An acceptable alternative is imprint_place IN over Italian cities (venice, mantua, livorno, ...), but EQUALS 'italy' against place_norm is wrong."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.date_start/date_end (marc:264$c)"],
+        "country_source": "db source citing marc:008",
+        "expected_count": { "min": 73, "notes": "Venice alone contributes 73; Mantua and others add more" },
+        "confidence_audit": "Any place evidence with method='country_only' must carry confidence 0.3 — if it reports >=0.90, flag M1 Normalization Leak."
+      },
+      "failure_trap": "Field-selection error: M3 emits imprint_place EQUALS 'italy', which matches zero place_norm values — silent 0 for a query the data answers richly. Secondary check: 7 records have place derived only from the 008 country code (confidence 0.3); they must not surface as confident place matches."
+    },
+    {
+      "test_id": "TEST-DATE-01",
+      "category": "Multi-factor anchor: place + century (regression baseline, Hebrew query)",
+      "language": "he",
+      "user_query": "ספרים שנדפסו בוונציה במאה השש־עשרה",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "imprint_place", "op": "EQUALS", "value": "venice" },
+          { "field": "year", "op": "RANGE", "start": 1500, "end": 1599 }
+        ],
+        "clarification_expected": false,
+        "notes": "Hebrew ונציה/בוונציה must resolve to place_norm 'venice' (raws include ויניציאה, In Venetia); the Hebrew ordinal century המאה השש־עשרה must compile to RANGE 1500-1599."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.place_norm (marc:264$a)", "db.imprints.date_start/date_end (marc:264$c)"],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "approx": 73, "tolerance": 5 },
+        "relaxations": "none — YEAR and PLACE are hard filters, never relaxed"
+      },
+      "failure_trap": "Dropped-range trap, Hebrew edition: if M3 silently drops the year RANGE (Hebrew ordinal centuries are a known parser blind spot), the set jumps from ~73 to 164 (all Venice). Every candidate must carry BOTH place and date evidence; a candidate with only place evidence proves the date filter never reached SQL."
+    },
+    {
+      "test_id": "TEST-DATE-02",
+      "category": "Open-ended range / incunabula edge",
+      "language": "en",
+      "user_query": "What are the oldest books in the collection, printed before 1500?",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "year", "op": "RANGE", "start": 1400, "end": 1499 }
+        ],
+        "clarification_expected": false,
+        "notes": "Filter validation requires BOTH start and end for RANGE; an unbounded 'before 1500' must be closed with a sane floor (collection min is 1400)."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.date_start/date_end (marc:264$c)"],
+        "expected_count": { "min": 1 },
+        "confidence_audit": "Incunabula dates often come from year_bracketed (0.95) or year_circa_pm5 (0.80) — confidence must reflect the method, and the 11.4% known date-error rate makes any gematria/Hijri-derived year here suspect."
+      },
+      "failure_trap": "Schema-validation soft failure: 'before 1500' has no natural start. If M3 emits RANGE with start=null, Filter validation rejects it; a fragile pipeline silently drops the filter instead of repairing it, returning the whole collection sorted by nothing — superlative queries ('oldest') hide this because top results still look old."
+    },
+    {
+      "test_id": "TEST-DATE-03",
+      "category": "Circa-date tolerance (Hebrew query)",
+      "language": "he",
+      "user_query": "ספרים שנדפסו בסביבות שנת 1650",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "year", "op": "RANGE", "start": 1645, "end": 1655 }
+        ],
+        "clarification_expected": false,
+        "notes": "Hebrew 'בסביבות' (around) must compile to a RANGE (±5 mirrors the year_circa_pm5 normalization), never EQUALS 1650. Also a BiDi stressor: a Latin numeral embedded in RTL text must survive parsing intact."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.date_start/date_end (marc:264$c)"],
+        "expected_count": { "min": 10 },
+        "confidence_audit": "Records normalized via year_circa_pm5 carry confidence 0.80 and a (start,end) span — both endpoints must overlap the query range (operator OVERLAPS, not =)."
+      },
+      "failure_trap": "Precision-inflation: M3 compiles 'בסביבות 1650' to year EQUALS 1650, silently excluding [1649], c.1650, and 1648-1652 spans. Symmetric M4 trap: a record stored as (1645,1655) matched with operator '=' instead of OVERLAPS shows the executor ignoring date spans. BiDi sub-trap: the digits 1650 reversed or split by RTL handling."
+    },
+    {
+      "test_id": "TEST-DATE-04",
+      "category": "Hebrew calendar / gematria date",
+      "language": "he",
+      "user_query": "ספרים שנדפסו בשנת תקס\"ה",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "year", "op": "RANGE", "start": 1804, "end": 1805 }
+        ],
+        "clarification_expected": false,
+        "notes": "תקס\"ה = AM 5565 = 1804/05 CE. The Hebrew year straddles two Gregorian years, so RANGE not EQUALS."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.date_start/date_end (marc:264$c)"],
+        "expected_count": { "min": 0 },
+        "confidence_audit": "Gematria-parsed dates are the known weakest tier (Hijri/gematria calendar confusion documented at ~11% error, e.g. MMS 990013146190204146 Hijri 1244 stored wrong). Any matched record's date_method and confidence must be inspected."
+      },
+      "failure_trap": "Two traps: (1) M3 cannot convert the gematria year and silently drops the date filter — query degrades to 'all books'. (2) The gershayim (\") inside תקס\"ה hits sanitize_fts5_query / JSON escaping paths; a mangled token can corrupt the whole plan. Failure must be loud (clarification or explicit unparsed-date message), never a silent unfiltered set."
+    },
+    {
+      "test_id": "TEST-SUBJ-01",
+      "category": "Subject cross-script + FTS provenance (contentless-index trap, Hebrew query)",
+      "language": "he",
+      "user_query": "ספרים על חידושים",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "subject", "op": "CONTAINS", "value": "hiddushim" }
+        ],
+        "clarification_expected": false,
+        "notes": "The heading is stored in English: 'Hiddushim (Jewish law)' (30 records, NLI). The Hebrew query must reach it via the bilingual value_he column in subjects_fts (78.4% coverage) or a script bridge. Semantic sub-trap: חידושים is also the everyday Hebrew word for 'innovations/news' — the planner must keep the bibliographic sense."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.subjects.value (marc:650$a)"],
+        "acceptable_fallback_source": "db.subjects (FTS5) — only if the marc tag is genuinely unavailable",
+        "expected_count": { "exact": 30 },
+        "fts_null_check": "subjects_fts is CONTENTLESS — its value column is NULL by design. Evidence.value must be re-read from the subjects base table; any evidence object with value=null is a DB/Index Synchronization Error (Silent Null)."
+      },
+      "failure_trap": "Layered trap: (1) the Silent Null — a naive evidence builder reads the matched value straight from the contentless subjects_fts row and stores null. (2) cross-script subject gap — if value_he lacks this heading (it sits in the 21.6% uncovered slice) the Hebrew query silently returns 0 while 30 records exist under the English heading."
+    },
+    {
+      "test_id": "TEST-SUBJ-02",
+      "category": "Multi-factor: subject + place + period, hard-filter integrity under relaxation (Hebrew query)",
+      "language": "he",
+      "user_query": "ספרי דקדוק עברי שנדפסו באמשטרדם במאה השבע־עשרה",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "subject", "op": "CONTAINS", "value": "hebrew language" },
+          { "field": "imprint_place", "op": "EQUALS", "value": "amsterdam" },
+          { "field": "year", "op": "RANGE", "start": 1600, "end": 1699 }
+        ],
+        "clarification_expected": false,
+        "notes": "Ground truth subjects: 'Hebrew language -- Grammar -- Early works to 1800.' (27 recs) and 'Hebrew language -- Grammar' (17 recs) — stored in English; the Hebrew topic דקדוק עברי must bridge via value_he or concept expansion. Amsterdam 17th c. total is 76."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.subjects.value (marc:650$a)", "db.imprints.place_norm (marc:264$a)", "db.imprints.date_start/date_end (marc:264$c)"],
+        "expected_count": { "min": 1, "max": 76 },
+        "relaxations": "SUBJECT may be broadened (topical); PLACE and YEAR are hard and must survive every relaxation rung. Any broadening must appear in relaxations[]."
+      },
+      "failure_trap": "Hard-filter erosion under a triple constraint in Hebrew: if the strict AND is thin, the relaxation ladder unions topic probes — the trap is a probe that drops place/year along with the failed topic, returning Hebrew grammars from Frankfurt or 19th-century reprints. Every candidate must still carry Amsterdam + 1600s date evidence."
+    },
+    {
+      "test_id": "TEST-SUBJ-03",
+      "category": "Concept-bridge expansion transparency (SUBJECT_RETRY successor)",
+      "language": "en",
+      "user_query": "Books about cartography",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "subject", "op": "CONTAINS", "value": "cartography" }
+        ],
+        "acceptable_alternative": [
+          { "field": "physical_desc", "op": "CONTAINS", "value": "maps" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.subjects.value (marc:650$a)"],
+        "expansion_sources": ["db.physical_descriptions (marc:300)", "db.titles.value (FTS5)"],
+        "expected_count": { "min": 0 },
+        "relaxations": "REQUIRED if expansion fired: e.g. \"'cartography' expanded to subject CONTAINS 'geography' (N records)\". An expanded result set with relaxations=[] is an automatic FAIL."
+      },
+      "failure_trap": "The false-broadening trap the brief names directly: 'cartography' likely has no literal subject heading; the concept_bridge expands it (geography / maps / physical_desc). The silent error is expanded results presented as direct subject matches — the relaxations list is the only honesty mechanism, and this test exists to catch it empty."
+    },
+    {
+      "test_id": "TEST-SUBJ-04",
+      "category": "Subject coverage gap (records with zero subject headings, Hebrew query)",
+      "language": "he",
+      "user_query": "ספרי תפילה ופיוטים בעברית",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "language", "op": "EQUALS", "value": "heb" },
+          { "field": "subject", "op": "CONTAINS", "value": "liturgy" }
+        ],
+        "notes": "Good plans also probe 'Piyyutim' (21 recs) / 'Jewish liturgy -- Texts' (25 recs) — the Hebrew word פיוטים transliterates directly to the stored LCSH heading 'Piyyutim'. 349 records (12.5%) have NO subjects at all, including 11 known Hebrew liturgical items — subject-only recall is structurally incomplete.",
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.languages.code (marc:008)", "db.subjects.value (marc:650$a)"],
+        "expected_count": { "min": 20 },
+        "honesty_requirement": "If the system knows the subject-coverage gap (QA fix_16/fix_18), a caveat about unindexed liturgical records is ideal; inventing matches for subject-less records is forbidden."
+      },
+      "failure_trap": "Structural under-recall presented as complete: the 11 Hebrew liturgical records with zero subject headings can never match a subject filter. The silent error is an authoritative-sounding 'these are all the prayer books' with no signal that a documented 12.5% subject-coverage hole exists. Bonus bridge check: תפילה -> 'Jewish liturgy', פיוטים -> 'Piyyutim'."
+    },
+    {
+      "test_id": "TEST-SUBJ-05",
+      "category": "Over-broad subject (precision stressor)",
+      "language": "en",
+      "user_query": "Show me the limited editions",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "subject", "op": "CONTAINS", "value": "limited editions" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.subjects.value (marc:650$a)"],
+        "expected_count": { "exact": 103 },
+        "aggregation_honesty": "If the response presents a top-K slice, stated totals must be the true distinct count (103), not the slice size — the #42 aggregation-honesty contract."
+      },
+      "failure_trap": "Count-truncation: 'Limited editions' is the single largest subject (103 records, LCSH, no authority URIs). The trap is the formatter reporting 'found 20 limited editions' from a display slice, or evidence sampling only top-K — total_count must say 103 regardless of how many candidates are displayed."
+    },
+    {
+      "test_id": "TEST-LANG-01",
+      "category": "Language code mapping (rare language)",
+      "language": "en",
+      "user_query": "Books written in Ge'ez",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "language", "op": "EQUALS", "value": "gez" }
+        ],
+        "clarification_expected": false,
+        "notes": "MARC code for Ge'ez is 'gez' (58 records). Not 'eth', not 'geez', and not a subject filter on 'Ethiopic'."
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.languages.code (marc:008)"],
+        "expected_count": { "exact": 58 }
+      },
+      "failure_trap": "Code-guessing: M3 hallucinates language code 'eth' or 'geez' -> silent 0, or reroutes to subject CONTAINS 'Ethiopic' -> returns 'Manuscripts, Ethiopic.' subject matches (39) that overlap but are not language-of-text matches. Evidence citing marc:650 instead of marc:008 reveals the substitution. Apostrophe in Ge'ez also probes sanitize_fts5_query if misrouted to FTS."
+    },
+    {
+      "test_id": "TEST-LANG-02",
+      "category": "Adjacent-language conflation + place (Hebrew query)",
+      "language": "he",
+      "user_query": "ספרים ביידיש שנדפסו באמשטרדם",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "language", "op": "EQUALS", "value": "yid" },
+          { "field": "imprint_place", "op": "EQUALS", "value": "amsterdam" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.languages.code (marc:008)", "db.imprints.place_norm (marc:264$a)"],
+        "expected_count": { "min": 1, "max": 55 },
+        "relaxations": "none — both filters are hard"
+      },
+      "failure_trap": "Yiddish/Hebrew conflation, sharpened by the query itself being in Hebrew: both languages use Hebrew script, and an M3 that keys on the query's script may emit language=heb, returning Hebrew-language Amsterdam imprints (a much larger set) where every candidate 'looks right'. Per-candidate evidence must cite code='yid' from marc:008 — the only machine-checkable discriminator."
+    },
+    {
+      "test_id": "TEST-AMBIG-01",
+      "category": "Vague query must clarify, not dump (Hebrew query)",
+      "language": "he",
+      "user_query": "תראה לי ספרים עתיקים",
+      "expected_m3_plan": {
+        "filters": [],
+        "clarification_expected": true,
+        "notes": "'עתיקים' (old/ancient) has no threshold in a rare-books collection spanning 1400-2025. Acceptable: a clarification asking for a period. Unacceptable: an arbitrary invented cutoff or no filter at all."
+      },
+      "expected_m4_evidence": {
+        "expected_count": { "max": 0, "notes": "No CandidateSet should be produced before clarification resolves" }
+      },
+      "failure_trap": "The unfiltered-dump trap: system invents year RANGE (e.g. 1400-1800) without telling the user, or worse runs with zero filters and returns all 2,796 records. Either way a massive CandidateSet materializes from a query that contains no executable constraint. The clarification itself must come back in Hebrew (BiDi/UX check)."
+    },
+    {
+      "test_id": "TEST-AMBIG-02",
+      "category": "Subjective query must not invent filters",
+      "language": "en",
+      "user_query": "What are the most interesting items in the collection?",
+      "expected_m3_plan": {
+        "filters": [],
+        "clarification_expected": true,
+        "notes": "'Interesting' is not compilable. The system must ask what dimension the user cares about (age, rarity, language, provenance...)."
+      },
+      "expected_m4_evidence": {
+        "expected_count": { "max": 0 }
+      },
+      "failure_trap": "Filter hallucination: M3 quietly maps 'interesting' to subject CONTAINS 'rare books' (18 recs) or 'Bibliomania' (17) — fabricated intent wearing valid evidence. The diagnostic tell: a well-formed QueryPlan whose filter values appear nowhere in the user's words."
+    },
+    {
+      "test_id": "TEST-AMBIG-03",
+      "category": "Polysemous term (title vs subject vs work)",
+      "language": "en",
+      "user_query": "Bible",
+      "expected_m3_plan": {
+        "clarification_expected": true,
+        "acceptable_alternative": {
+          "filters_or_union": [
+            { "field": "subject", "op": "CONTAINS", "value": "bible" },
+            { "field": "title", "op": "CONTAINS", "value": "bible" }
+          ],
+          "note": "If it executes instead of clarifying, it must cover BOTH subject (630 'Bible. -- Pentateuch -- Commentaries.' etc.) and title, with per-candidate evidence distinguishing which matched."
+        }
+      },
+      "expected_m4_evidence": {
+        "required_sources_any_of": ["db.subjects.value (marc:630", "db.subjects.value (marc:650$a)", "db.titles.value (FTS5)"],
+        "expected_count": { "min": 38 }
+      },
+      "failure_trap": "Single-facet collapse: a bare-noun query silently becomes title-only FTS, missing the 630-tagged subject records (Pentateuch commentaries 20, OT Hebrew texts 18) — or subject-only, missing printed Bibles whose subject is absent (the 12.5% no-subject gap includes early Bibles). Whichever facet was dropped is invisible without checking evidence sources."
+    },
+    {
+      "test_id": "TEST-FTS-01",
+      "category": "FTS5 sanitization (geresh/gershayim/apostrophe)",
+      "language": "he",
+      "user_query": "ספרים שבכותרת שלהם מופיע תנ\"ך",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "title", "op": "CONTAINS", "value": "תנ\"ך" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.titles.value (FTS5)"],
+        "expected_count": { "min": 0 },
+        "sanitization_check": "sanitize_fts5_query strips quotes/geresh before MATCH. The stripped token (תנ ך or תנך) must still be the executed query — and the SQL recorded in CandidateSet.sql must show the sanitized parameter, proving no raw-metachar crash path."
+      },
+      "failure_trap": "Sanitizer side-effect: stripping the gershayim from תנ\"ך changes the token (תנ ך splits into two single letters — FTS noise, near-random recall; or תנך which may not match the spaced form in titles). The query 'succeeds' with garbage results. CandidateSet.sql + sql_parameters are the audit trail; an unsanitized quote reaching FTS5 MATCH is an instant crash-class fail."
+    },
+    {
+      "test_id": "TEST-FTS-02",
+      "category": "Cross-script title search",
+      "language": "en",
+      "user_query": "Do you have a copy of the Mishneh Torah?",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "title", "op": "CONTAINS", "value": "mishneh torah" }
+        ],
+        "ideal": "Cross-script bridge to title CONTAINS 'משנה תורה' (titles_fts indexes the stored script only)",
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.titles.value (FTS5)"],
+        "expected_count": { "min": 1 },
+        "fts_null_check": "titles_fts is external-content: matched value must be re-read from titles via rowid. Evidence.value=null here means the rowid join broke — DB/Index Synchronization Error."
+      },
+      "failure_trap": "Cross-script title gap: Hebrew editions are cataloged as 'משנה תורה'; a Latin-only FTS query finds only transliterated/translated title records. The system answers 'yes, N copies' from the Latin slice while the primary Hebrew editions (likely under agent משה בן מימון) are silently excluded — wrong answer to a holdings question."
+    },
+    {
+      "test_id": "TEST-NORM-01",
+      "category": "Confidence-method coherence (false-high audit)",
+      "language": "en",
+      "user_query": "Books by Jacques Faitlovitch about Ethiopian Jews",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "agent_norm", "op": "CONTAINS", "value": "faïtlovitch" },
+          { "field": "subject", "op": "CONTAINS", "value": "jews, ethiopian" }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.agents.agent_norm (marc:100[0])", "db.subjects.value (marc:650$a)"],
+        "expected_count": { "min": 1, "max": 40 },
+        "confidence_audit": "All agents in this DB are method=base_clean at exactly 0.8. ANY agent evidence reporting confidence >= 0.90 is fabricated — base_clean never produces it. This is the canonical M1 Normalization Leak probe: confidence must travel from M2 untouched, never be re-scored by the formatter."
+      },
+      "failure_trap": "Confidence inflation in the presentation layer: the M2 ground truth is uniform 0.8/base_clean for agents, so any 0.9+/'high confidence' agent claim in output proves a layer is inventing certainty. Bonus trap: user's ASCII 'Faitlovitch' vs stored 'faïtlovitch' (ï) — diacritic-sensitive matching silently halves recall."
+    },
+    {
+      "test_id": "TEST-NORM-02",
+      "category": "Missing-date honesty (null + reason contract, Hebrew query)",
+      "language": "he",
+      "user_query": "ספרים מאת אברבנאל ללא שנת הוצאה ידועה",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "agent_norm", "op": "CONTAINS", "value": "אברבנאל" }
+        ],
+        "notes": "Natural-fit Hebrew: the agent is stored ONLY in Hebrew ('אברבנאל, יצחק בן יהודה', 13 records) — the Hebrew query needs no script bridge, isolating the unknown-date facet. 13 imprints DB-wide have date_method='missing', confidence 0.0, date_start/end NULL. The 'unknown date' facet must filter on date IS NULL semantics or be explicitly declared unsupported — never approximated.",
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.agents.agent_norm (marc:100[0])"],
+        "expected_count": { "min": 0, "max": 13 },
+        "null_contract": "Each candidate's date evidence must show value=null with method='missing' and confidence 0.0 — null plus explicit reason, per the Data Model Rules."
+      },
+      "failure_trap": "Invented dates: a record with date_method='missing' surfacing with any year (e.g. backfilled from a similar edition or the formatter echoing the query's era) violates the never-invent rule. The negative-space filter ('ללא שנת הוצאה') is also a planner stressor — there is no FilterOp for IS NULL, so honest degradation beats silent approximation."
+    },
+    {
+      "test_id": "TEST-NEG-01",
+      "category": "Negation handling (Hebrew query)",
+      "language": "he",
+      "user_query": "ספרים בעברית שלא נדפסו בירושלים",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "language", "op": "EQUALS", "value": "heb" },
+          { "field": "imprint_place", "op": "EQUALS", "value": "jerusalem", "negate": true }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.languages.code (marc:008)"],
+        "expected_count": { "min": 600, "max": 806, "notes": "806 Hebrew records minus Jerusalem imprints" },
+        "relaxations": "none — negated filters are hard, never relaxed"
+      },
+      "failure_trap": "Dropped negation: M3 ignores the Hebrew negator 'שלא' and emits a positive Jerusalem filter — the result set is exactly the records the user excluded, and every candidate carries plausible-looking evidence. Count is the tell: ~109 (Jerusalem-only) instead of ~700 means the negation inverted. Hebrew negation morphology (ש+לא fused) makes this strictly harder than the English 'not'."
+    },
+    {
+      "test_id": "TEST-PHYS-01",
+      "category": "Physical description (non-FTS LIKE path)",
+      "language": "en",
+      "user_query": "Books with maps or illustrations from the 18th century",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "physical_desc", "op": "CONTAINS", "value": "maps" },
+          { "field": "year", "op": "RANGE", "start": 1700, "end": 1799 }
+        ],
+        "notes": "'or illustrations' may compile as IN ['maps','illustrations'] or a second probe — but must not become AND of both terms.",
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": ["db.imprints.date_start/date_end (marc:264$c)"],
+        "physical_source": "db.physical_descriptions source citing marc:300 — this path is substring LIKE, not FTS5; evidence claiming FTS5 here indicates a misrouted filter",
+        "expected_count": { "min": 1 }
+      },
+      "failure_trap": "OR-as-AND compilation: 'maps or illustrations' compiled to two AND'd CONTAINS filters silently shrinks recall to records describing both. Secondary: physical_desc is topical, so if it relaxes, the YEAR range must survive — 19th-century illustrated books in the results prove hard-filter erosion."
+    },
+    {
+      "test_id": "TEST-STRESS-01",
+      "category": "Maximal multi-factor (4 constraints, all hard)",
+      "language": "en",
+      "user_query": "Hebrew books printed in Venice by the Bragadin press between 1550 and 1600",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "language", "op": "EQUALS", "value": "heb" },
+          { "field": "imprint_place", "op": "EQUALS", "value": "venice" },
+          { "field": "publisher", "op": "CONTAINS", "value": "bragadin" },
+          { "field": "year", "op": "RANGE", "start": 1550, "end": 1600 }
+        ],
+        "clarification_expected": false
+      },
+      "expected_m4_evidence": {
+        "required_sources": [
+          "db.languages.code (marc:008)",
+          "db.imprints.place_norm (marc:264$a)",
+          "db.imprints.publisher_norm (marc:260$b)",
+          "db.imprints.date_start/date_end (marc:264$c)"
+        ],
+        "forbidden_sources": ["marc:unknown"],
+        "expected_count": { "min": 1, "max": 12 },
+        "evidence_completeness": "Every candidate must carry FOUR evidence objects — one per filter. Three evidences on a returned candidate = one filter silently vanished between plan and SQL."
+      },
+      "failure_trap": "Filter attrition under load: four-constraint plans are where compilers quietly shed a clause (most often the publisher CONTAINS, whose Hebrew raws strain matching). The evidence-count-per-candidate check makes the dropped clause mechanically detectable without reading any Hebrew."
+    },
+    {
+      "test_id": "TEST-STRESS-02",
+      "category": "Plausible zero (entity not in collection, Hebrew query)",
+      "language": "he",
+      "user_query": "ספרים שנדפסו בדפוס ראם בווילנה",
+      "expected_m3_plan": {
+        "filters": [
+          { "field": "publisher", "op": "CONTAINS", "value": "romm" }
+        ],
+        "clarification_expected": false,
+        "notes": "דפוס ראם (Romm press of Vilna) is THE most famous Hebrew press — and has NO records in this collection (verified absent). The correct answer is an explicit empty CandidateSet. An acceptable plan may also probe the Hebrew form 'ראם'."
+      },
+      "expected_m4_evidence": {
+        "expected_count": { "exact": 0 },
+        "empty_set_contract": "Empty CandidateSet must be reported with the executed filter (publisher CONTAINS 'romm'/'ראם') per the hard rule — no relaxation into unrelated publishers, no narrative about Romm from LLM world knowledge."
+      },
+      "failure_trap": "Hallucination-under-absence, maximized: a Hebrew query about the most famous Hebrew press is where LLM layers leak world knowledge ('דפוס ראם הדפיס את הש\"ס...') most readily. The ladder must not broaden publisher (a HARD field). Substring trap is worse in Hebrew: 'ראם' is a substring of common words (בראם, ראמה) — LIKE matching must not produce noise candidates. Any candidate at all is a fail."
+    }
+  ]
+}
