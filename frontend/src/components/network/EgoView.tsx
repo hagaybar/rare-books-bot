@@ -221,7 +221,7 @@ export default function EgoView({ data, colorBy, communities, connectionTypes, o
 
       {/* Reading card: archetype badge (free) + optional AI portrait */}
       {shape && !onlyFocal && (
-        <div className="absolute top-3 left-3 z-10 max-w-sm bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-md px-4 py-3">
+        <div className="absolute top-3 left-3 z-10 max-w-sm bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-md px-4 py-3" data-tour="ego-reading">
           {!portrait ? (
             <>
               <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">{shape.badge}</div>

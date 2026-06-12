@@ -39,7 +39,7 @@ export default function CityToolbar({ places, onSelect }: Props) {
       <span className="text-gray-500 hidden sm:inline">
         <span className="font-medium text-gray-800">{places.length}</span> printing cities — click a circle, or
       </span>
-      <div className="relative">
+      <div className="relative" data-tour="city-finder">
         <input
           value={query}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}

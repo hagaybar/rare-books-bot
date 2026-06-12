@@ -42,7 +42,7 @@ export default function CityView({ city, onBack, onPersonClick }: Props) {
           <span aria-hidden>←</span> Back to map
         </button>
 
-        <div className="flex items-baseline justify-between flex-wrap gap-2">
+        <div className="flex items-baseline justify-between flex-wrap gap-2" data-tour="city-view">
           <h2 className="text-3xl font-semibold text-gray-900">{name}</h2>
           <p className="text-sm text-gray-500">
             <span className="font-medium text-gray-700">{city.total}</span> books
