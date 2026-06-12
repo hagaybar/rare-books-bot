@@ -7,7 +7,10 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import type { GroundingData } from '../../types/chat';
+import { searchNetworkAgents } from '../../api/network';
 
 interface GroundingSourcesProps {
   grounding: GroundingData;
@@ -15,6 +18,18 @@ interface GroundingSourcesProps {
 
 export default function GroundingSources({ grounding }: GroundingSourcesProps) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // Chat -> network (issue #34): resolve a grounding agent to its network node
+  // through the cross-script search (#30: aliases, Hebrew/Latin) and open it.
+  const viewOnMap = async (name: string) => {
+    const hits = await searchNetworkAgents(name);
+    if (hits.length > 0) {
+      navigate(`/network?agent=${encodeURIComponent(hits[0].agent_norm)}`);
+    } else {
+      toast.info(`${name} is not on the network map`);
+    }
+  };
 
   const recordCount = grounding.records.length;
   const agentCount = grounding.agents.length;
@@ -192,6 +207,14 @@ export default function GroundingSources({ grounding }: GroundingSourcesProps) {
                             </p>
                           )}
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => viewOnMap(agent.canonical_name)}
+                          className="shrink-0 text-[11px] text-blue-400 hover:text-blue-300"
+                          title="Open this person in the network explorer"
+                        >
+                          View on map →
+                        </button>
                       </div>
 
                       {/* External links */}

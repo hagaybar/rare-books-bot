@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import type { ChatMessage, GroundingData } from '../../types/chat';
 import CandidateCard from '../shared/CandidateCard';
@@ -71,7 +72,24 @@ export default function MessageBubble({
   const isStreamComplete = message.streamingState === 'complete' || !message.streamingState;
   const thinkingSteps = message.thinkingSteps ?? [];
 
+  const navigate = useNavigate();
   const candidates = message.candidateSet?.candidates ?? [];
+
+  // Chat -> map (issue #34): plot this result set's printing places as an
+  // overlay on the cities map. Hand off via sessionStorage (no URL-size limits).
+  const showOnMap = () => {
+    const places: Record<string, number> = {};
+    for (const c of candidates) {
+      if (c.place_norm) places[c.place_norm] = (places[c.place_norm] ?? 0) + 1;
+    }
+    sessionStorage.setItem('chatMapOverlay', JSON.stringify({
+      label: message.candidateSet?.query_text ?? 'chat results',
+      total: message.candidateSet?.total_count ?? candidates.length,
+      located: Object.values(places).reduce((a, b) => a + b, 0),
+      places,
+    }));
+    navigate('/network?overlay=chat');
+  };
   const displayCandidates = candidates.slice(0, MAX_INLINE_CANDIDATES);
   const totalCount = message.candidateSet?.total_count ?? candidates.length;
   const executionTime = message.metadata?.execution_time_ms as number | undefined;
@@ -228,10 +246,22 @@ export default function MessageBubble({
         {/* Candidate cards */}
         {displayCandidates.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs text-gray-500 font-medium px-1">
-              {totalCount} result{totalCount !== 1 ? 's' : ''} found
-              {displayCandidates.length < totalCount &&
-                ` (showing first ${displayCandidates.length})`}
+            <p className="text-xs text-gray-500 font-medium px-1 flex items-center gap-3">
+              <span>
+                {totalCount} result{totalCount !== 1 ? 's' : ''} found
+                {displayCandidates.length < totalCount &&
+                  ` (showing first ${displayCandidates.length})`}
+              </span>
+              {candidates.some((c) => c.place_norm) && (
+                <button
+                  type="button"
+                  onClick={showOnMap}
+                  className="text-blue-500 hover:text-blue-700 font-medium"
+                  title="Plot these results' printing places on the map"
+                >
+                  Show on map →
+                </button>
+              )}
             </p>
             {displayCandidates.map((c, i) => (
               <CandidateCard
