@@ -4,7 +4,7 @@ interface Props {
   windowStart: number;
   windowWidth: number;
   playing: boolean;
-  activeCount: number;
+  activeLabel: string;
   onStartChange: (year: number) => void;
   onWidthChange: (width: number) => void;
   onTogglePlay: () => void;
@@ -16,7 +16,7 @@ const WIDTHS = [50, 100, 200];
 /** Sliding time window over imprint dates (issue #32). Drag or play to watch
  *  printing activity migrate across the centuries. */
 export default function TimeSlider({
-  min, max, windowStart, windowWidth, playing, activeCount,
+  min, max, windowStart, windowWidth, playing, activeLabel,
   onStartChange, onWidthChange, onTogglePlay, onClose,
 }: Props) {
   const windowEnd = windowStart + windowWidth;
@@ -41,7 +41,7 @@ export default function TimeSlider({
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline justify-between mb-0.5">
             <span className="text-sm font-semibold text-gray-900 tabular-nums">{windowStart} – {windowEnd}</span>
-            <span className="text-xs text-gray-500">{activeCount} active</span>
+            <span className="text-xs text-gray-500">{activeLabel}</span>
           </div>
           <input
             type="range"

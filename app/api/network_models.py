@@ -70,6 +70,7 @@ class PlaceMarker(BaseModel):
     agent_count: int = 0  # people/presses placed here
     year_min: int | None = None
     year_max: int | None = None
+    decades: list["DecadeCount"] = Field(default_factory=list)  # time-slider weights
 
 
 class PathResponse(BaseModel):

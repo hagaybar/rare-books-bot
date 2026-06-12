@@ -301,6 +301,8 @@ def test_places_aggregates_printing_cities(client):
     assert ams is not None
     assert ams["record_count"] == 1
     assert ams["lat"] is not None and ams["lon"] is not None
+    # per-city decade histogram drives the time slider on the cities layer
+    assert ams["decades"] == [{"decade": 1550, "count": 1}]
 
 
 def test_map_nodes_carry_active_imprint_span(client):
