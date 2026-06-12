@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginApi, guestApi, fetchMe } from '../api/auth';
 import { useAuthStore } from '../stores/authStore';
+import { useAppStore } from '../stores/appStore';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -17,6 +18,8 @@ export default function Login() {
     setLoading(true);
     try {
       await loginApi(username, password);
+      // Fresh chat on login (issue #15) — the old session stays in History.
+      useAppStore.getState().clearSession();
       const user = await fetchMe();
       setUser(user);
       navigate('/');
@@ -31,6 +34,7 @@ export default function Login() {
     setLoading(true);
     try {
       await guestApi();
+      useAppStore.getState().clearSession();
       const user = await fetchMe();
       setUser(user);
       navigate('/network');

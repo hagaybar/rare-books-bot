@@ -22,6 +22,7 @@ import { useAuthStore } from '../stores/authStore';
 import { getRoleLevel } from '../components/AuthGuard';
 import MessageBubble from '../components/chat/MessageBubble';
 import FollowUpChips from '../components/chat/FollowUpChips';
+import HistoryList from '../components/chat/HistoryList';
 import CompareMode from '../components/CompareMode';
 
 // ---------------------------------------------------------------------------
@@ -83,6 +84,8 @@ export default function Chat() {
 
   // Compare mode is available to admin users only
   const canCompare = user ? getRoleLevel(user.role) >= getRoleLevel('admin') : false;
+  // History needs the /chat/history endpoint ('limited'+); guests don't have it.
+  const canHistory = user ? getRoleLevel(user.role) >= getRoleLevel('limited') : false;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -155,13 +158,16 @@ export default function Chat() {
     };
   }, []);
 
-  // Restore session: URL param takes priority, then localStorage (via store)
+  // Restore session ON MOUNT ONLY: URL param takes priority (deep links), then
+  // localStorage (F5 mid-conversation). Re-running on param/store changes raced
+  // New Chat — interleaved router/store renders could hand the effect stale
+  // values and resurrect the cleared conversation (issue #15). History clicks
+  // call restoreSession directly instead.
   useEffect(() => {
-    const urlSessionId = searchParams.get('session');
-    const targetSessionId = urlSessionId ?? sessionId;
-    if (!targetSessionId || targetSessionId === restoredSessionId) return;
-    restoreSession(targetSessionId);
-  }, [searchParams, sessionId, restoredSessionId, restoreSession]);
+    const targetSessionId = searchParams.get('session') ?? sessionId;
+    if (targetSessionId) restoreSession(targetSessionId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ------------------------------------------------------------------
   // Update the streaming assistant message in-place
@@ -619,7 +625,10 @@ export default function Chat() {
     setRestoredSessionId(null);
     setPrimoUrls({});
     setError(null);
+    // Strip ?session= or the restore effect immediately re-opens it (issue #15)
+    setSearchParams({}, { replace: true });
     inputRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearSession]);
 
   // ------------------------------------------------------------------
@@ -662,10 +671,17 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Top bar -- shown when there is an active conversation, or when compare toggle is available */}
-      {(!isEmpty || canCompare) && (
+      {/* Top bar -- also visible in the empty state so History stays reachable
+          after a fresh login (issue #15) */}
+      {(!isEmpty || canCompare || canHistory) && (
         <div className="border-b border-gray-200 bg-white px-4 py-2 flex items-center justify-between">
-          <div>
+          <div className="flex items-center gap-2">
+            {canHistory && (
+              <HistoryList
+                activeSessionId={restoredSessionId}
+                onSelect={(id) => { setSearchParams({ session: id }); restoreSession(id); }}
+              />
+            )}
             {/* Compare toggle -- admin only */}
             {canCompare && (
               <button
