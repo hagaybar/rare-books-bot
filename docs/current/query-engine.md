@@ -1,5 +1,5 @@
 # Query Engine
-> Last verified: 2026-06-10
+> Last verified: 2026-06-12
 > Source of truth for: Query compilation (NL to SQL), LLM usage rules, query plan schema, execution pipeline, relaxation ladder, concept bridge, FTS5 sanitization, bilingual search, and acceptance tests
 
 ## Overview
@@ -278,3 +278,18 @@ poetry run python -m pytest tests/ --run-integration -k "query" -v
 |----------|----------|---------|
 | `OPENAI_API_KEY` | Yes | Required for query compilation (used by litellm) |
 | `BIBLIOGRAPHIC_DB_PATH` | No (default: `data/index/bibliographic.db`) | SQLite database for query execution |
+
+
+## Publisher resolution & recall (Soncino forensics, issue #40)
+
+Publisher lookups are name-shaped, not controlled vocabulary. The executor
+resolves them through a ladder: exact variant → exact canonical → authority
+token match (now also collecting the authority's queryable imprint norms) →
+**imprint substring** (full phrase, then strongest token — catches Hebrew
+presses absent from `publisher_authorities`, e.g. `דפוס אליעזר שונצינו`).
+A bare `publisher EQUALS` filter that matches 0 records is broadened to a
+substring match as **relaxation rung 0**, recorded in `RecordSet.relaxations`;
+weak resolutions (`imprint_substring`/`variant_token`) are likewise surfaced
+as relaxation evidence per the Answer Contract. Multi-value EQUALS bindings
+carry both normalized and raw forms because `normalize_filter_value` strips
+`./&` that real `publisher_norm` values contain.
