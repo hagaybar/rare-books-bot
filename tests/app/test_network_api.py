@@ -56,6 +56,9 @@ def mock_db(tmp_path):
             id INTEGER PRIMARY KEY, canonical_name TEXT, canonical_name_lower TEXT,
             authority_uri TEXT
         );
+        CREATE TABLE subjects (
+            id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT, value_he TEXT
+        );
         CREATE TABLE agent_aliases (
             id INTEGER PRIMARY KEY, authority_id INTEGER, alias_form TEXT,
             alias_form_lower TEXT, alias_type TEXT, script TEXT, language TEXT
@@ -75,6 +78,8 @@ def mock_db(tmp_path):
              'teacher of', 0, 'documented in authority record');
         INSERT INTO agents VALUES (1, 100, 'smith, john', 'uri:smith', 'author');
         INSERT INTO imprints VALUES (1, 100, 'amsterdam', 1550, '1550', 'Amsterdam', 'Elzevir', 'elzevir');
+        INSERT INTO subjects VALUES (1, 100, 'Optics', NULL);
+        INSERT INTO subjects VALUES (2, 100, 'Mathematics', NULL);
         INSERT INTO authority_enrichment VALUES
             (1, 'uri:smith', 'Q111', 'https://en.wikipedia.org/wiki/John_Smith',
              'V123', '{"birth_year":1500}', 'John Smith');
@@ -365,3 +370,16 @@ def test_place_endpoint_lists_books_printed_there(client):
     assert resp.status_code == 200
     works = resp.json()["works"]
     assert any(w["mms_id"] == "990001112220304146" for w in works)
+
+
+def test_place_detail_carries_city_profile(client):
+    """City drill-down: decades, top printers/people/subjects, span (place redesign)."""
+    resp = client.get("/network/place/amsterdam")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["place_display"] == "Amsterdam"
+    assert data["year_min"] == 1550 and data["year_max"] == 1550
+    assert {"decade": 1550, "count": 1} in data["decades"]
+    assert any(p["name"] == "Elzevir" and p["count"] == 1 for p in data["top_publishers"])
+    assert any(a["display_name"] == "John Smith" for a in data["top_agents"])
+    assert any(s["subject"] == "Optics" for s in data["top_subjects"])

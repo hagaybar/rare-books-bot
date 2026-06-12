@@ -9,6 +9,8 @@ import EgoView from '../components/network/EgoView';
 import Breadcrumbs from '../components/network/Breadcrumbs';
 import PathFinder from '../components/network/PathFinder';
 import TimeSlider from '../components/network/TimeSlider';
+import CityView from '../components/network/CityView';
+import CityToolbar from '../components/network/CityToolbar';
 import ControlBar from '../components/network/ControlBar';
 import AgentPanel from '../components/network/AgentPanel';
 import PlacePanel from '../components/network/PlacePanel';
@@ -184,6 +186,15 @@ export default function Network() {
     queryFn: fetchPlaces,
     staleTime: 5 * 60 * 1000,
   });
+  const citiesActive = viewMode === 'map' && mapLayer === 'cities';
+  const cityOpen = citiesActive && !!selectedPlace && !!placeDetail;
+
+  // From a city profile, "notable person" jumps into their ego world.
+  const handleCityPerson = (norm: string, displayName: string) => {
+    setSelectedPlace(null);
+    setSelectedAgent(norm);
+    enterEgo({ agent_norm: norm, display_name: displayName });
+  };
 
   // Pathfinding (issue #33): from the current ego focal to a chosen target.
   const [pathTarget, setPathTarget] = useState<string | null>(null);
@@ -231,10 +242,12 @@ export default function Network() {
       <div className="px-4 pt-3 pb-1 flex items-center justify-between">
         <div className="min-w-0">
           <h1 className="text-xl font-semibold text-gray-900 md:text-xl text-base truncate">
-            Scholarly Network Map
+            {citiesActive ? 'Where This Collection Was Printed' : 'Scholarly Network Map'}
           </h1>
           <p className="text-sm text-gray-500 hidden md:block">
-            Explore connections between {mapData?.meta.total_agents?.toLocaleString() ?? '...'} historical figures across Europe and the Middle East
+            {citiesActive
+              ? `${places?.length ?? '…'} printing cities, sized by how many of our books were printed there — click one to explore`
+              : `Explore connections between ${mapData?.meta.total_agents?.toLocaleString() ?? '...'} historical figures across Europe and the Middle East`}
           </p>
         </div>
 
@@ -257,7 +270,8 @@ export default function Network() {
           </button>
         </div>
 
-        {/* Mobile filter toggle button */}
+        {/* Mobile filter toggle button (people-network filters — hidden in cities mode) */}
+        {!citiesActive && (
         <button
           onClick={() => setFiltersOpen(!filtersOpen)}
           className="md:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 active:bg-gray-100 shrink-0"
@@ -272,13 +286,18 @@ export default function Network() {
             </span>
           )}
         </button>
+        )}
         </div>
       </div>
 
-      {/* Desktop: always visible. Mobile: collapsible bottom sheet */}
-      <div className="hidden md:block">
-        <ControlBar onAgentSelect={setSelectedAgent} />
-      </div>
+      {/* Cities mode: a slim city finder. People/ego: the full network controls. */}
+      {citiesActive ? (
+        <CityToolbar places={places ?? []} onSelect={selectPlace} />
+      ) : (
+        <div className="hidden md:block">
+          <ControlBar onAgentSelect={setSelectedAgent} />
+        </div>
+      )}
 
       {/* Mobile filter bottom sheet */}
       {filtersOpen && (
@@ -309,7 +328,7 @@ export default function Network() {
       )}
 
       {/* Active filter chips on mobile (shown when filters panel is closed) */}
-      {!filtersOpen && activeFilterCount > 0 && (
+      {!citiesActive && !filtersOpen && activeFilterCount > 0 && (
         <div className="md:hidden flex gap-2 px-4 py-1.5 overflow-x-auto no-scrollbar">
           {century && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full whitespace-nowrap">
@@ -375,8 +394,13 @@ export default function Network() {
             />
           )}
 
+          {/* City drill-down: a full profile view, not a map (place redesign) */}
+          {cityOpen && placeDetail && (
+            <CityView city={placeDetail} onBack={handleClosePanel} onPersonClick={handleCityPerson} />
+          )}
+
           {/* Place-first layer toggle: Cities (default) vs People */}
-          {viewMode === 'map' && (
+          {viewMode === 'map' && !cityOpen && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 inline-flex rounded-lg border border-gray-300 overflow-hidden text-sm shadow-sm bg-white" role="group" aria-label="Map layer">
               <button
                 onClick={() => setMapLayer('cities')}
@@ -441,8 +465,8 @@ export default function Network() {
             <AgentPanel agent={agentDetail} onClose={handleClosePanel} onAgentClick={selectAgent} onPlaceSelect={selectPlace} onExplore={handleExplore} />
           </div>
         )}
-        {/* Desktop place panel — sidebar */}
-        {selectedPlace && placeDetail && (
+        {/* Desktop place panel — sidebar (people/ego modes; cities mode uses CityView) */}
+        {!citiesActive && selectedPlace && placeDetail && (
           <div className="hidden md:block">
             <PlacePanel place={placeDetail} onClose={handleClosePanel} />
           </div>
@@ -450,7 +474,7 @@ export default function Network() {
       </div>
 
       {/* Mobile place panel — bottom sheet */}
-      {selectedPlace && placeDetail && (
+      {!citiesActive && selectedPlace && placeDetail && (
         <div className="md:hidden fixed inset-0 z-30" onClick={handleClosePanel}>
           <div className="absolute inset-0 bg-black/30" />
           <div className="absolute bottom-14 left-0 right-0 bg-white rounded-t-2xl shadow-xl max-h-[75vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -480,11 +504,15 @@ export default function Network() {
       {/* Footer — compact on mobile */}
       <div className="px-4 py-2 bg-gray-50 border-t text-xs md:text-sm text-gray-500 flex justify-between">
         <span className="truncate">
-          {mapData
-            ? connectionTypes.length === 0
-              ? `${mapData.meta.showing}/${mapData.meta.total_agents} agents`
-              : `${mapData.meta.showing}/${mapData.meta.total_agents} agents \u00B7 ${mapData.meta.total_edges} connections`
-            : 'Loading...'}
+          {citiesActive
+            ? places
+              ? `${places.length} printing cities \u00B7 ${places.reduce((s, p) => s + p.record_count, 0)} located imprints`
+              : 'Loading...'
+            : mapData
+              ? connectionTypes.length === 0
+                ? `${mapData.meta.showing}/${mapData.meta.total_agents} agents`
+                : `${mapData.meta.showing}/${mapData.meta.total_agents} agents \u00B7 ${mapData.meta.total_edges} connections`
+              : 'Loading...'}
         </span>
         {isLoading && <span className="text-blue-500 shrink-0 ml-2">Updating...</span>}
       </div>

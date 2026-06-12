@@ -120,8 +120,37 @@ class AgentDetail(BaseModel):
     node_type: str = "person"
 
 
+class DecadeCount(BaseModel):
+    decade: int
+    count: int
+
+
+class NameCount(BaseModel):
+    name: str
+    count: int
+
+
+class AgentCount(BaseModel):
+    agent_norm: str
+    display_name: str
+    count: int
+
+
+class SubjectCount(BaseModel):
+    subject: str
+    count: int
+
+
 class PlaceDetail(BaseModel):
-    """Books printed in a given place (issue #29)."""
+    """Books printed in a given place (issue #29) + city profile (place redesign)."""
     place_norm: str
+    place_display: str | None = None
     total: int = 0
+    agent_count: int = 0
+    year_min: int | None = None
+    year_max: int | None = None
+    decades: list[DecadeCount] = Field(default_factory=list)
+    top_publishers: list[NameCount] = Field(default_factory=list)
+    top_agents: list[AgentCount] = Field(default_factory=list)
+    top_subjects: list[SubjectCount] = Field(default_factory=list)
     works: list[AgentWork] = Field(default_factory=list)
