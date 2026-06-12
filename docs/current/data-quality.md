@@ -293,6 +293,16 @@ These operate on the materialized `network_*` tables behind the Network view. Th
 - **What it does**: Adds `network_agents.community` and assigns each node its most-specific allow-listed category (top-20 by membership; maintenance categories denied) — category becomes a **coloring facet**, not an arc. Re-derives `same_place_period` with lifespan clamping (`[birth_year, death_year]`). Result: 402 nodes colored / 20 communities; `same_place_period` 438 → 75 (0 lifespan violations).
 - **Note**: Adds `network_agents.community` — must stay registered in `scripts/marc/m3_contract.py` (the schema-contract test enforces this).
 
+#### Fix 25: Repair Hebrew Subject Mojibake
+- **Problem**: 37 values in fix_19's translation dictionaries were authored with one Hebrew letter mangled to 2×U+FFFD, leaking into 143 corrupted `subjects.value_he` headings ('מהדור��ת מצומצמות').
+- **Fix script**: `scripts/qa/fixes/fix_25_repair_hebrew_subject_mojibake.py`
+- **What it does**: dictionaries repaired in-source (regression-tested FFFD-free); recomputes value_he for every corrupted heading and rebuilds `subjects_fts`. Applied 2026-06-12 (local+prod): 143 repaired, 0 nulled.
+
+#### Fix 26: Link Orphaned Publisher Variants
+- **Problem**: imprint norms belonging to existing authorities weren't linked as variants (issue #40 — 'דפוס אליעזר שונצינו' invisible to publisher resolution). Audit (#41): all 1,851 unmapped norms are 1-record singletons; auto token-linking REJECTED (false positives).
+- **Fix script**: `scripts/qa/fixes/fix_26_link_publisher_variants.py`
+- **What it does**: 6 curated additive variant rows — 4 punctuation-exact matches + Eliezer Soncino's two Hebrew imprints → Soncino Press. Applied 2026-06-12 (local+prod). Hebrew 'שונצינו' now resolves authority-grade.
+
 ## 4. Sampling Protocol
 
 ### Purpose
