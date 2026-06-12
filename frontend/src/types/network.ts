@@ -14,6 +14,8 @@ export interface MapNode {
   primary_role: string | null;
   node_type: string; // 'person' | 'publisher'
   community: string | null; // intellectual-community color facet (issue #28)
+  active_start: number | null; // earliest imprint year (issue #32)
+  active_end: number | null; // latest imprint year (issue #32)
 }
 
 export type ColorByMode = 'century' | 'role' | 'occupation' | 'community';
@@ -121,6 +123,8 @@ export interface MapMeta {
   showing: number;
   total_edges: number;
   communities: string[]; // legend palette order (issue #28)
+  year_min: number | null; // imprint-date domain for the time slider (issue #32)
+  year_max: number | null;
 }
 
 export interface MapResponse {
