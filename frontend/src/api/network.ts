@@ -87,6 +87,35 @@ export async function fetchPath(
   return handleResponse<PathResponse>(res);
 }
 
+export interface TopicMarker {
+  subject: string;
+  root: string;
+  count: number;
+  peak_decade: number | null;
+  value_he: string | null;
+  kind: 'topic' | 'form';
+}
+
+export interface TopicDetail {
+  subject: string;
+  value_he: string | null;
+  total: number;
+  decades: { decade: number; count: number }[];
+  top_places: { name: string; count: number }[];
+  top_agents: { agent_norm: string; display_name: string; count: number }[];
+  works: AgentWork[];
+}
+
+export async function fetchTopics(): Promise<TopicMarker[]> {
+  const res = await authenticatedFetch(`${BASE}/topics`);
+  return handleResponse<TopicMarker[]>(res);
+}
+
+export async function fetchTopicDetail(subject: string): Promise<TopicDetail> {
+  const res = await authenticatedFetch(`${BASE}/topic/${encodeURIComponent(subject)}`);
+  return handleResponse<TopicDetail>(res);
+}
+
 export interface NetworkPortrait {
   epithet: string;
   reading: string;

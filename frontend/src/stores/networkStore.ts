@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { ConnectionType, ColorByMode, MapLayer } from '../types/network';
 
-export type ViewMode = 'map' | 'ego';
+export type ViewMode = 'map' | 'ego' | 'topics';
 export type { MapLayer };
 export interface TrailItem { agent_norm: string; display_name: string }
 

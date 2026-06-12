@@ -162,6 +162,27 @@ class SubjectCount(BaseModel):
     count: int
 
 
+class TopicMarker(BaseModel):
+    """One subject bubble in the topic constellation."""
+    subject: str  # tidy display form ('Bible — Texts')
+    root: str  # first LCSH segment, period-variants merged ('Bible')
+    count: int
+    peak_decade: int | None = None  # decade with most books — drives era color
+    value_he: str | None = None
+    kind: str = "topic"  # 'topic' (what books are about) | 'form' (what they are)
+
+
+class TopicDetail(BaseModel):
+    """Topic profile — the subject-axis sibling of PlaceDetail."""
+    subject: str
+    value_he: str | None = None
+    total: int = 0
+    decades: list[DecadeCount] = Field(default_factory=list)
+    top_places: list[NameCount] = Field(default_factory=list)
+    top_agents: list[AgentCount] = Field(default_factory=list)
+    works: list[AgentWork] = Field(default_factory=list)
+
+
 class PlaceDetail(BaseModel):
     """Books printed in a given place (issue #29) + city profile (place redesign)."""
     place_norm: str
