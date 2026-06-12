@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, status, WebSocket, WebSocketDisconnect, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, status, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -470,8 +470,12 @@ def health_extended(_user=Depends(require_role("full"))):
 
 
 @app.get("/chat/history")
-async def chat_history(request: Request, _user=Depends(require_role("limited"))):
-    """Return the 5 most recent chat sessions for the current user.
+async def chat_history(
+    request: Request,
+    limit: int = Query(10, ge=1, le=50),
+    _user=Depends(require_role("limited")),
+):
+    """Return the most recent chat sessions for the current user (issue #15).
 
     Each entry includes session_id, title (first user message truncated to
     50 chars), message_count, and last_activity timestamp.
@@ -483,7 +487,7 @@ async def chat_history(request: Request, _user=Depends(require_role("limited")))
     if not user_id:
         return []
 
-    return store.get_recent_sessions(user_id, limit=5)
+    return store.get_recent_sessions(user_id, limit=limit)
 
 
 @app.post("/chat", response_model=ChatResponseAPI)
