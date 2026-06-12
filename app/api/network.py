@@ -10,17 +10,21 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.api.auth_deps import require_role
 from app.api.network_models import (
     AgentConnection,
+    AgentCount,
     AgentDetail,
     AgentWork,
+    DecadeCount,
     EgoMeta,
     EgoResponse,
     MapEdge,
     MapMeta,
     MapNode,
     MapResponse,
+    NameCount,
     PathResponse,
     PlaceDetail,
     PlaceMarker,
+    SubjectCount,
 )
 
 logger = logging.getLogger(__name__)
@@ -690,7 +694,71 @@ async def get_place_detail(place_norm: str, limit: int = Query(50, ge=1, le=200)
             )
             for r in rows
         ]
-        return PlaceDetail(place_norm=place_norm, total=total, works=works)
+
+        # --- City profile (place redesign): when/who/what for this place ---
+        place_display, year_min, year_max = conn.execute(
+            """SELECT (SELECT i2.place_display FROM imprints i2
+                       WHERE LOWER(i2.place_norm) = LOWER(?) AND i2.place_display IS NOT NULL LIMIT 1),
+                      MIN(i.date_start), MAX(i.date_start)
+               FROM imprints i WHERE LOWER(i.place_norm) = LOWER(?)""",
+            (place_norm, place_norm),
+        ).fetchone()
+        decades = [
+            DecadeCount(decade=r[0], count=r[1])
+            for r in conn.execute(
+                """SELECT (date_start/10)*10 AS dec, COUNT(DISTINCT record_id)
+                   FROM imprints WHERE LOWER(place_norm) = LOWER(?) AND date_start IS NOT NULL
+                   GROUP BY dec ORDER BY dec""",
+                (place_norm,),
+            ).fetchall()
+        ]
+        # 's.n.' = sine nomine (no recorded printer) — noise, not a printer
+        top_publishers = [
+            NameCount(name=r[0], count=r[1])
+            for r in conn.execute(
+                """SELECT COALESCE(publisher_display, publisher_norm), COUNT(DISTINCT record_id) n
+                   FROM imprints
+                   WHERE LOWER(place_norm) = LOWER(?) AND publisher_norm IS NOT NULL
+                     AND publisher_norm NOT IN ('s.n.', 's. n.', '[s.n.]')
+                   GROUP BY publisher_norm ORDER BY n DESC LIMIT 8""",
+                (place_norm,),
+            ).fetchall()
+        ]
+        top_agents = [
+            AgentCount(agent_norm=r[0], display_name=r[1], count=r[2])
+            for r in conn.execute(
+                """SELECT a.agent_norm, na.display_name, COUNT(DISTINCT i.record_id) n
+                   FROM imprints i
+                   JOIN agents a ON a.record_id = i.record_id
+                   JOIN network_agents na ON na.agent_norm = a.agent_norm
+                   WHERE LOWER(i.place_norm) = LOWER(?)
+                   GROUP BY a.agent_norm ORDER BY n DESC LIMIT 8""",
+                (place_norm,),
+            ).fetchall()
+        ]
+        top_subjects = [
+            SubjectCount(subject=r[0], count=r[1])
+            for r in conn.execute(
+                """SELECT s.value, COUNT(DISTINCT s.record_id) n
+                   FROM imprints i JOIN subjects s ON s.record_id = i.record_id
+                   WHERE LOWER(i.place_norm) = LOWER(?) AND s.value IS NOT NULL
+                   GROUP BY s.value ORDER BY n DESC LIMIT 10""",
+                (place_norm,),
+            ).fetchall()
+        ]
+        agent_count = conn.execute(
+            """SELECT COUNT(DISTINCT a.agent_norm)
+               FROM imprints i JOIN agents a ON a.record_id = i.record_id
+               WHERE LOWER(i.place_norm) = LOWER(?)""",
+            (place_norm,),
+        ).fetchone()[0]
+
+        return PlaceDetail(
+            place_norm=place_norm, place_display=place_display, total=total,
+            agent_count=agent_count, year_min=year_min, year_max=year_max,
+            decades=decades, top_publishers=top_publishers,
+            top_agents=top_agents, top_subjects=top_subjects, works=works,
+        )
     finally:
         conn.close()
 
