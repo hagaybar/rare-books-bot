@@ -612,21 +612,78 @@ def _handle_resolve_publisher(
             tokens = name_lower.split()
             if tokens:
                 rows = conn.execute(
-                    "SELECT pv.variant_form_lower, pa.canonical_name "
+                    "SELECT pv.variant_form_lower, pa.canonical_name, pa.id AS auth_id "
                     "FROM publisher_variants pv "
                     "JOIN publisher_authorities pa ON pv.authority_id = pa.id"
                 ).fetchall()
+                matched_auth_ids: List[int] = []
                 for row in rows:
                     variant_lower = row["variant_form_lower"]
                     if all(tok in variant_lower for tok in tokens):
                         canonical = row["canonical_name"]
                         if canonical not in matched_canonical:
                             matched_canonical.append(canonical)
+                        if row["auth_id"] not in matched_auth_ids:
+                            matched_auth_ids.append(row["auth_id"])
                         match_method = "variant_token"
+                # Soncino forensics: the canonical display name alone only
+                # finds canonical-named imprints — also collect the QUERYABLE
+                # publisher_norm values belonging to each matched authority
+                # ('h. de soncino', 'ab h. soncino'…), as the exact paths do.
+                for auth_id in matched_auth_ids:
+                    norm_rows = conn.execute(
+                        """SELECT DISTINCT i.publisher_norm
+                           FROM imprints i
+                           WHERE LOWER(i.publisher_norm) IN (
+                               SELECT pv.variant_form_lower
+                               FROM publisher_variants pv
+                               WHERE pv.authority_id = ?
+                           )""",
+                        (auth_id,),
+                    ).fetchall()
+                    for nr in norm_rows:
+                        v = nr["publisher_norm"]
+                        if v and v not in matched_canonical:
+                            matched_canonical.append(v)
+
+        # Last resort (Soncino forensics): probe the imprints themselves.
+        # Hebrew query names ('שונצינו') and unauthorized presses exist only
+        # in imprints.publisher_norm/raw — substring-match there rather than
+        # confidently resolving to nothing.
+        if not matched_canonical:
+            def _probe_imprints(needle: str) -> list[str]:
+                rows = conn.execute(
+                    """SELECT DISTINCT publisher_norm FROM imprints
+                       WHERE publisher_norm IS NOT NULL AND (
+                             LOWER(publisher_norm) LIKE '%' || LOWER(?) || '%'
+                          OR publisher_raw LIKE '%' || ? || '%')
+                       LIMIT 12""",
+                    (needle, needle),
+                ).fetchall()
+                return [r["publisher_norm"] for r in rows if r["publisher_norm"]]
+
+            for candidate in candidates_to_try:
+                needle = candidate.strip()
+                if len(needle) < 3:
+                    continue
+                hits = _probe_imprints(needle)
+                if not hits:
+                    # Multiword names ('דפוס פלנטין') may not be a literal
+                    # substring of any norm — fall back to the strongest
+                    # token, longest-first ('פלנטין').
+                    for tok in _fallback_tokens(needle, {}):
+                        hits = _probe_imprints(tok)
+                        if hits:
+                            break
+                for v in hits:
+                    if v not in matched_canonical:
+                        matched_canonical.append(v)
+            if matched_canonical:
+                match_method = "imprint_substring"
 
         confidence = CONFIDENCE_HIGH if match_method == "variant_exact" else (
             CONFIDENCE_ALIAS_MATCH if match_method == "canonical_exact" else (
-                CONFIDENCE_LOW if match_method == "variant_token" else 0.0
+                CONFIDENCE_LOW if match_method in ("variant_token", "imprint_substring") else 0.0
             )
         )
 
@@ -798,18 +855,27 @@ def _run_filter_query(
             param_key = f"filter_{filter_idx}_{suffix}"
             if param_key in sql_params:
                 old_cond = f"LOWER(:{param_key})"
-                mv_keys = [f"mv_{filter_idx}_{i}" for i in range(len(all_values))]
-                multi_placeholders = ", ".join(f"LOWER(:{k})" for k in mv_keys)
+                # Issue #4: multi-value bindings must get the same field
+                # normalization as the scalar path ('bomberg, daniel' can never
+                # equal the comma-stripped SQL expression without it). BUT the
+                # SQL side compares the RAW column — normalization strips
+                # './&' that real publisher_norms contain ('ex officina ch.
+                # plantini'), so resolved norms could never EQUALS-match
+                # themselves (Plantin/q51 lost 5 records). Bind BOTH forms.
+                bound: list[tuple[str, str]] = []
+                seen_vals: set = set()
+                for i, v in enumerate(all_values):
+                    for j, form in enumerate((normalize_filter_value(f.field, v, f.op), str(v).casefold())):
+                        if form and form not in seen_vals:
+                            seen_vals.add(form)
+                            bound.append((f"mv_{filter_idx}_{i}_{j}", form))
+                multi_placeholders = ", ".join(f"LOWER(:{k})" for k, _ in bound)
                 where_clause = where_clause.replace(
                     f"= {old_cond}", f"IN ({multi_placeholders})"
                 )
                 del sql_params[param_key]
-                for k, v in zip(mv_keys, all_values):
-                    # Issue #4: multi-value bindings must get the same
-                    # field normalization as the scalar path — e.g.
-                    # 'bomberg, daniel' can never equal the comma-stripped
-                    # SQL expression without it.
-                    sql_params[k] = normalize_filter_value(f.field, v, f.op)
+                for k, form in bound:
+                    sql_params[k] = form
 
     scope_clause = ""
     if scope_ids is not None:
@@ -846,8 +912,6 @@ def _relax_and_retry(
 
     topical = [f for f in filters if _is_topical_contains(f)]
     others = [f for f in filters if not _is_topical_contains(f)]
-    if not topical:
-        return [], []
 
     def _run_probe(probe_filters: List[Filter]) -> List[str]:
         # Probe lists are rebuilt per topic, so multi-value normalization
@@ -855,6 +919,34 @@ def _relax_and_retry(
         probe_mv: Dict[int, List[str]] = {}
         normalized = _normalize_multivalue_filters(probe_filters, probe_mv)
         return _run_filter_query(conn, normalized, scope_ids, probe_mv or None)
+
+    # Rung 0 (Soncino forensics): a bare `publisher EQUALS 'soncino'` plan
+    # can never match norms like 'h. de soncino' — soften publisher EQUALS to
+    # CONTAINS before declaring zero, recorded as a relaxation. Publishers are
+    # name-shaped (like agents), not controlled vocabulary; exact equality on
+    # them is a precision accident, not a constraint the user expressed.
+    pub_eq_idx = [
+        i for i, f in enumerate(filters)
+        if f.field == FilterField.PUBLISHER and f.op == FilterOp.EQUALS
+        and not f.negate and isinstance(f.value, str) and len(f.value.strip()) >= 3
+    ]
+    if pub_eq_idx:
+        softened = [
+            f.model_copy(update={"op": FilterOp.CONTAINS}) if i in pub_eq_idx else f
+            for i, f in enumerate(filters)
+        ]
+        hits = _run_probe(softened)
+        if hits:
+            names = ", ".join(repr(filters[i].value) for i in pub_eq_idx)
+            note = (
+                f"publisher {names} matched 0 records exactly; broadened to "
+                f"a substring match ({len(hits)} records)"
+            )
+            logger.info("Retrieve relaxation: %s", note)
+            return sorted(hits), [note]
+
+    if not topical:
+        return [], []
 
     union: set = set()
     notes: List[str] = []
@@ -924,6 +1016,17 @@ def _handle_retrieve(
                     )
                     if len(values) > 1:
                         multi_value_map[len(resolved_filters) - 1] = values
+                    # Answer Contract: a weak (substring/token) resolution is
+                    # itself evidence of how the result set was obtained —
+                    # record it rather than presenting it as an exact match.
+                    src = step_results.get(int(match.group(1)))
+                    if src and isinstance(src.data, ResolvedEntity) and \
+                            src.data.match_method in ("imprint_substring", "variant_token"):
+                        unresolved_notes.append(
+                            f"'{src.data.query_name}' resolved by "
+                            f"{'substring match against imprints' if src.data.match_method == 'imprint_substring' else 'authority token match'}"
+                            f" to {len(values)} publisher form(s)"
+                        )
                     continue
                 # Issue #3: resolution failed — NEVER query the literal
                 # '$step_N' string (it can match nothing, and the ladder

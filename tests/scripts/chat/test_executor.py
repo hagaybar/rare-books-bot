@@ -1350,3 +1350,78 @@ class TestAggregateFieldAliases:
         step = result.steps_completed[0]
         assert step.status == "ok"
         assert step.data.facets, "date_century must aggregate, not silently empty"
+
+
+# =============================================================================
+# Soncino forensics (live wrong-answer, 2026-06-12): "do we have Soncino
+# press books?" -> confident 0, while the DB holds 10. Three stacked gaps.
+# =============================================================================
+
+
+def _seed_soncino(db_path):
+    """Authority w/ variants + two imprint norms: one a variant ('h. de
+    soncino'), one Hebrew and absent from authorities entirely."""
+    conn = sqlite3.connect(db_path)
+    conn.executescript("""
+        INSERT INTO records VALUES (901, 'MMS901', 'f', '2024', 1);
+        INSERT INTO records VALUES (902, 'MMS902', 'f', '2024', 2);
+        INSERT INTO publisher_authorities VALUES
+            (50, 'Soncino Press', 'soncino press', 'printing_house',
+             '1483-1547', 1483, 1547, 'Soncino', NULL, NULL, 0.95, 0,
+             NULL, NULL, NULL, NULL, NULL, '2024-01-01', '2024-01-01');
+        INSERT INTO publisher_variants VALUES
+            (50, 50, 'Soncino Press', 'soncino press', 'latin', NULL, 1, 0, NULL, '2024-01-01');
+        INSERT INTO publisher_variants VALUES
+            (51, 50, 'H. de Soncino', 'h. de soncino', 'latin', NULL, 0, 0, NULL, '2024-01-01');
+        INSERT INTO imprints VALUES
+            (901, 901, 0, '1526', 'Rimini', 'H. de Soncino,', NULL, '["264"]',
+             1526, 1526, '1526', 0.99, 'exact',
+             'rimini', 'Rimini', 0.95, 'place_alias_map',
+             'h. de soncino', 'H. de Soncino', 0.95, 'publisher_authority',
+             'it', 'italy');
+        INSERT INTO imprints VALUES
+            (902, 902, 0, '1546', 'Constantinople', 'דפוס אליעזר שונצינו,', NULL, '["264"]',
+             1546, 1546, '1546', 0.99, 'exact',
+             'constantinople', 'Constantinople', 0.95, 'place_alias_map',
+             'דפוס אליעזר שונצינו', 'דפוס אליעזר שונצינו', 0.9, 'raw',
+             'tu', 'turkey');
+    """)
+    conn.commit(); conn.close()
+
+
+class TestSoncinoResolution:
+    def test_token_fallback_collects_imprint_norms(self, test_db):
+        """'soncino' token-matches the authority — the resolved set must
+        include the QUERYABLE imprint norms ('h. de soncino'), not just the
+        canonical display name (which only finds canonical-named imprints)."""
+        from scripts.chat.executor import _handle_resolve_publisher
+        _seed_soncino(test_db)
+        r = _handle_resolve_publisher(
+            ResolvePublisherParams(name="soncino", variants=[]), test_db, {}, None)
+        matched_lower = [m.lower() for m in r.matched_values]
+        assert "h. de soncino" in matched_lower
+        assert r.confidence > 0
+
+    def test_hebrew_falls_back_to_imprint_substring(self, test_db):
+        """'שונצינו' is absent from authorities; the resolver must probe the
+        imprints themselves rather than return nothing."""
+        from scripts.chat.executor import _handle_resolve_publisher
+        _seed_soncino(test_db)
+        r = _handle_resolve_publisher(
+            ResolvePublisherParams(name="שונצינו", variants=[]), test_db, {}, None)
+        assert "דפוס אליעזר שונצינו" in r.matched_values
+        assert r.match_method == "imprint_substring"
+
+    def test_publisher_equals_zero_relaxes_to_contains(self, test_db):
+        """A bare `publisher EQUALS 'soncino'` plan (no resolve step) matched
+        0 strictly; the ladder must broaden it to CONTAINS — recorded as a
+        relaxation, not silently."""
+        from scripts.chat.executor import _handle_retrieve
+        _seed_soncino(test_db)
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="soncino"),
+        ])
+        rs = _handle_retrieve(params, test_db, {}, None)
+        assert "MMS901" in rs.mms_ids
+        assert rs.total_count >= 1
+        assert any("soncino" in n and "broadened" in n for n in rs.relaxations)
