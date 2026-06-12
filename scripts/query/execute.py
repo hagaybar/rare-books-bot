@@ -211,6 +211,30 @@ def load_plan_from_file(plan_path: Path) -> QueryPlan:
     return QueryPlan(**plan_data)
 
 
+def _marc_source_from_provenance(row, default: str = "unknown") -> str:
+    """Derive the MARC source label from the agents provenance JSON.
+
+    The M3 agents table stores provenance as ``[{"source": "100[0]$a"}]`` —
+    ``source`` is a string already encoding tag, occurrence, and subfield.
+    Older data may carry the dict shape ``{"tag": "700", "occurrence": 1}``;
+    both are supported (issue #43).
+    """
+    if "agent_provenance" not in row.keys() or not row["agent_provenance"]:
+        return default
+    try:
+        provenance = json.loads(row["agent_provenance"])
+        first_source = provenance[0].get("source")
+        if isinstance(first_source, str) and first_source:
+            return first_source
+        if isinstance(first_source, dict):
+            tag = first_source.get("tag", default)
+            occ = first_source.get("occurrence", 0)
+            return f"{tag}[{occ}]"
+        return default
+    except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
+        return default
+
+
 def extract_evidence_for_filter(
     filter_obj,
     row: sqlite3.Row,
@@ -325,17 +349,7 @@ def extract_evidence_for_filter(
 
     elif filter_obj.field == FilterField.AGENT:
         # Derive MARC source tag from agent provenance (100=main entry, 700=added entry)
-        agent_marc_source = "100|700"
-        if "agent_provenance" in row.keys() and row["agent_provenance"]:
-            try:
-                provenance = json.loads(row["agent_provenance"])
-                if provenance and len(provenance) > 0:
-                    first_source = provenance[0].get("source", {})
-                    tag = first_source.get("tag", "100|700")
-                    occ = first_source.get("occurrence", 0)
-                    agent_marc_source = f"{tag}[{occ}]"
-            except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
-                agent_marc_source = "100|700"
+        agent_marc_source = _marc_source_from_provenance(row, default="100|700")
         # agent_raw is the aliased column name from the query
         agent_val = row["agent_raw"] if "agent_raw" in row.keys() else None
         return Evidence(
@@ -349,18 +363,7 @@ def extract_evidence_for_filter(
 
     elif filter_obj.field == FilterField.AGENT_NORM:
         # Stage 5: Extract provenance from agent_provenance JSON
-        marc_source = "unknown"
-        if "agent_provenance" in row.keys() and row["agent_provenance"]:
-            try:
-                provenance = json.loads(row["agent_provenance"])
-                if provenance and len(provenance) > 0:
-                    # Get first source from provenance array
-                    first_source = provenance[0].get("source", {})
-                    tag = first_source.get("tag", "unknown")
-                    occ = first_source.get("occurrence", 0)
-                    marc_source = f"{tag}[{occ}]"
-            except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
-                marc_source = "unknown"
+        marc_source = _marc_source_from_provenance(row)
 
         return Evidence(
             field="agent_norm",
@@ -373,17 +376,7 @@ def extract_evidence_for_filter(
 
     elif filter_obj.field == FilterField.AGENT_ROLE:
         # Stage 5: Role filter evidence
-        marc_source = "unknown"
-        if "agent_provenance" in row.keys() and row["agent_provenance"]:
-            try:
-                provenance = json.loads(row["agent_provenance"])
-                if provenance and len(provenance) > 0:
-                    first_source = provenance[0].get("source", {})
-                    tag = first_source.get("tag", "unknown")
-                    occ = first_source.get("occurrence", 0)
-                    marc_source = f"{tag}[{occ}]"
-            except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
-                marc_source = "unknown"
+        marc_source = _marc_source_from_provenance(row)
 
         return Evidence(
             field="role_norm",
@@ -396,17 +389,7 @@ def extract_evidence_for_filter(
 
     elif filter_obj.field == FilterField.AGENT_TYPE:
         # Stage 5: Agent type filter evidence
-        marc_source = "unknown"
-        if "agent_provenance" in row.keys() and row["agent_provenance"]:
-            try:
-                provenance = json.loads(row["agent_provenance"])
-                if provenance and len(provenance) > 0:
-                    first_source = provenance[0].get("source", {})
-                    tag = first_source.get("tag", "unknown")
-                    occ = first_source.get("occurrence", 0)
-                    marc_source = f"{tag}[{occ}]"
-            except (json.JSONDecodeError, IndexError, TypeError, AttributeError):
-                marc_source = "unknown"
+        marc_source = _marc_source_from_provenance(row)
 
         return Evidence(
             field="agent_type",
