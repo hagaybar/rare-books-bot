@@ -59,6 +59,12 @@ def mock_db(tmp_path):
         CREATE TABLE subjects (
             id INTEGER PRIMARY KEY, record_id INTEGER, value TEXT, value_he TEXT
         );
+        CREATE TABLE publisher_authorities (
+            id INTEGER PRIMARY KEY, canonical_name TEXT, canonical_name_lower TEXT
+        );
+        CREATE TABLE publisher_variants (
+            id INTEGER PRIMARY KEY, authority_id INTEGER, variant_form_lower TEXT
+        );
         CREATE TABLE agent_aliases (
             id INTEGER PRIMARY KEY, authority_id INTEGER, alias_form TEXT,
             alias_form_lower TEXT, alias_type TEXT, script TEXT, language TEXT
@@ -80,6 +86,10 @@ def mock_db(tmp_path):
         INSERT INTO imprints VALUES (1, 100, 'amsterdam', 1550, '1550', 'Amsterdam', 'Elzevir', 'elzevir');
         INSERT INTO subjects VALUES (1, 100, 'Optics', NULL);
         INSERT INTO subjects VALUES (2, 100, 'Mathematics', NULL);
+        INSERT INTO publisher_authorities VALUES (1, 'Elzevir', 'elzevir');
+        INSERT INTO network_agents VALUES
+            ('pub:elzevir', 'House of Elzevir', 'amsterdam', 52.37, 4.90,
+             NULL, NULL, '[]', 'publisher', 0, 1, 0, 'publisher', NULL);
         INSERT INTO authority_enrichment VALUES
             (1, 'uri:smith', 'Q111', 'https://en.wikipedia.org/wiki/John_Smith',
              'V123', '{"birth_year":1500}', 'John Smith');
@@ -381,5 +391,7 @@ def test_place_detail_carries_city_profile(client):
     assert data["year_min"] == 1550 and data["year_max"] == 1550
     assert {"decade": 1550, "count": 1} in data["decades"]
     assert any(p["name"] == "Elzevir" and p["count"] == 1 for p in data["top_publishers"])
+    # publisher resolves to its network node -> clickable pivot (city -> press)
+    assert any(p["agent_norm"] == "pub:elzevir" for p in data["top_publishers"])
     assert any(a["display_name"] == "John Smith" for a in data["top_agents"])
     assert any(s["subject"] == "Optics" for s in data["top_subjects"])
