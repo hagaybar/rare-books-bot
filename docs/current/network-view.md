@@ -102,7 +102,7 @@ models in `app/api/network_models.py`.
 
 | Endpoint | Purpose | Key params |
 |----------|---------|-----------|
-| `GET /network/map` | nodes + edges for the map | `connection_types`, `min_confidence`, `century`, `place`, `role`, `limit` (≤500, default 150) |
+| `GET /network/map` | nodes + edges for the map | `connection_types`, `min_confidence`, `century`, `place`, `role`, `limit` (≤3000, default 500; issue #35) |
 | `GET /network/search` | cross-script typeahead (issue #30) | `q`, `limit` |
 | `GET /network/ego/{agent_norm}` | induced 1-hop subgraph for ego mode (issue #31) | `connection_types`, `min_confidence`, `limit` (neighbour cap, default 60) |
 | `GET /network/path` | BFS shortest path between two agents (issue #33) | `source`, `target`, `connection_types`, `min_confidence`, `max_hops` |
@@ -206,5 +206,10 @@ facet, cross-script search), and Tier-3 **ego-network mode** (#31, force-directe
 Map ⟷ Network toggle with breadcrumb walking) + **pathfinding** (#33, "how are X
 and Y connected?" with an evidence-labeled chain) are shipped.
 
-Open: **#32** time slider · **#34** chat↔network loop · **#35** lift the 150-node
-cap · **#36** censorship MARC audit (deferred) · **#37** chat-handoff query template.
+The node cap was lifted (#35): `/map` serves up to 3,000 nodes (default 500),
+and readability is managed by **zoom-aware label density** in MapView
+(publishers always labelled; people labels grow 10→150 as you zoom in) rather
+than an arbitrary cap.
+
+Open: **#32** time slider · **#34** chat↔network loop · **#36** censorship MARC
+audit (deferred) · **#37** chat-handoff query template.
