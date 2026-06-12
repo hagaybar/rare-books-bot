@@ -274,16 +274,27 @@ export default function Network() {
     setTourOpen(false);
     try { localStorage.setItem('rb-network-tour-done', completed ? 'done' : 'skipped'); } catch { /* private mode */ }
   };
-  // Offer the tour once per browser, but never over a deep link.
+  // Don't hijack first-time users: OFFER the tour in a small dismissible
+  // pop-up instead of auto-starting it. 'Not now' hides it for this visit;
+  // 'Don't show again' persists; taking/skipping the tour also persists.
+  const [tourOffer, setTourOffer] = useState(false);
   useEffect(() => {
     try {
       if (localStorage.getItem('rb-network-tour-done')) return;
+      if (sessionStorage.getItem('rb-tour-offer-dismissed')) return;
     } catch { return; }
     if (searchParams.get('agent') || searchParams.get('session') || searchParams.get('overlay')) return;
-    const t = setTimeout(() => setTourOpen(true), 1500);
+    const t = setTimeout(() => setTourOffer(true), 1500);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const dismissOffer = (forever: boolean) => {
+    setTourOffer(false);
+    try {
+      if (forever) localStorage.setItem('rb-network-tour-done', 'declined');
+      else sessionStorage.setItem('rb-tour-offer-dismissed', '1');
+    } catch { /* private mode */ }
+  };
 
   // Time window on cities: re-weight each circle by books printed *within the
   // window* (decade resolution). Stable array order + zero counts (instead of
@@ -370,7 +381,7 @@ export default function Network() {
         {/* Guided tour entry (issue #38) */}
         <button
           onClick={() => setTourOpen(true)}
-          className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 text-sm text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50"
           title="Take a 2-minute guided tour"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -629,6 +640,38 @@ export default function Network() {
       )}
 
       {tourOpen && <Tour steps={tourSteps} onClose={closeTour} />}
+
+      {/* First-visit tour offer — small, polite, dismissible (issue #38 follow-up) */}
+      {tourOffer && !tourOpen && (
+        <div className="fixed bottom-16 right-4 z-50 w-80 bg-white border border-gray-200 rounded-xl shadow-xl p-4">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">New here?</h3>
+              <p className="mt-0.5 text-sm text-gray-600 leading-snug">
+                Take a 2-minute guided tour — it opens a city, a person's network,
+                and the timeline for you.
+              </p>
+            </div>
+            <button onClick={() => dismissOffer(false)} aria-label="Dismiss"
+                    className="text-gray-400 hover:text-gray-600 shrink-0 p-0.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <button onClick={() => dismissOffer(true)} className="text-xs text-gray-400 hover:text-gray-600 underline">
+              Don't show again
+            </button>
+            <button
+              onClick={() => { setTourOffer(false); setTourOpen(true); }}
+              className="px-3.5 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+            >
+              Take the tour
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Footer — compact on mobile */}
       <div className="px-4 py-2 bg-gray-50 border-t text-xs md:text-sm text-gray-500 flex justify-between">
