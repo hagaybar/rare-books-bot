@@ -1,4 +1,4 @@
-import type { MapResponse, AgentDetail, AgentWork, EgoResponse, PathResponse } from '../types/network';
+import type { MapResponse, AgentDetail, AgentWork, EgoResponse, PathResponse, PlaceMarker } from '../types/network';
 import { authenticatedFetch } from './auth';
 
 export interface NetworkSearchResult {
@@ -85,6 +85,11 @@ export async function fetchPath(
   if (params.minConfidence !== undefined) qs.set('min_confidence', String(params.minConfidence));
   const res = await authenticatedFetch(`${BASE}/path?${qs}`);
   return handleResponse<PathResponse>(res);
+}
+
+export async function fetchPlaces(): Promise<PlaceMarker[]> {
+  const res = await authenticatedFetch(`${BASE}/places`);
+  return handleResponse<PlaceMarker[]>(res);
 }
 
 export async function searchNetworkAgents(query: string): Promise<NetworkSearchResult[]> {

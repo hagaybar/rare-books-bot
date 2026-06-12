@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { fetchMapData, fetchAgentDetail, fetchPlaceDetail, fetchEgo, fetchPath } from '../api/network';
+import { fetchMapData, fetchAgentDetail, fetchPlaceDetail, fetchEgo, fetchPath, fetchPlaces } from '../api/network';
 import { useNetworkStore } from '../stores/networkStore';
 import MapView from '../components/network/MapView';
 import EgoView from '../components/network/EgoView';
@@ -175,6 +175,15 @@ export default function Network() {
       edges: all.edges.filter((e) => visible.has(e.source) && visible.has(e.target)),
     };
   }, [mapData, timeMode, windowStart, windowWidth]);
+
+  // Place-first map: cities (aggregated) is the default geographic view.
+  const mapLayer = useNetworkStore((s) => s.mapLayer);
+  const setMapLayer = useNetworkStore((s) => s.setMapLayer);
+  const { data: places } = useQuery({
+    queryKey: ['network-places'],
+    queryFn: fetchPlaces,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // Pathfinding (issue #33): from the current ego focal to a chosen target.
   const [pathTarget, setPathTarget] = useState<string | null>(null);
@@ -354,6 +363,8 @@ export default function Network() {
             <MapView
               nodes={timeFiltered.nodes}
               edges={timeFiltered.edges}
+              places={places}
+              mapLayer={mapLayer}
               selectedAgent={selectedAgent}
               onAgentClick={handleAgentClick}
               onBackgroundClick={handleClosePanel}
@@ -363,10 +374,33 @@ export default function Network() {
               communities={mapData?.meta.communities}
             />
           )}
-          <Legend colorBy={colorBy} activeTypes={connectionTypes} communities={mapData?.meta.communities} />
 
-          {/* Time slider (map mode only) — issue #32 */}
-          {viewMode === 'map' && !timeMode && mapData && (
+          {/* Place-first layer toggle: Cities (default) vs People */}
+          {viewMode === 'map' && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 inline-flex rounded-lg border border-gray-300 overflow-hidden text-sm shadow-sm bg-white" role="group" aria-label="Map layer">
+              <button
+                onClick={() => setMapLayer('cities')}
+                aria-pressed={mapLayer === 'cities'}
+                className={`px-3 py-1.5 ${mapLayer === 'cities' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                Printing cities
+              </button>
+              <button
+                onClick={() => setMapLayer('people')}
+                aria-pressed={mapLayer === 'people'}
+                className={`px-3 py-1.5 border-l border-gray-300 ${mapLayer === 'people' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                People
+              </button>
+            </div>
+          )}
+
+          {(viewMode === 'ego' || mapLayer === 'people') && (
+            <Legend colorBy={colorBy} activeTypes={connectionTypes} communities={mapData?.meta.communities} />
+          )}
+
+          {/* Time slider (people layer only for now) — issue #32 */}
+          {viewMode === 'map' && mapLayer === 'people' && !timeMode && mapData && (
             <button
               onClick={openTimeline}
               className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-gray-300 rounded-full shadow-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white"
@@ -377,7 +411,7 @@ export default function Network() {
               Play through time
             </button>
           )}
-          {viewMode === 'map' && timeMode && mapData && (
+          {viewMode === 'map' && mapLayer === 'people' && timeMode && mapData && (
             <TimeSlider
               min={yearMin}
               max={yearMax}

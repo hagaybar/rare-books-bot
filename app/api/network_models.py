@@ -60,6 +60,18 @@ class EgoResponse(BaseModel):
     meta: EgoMeta
 
 
+class PlaceMarker(BaseModel):
+    """An aggregated printing city for the place-first map (place redesign)."""
+    place_norm: str
+    place_display: str | None = None
+    lat: float
+    lon: float
+    record_count: int = 0  # books printed here
+    agent_count: int = 0  # people/presses placed here
+    year_min: int | None = None
+    year_max: int | None = None
+
+
 class PathResponse(BaseModel):
     source: str
     target: str

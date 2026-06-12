@@ -2,13 +2,15 @@ import { useMemo, useCallback, useRef, useState } from 'react';
 import MapGL, { NavigationControl } from 'react-map-gl/maplibre';
 import { DeckGL } from '@deck.gl/react';
 import { ArcLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
-import type { MapNode, MapEdge, ColorByMode } from '../../types/network';
+import type { MapNode, MapEdge, ColorByMode, PlaceMarker, MapLayer } from '../../types/network';
 import { CONNECTION_TYPE_CONFIG, getAgentColor, buildCommunityColorMap } from '../../types/network';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface Props {
   nodes: MapNode[];
   edges: MapEdge[];
+  places?: PlaceMarker[];
+  mapLayer?: MapLayer;
   selectedAgent: string | null;
   onAgentClick: (node: MapNode) => void;
   onBackgroundClick: () => void;
@@ -38,6 +40,8 @@ export default function MapView({
   isLoading,
   colorBy,
   communities,
+  places,
+  mapLayer = 'people',
 }: Props) {
   // Track whether a deck.gl object was picked on this click
   const pickedRef = useRef(false);
@@ -264,6 +268,66 @@ export default function MapView({
     [labelNodes, jitteredPositions]
   );
 
+  // ---- Place-first "cities" layer: one circle per printing city, sized by holdings ----
+  const cityData = places ?? [];
+  const cityRadius = (p: PlaceMarker) => 5 + Math.sqrt(p.record_count) * 1.9;
+  const cityLayer = useMemo(
+    () =>
+      new ScatterplotLayer<PlaceMarker>({
+        id: 'cities',
+        data: cityData,
+        getPosition: (d) => [d.lon, d.lat],
+        getRadius: cityRadius,
+        radiusUnits: 'pixels',
+        getFillColor: [37, 99, 235, 180],
+        getLineColor: [255, 255, 255, 230],
+        getLineWidth: 1.5,
+        lineWidthUnits: 'pixels',
+        stroked: true,
+        pickable: true,
+        onClick: (info) => {
+          if (info.object) {
+            pickedRef.current = true;
+            onPlaceSelect?.(info.object.place_norm);
+          }
+        },
+      }),
+    [cityData, onPlaceSelect]
+  );
+
+  // City labels: "City (N)", denser as you zoom in (avoids early clutter).
+  const cityLabelData = useMemo(() => {
+    const sorted = [...cityData].sort((a, b) => b.record_count - a.record_count);
+    const count = zoom <= 3 ? 8 : zoom <= 4 ? 14 : zoom <= 5 ? 30 : zoom <= 6 ? 60 : sorted.length;
+    return sorted.slice(0, count);
+  }, [cityData, zoom]);
+  const cityLabelLayer = useMemo(
+    () =>
+      new TextLayer<PlaceMarker>({
+        id: 'city-labels',
+        data: cityLabelData,
+        getPosition: (d) => [d.lon, d.lat],
+        getText: (d) => {
+          const name = (d.place_display || d.place_norm);
+          const cap = name.charAt(0).toUpperCase() + name.slice(1);
+          return `${cap} (${d.record_count})`;
+        },
+        getSize: 12,
+        getColor: [30, 41, 59, 235],
+        getTextAnchor: 'middle',
+        getAlignmentBaseline: 'top',
+        getPixelOffset: (d: PlaceMarker) => [0, cityRadius(d) + 2],
+        fontFamily: 'Inter, system-ui, sans-serif',
+        fontWeight: 600,
+        characterSet: 'auto',
+        outlineWidth: 3,
+        outlineColor: [255, 255, 255, 230],
+        billboard: false,
+        sizeUnits: 'pixels',
+      }),
+    [cityLabelData]
+  );
+
   // Handle background clicks via the MapGL onClick (fires for all map clicks).
   // We use pickedRef to distinguish: if deck.gl picked an object, skip the background handler.
   const handleMapClick = useCallback(() => {
@@ -289,9 +353,14 @@ export default function MapView({
           const z = Math.round(viewState.zoom);
           setZoom((prev) => (prev === z ? prev : z)); // only re-tier on level change
         }}
-        layers={[arcLayer, scatterLayer, labelLayer]}
+        layers={mapLayer === 'cities' ? [cityLayer, cityLabelLayer] : [arcLayer, scatterLayer, labelLayer]}
         getTooltip={({ object }: any) => {
           if (!object) return null;
+          if ('record_count' in object && 'place_norm' in object && !('agent_norm' in object)) {
+            const p = object as PlaceMarker;
+            const span = p.year_min && p.year_max ? `\n${p.year_min}–${p.year_max}` : '';
+            return { text: `${p.place_display || p.place_norm}\n${p.record_count} books · ${p.agent_count} people${span}\nClick to see what was printed here` };
+          }
           if ('agent_norm' in object) {
             const n = object as MapNode;
             const years =

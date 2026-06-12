@@ -133,6 +133,19 @@ export interface MapResponse {
   meta: MapMeta;
 }
 
+export type MapLayer = 'cities' | 'people'; // place-first map layer
+
+export interface PlaceMarker {
+  place_norm: string;
+  place_display: string | null;
+  lat: number;
+  lon: number;
+  record_count: number; // books printed here
+  agent_count: number;
+  year_min: number | null;
+  year_max: number | null;
+}
+
 export interface EgoMeta {
   truncated: boolean; // neighbours exceeded the cap (issue #31)
   total_neighbors: number;

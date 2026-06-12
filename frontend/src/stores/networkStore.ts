@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import type { ConnectionType, ColorByMode } from '../types/network';
+import type { ConnectionType, ColorByMode, MapLayer } from '../types/network';
 
 export type ViewMode = 'map' | 'ego';
+export type { MapLayer };
 export interface TrailItem { agent_norm: string; display_name: string }
 
 interface NetworkState {
@@ -22,6 +23,10 @@ interface NetworkState {
   colorBy: ColorByMode;
   setColorBy: (mode: ColorByMode) => void;
   resetFilters: () => void;
+
+  // Place-first map: cities (aggregated, default) vs people (individual dots)
+  mapLayer: MapLayer;
+  setMapLayer: (layer: MapLayer) => void;
 
   // Ego-network mode (issue #31)
   viewMode: ViewMode;
@@ -65,6 +70,10 @@ export const useNetworkStore = create<NetworkState>((set) => ({
   setAgentLimit: (val) => set({ agentLimit: val }),
   setColorBy: (mode) => set({ colorBy: mode }),
   resetFilters: () => set(DEFAULT_STATE),
+
+  // Place-first map: cities is the legible default; people is the opt-in detail.
+  mapLayer: 'cities',
+  setMapLayer: (layer) => set({ mapLayer: layer }),
 
   // Ego-network mode (issue #31) — kept out of DEFAULT_STATE so resetFilters
   // (a filter reset) doesn't yank the user out of the view they're in.
