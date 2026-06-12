@@ -84,6 +84,8 @@ Defined in `scripts/schemas/query_plan.py`:
 
 4 filter operations: `EQUALS`, `CONTAINS`, `RANGE`, `IN`
 
+**Per-field support is not uniform**: `year` supports only `RANGE` in the SQL adapter. The chat interpreter's `_convert_filter_dict` repairs common LLM shape mistakes at the conversion boundary: `IN` with a bare string is wrapped in a list, `EQUALS`/`CONTAINS` with a list is promoted to `IN`, and `year EQUALS <v>` with a parseable year is coerced to the degenerate `RANGE(start=v, end=v)` (issue #44 — previously crashed the retrieve step). `$step_N` references and unparseable values pass through untouched.
+
 ### Filter (BaseModel)
 
 Single filter condition: field, op, value/start/end, negate, confidence, notes.
