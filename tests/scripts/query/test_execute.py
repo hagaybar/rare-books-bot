@@ -470,11 +470,11 @@ class TestEvidenceExtractionFailure:
 
         original_fn = extract_evidence_for_filter
 
-        def selective_fail(filter_obj, row, field_prefix=""):
+        def selective_fail(filter_obj, row, field_prefix="", conn=None):
             """Fail only on YEAR filters, succeed on others."""
             if filter_obj.field == FilterField.YEAR:
                 raise RuntimeError("date extraction broke")
-            return original_fn(filter_obj, row, field_prefix)
+            return original_fn(filter_obj, row, field_prefix, conn=conn)
 
         with patch(
             "scripts.query.execute.extract_evidence_for_filter",
@@ -591,3 +591,187 @@ class TestAgentEvidenceProvenance:
         })
         evidence = extract_evidence_for_filter(filter_obj, row)
         assert evidence.source == "db.agents.agent_raw (marc:100[0]$a)"
+
+
+class TestEvidenceQualityCluster:
+    """Issue #51: evidence-layer quality fixes for extract_evidence_for_filter.
+
+    (a) imprint sources must cite the actual subfield+tag from source_tags
+    (b) language source must be a clean string, never a serialized JSON list
+    (c) country + physical_desc must have real extractor branches
+    (d) FTS matches must not yield Evidence.value=None on a real match
+    """
+
+    class FakeRow:
+        def __init__(self, data):
+            self.data = data
+        def __getitem__(self, key):
+            return self.data[key]
+        def keys(self):
+            return self.data.keys()
+        def get(self, key, default=None):
+            return self.data.get(key, default)
+
+    # --- (a) imprint subfield precision -----------------------------------
+
+    def test_publisher_source_cites_264b_from_source_tags(self):
+        """Publisher derived from a 264 row must cite marc:264$b, not marc:260."""
+        filter_obj = Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="aldine")
+        row = self.FakeRow({
+            "publisher_norm": "aldine press",
+            "publisher_confidence": 0.9,
+            "source_tags": '["264"]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.imprints.publisher_norm (marc:264$b)"
+
+    def test_place_source_cites_264a_from_source_tags(self):
+        """Imprint place from a 264 row must cite marc:264$a."""
+        filter_obj = Filter(field=FilterField.IMPRINT_PLACE, op=FilterOp.EQUALS, value="venice")
+        row = self.FakeRow({
+            "place_norm": "venice",
+            "place_confidence": 0.9,
+            "source_tags": '["264"]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.imprints.place_norm (marc:264$a)"
+
+    def test_year_source_cites_264c_from_source_tags(self):
+        """Date from a 264 row must cite marc:264$c."""
+        filter_obj = Filter(field=FilterField.YEAR, op=FilterOp.RANGE, start=1500, end=1599)
+        row = self.FakeRow({
+            "date_start": 1520,
+            "date_end": 1520,
+            "date_confidence": 0.99,
+            "source_tags": '["264"]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.imprints.date_start/date_end (marc:264$c)"
+
+    def test_imprint_source_falls_back_to_260_when_source_tags_absent(self):
+        """No source_tags -> sensible default tag (260) with the subfield."""
+        filter_obj = Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="x")
+        row = self.FakeRow({"publisher_norm": "x", "publisher_confidence": 0.5})
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.imprints.publisher_norm (marc:260$b)"
+
+    def test_imprint_source_preserves_explicit_subfield_in_source_tags(self):
+        """If source_tags already encodes a subfield, keep it verbatim."""
+        filter_obj = Filter(field=FilterField.PUBLISHER, op=FilterOp.EQUALS, value="x")
+        row = self.FakeRow({
+            "publisher_norm": "x",
+            "publisher_confidence": 0.5,
+            "source_tags": '["260$b"]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.imprints.publisher_norm (marc:260$b)"
+
+    # --- (b) clean language source ----------------------------------------
+
+    def test_language_source_no_json_list_leakage(self):
+        """language_source stored as JSON-list string must not leak the list."""
+        filter_obj = Filter(field=FilterField.LANGUAGE, op=FilterOp.EQUALS, value="lat")
+        row = self.FakeRow({
+            "language_code": "lat",
+            "language_source": '["041$a"]',
+        })
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.languages.code (marc:041$a)"
+        assert "[" not in evidence.source
+        assert '"' not in evidence.source
+
+    def test_language_source_plain_string(self):
+        """A plain (non-JSON) source string is used as-is."""
+        filter_obj = Filter(field=FilterField.LANGUAGE, op=FilterOp.EQUALS, value="lat")
+        row = self.FakeRow({"language_code": "lat", "language_source": "041$a"})
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.languages.code (marc:041$a)"
+
+    def test_language_source_defaults_to_008_when_missing(self):
+        """No language_source -> default to marc:008 (language is in 008)."""
+        filter_obj = Filter(field=FilterField.LANGUAGE, op=FilterOp.EQUALS, value="lat")
+        row = self.FakeRow({"language_code": "lat"})
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.source == "db.languages.code (marc:008)"
+
+    # --- (c) country + physical_desc branches -----------------------------
+
+    def test_country_branch_returns_real_source(self):
+        """COUNTRY must have a real branch (marc:008), not the unknown fallback."""
+        filter_obj = Filter(field=FilterField.COUNTRY, op=FilterOp.EQUALS, value="england")
+        row = self.FakeRow({"country_name": "england", "country_code": "enk"})
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.value == "england"
+        assert evidence.source != "unknown"
+        assert evidence.source == "db.imprints.country_name (marc:008)"
+
+    def test_physical_desc_branch_returns_real_source(self):
+        """PHYSICAL_DESC must have a real branch (marc:300), not unknown."""
+        filter_obj = Filter(field=FilterField.PHYSICAL_DESC, op=FilterOp.CONTAINS, value="plates")
+        row = self.FakeRow({"physical_desc_value": "24 plates : ill."})
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.value == "24 plates : ill."
+        assert evidence.source != "unknown"
+        assert evidence.source == "db.physical_descriptions.value (marc:300)"
+
+    def test_physical_desc_value_falls_back_to_matched_term(self):
+        """When the row carries no phys value, fall back to the matched term."""
+        filter_obj = Filter(field=FilterField.PHYSICAL_DESC, op=FilterOp.CONTAINS, value="maps")
+        row = self.FakeRow({})
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.value == "maps"
+        assert evidence.source == "db.physical_descriptions.value (marc:300)"
+
+    # --- (d) FTS match must not yield null value --------------------------
+
+    def test_title_fts_value_reread_from_base_table(self, test_db):
+        """TITLE FTS match with no title_value column -> re-read from base table."""
+        conn = sqlite3.connect(str(test_db))
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute(
+                "INSERT INTO titles (record_id, value, source) VALUES (1, ?, ?)",
+                ("Cosmographia universalis", '["245$a"]'),
+            )
+            conn.commit()
+            filter_obj = Filter(
+                field=FilterField.TITLE, op=FilterOp.CONTAINS, value="cosmographia"
+            )
+            # Row from an EXISTS-style query: mms_id present, title_value absent.
+            cur = conn.execute("SELECT mms_id FROM records WHERE id = 1")
+            row = cur.fetchone()
+            evidence = extract_evidence_for_filter(filter_obj, row, conn=conn)
+            assert evidence.value == "Cosmographia universalis"
+            assert evidence.value is not None
+        finally:
+            conn.close()
+
+    def test_subject_fts_value_reread_from_base_table(self, test_db):
+        """SUBJECT FTS match with null subject_value -> re-read from base table."""
+        conn = sqlite3.connect(str(test_db))
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute(
+                "INSERT INTO subjects (record_id, value, source) VALUES (2, ?, ?)",
+                ("Astronomy -- Early works", '["650[0]$a"]'),
+            )
+            conn.commit()
+            filter_obj = Filter(
+                field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="astronomy"
+            )
+            cur = conn.execute("SELECT mms_id FROM records WHERE id = 2")
+            row = cur.fetchone()
+            evidence = extract_evidence_for_filter(filter_obj, row, conn=conn)
+            assert evidence.value == "Astronomy -- Early works"
+            assert evidence.value is not None
+        finally:
+            conn.close()
+
+    def test_title_fts_value_present_in_row_is_used(self):
+        """When title_value is already in the row, no re-read is needed."""
+        filter_obj = Filter(
+            field=FilterField.TITLE, op=FilterOp.CONTAINS, value="cosmographia"
+        )
+        row = self.FakeRow({"title_value": "Cosmographia"})
+        evidence = extract_evidence_for_filter(filter_obj, row)
+        assert evidence.value == "Cosmographia"

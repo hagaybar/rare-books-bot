@@ -386,6 +386,12 @@ class GroundingData(BaseModel):
     links: list[GroundingLink] = Field(default_factory=list)
     publishers: list[PublisherDetail] = Field(default_factory=list)
     connections: list[dict] = Field(default_factory=list)
+    # Interpreter-level concept fan-out (issue #47): when the Interpreter
+    # expands one concept into several topical retrieve steps on DIFFERENT
+    # terms, the result set is silently broadened (each step's per-RecordSet
+    # ``relaxations`` stays empty). These notes name the explored terms so the
+    # narrator can disclose the broadening. Empty for single-topic queries.
+    broadening_notes: list[str] = Field(default_factory=list)
 
 
 class SessionContext(BaseModel):

@@ -82,9 +82,18 @@ def _truncate(obj, max_list=15, max_str=400):
 
 
 def _evidence_pass(filters_applied: list[dict], query_text: str) -> dict:
-    """Deterministic M5 evidence audit over post-resolution filters."""
+    """Deterministic M5 evidence audit over post-resolution filters.
+
+    ``filters_applied`` is polymorphic (issue #59 Defect B): retrieve steps
+    store real filter dicts (with a ``field`` key) while sample steps store
+    ``{"strategy", "n"}``. Only field-bearing entries are auditable; the
+    rest are skipped so a sample-shaped entry never crashes the audit.
+    """
+    filter_dicts = [f for f in filters_applied if isinstance(f, dict) and "field" in f]
+    if not filter_dicts:
+        return {"error": "no auditable filters (no field-bearing entries)"}
     try:
-        filters = [Filter(**f) for f in filters_applied]
+        filters = [Filter(**f) for f in filter_dicts]
     except Exception as e:
         return {"error": f"filter reconstruction failed: {e}"}
     if not filters:
@@ -102,11 +111,13 @@ def _evidence_pass(filters_applied: list[dict], query_text: str) -> dict:
                     ev = extract_evidence_for_filter(f, row)
                     ev_list.append(_truncate(ev.model_dump()))
                 except Exception as e:
-                    ev_list.append({
-                        "field": str(f.field),
-                        "source": "extraction_failed",
-                        "extraction_error": str(e),
-                    })
+                    ev_list.append(
+                        {
+                            "field": str(f.field),
+                            "source": "extraction_failed",
+                            "extraction_error": str(e),
+                        }
+                    )
             sample_evidence.append({"record_id": row["mms_id"], "evidence": ev_list})
         return {
             "sql": sql,
@@ -139,9 +150,7 @@ async def run_test(test: dict) -> dict:
         return result
 
     try:
-        exec_result = chat_execute_plan(
-            plan, DB_PATH, original_query=test["user_query"]
-        )
+        exec_result = chat_execute_plan(plan, DB_PATH, original_query=test["user_query"])
         result["outcome"] = "executed"
         result["total_record_count"] = exec_result.total_record_count
         result["steps"] = [_dump_step_result(sr) for sr in exec_result.steps_completed]
@@ -172,9 +181,7 @@ async def main() -> None:
     if args.only:
         tests = [t for t in tests if t["test_id"] in set(args.only)]
 
-    out_dir = args.out or Path(
-        f"data/runs/diagnostic_suite_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    )
+    out_dir = args.out or Path(f"data/runs/diagnostic_suite_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     combined = []
@@ -185,13 +192,9 @@ async def main() -> None:
         outcome = r.get("outcome") or r.get("interpreter_error", "error")[:60]
         counts = r.get("total_record_count")
         print(f"{outcome}" + (f" ({counts} records)" if counts is not None else ""))
-        (out_dir / f"{test['test_id']}.json").write_text(
-            json.dumps(r, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        (out_dir / f"{test['test_id']}.json").write_text(json.dumps(r, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    (out_dir / "_combined.json").write_text(
-        json.dumps(combined, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    (out_dir / "_combined.json").write_text(json.dumps(combined, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\nArtifacts: {out_dir}")
 
 

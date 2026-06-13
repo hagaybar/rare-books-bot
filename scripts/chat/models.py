@@ -26,12 +26,14 @@ from scripts.schemas import CandidateSet, QueryPlan
 # Two-Phase Conversation Enums and Models
 # =============================================================================
 
+
 class ConversationPhase(str, Enum):
     """Current phase of the conversation.
 
     QUERY_DEFINITION: User is defining their search criteria (Phase 1)
     CORPUS_EXPLORATION: User is exploring a defined subgroup (Phase 2)
     """
+
     QUERY_DEFINITION = "query_definition"
     CORPUS_EXPLORATION = "corpus_exploration"
 
@@ -41,15 +43,16 @@ class ExplorationIntent(str, Enum):
 
     These classify what the user wants to do with the active subgroup.
     """
-    METADATA_QUESTION = "metadata_question"    # "How many books are in Latin?"
-    AGGREGATION = "aggregation"                # "Top 10 publishers"
+
+    METADATA_QUESTION = "metadata_question"  # "How many books are in Latin?"
+    AGGREGATION = "aggregation"  # "Top 10 publishers"
     ENRICHMENT_REQUEST = "enrichment_request"  # "Tell me about Aldus Manutius"
-    RECOMMENDATION = "recommendation"          # "Most relevant for astronomy"
-    COMPARISON = "comparison"                  # "Compare Paris vs London"
-    REFINEMENT = "refinement"                  # "Only Latin books"
-    CROSS_REFERENCE = "cross_reference"          # "Show connections between agents"
-    CURATION = "curation"                      # "Curated selection for exhibit"
-    NEW_QUERY = "new_query"                    # "Let's search for something else"
+    RECOMMENDATION = "recommendation"  # "Most relevant for astronomy"
+    COMPARISON = "comparison"  # "Compare Paris vs London"
+    REFINEMENT = "refinement"  # "Only Latin books"
+    CROSS_REFERENCE = "cross_reference"  # "Show connections between agents"
+    CURATION = "curation"  # "Curated selection for exhibit"
+    NEW_QUERY = "new_query"  # "Let's search for something else"
 
 
 class ActiveSubgroup(BaseModel):
@@ -59,31 +62,28 @@ class ActiveSubgroup(BaseModel):
     CandidateSet and metadata about how it was defined.
 
     Attributes:
-        candidate_set: The CandidateSet with matched records
+        candidate_set: The CandidateSet with matched records. Optional: the
+            full set may be large and is not always persisted, so a loaded
+            subgroup can carry only ``record_ids`` (issue #59 Defect A).
         defining_query: The original query that defined this subgroup
         filter_summary: Natural language summary of the filters
         record_ids: List of MMS IDs in this subgroup (for efficient queries)
         created_at: When this subgroup was defined
     """
-    candidate_set: CandidateSet
+
+    candidate_set: Optional[CandidateSet] = None
     defining_query: str
     filter_summary: str
     record_ids: List[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    model_config = ConfigDict(
-        json_encoders={datetime: lambda v: v.isoformat()}
-    )
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
 
     def __init__(self, **data):
         super().__init__(**data)
         # Extract record_ids from candidate_set if not provided
         if not self.record_ids and self.candidate_set:
-            object.__setattr__(
-                self,
-                'record_ids',
-                [c.record_id for c in self.candidate_set.candidates]
-            )
+            object.__setattr__(self, 'record_ids', [c.record_id for c in self.candidate_set.candidates])
 
 
 class UserGoal(BaseModel):
@@ -97,13 +97,12 @@ class UserGoal(BaseModel):
         description: Natural language description of the goal
         elicited_at: When this goal was captured
     """
+
     goal_type: str  # "find_specific", "analyze_corpus", "compare", "discover"
     description: str
     elicited_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    model_config = ConfigDict(
-        json_encoders={datetime: lambda v: v.isoformat()}
-    )
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
 
 
 # =============================================================================
@@ -131,9 +130,7 @@ class Message(BaseModel):
     # target per-message feedback reports on restored sessions
     db_id: Optional[int] = None
 
-    model_config = ConfigDict(
-        json_encoders={datetime: lambda v: v.isoformat()}
-    )
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
 
 
 class ChatSession(BaseModel):
@@ -157,9 +154,7 @@ class ChatSession(BaseModel):
     context: Dict[str, Any] = Field(default_factory=dict)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-    model_config = ConfigDict(
-        json_encoders={datetime: lambda v: v.isoformat()}
-    )
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
 
     def add_message(self, message: Message) -> None:
         """Add message and update timestamp.

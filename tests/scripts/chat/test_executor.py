@@ -174,6 +174,45 @@ def test_db(tmp_path):
              'venice', 'Venice', 0.95, 'place_alias_map',
              'bomberg', 'Bomberg', 0.95, 'publisher_authority',
              'it', 'italy');
+        -- Issue #50: imprints whose publisher_norm merely *contains* 'rom'
+        -- inside an unrelated word. The substring fallback must NOT match
+        -- these on a short Latin variant ('rom'/'ram').
+        INSERT INTO imprints VALUES
+            (50, 50, 0, '1890', 'Stockholm', 'Broderna Lagerstroms Forlag',
+             NULL, '["264"]', 1890, 1890, '1890', 0.99, 'exact',
+             'stockholm', 'Stockholm', 0.95, 'place_alias_map',
+             'broderna lagerstroms forlag', 'Broderna Lagerstroms Forlag',
+             0.95, 'publisher_authority', 'sw', 'sweden');
+        INSERT INTO imprints VALUES
+            (51, 51, 0, '1901', 'Paris', 'Imprimerie de Jerome Perret',
+             NULL, '["264"]', 1901, 1901, '1901', 0.99, 'exact',
+             'paris', 'Paris', 0.95, 'place_alias_map',
+             'imprimerie de jerome perret', 'Imprimerie de Jerome Perret',
+             0.95, 'publisher_authority', 'fr', 'france');
+        INSERT INTO imprints VALUES
+            (52, 52, 0, '1925', 'Bucharest', 'Evreilor din Romania',
+             NULL, '["264"]', 1925, 1925, '1925', 0.99, 'exact',
+             'bucharest', 'Bucharest', 0.95, 'place_alias_map',
+             'evreilor din romania', 'Evreilor din Romania',
+             0.95, 'publisher_authority', 'ro', 'romania');
+        -- Issue #50: the legitimate Romm press, Hebrew form. The Hebrew
+        -- path must still resolve 'ראם' as a substring of this norm.
+        INSERT INTO imprints VALUES
+            (53, 53, 0, '1860', 'Vilna',
+             'האלמנה והאחים ראם',
+             NULL, '["264"]', 1860, 1860, '1860', 0.99, 'exact',
+             'vilna', 'Vilna', 0.95, 'place_alias_map',
+             'האלמנה והאחים ראם',
+             'Widow and Brothers Romm', 0.95, 'publisher_authority',
+             'lt', 'lithuania');
+        -- Issue #50: a distinctive longer Latin token must still match as a
+        -- legitimate substring ('plantin' inside 'officina plantiniana').
+        INSERT INTO imprints VALUES
+            (54, 54, 0, '1600', 'Antwerp', 'Officina Plantiniana',
+             NULL, '["264"]', 1600, 1600, '1600', 0.99, 'exact',
+             'antwerp', 'Antwerp', 0.95, 'place_alias_map',
+             'officina plantiniana', 'Officina Plantiniana',
+             0.95, 'publisher_authority', 'be', 'belgium');
 
         -- Agent: Karo on records 1 and 2
         INSERT INTO agents VALUES
@@ -615,6 +654,54 @@ def test_handle_resolve_publisher_not_found(test_db):
     assert result.match_method == "none"
 
 
+def test_resolve_publisher_short_latin_variant_no_bare_substring(test_db):
+    """Issue #50: a short Latin variant ('rom'/'ram') must NOT match inside
+    unrelated words via the imprint_substring fallback.
+
+    'lagerstroms', 'jerome', 'romania' all contain 'rom' as a bare substring
+    but none is the Romm press. Word-boundary / min-length anchoring must
+    exclude them entirely.
+    """
+    from scripts.chat.executor import _handle_resolve_publisher
+
+    params = ResolvePublisherParams(name="Romm", variants=["Rom", "Ram"])
+    result = _handle_resolve_publisher(params, test_db, step_results={}, session_context=None)
+
+    noise = {
+        "broderna lagerstroms forlag",
+        "imprimerie de jerome perret",
+        "evreilor din romania",
+    }
+    matched = {v.lower() for v in result.matched_values}
+    assert not (matched & noise), f"short Latin variant leaked noise: {matched & noise}"
+
+
+def test_resolve_publisher_legit_latin_substring_still_matches(test_db):
+    """Issue #50: a distinctive longer Latin token must still resolve as a
+    legitimate substring ('plantin' inside 'officina plantiniana')."""
+    from scripts.chat.executor import _handle_resolve_publisher
+
+    params = ResolvePublisherParams(name="Plantin", variants=[])
+    result = _handle_resolve_publisher(params, test_db, step_results={}, session_context=None)
+
+    matched = {v.lower() for v in result.matched_values}
+    assert "officina plantiniana" in matched
+    assert result.match_method == "imprint_substring"
+
+
+def test_resolve_publisher_hebrew_substring_still_resolves(test_db):
+    """Issue #50: the Hebrew path must keep working -- 'ראם' is a genuine
+    substring of 'האלמנה והאחים ראם' and must still resolve."""
+    from scripts.chat.executor import _handle_resolve_publisher
+
+    params = ResolvePublisherParams(name="ראם", variants=[])
+    result = _handle_resolve_publisher(params, test_db, step_results={}, session_context=None)
+
+    matched = result.matched_values
+    assert "האלמנה והאחים ראם" in matched
+    assert result.match_method == "imprint_substring"
+
+
 def test_handle_retrieve_basic(test_db):
     """retrieve with place filter returns matching records."""
     from scripts.chat.executor import _handle_retrieve
@@ -710,6 +797,54 @@ def test_handle_aggregate_reports_distinct_total(test_db):
     )
     assert full.distinct_values == len(full.facets)
     assert full.facets_truncated is False
+
+
+def test_handle_aggregate_unknown_field_signals_error(test_db):
+    """Seam audit B9 (#57): an unsupported aggregate field must NOT return a
+    silent empty AggregationResult (indistinguishable from '0 records').
+
+    The handler raises a handled PlanValidationError, which _execute_step
+    converts to status='error' with an error_message — so the narrator/user
+    sees 'unsupported aggregation field', not 'no results'.
+    """
+    from scripts.chat.executor import PlanValidationError, _handle_aggregate
+
+    with pytest.raises(PlanValidationError) as exc_info:
+        _handle_aggregate(
+            AggregateParams(field="not_a_real_field", scope="full_collection"),
+            test_db, step_results={}, session_context=None,
+        )
+    msg = str(exc_info.value).lower()
+    assert "unsupported" in msg
+    assert "not_a_real_field" in str(exc_info.value)
+
+
+def test_unknown_aggregate_field_surfaces_as_error_step(test_db):
+    """Plan-level: an unknown aggregate field yields a step with status='error'
+    and an explicit message, never a silent 'empty' AggregationResult."""
+    from scripts.chat.executor import execute_plan
+
+    plan = InterpretationPlan.model_construct(
+        intents=["analytical"],
+        reasoning="Test",
+        execution_steps=[
+            ExecutionStep.model_construct(
+                action=StepAction.AGGREGATE,
+                params=AggregateParams(field="bogus_field", scope="full_collection"),
+                label="Aggregate bogus",
+                depends_on=[],
+            )
+        ],
+        directives=[],
+        confidence=0.9,
+        clarification=None,
+    )
+    result = execute_plan(plan, db_path=test_db)
+    step = result.steps_completed[0]
+    assert step.status == "error"
+    assert step.status != "empty"
+    assert "unsupported" in (step.error_message or "").lower()
+    assert "bogus_field" in (step.error_message or "")
 
 
 def test_handle_enrich(test_db):
@@ -1688,3 +1823,70 @@ class TestUnresolvedProbeSelectivityCeiling:
             params, test_db, self._failed_resolve("Jacob ibn Habib"), None)
         assert rs.mms_ids == []
         assert rs.relaxations, "the rejection / resolution failure must be explained"
+
+
+class TestConceptFanoutTransparency:
+    """Issue #47: when the INTERPRETER expands one concept into several
+    topical retrieve steps (e.g. 'cartography' -> subject 'geography',
+    physical_desc 'maps', title 'atlas'), the results are broadened but each
+    RecordSet.relaxations is empty -- the broadening is silent. The executor
+    must record a transparency note naming the explored terms on the surface
+    the narrator consumes (grounding.broadening_notes)."""
+
+    def _topical_step(self, field, value, label):
+        return ExecutionStep(
+            action=StepAction.RETRIEVE,
+            params=RetrieveParams(
+                filters=[Filter(field=field, op=FilterOp.CONTAINS, value=value)]
+            ),
+            label=label,
+        )
+
+    def _plan(self, steps):
+        return InterpretationPlan(
+            intents=["retrieval"],
+            reasoning="t",
+            confidence=0.9,
+            execution_steps=steps,
+            directives=[],
+        )
+
+    def test_multi_topic_fanout_records_broadening_note(self, test_db):
+        # 'cartography' fanned out into three topical retrieves on different
+        # terms across different fields. Each strict-matches (relaxations stay
+        # empty), so the broadening would be invisible without a note.
+        plan = self._plan([
+            self._topical_step(FilterField.SUBJECT, "geography", "subject"),
+            self._topical_step(FilterField.PHYSICAL_DESC, "maps", "phys"),
+            self._topical_step(FilterField.TITLE, "Palaestina", "title"),
+        ])
+        result = execute_plan(plan, test_db)
+
+        # Per-step relaxations stay empty: each step strict-matched.
+        for step in result.steps_completed:
+            assert step.data.relaxations == []
+
+        notes = result.grounding.broadening_notes
+        assert notes, "interpreter-level fan-out must be recorded as a note"
+        joined = " ".join(notes).lower()
+        # The note names the explored terms so the narrator can surface them.
+        assert "geography" in joined
+        assert "maps" in joined
+        assert "palaestina" in joined
+
+    def test_single_topic_plan_has_no_broadening_note(self, test_db):
+        plan = self._plan([
+            self._topical_step(FilterField.SUBJECT, "geography", "subject"),
+        ])
+        result = execute_plan(plan, test_db)
+        assert result.grounding.broadening_notes == []
+
+    def test_repeated_same_term_is_not_fanout(self, test_db):
+        # Two topical retrieves on the SAME term are not a concept fan-out --
+        # no explored-terms note (single-topic queries stay unchanged).
+        plan = self._plan([
+            self._topical_step(FilterField.SUBJECT, "geography", "a"),
+            self._topical_step(FilterField.SUBJECT, "geography", "b"),
+        ])
+        result = execute_plan(plan, test_db)
+        assert result.grounding.broadening_notes == []

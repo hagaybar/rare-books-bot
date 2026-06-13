@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.chat.models import Message
+from scripts.chat.models import ActiveSubgroup, Message
 from scripts.chat.session_store import SessionStore
 from scripts.schemas import CandidateSet, Filter, FilterField, FilterOp, QueryPlan
 
@@ -80,7 +80,7 @@ def test_add_message_with_query_plan(store):
 
     plan = QueryPlan(
         query_text="books by Oxford",
-        filters=[Filter(field=FilterField.PUBLISHER, op=FilterOp.CONTAINS, value="Oxford")]
+        filters=[Filter(field=FilterField.PUBLISHER, op=FilterOp.CONTAINS, value="Oxford")],
     )
     msg = Message(role="user", content="books by Oxford", query_plan=plan)
 
@@ -104,9 +104,7 @@ def test_add_message_with_candidate_set(store):
         candidates=[],
         total_count=2,
     )
-    msg = Message(
-        role="assistant", content="Found 2 books", candidate_set=candidate_set
-    )
+    msg = Message(role="assistant", content="Found 2 books", candidate_set=candidate_set)
 
     store.add_message(session.session_id, msg)
 
@@ -262,9 +260,7 @@ def test_foreign_key_cascade(store):
     conn.commit()
 
     # Verify messages also deleted
-    cursor = conn.execute(
-        "SELECT COUNT(*) FROM chat_messages WHERE session_id = ?", (session.session_id,)
-    )
+    cursor = conn.execute("SELECT COUNT(*) FROM chat_messages WHERE session_id = ?", (session.session_id,))
     count = cursor.fetchone()[0]
     assert count == 0
 
@@ -278,7 +274,7 @@ def test_multiple_messages_with_plans_and_results(store):
     # User query
     plan1 = QueryPlan(
         query_text="books by Oxford",
-        filters=[Filter(field=FilterField.PUBLISHER, op=FilterOp.CONTAINS, value="Oxford")]
+        filters=[Filter(field=FilterField.PUBLISHER, op=FilterOp.CONTAINS, value="Oxford")],
     )
     msg1 = Message(role="user", content="books by Oxford", query_plan=plan1)
     store.add_message(session.session_id, msg1)
@@ -291,9 +287,7 @@ def test_multiple_messages_with_plans_and_results(store):
         candidates=[],
         total_count=2,
     )
-    msg2 = Message(
-        role="assistant", content="Found 2 books by Oxford", candidate_set=candidate_set1
-    )
+    msg2 = Message(role="assistant", content="Found 2 books by Oxford", candidate_set=candidate_set1)
     store.add_message(session.session_id, msg2)
 
     # Follow-up query
@@ -302,11 +296,9 @@ def test_multiple_messages_with_plans_and_results(store):
         filters=[
             Filter(field=FilterField.PUBLISHER, op=FilterOp.CONTAINS, value="Oxford"),
             Filter(field=FilterField.YEAR, op=FilterOp.RANGE, start=1600, end=1700),
-        ]
+        ],
     )
-    msg3 = Message(
-        role="user", content="books by Oxford from 17th century", query_plan=plan2
-    )
+    msg3 = Message(role="user", content="books by Oxford from 17th century", query_plan=plan2)
     store.add_message(session.session_id, msg3)
 
     # Retrieve and verify
@@ -368,11 +360,72 @@ def test_restored_messages_carry_db_id(store):
     """Restored sessions must expose chat_messages.id so the frontend can
     target per-message feedback reports (mark-as-problematic spec)."""
     session = store.create_session(user_id="user123")
-    first_id = store.add_message(
-        session.session_id, Message(role="user", content="q"))
-    second_id = store.add_message(
-        session.session_id, Message(role="assistant", content="a"))
+    first_id = store.add_message(session.session_id, Message(role="user", content="q"))
+    second_id = store.add_message(session.session_id, Message(role="assistant", content="a"))
 
     restored = store.get_session(session.session_id)
 
     assert [m.db_id for m in restored.messages] == [first_id, second_id]
+
+
+# =============================================================================
+# Active subgroup round-trip (issue #59 Defect A)
+# =============================================================================
+
+
+def _make_subgroup() -> ActiveSubgroup:
+    cs = CandidateSet(query_text="venice books", plan_hash="h0", sql="SELECT 1")
+    return ActiveSubgroup(
+        candidate_set=cs,
+        defining_query="venice books",
+        filter_summary="place = venice",
+        record_ids=["991", "992"],
+    )
+
+
+def test_set_and_get_active_subgroup_round_trip(store):
+    """Storing then loading an active subgroup returns it without raising."""
+    session = store.create_session(user_id="user123")
+    subgroup = _make_subgroup()
+
+    store.set_active_subgroup(session.session_id, subgroup)
+    loaded = store.get_active_subgroup(session.session_id)
+
+    assert loaded is not None
+    assert loaded.defining_query == "venice books"
+    assert loaded.filter_summary == "place = venice"
+    assert loaded.record_ids == ["991", "992"]
+
+
+def test_get_active_subgroup_absent_returns_none(store):
+    """Loading when no subgroup is set returns None without raising."""
+    session = store.create_session(user_id="user123")
+
+    assert store.get_active_subgroup(session.session_id) is None
+    assert store.get_active_subgroup("never-existed") is None
+
+
+def test_get_active_subgroup_null_candidate_set_does_not_raise(store):
+    """A stored row whose candidate_set column is NULL must load cleanly.
+
+    The set path stores NULL for candidate_set when the subgroup carries
+    no CandidateSet, so the load path must tolerate that shape rather than
+    raising a ValidationError by construction (issue #59 Defect A).
+    """
+    session = store.create_session(user_id="user123")
+    store.set_active_subgroup(session.session_id, _make_subgroup())
+
+    # Simulate the real stored shape: candidate_set column never populated.
+    conn = sqlite3.connect(str(store.db_path))
+    conn.execute(
+        "UPDATE active_subgroups SET candidate_set = NULL WHERE session_id = ?",
+        (session.session_id,),
+    )
+    conn.commit()
+    conn.close()
+
+    loaded = store.get_active_subgroup(session.session_id)
+
+    assert loaded is not None
+    assert loaded.defining_query == "venice books"
+    assert loaded.record_ids == ["991", "992"]

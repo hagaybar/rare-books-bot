@@ -1,5 +1,5 @@
 # Chatbot API
-> Last verified: 2026-06-12
+> Last verified: 2026-06-13
 > Source of truth for: HTTP chat endpoints, model comparison, session management, Hebrew/bilingual support, clarification flow, and API configuration
 
 ## Overview
@@ -303,6 +303,8 @@ The executor provides the narrator with rich grounding data beyond basic record 
 - **Expanded notes**: Notes from MARC tags 504 (bibliography), 505 (contents), and 590 (shelf marks) in addition to 500/520.
 - **Truncation feedback**: When results are truncated, the narrator is told "Showing N of M total records" and instructed to acknowledge this to the user.
 - **Aggregation honesty** (issue #42): every `aggregate` step computes a companion `COUNT(DISTINCT)` so `AggregationResult` carries `distinct_values` and `facets_truncated` alongside the top-K facets. `GroundingData.aggregation_meta` forwards these per field, and both narrator prompt builders render "N distinct values total — showing top K" on every aggregation block. Evidence rule 12 instructs the narrator to answer "how many X?" from N (never by counting visible facets) and to treat bracketed values like `[sine nomine]` as unattributed-record counts, not real entities.
+- **Unsupported aggregation field** (issue #57, seam audit B9): `_handle_aggregate` raises a `PlanValidationError` when the requested field is not in the supported `field_map` (after alias normalization). `_execute_step` converts this into a `StepResult` with `status="error"` and an explicit `error_message` ("Unsupported aggregation field: ... Supported fields: ..."). This replaces the prior silent-empty `AggregationResult`, which was indistinguishable from a genuine "0 records" result and violated the answer contract's evidence requirement. Supported fields are unchanged.
+- **Concept fan-out transparency** (issue #47): when the Interpreter expands one user concept (e.g. "cartography") into several topical retrieve steps on *different* terms (subject `geography`, physical_desc `maps`, title `atlas`), each step strict-matches so its per-`RecordSet.relaxations` stays empty — the broadening is invisible at the executor's relaxation-ladder level. `execute_plan` now detects this fan-out (`_concept_fanout_note`: 2+ `retrieve` steps, each carrying exactly one topical CONTAINS filter, across ≥2 distinct terms) and appends a note to `GroundingData.broadening_notes` ("explored related topics: geography, maps, atlas"). Both narrator prompt builders render a "SEARCH BROADENING (disclose to the user)" block from it. Single-topic queries (and repeated-same-term retrieves) produce no note and are unchanged.
 
 ### Features
 

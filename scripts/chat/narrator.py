@@ -808,6 +808,14 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
             sections.append(f"  - Step {s.step_index} ({s.label}): {s.status} -- {msg}")
         sections.append("")
 
+    # --- Concept fan-out disclosure (issue #47) ---
+    broadening_notes = result.grounding.broadening_notes
+    if broadening_notes:
+        sections.append("SEARCH BROADENING (disclose to the user):")
+        for note in broadening_notes:
+            sections.append(f"  - {note}")
+        sections.append("")
+
     # --- Truncation notice ---
     if result.truncated:
         sections.append(
@@ -1002,6 +1010,14 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
         for s in empty_steps:
             msg = s.error_message or "no results"
             sections.append(f"  - Step {s.step_index} ({s.label}): {s.status} -- {msg}")
+        sections.append("")
+
+    # --- Concept fan-out disclosure (issue #47) ---
+    broadening_notes = result.grounding.broadening_notes
+    if broadening_notes:
+        sections.append("SEARCH BROADENING (disclose to the user):")
+        for note in broadening_notes:
+            sections.append(f"  - {note}")
         sections.append("")
 
     # --- Truncation notice ---
