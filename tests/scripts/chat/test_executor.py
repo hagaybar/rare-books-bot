@@ -1498,3 +1498,102 @@ class TestSoncinoResolution:
         assert "MMS901" in rs.mms_ids
         assert rs.total_count >= 1
         assert any("soncino" in n and "broadened" in n for n in rs.relaxations)
+
+
+def _seed_jacob(db_path):
+    """Issue #45: an unresolved agent whose name carries a NON-SELECTIVE
+    given-name token ('jacob', many agents) plus a SELECTIVE family token
+    ('habib', one agent). Mirrors TEST-AUTH-04 'Jacob ibn Habib' at scale.
+
+    Rare record 950 ('ibn habib, jacob') is the only correct hit. Flood
+    records 951-954 share only the given name 'jacob'. The probe union must
+    reject the 'jacob' probe (count > ceiling) yet keep the 'habib'/'ibn'
+    probes (count <= ceiling), returning only record 950."""
+    conn = sqlite3.connect(db_path)
+    conn.executescript("""
+        INSERT INTO records VALUES (950, 'MMS950', 'f', '2024', 1);
+        INSERT INTO records VALUES (951, 'MMS951', 'f', '2024', 2);
+        INSERT INTO records VALUES (952, 'MMS952', 'f', '2024', 3);
+        INSERT INTO records VALUES (953, 'MMS953', 'f', '2024', 4);
+        INSERT INTO records VALUES (954, 'MMS954', 'f', '2024', 5);
+        -- Rare: the only 'habib' / 'ibn' agent, also a 'jacob'
+        INSERT INTO agents VALUES
+            (950, 950, 0, 'Jacob ibn Habib', 'personal', 'author',
+             'relator_code', NULL, 'ibn habib, jacob', 0.95, 'base_clean',
+             NULL, 'author', 0.95, 'relator_code', '[]');
+        -- Flood: four other Jacobs, no 'habib'/'ibn' token
+        INSERT INTO agents VALUES
+            (951, 951, 0, 'Jacob Levi', 'personal', 'author',
+             'relator_code', NULL, 'levi, jacob', 0.95, 'base_clean',
+             NULL, 'author', 0.95, 'relator_code', '[]');
+        INSERT INTO agents VALUES
+            (952, 952, 0, 'Jacob Simeon', 'personal', 'author',
+             'relator_code', NULL, 'simeon, jacob', 0.95, 'base_clean',
+             NULL, 'author', 0.95, 'relator_code', '[]');
+        INSERT INTO agents VALUES
+            (953, 953, 0, 'Jacob Moses', 'personal', 'author',
+             'relator_code', NULL, 'moses, jacob', 0.95, 'base_clean',
+             NULL, 'author', 0.95, 'relator_code', '[]');
+        INSERT INTO agents VALUES
+            (954, 954, 0, 'Jacob Asher', 'personal', 'author',
+             'relator_code', NULL, 'asher, jacob', 0.95, 'base_clean',
+             NULL, 'author', 0.95, 'relator_code', '[]');
+    """)
+    conn.commit()
+    conn.close()
+
+
+class TestUnresolvedProbeSelectivityCeiling:
+    """Issue #45: the unresolved-entity probe union must reject non-selective
+    tokens (a common given name floods the result set). A probe matching more
+    records than the selectivity ceiling is NOT unioned; selective probes are.
+    """
+
+    def _failed_resolve(self, query_name):
+        return {0: StepResult(
+            step_index=0, action="resolve_agent", label="resolve",
+            status="empty",
+            data=ResolvedEntity(query_name=query_name, matched_values=[],
+                                match_method="none", confidence=0.0))}
+
+    def test_common_token_flood_rejected_rare_token_kept(self, test_db, monkeypatch):
+        from scripts.chat import executor
+        from scripts.chat.executor import _handle_retrieve
+        _seed_jacob(test_db)
+        # Force a low ceiling so the math is deterministic on the small fixture:
+        # 'habib'/'ibn' match 1 record (<= 2, selective), 'jacob' matches 5
+        # records (> 2, non-selective -> rejected).
+        monkeypatch.setattr(executor, "_SELECTIVITY_CEILING_OVERRIDE", 2)
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.AGENT_NORM, op=FilterOp.EQUALS, value="$step_0"),
+        ])
+        rs = _handle_retrieve(
+            params, test_db, self._failed_resolve("Jacob ibn Habib"), None)
+        # The rare token's record IS returned.
+        assert "MMS950" in rs.mms_ids
+        # The common-token flood is NOT unioned.
+        for flooded in ("MMS951", "MMS952", "MMS953", "MMS954"):
+            assert flooded not in rs.mms_ids
+        # The rejection is recorded honestly as a relaxation note.
+        assert any(
+            "rejected as non-selective" in n and "jacob" in n.lower()
+            for n in rs.relaxations
+        ), rs.relaxations
+
+    def test_all_probes_non_selective_falls_through_to_honest_empty(
+        self, test_db, monkeypatch
+    ):
+        from scripts.chat import executor
+        from scripts.chat.executor import _handle_retrieve
+        _seed_jacob(test_db)
+        # Ceiling 0: every probe (>=1 hit) is non-selective and rejected; with
+        # no other filter to recover on, the result is an honest empty set with
+        # the resolution-failure / rejection notes intact.
+        monkeypatch.setattr(executor, "_SELECTIVITY_CEILING_OVERRIDE", 0)
+        params = RetrieveParams(filters=[
+            Filter(field=FilterField.AGENT_NORM, op=FilterOp.EQUALS, value="$step_0"),
+        ])
+        rs = _handle_retrieve(
+            params, test_db, self._failed_resolve("Jacob ibn Habib"), None)
+        assert rs.mms_ids == []
+        assert rs.relaxations, "the rejection / resolution failure must be explained"

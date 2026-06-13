@@ -177,14 +177,15 @@ Defined in `scripts/query/models.py`:
 
 ---
 
-## Unresolved Entity Recovery (issues #3, #4)
+## Unresolved Entity Recovery (issues #3, #4, #45)
 
 When a `resolve_agent`/`resolve_publisher` step finds nothing, the dependent retrieve must never query the literal `$step_N` string. Instead (`scripts/chat/executor.py`):
 
 1. **Token probes**: CONTAINS probes built from the resolve step's `query_name` and its planner-supplied variants (`ResolvedEntity.query_variants`) — a Hebrew name ("דפוס פלנטין") typically carries its only Latin-script token in the variants ("Plantin"). Generic trade words (דפוס, press, officina…) are stoplisted.
 2. **Twin-field probes**: publisher↔agent_norm cross-probes (printers are catalogued as both — "Daniel Bomberg" the agent vs "daniel bomberg, venice" the publisher).
 3. **Union, not first hit**: all probe hits are unioned (hard filters stay ANDed inside each probe), so a 1-record accidental match can't block a 12-record recovery.
-4. **Last resort**: drop the probe, keep remaining hard filters; honest empty if nothing remains.
+4. **Selectivity ceiling (#45)**: a probe whose hit-count **exceeds** the ceiling is non-selective and is **not** unioned. The ceiling is derived once from collection size — `max(20, round(0.01 * COUNT(*)))` (~28 for the 2,796-record collection) via `_selectivity_ceiling()`. This stops a common given-name token from flooding the set: "Jacob ibn Habib" (unresolved) — `agent_norm CONTAINS 'Jacob'` matches every Jacob (rejected), while the selective siblings `'Habib'` (2) and `'חביב'` (6) still union (TEST-AUTH-04). The rejection is recorded (`probe … matched N records (> ceiling C); rejected as non-selective`). The first token, which the strict pass ran as a hard filter, is re-evaluated through the ceiling rather than seeding the union un-checked. `_SELECTIVITY_CEILING_OVERRIDE` (module-level, `None` in production) lets tests force a low ceiling deterministically.
+5. **Last resort**: drop the probe, keep remaining hard filters; honest empty if nothing remains (e.g. when *all* probes are rejected as non-selective and there is no other filter to recover on).
 
 Every move is recorded in `RecordSet.relaxations`. Multi-value resolved bindings pass `normalize_filter_value` (comma'd canonical names like "bomberg, daniel" match the comma-stripped SQL expression). Acceptance: `tests/integration/test_unresolved_ref_recovery.py` replays the stored 2026-06-10 zero-result plans deterministically.
 

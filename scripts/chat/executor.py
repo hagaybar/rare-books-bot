@@ -735,6 +735,33 @@ _TWIN_FIELD = {
 }
 
 
+# Issue #45: selectivity ceiling for the unresolved-entity probe union. A
+# probe whose CONTAINS hit-count EXCEEDS the ceiling is non-selective (e.g. a
+# common given name 'Jacob' matches every Jacob in the collection) and must NOT
+# be unioned into the recovery set. The ceiling is derived from collection size
+# (~1% of records, floored at a small constant). Tests force a low ceiling via
+# the override below; production always derives it from COUNT(*).
+_SELECTIVITY_CEILING_MIN = 20
+_SELECTIVITY_CEILING_FRACTION = 0.01
+# Test-only injection point. None => derive from collection size. Never set in
+# production code paths.
+_SELECTIVITY_CEILING_OVERRIDE: Optional[int] = None
+
+
+def _selectivity_ceiling(conn: sqlite3.Connection) -> int:
+    """Max probe hit-count that still counts as selective for the
+    unresolved-entity probe union (issue #45).
+
+    Derived once from collection size: max(MIN, round(FRACTION * total)).
+    A module-level override (None in production) lets tests force a low,
+    deterministic ceiling without seeding thousands of rows.
+    """
+    if _SELECTIVITY_CEILING_OVERRIDE is not None:
+        return _SELECTIVITY_CEILING_OVERRIDE
+    total = conn.execute("SELECT COUNT(*) FROM records").fetchone()[0]
+    return max(_SELECTIVITY_CEILING_MIN, round(_SELECTIVITY_CEILING_FRACTION * total))
+
+
 # Trade words that appear in countless printer/publisher names — probing them
 # floods the recovery union with noise ('דפוס' alone matches 220 imprints).
 _FALLBACK_STOPWORDS = {
@@ -1113,7 +1140,18 @@ def _handle_retrieve(
                 normalized = _normalize_multivalue_filters(list(filters), probe_mv)
                 return _run_filter_query(conn, normalized, scope_ids, probe_mv or None)
 
-            union: set = set(mms_ids)
+            # Issue #45: a non-selective token (a common given name) matches
+            # most of the collection and would flood the recovery set. Reject
+            # any probe whose hit-count exceeds the selectivity ceiling derived
+            # from collection size; only selective probes are unioned.
+            #
+            # The strict pass above ran the fallback probe's FIRST token as a
+            # hard filter, so its (possibly flooded) result is in mms_ids. That
+            # token was never ceiling-checked, so do NOT seed the union with it:
+            # rebuild from the genuinely-hard `remaining` filters only, then let
+            # every fallback token (including the first) face the ceiling below.
+            ceiling = _selectivity_ceiling(conn)
+            union: set = set(_try(remaining)) if remaining else set()
             for idx in sorted(fallback_indices):
                 base = resolved_filters[idx]
                 ref = fallback_refs.get(idx, "$step_?")
@@ -1124,18 +1162,23 @@ def _handle_retrieve(
                     fields.append(twin)
                 for fld in fields:
                     for token in tokens:
-                        if fld == base.field and token == base.value:
-                            continue  # already counted by the strict pass
                         probe = base.model_copy(update={"field": fld, "value": token})
                         ids = _try(remaining + [probe])
-                        if ids:
+                        if not ids:
+                            continue
+                        if len(ids) > ceiling:
                             relaxations.append(
-                                f"{ref} recovered {len(ids)} records via "
-                                f"{fld.value} CONTAINS '{token}'"
+                                f"probe {fld.value} CONTAINS '{token}' matched "
+                                f"{len(ids)} records (> ceiling {ceiling}); "
+                                f"rejected as non-selective"
                             )
-                            union |= set(ids)
-            if union:
-                mms_ids = sorted(union)
+                            continue
+                        relaxations.append(
+                            f"{ref} recovered {len(ids)} records via "
+                            f"{fld.value} CONTAINS '{token}'"
+                        )
+                        union |= set(ids)
+            mms_ids = sorted(union)
 
             # Last resort: nothing recovered — drop the probes entirely.
             if not mms_ids and remaining:
