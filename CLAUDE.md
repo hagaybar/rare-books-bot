@@ -41,6 +41,7 @@ Every response--even internal ones--must be grounded in:
 - **Preserve raw MARC values always** (no destructive normalization)
 - Normalized fields must be **reversible**: store raw alongside normalized
 - If uncertain: store `null`/range + **explicit reason**; never invent data
+- **Embeddings exception (scoped):** the lone sanctioned use of embeddings is to expand a *concept* into the collection's **real** subject headings (semantic subject search, `resolve_subject_concept` + `subject_embeddings`). Record matching still happens **exactly** on those headings and the matched headings are surfaced as evidence. Embeddings are **never** used for record retrieval/ranking — this is the only exception to "No embedding-based retrieval" below. See `docs/current/architecture.md` and `docs/current/chatbot-api.md`.
 
 ## Code Style
 
@@ -154,7 +155,7 @@ If you read a `docs/current/` file and notice it contradicts the code, fix the d
 
 This is **NOT** a general RAG platform. Key differences:
 - Source of truth is **MARC XML**, not arbitrary documents
-- No embedding-based retrieval (use SQLite fielded queries first)
+- No embedding-based retrieval (use SQLite fielded queries first). **One sanctioned exception:** embeddings expand a *concept* → the collection's real subject headings (semantic subject search); record matching stays exact and evidential — never embedding-based retrieval. See Data Model Rules above.
 - Answers require **deterministic evidence** from MARC fields
 - Normalization must be **reversible** and **confident**
 - Query execution must produce **CandidateSet before narrative**

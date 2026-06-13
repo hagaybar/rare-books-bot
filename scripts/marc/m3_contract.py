@@ -44,6 +44,9 @@ class M3Tables:
     WIKIPEDIA_CACHE = "wikipedia_cache"
     WIKIPEDIA_CONNECTIONS = "wikipedia_connections"
 
+    # Semantic subject search (offline embedding step, #63)
+    SUBJECT_EMBEDDINGS = "subject_embeddings"
+
     # FTS5 virtual tables
     TITLES_FTS = "titles_fts"
     SUBJECTS_FTS = "subjects_fts"
@@ -266,6 +269,15 @@ class M3Columns:
         NOTES = "notes"
         CREATED_AT = "created_at"
 
+    # subject_embeddings table (semantic subject search offline step, #63)
+    class SubjectEmbeddings:
+        """Columns in subject_embeddings table."""
+        HEADING_VALUE = "heading_value"
+        LANG = "lang"
+        DIM = "dim"
+        MODEL_ID = "model_id"
+        VECTOR = "vector"
+
 
 # Commonly used table aliases in SQL queries
 class M3NetworkColumns:
@@ -386,6 +398,7 @@ EXPECTED_SCHEMA = {
     M3Tables.RECORD_SCOPE_FLAGS: _get_class_string_attrs(M3NetworkColumns.RecordScopeFlags),
     M3Tables.WIKIPEDIA_CACHE: _get_class_string_attrs(M3NetworkColumns.WikipediaCache),
     M3Tables.WIKIPEDIA_CONNECTIONS: _get_class_string_attrs(M3NetworkColumns.WikipediaConnections),
+    M3Tables.SUBJECT_EMBEDDINGS: _get_class_string_attrs(M3Columns.SubjectEmbeddings),
 }
 
 

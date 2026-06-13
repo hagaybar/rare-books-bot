@@ -1,6 +1,6 @@
 # Ingestion Pipeline
-> Last verified: 2026-04-01
-> Source of truth for: Full MARC XML ingestion pipeline -- 7 phases from parsing through enrichment to final verification
+> Last verified: 2026-06-13
+> Source of truth for: Full MARC XML ingestion pipeline -- 7 phases from parsing through enrichment to final verification, plus the offline subject-embedding step
 
 ## Overview
 
@@ -77,6 +77,16 @@ The full ingestion pipeline rebuilds `bibliographic.db` from MARC XML through al
 - Run full QA suite
 - Verify record counts, coverage statistics
 - Confirm no data integrity issues
+
+---
+
+## Subject embeddings (offline, for semantic subject search)
+
+A decoupled **offline** step that backs the semantic concept-count feature (`resolve_subject_concept`). It is **not** part of the 7-phase rebuild — run it on a GPU/CPU box after the index exists or when the heading set changes. It produces no embedding-based *retrieval*: vectors only map a user *concept* to the collection's real `subjects.value` headings; record matching stays exact (see `docs/current/architecture.md` → "Semantic subject search").
+
+1. **Export the model** — `python scripts/index/export_embed_model.py` exports `intfloat/multilingual-e5-small` → `data/models/e5-small-onnx/` (`model.onnx` + tokenizer, ~465 MB). This dir is **not in git**; it ships into the Docker image via the build context (`COPY` in `Dockerfile`) and is a pre-build/pre-deploy requirement.
+2. **Embed headings (`embed_subjects`)** — `python scripts/index/embed_subjects.py` collects distinct non-empty `subjects.value`/`value_he`, encodes them via `OnnxEmbedder.encode_passages` (mean-pool + L2-norm + e5 `passage:` prefix), and writes the `subject_embeddings(heading_value, lang, dim, model_id, vector BLOB)` table into `data/index/bibliographic.db`. Idempotent (DELETE+INSERT by `model_id`); ~6,190 rows for the current collection.
+3. **Verify** — `sqlite3 data/index/bibliographic.db "SELECT COUNT(*), model_id FROM subject_embeddings GROUP BY model_id"`. At runtime, `executor.get_subject_resolver` / `load_subject_resolver` fail loud and disable concept resolution if this table is empty or the model dir is missing.
 
 ---
 

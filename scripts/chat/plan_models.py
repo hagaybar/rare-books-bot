@@ -44,6 +44,7 @@ class StepAction(str, Enum):
 
     RESOLVE_AGENT = "resolve_agent"
     RESOLVE_PUBLISHER = "resolve_publisher"
+    RESOLVE_SUBJECT_CONCEPT = "resolve_subject_concept"
     RETRIEVE = "retrieve"
     AGGREGATE = "aggregate"
     FIND_CONNECTIONS = "find_connections"
@@ -70,6 +71,19 @@ class ResolvePublisherParams(BaseModel):
 
     name: str
     variants: list[str] = Field(default_factory=list)
+
+
+class ResolveSubjectConceptParams(BaseModel):
+    """Parameters for the ``resolve_subject_concept`` action.
+
+    Resolves a user *concept* (e.g. "philosophy") to the collection's real
+    subject headings via the local multilingual embedding resolver. ``top_k``
+    caps how many headings are returned (records still match exactly on those
+    headings; the matched headings are the evidence).
+    """
+
+    concept: str
+    top_k: int = 40
 
 
 class RetrieveParams(BaseModel):
@@ -150,6 +164,19 @@ class ResolvedEntity(BaseModel):
     # Variants the planner supplied to the resolve step (issue #3 fallback:
     # a Hebrew query_name may carry its only Latin-script token here).
     query_variants: list[str] = Field(default_factory=list)
+
+
+class ResolvedHeadings(BaseModel):
+    """Output of ``resolve_subject_concept``.
+
+    ``headings`` are the real collection subject headings the concept resolved
+    to (the values a downstream ``retrieve`` matches on exactly). ``matches``
+    carries the per-heading evidence detail (e.g. {"heading", "score",
+    "record_count"}) the narrator cites — the count is always transparent.
+    """
+
+    headings: list[str]
+    matches: list[dict] = Field(default_factory=list)
 
 
 class RecordSet(BaseModel):
@@ -245,6 +272,7 @@ class EnrichmentBundle(BaseModel):
 StepParams = Union[
     ResolveAgentParams,
     ResolvePublisherParams,
+    ResolveSubjectConceptParams,
     RetrieveParams,
     AggregateParams,
     FindConnectionsParams,
@@ -310,6 +338,7 @@ class InterpretationPlan(BaseModel):
 # Union of all step output types for StepResult.data
 StepOutputData = Union[
     ResolvedEntity,
+    ResolvedHeadings,
     RecordSet,
     AggregationResult,
     ConnectionGraph,

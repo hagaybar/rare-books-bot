@@ -40,9 +40,9 @@ def _aggregate_step(scope="$previous_results"):
     )
 
 
-def _plan(steps):
+def _plan(steps, intents=None):
     return InterpretationPlan(
-        intents=["search"],
+        intents=intents or ["search"],
         execution_steps=steps,
         directives=[],
         reasoning="r",
@@ -132,6 +132,43 @@ def test_explore_in_set_leaves_held_set_unchanged():
     result = _exec_result([], total_record_count=0)
     sub = build_subgroup_update(plan, result, "how many are in Hebrew?")
     assert sub is None
+
+
+def test_explore_in_set_concept_count_leaves_held_set_unchanged():
+    """A concept-count turn (explore-in-set) runs a scoped retrieve to COUNT
+    over the held set, but must NOT replace it — the held set is unchanged."""
+    plan = _plan(
+        [_retrieve_step(scope="$previous_results")],
+        intents=["explore-in-set"],
+    )
+    result = _exec_result([["0", "1"]], total_record_count=2)
+    sub = build_subgroup_update(plan, result, "how many are in philosophy?")
+    assert sub is None
+
+
+def test_refine_in_set_intent_replaces_with_narrowed_set():
+    """A refine-in-set retrieve still replaces the held set with the narrowed
+    full set, even though it is scoped to $previous_results."""
+    plan = _plan(
+        [_retrieve_step(scope="$previous_results")],
+        intents=["refine-in-set"],
+    )
+    result = _exec_result([["0", "1"]], total_record_count=2)
+    sub = build_subgroup_update(plan, result, "only the Hebrew ones")
+    assert sub is not None
+    assert sub.record_ids == ["0", "1"]
+
+
+def test_new_search_intent_replaces_held_set():
+    """A new-search (full_collection retrieve) still replaces the held set."""
+    plan = _plan(
+        [_retrieve_step(scope="full_collection")],
+        intents=["new-search"],
+    )
+    result = _exec_result([["0", "1", "2"]], total_record_count=3)
+    sub = build_subgroup_update(plan, result, "printed in Venice")
+    assert sub is not None
+    assert sub.record_ids == ["0", "1", "2"]
 
 
 def test_empty_result_leaves_held_set_unchanged():
