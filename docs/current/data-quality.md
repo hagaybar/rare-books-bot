@@ -1,6 +1,6 @@
 # Data Quality
 
-> Last verified: 2026-06-12
+> Last verified: 2026-06-13
 > Source of truth for: Quality checks, fix scripts, sampling protocol, remediation processes
 
 ## 1. Overview
@@ -317,6 +317,11 @@ These operate on the materialized `network_*` tables behind the Network view. Th
 - **Problem**: the alias seeder (`seed_from_enrichment`) recovered grouped norms via `GROUP_CONCAT` + `split(',')`, fragmenting every comma-containing `agent_norm` — 'blanchard, théophile' existed only as the primary aliases 'blanchard' and 'théophile' (the latter attached to Théophile Gautier's authority); 1,946 norms had no alias row. User-visible: "tell me about Blanchard, Théophile" could not ground.
 - **Fix script**: `scripts/qa/fixes/fix_29_repair_agent_alias_fragments.py` (seeding code fixed in the same commit — Python-side grouping, no comma split)
 - **What it does**: deletes 3,183 fragment primary aliases (same-authority comma-segments only; enrichment-derived variant/cross-script rows untouched), inserts 1,944 missing full-norm primaries. Applied 2026-06-12 (local): 0 comma-norms left without an alias; 141 cross-authority collisions skipped + reported (duplicate-authority follow-up issue). Blanchard resolves alias_exact 0.95 → 1/1 records.
+
+#### Fix 30: Repair Seam-Audit Derived Violations (issue #58)
+- **Problem**: the 2026-06-12 seam audit's invariant sweep found 4 live violations — D1: 26 authority-linked mononym agent_norms lost their alias to fix_29's collision-order bug (collision check ran against pre-deletion state); D3: 2 orphan `same_place_period` network edges referencing the merged-away node `מנשה בן ישראל`; D2: 3 Proops Hebrew forms shadowing `unknown_marker` placeholder authorities; D4: 1 d'Alembert `wikidata_id` disagreement between `agent_authorities` and `authority_enrichment`.
+- **Fix script**: `scripts/qa/fixes/fix_30_repair_seam_audit_violations.py` (dry-run default; `--apply` takes `.pre-fix30.bak`)
+- **What it does**: D1 — re-inserts the 26 vanished primary aliases (evaluating collisions against current state; 4 dual-claim mononyms go to the lower `authority_id`, the loser flagged for curation). D3 — deletes the 2 orphan edges **and recomputes `connection_count`** on the surviving endpoints (deleting edges alone left invariant N4 violated; the battery caught it). D2/D4 — report-only, left for curation. Applied 2026-06-13 (local): I1/N1/N4/alias-dupes all 0. Enforced by `tests/integration/test_derived_invariants.py` (I1/N1 strict; P3/E1 xfail pending curation).
 
 ## 4. Sampling Protocol
 
