@@ -721,6 +721,45 @@ def _is_topical_contains(f: Filter) -> bool:
     return f.field in _TOPICAL_CONTAINS_FIELDS and f.op == FilterOp.CONTAINS and not f.negate
 
 
+def _ascii_stem_variants(term: str) -> List[str]:
+    """Issue #48: conservative singular<->plural variants of a topical term.
+
+    FTS5's default tokenizer has no stemmer, so a singular probe
+    ('limited edition') misses the plural heading ('Limited editions') and
+    vice versa. Toggle a trailing ASCII 's' (and a trailing 'es') on the
+    last whitespace-delimited token to bridge the gap in the relaxation
+    ladder — never an index rebuild.
+
+    ASCII-only by design: a term containing any non-ASCII letter is Hebrew
+    (or otherwise non-Latin) where trailing-'s' morphology is meaningless,
+    so it yields no variants. Variants are de-duplicated and never include
+    the original term.
+    """
+    if not term:
+        return []
+    if any(not ch.isascii() and ch.isalpha() for ch in term):
+        return []
+    head, sep, last = term.rpartition(" ")
+    if not last or not last[-1].isalpha():
+        return []
+    variants: List[str] = []
+
+    def _add(new_last: str) -> None:
+        candidate = f"{head}{sep}{new_last}"
+        if candidate != term and candidate not in variants:
+            variants.append(candidate)
+
+    low = last.casefold()
+    if low.endswith("s") and len(last) > 1:
+        _add(last[:-1])  # plural -> singular ('editions' -> 'edition')
+        if low.endswith("es") and len(last) > 2:
+            _add(last[:-2])  # 'boxes' -> 'box'
+    else:
+        _add(last + "s")  # singular -> plural ('edition' -> 'editions')
+        _add(last + "es")  # 'box' -> 'boxes'
+    return variants
+
+
 _FALLBACK_CONTAINS_FIELDS = {
     FilterField.AGENT_NORM, FilterField.PUBLISHER, FilterField.IMPRINT_PLACE,
     FilterField.TITLE, FilterField.SUBJECT,
@@ -1021,6 +1060,21 @@ def _relax_and_retry(
                     f"'{exp.value}' ({len(exp_hits)} records)"
                 )
                 topic_hits |= set(exp_hits)
+        # Issue #48: morphological fallback. If the term recovered nothing on
+        # its own (no concept-map entry / no plural form catalogued), try a
+        # conservative ASCII singular<->plural toggle on the SAME field before
+        # honest-empty. Composes with concept expansion above; never fires when
+        # the term already matched.
+        if not topic_hits:
+            for variant in _ascii_stem_variants(str(tf.value)):
+                probe = tf.model_copy(update={"value": variant})
+                var_hits = _run_probe(others + [probe])
+                if var_hits:
+                    notes.append(
+                        f"no match for {tf.field.value} '{tf.value}'; matched "
+                        f"variant '{variant}' ({len(var_hits)} records)"
+                    )
+                    topic_hits |= set(var_hits)
         union |= topic_hits
 
     if not union:

@@ -151,6 +151,10 @@ def test_db(tmp_path):
         -- Themed records for relaxation-ladder tests (issue #2)
         INSERT INTO records VALUES (4, '990111111', 'test.xml', '2024-01-01', 4);
         INSERT INTO records VALUES (5, '990222222', 'test.xml', '2024-01-01', 5);
+        -- Stemming relaxation-ladder records (issue #48): plural subject
+        -- heading + a Hebrew heading that must never be s-toggled.
+        INSERT INTO records VALUES (6, '990333333', 'test.xml', '2024-01-01', 6);
+        INSERT INTO records VALUES (7, '990444444', 'test.xml', '2024-01-01', 7);
 
         INSERT INTO imprints VALUES
             (1, 1, 0, '1565', 'Venice', 'Bragadin', NULL, '["264"]',
@@ -210,6 +214,14 @@ def test_db(tmp_path):
         INSERT INTO subjects VALUES
             (102, 5, 'Art -- History', '650',
              NULL, 'en', NULL, NULL, '["650"]', NULL);
+        -- Issue #48: plural English heading (singular probe must recover it)
+        INSERT INTO subjects VALUES
+            (103, 6, 'Limited editions', '650',
+             NULL, 'en', NULL, NULL, '["650"]', NULL);
+        -- Issue #48: Hebrew heading must never be s-toggled
+        INSERT INTO subjects VALUES
+            (104, 7, 'תלמוד', '650',
+             NULL, 'he', NULL, NULL, '["650"]', NULL);
 
         INSERT INTO physical_descriptions VALUES
             (201, 4, '2 v. : ill., 10 folded maps', '["300"]');
@@ -1140,6 +1152,85 @@ class TestRetrieveRelaxationLadder:
         step = result.steps_completed[0]
         assert step.status == "empty"
         assert step.data.mms_ids == []
+
+
+class TestStemmingRelaxation:
+    """Issue #48: a singular topical CONTAINS term must find the plural
+    heading (and vice versa) via a conservative ASCII trailing-s toggle
+    before declaring honest-empty. FTS5 has no stemmer; recall must not
+    depend on the LLM emitting the exact morphological form."""
+
+    def _plan(self, filters):
+        return InterpretationPlan(
+            intents=["retrieval"],
+            reasoning="t",
+            confidence=0.9,
+            execution_steps=[
+                ExecutionStep(
+                    action=StepAction.RETRIEVE,
+                    params=RetrieveParams(filters=filters),
+                    label="t",
+                )
+            ],
+            directives=[],
+        )
+
+    def test_singular_subject_recovers_plural_heading(self, test_db):
+        # subject CONTAINS "limited edition" → 0 strict; the ladder must
+        # toggle the trailing 's' and match heading "Limited editions".
+        plan = self._plan([
+            Filter(
+                field=FilterField.SUBJECT,
+                op=FilterOp.CONTAINS,
+                value="limited edition",
+            ),
+        ])
+        result = execute_plan(plan, test_db)
+        step = result.steps_completed[0]
+        data = step.data
+        assert step.status == "ok"
+        assert "990333333" in data.mms_ids
+        assert data.relaxations, "stemming relaxation must be recorded"
+        joined = " ".join(data.relaxations).lower()
+        assert "limited edition" in joined
+        assert "limited editions" in joined
+
+    def test_strict_match_does_not_stem(self, test_db):
+        # Exact plural already matches → no relaxation note at all.
+        plan = self._plan([
+            Filter(
+                field=FilterField.SUBJECT,
+                op=FilterOp.CONTAINS,
+                value="limited editions",
+            ),
+        ])
+        result = execute_plan(plan, test_db)
+        data = result.steps_completed[0].data
+        assert "990333333" in data.mms_ids
+        assert data.relaxations == []
+
+    def test_no_variant_match_stays_honest_empty(self, test_db):
+        # "rabbit" → "rabbits"/"rabbites"; neither exists → honest empty.
+        plan = self._plan([
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="rabbit"),
+        ])
+        result = execute_plan(plan, test_db)
+        step = result.steps_completed[0]
+        assert step.status == "empty"
+        assert step.data.mms_ids == []
+
+    def test_hebrew_term_is_not_s_toggled(self, test_db):
+        # A non-matching Hebrew term must not be s-toggled (no Latin 's' in
+        # Hebrew). With no variant probe and no concept expansion, the result
+        # is honest-empty; no stemming relaxation note may be recorded.
+        plan = self._plan([
+            Filter(field=FilterField.SUBJECT, op=FilterOp.CONTAINS, value="תלמודים"),
+        ])
+        result = execute_plan(plan, test_db)
+        step = result.steps_completed[0]
+        assert step.status == "empty"
+        assert step.data.mms_ids == []
+        assert all("variant" not in r.lower() for r in step.data.relaxations)
 
 
 class TestScopeUnion:
