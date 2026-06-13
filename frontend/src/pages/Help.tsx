@@ -627,6 +627,64 @@ const SECTIONS: Section[] = [
     ),
   },
   {
+    id: 'engine',
+    title: '11. Stage 2, up close: the engine runs the recipe',
+    body: (
+      <>
+        <p>
+          This is the deterministic heart — <strong>no AI, fully repeatable</strong>, and the stage
+          that actually produces the evidence trail. The engine works through the recipe's steps{' '}
+          <strong>in order</strong>, because they can depend on each other: a "look up the Bragadin
+          press" step must finish before the "search with filters" step that uses its result.
+        </p>
+        <p className="mt-3">
+          The core move turns each condition in your question into a filter and{' '}
+          <strong>combines them with AND — all must hold at once.</strong> "Books printed in Venice
+          in the 16th century" becomes <em>place = venice</em> <strong>and</strong>{' '}
+          <em>year in 1500–1599</em>, run against the lists, returning the matching books.
+        </p>
+        <p className="mt-4 font-semibold text-gray-900">The evidence trail — the promise made real</p>
+        <p className="mt-1">
+          For every book it returns, the engine records <strong>why it matched</strong> — which
+          field, holding which value, in which record. That's the trail back to the catalog card:
+          not "trust me," but "this book is here <em>because</em> its place field says venice and its
+          date field says 1553." The written answer later cites this. (The bug where a match lost its
+          trail and just said "source: unknown" was a flaw right here.)
+        </p>
+        <p className="mt-4 font-semibold text-gray-900">When nothing matches: broadening, openly</p>
+        <p className="mt-1">
+          If the strict "all conditions at once" search returns <strong>zero</strong> books, the
+          engine broadens — gently, under two firm rules:
+        </p>
+        <ol className="mt-2 list-decimal space-y-2 pl-5">
+          <li>
+            <strong>Hard limits are never loosened.</strong> Place, year, language, a named person,
+            and any "not-this" exclusion stay firm; only <strong>descriptive/topic words</strong> are
+            allowed to widen. "Hebrew grammar books in Amsterdam in the 1600s" might broaden the
+            topic "grammar" — but it will <em>never</em> quietly drop Amsterdam or the 1600s and hand
+            you Frankfurt books from 1750.
+          </li>
+          <li>
+            <strong>Every widening is written down and shown to you</strong> — "no exact subject
+            'cartography'; broadened to 'geography' and 'maps' (18 books)." If even the broadened
+            search finds nothing, you get an <strong>honest empty result</strong>, never a guess.
+          </li>
+        </ol>
+        <p className="mt-3">
+          Two recent refinements live here: trying the <strong>plural/singular</strong> of a topic
+          word before giving up (so "limited edition" still finds "limited editions"), and a{' '}
+          <strong>selectivity cap</strong> so that when a name can't be resolved, a common word like
+          "Jacob" can't flood the results with unrelated books.
+        </p>
+        <p className="mt-3">
+          <strong>What it hands off:</strong> the matching books, the total count, the exact search
+          that ran, the evidence for each match, and a record of any broadening. The writer in
+          Stage 3 can only speak about what's in this package.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'glossary',
     title: 'In plain words — a mini glossary',
     body: (
