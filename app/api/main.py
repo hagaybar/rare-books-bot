@@ -922,6 +922,44 @@ async def expire_session(session_id: str, user=Depends(require_role("limited")))
     return {"status": "success", "message": f"Session {session_id} expired"}
 
 
+@app.delete("/sessions/{session_id}/subgroup")
+async def reset_subgroup(session_id: str, user=Depends(require_role("limited"))):
+    """Clear the held result set ("active subgroup") for a session.
+
+    The frontend "Search all" reset calls this. Requires 'limited' role or
+    higher; users may only reset their own sessions (admins, any). Clearing a
+    session with no held set is a 200 no-op (issue #60 part 2).
+
+    Args:
+        session_id: Session identifier
+        user: Authenticated user from JWT
+
+    Returns:
+        Success message
+
+    Raises:
+        HTTPException: If session not found or access denied
+    """
+    store = get_session_store()
+    session = store.get_session(session_id)
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session {session_id} not found",
+        )
+
+    if str(session.user_id) != str(user["user_id"]) and user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied",
+        )
+
+    # set_active_subgroup(None) deletes the row (no separate clear method).
+    store.set_active_subgroup(session_id, None)
+    return {"status": "success", "message": "Active subgroup cleared"}
+
+
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     """WebSocket endpoint for streaming chat responses.
