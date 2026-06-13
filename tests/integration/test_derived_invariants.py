@@ -2,12 +2,10 @@
 
 Encodes every derived-artifact invariant from the seam audit as a permanent
 regression guard: each invariant is a read-only SELECT against the live DB that
-returns a *violation count*, asserted == 0. fix_30 (applied 2026-06-13) repaired
-two of the four audit violations: D1=I1 (vanished aliases) and D3=N1 (orphan
-network edges) now enforce strictly. The remaining two — D2=P3 (Proops
-placeholder/variant shadows) and D4=E1 (d'Alembert wikidata disagreement) — are
-report-only curation decisions fix_30 deliberately did not touch and stay
-``xfail(strict=False)`` until curated (#58 D2/D4, related to #54).
+returns a *violation count*, asserted == 0. All four original audit violations
+are now repaired and enforce strictly: D1=I1 (vanished aliases) and D3=N1
+(orphan network edges) by fix_30, and D2=P3 (Proops placeholder shadows) and
+D4=E1 (d'Alembert wikidata disagreement) by fix_31 (both applied 2026-06-13).
 
 Rules honoured:
 - DB is opened strictly read-only (``mode=ro`` URI); only SELECT/PRAGMA run.
@@ -65,15 +63,8 @@ def _count(conn: sqlite3.Connection, sql: str) -> int:
     return conn.execute(sql).fetchone()[0]
 
 
-# I1 (D1) and N1 (D3) were repaired by fix_30 (applied 2026-06-13) and now
-# enforce strictly — a regression fails the battery loudly. The remaining two
-# violations, P3 (D2 Proops placeholder shadows) and E1 (D4 d'Alembert wikidata
-# disagreement), are report-only curation decisions fix_30 deliberately did not
-# touch; they stay xfail until curated (tracked with #54 / the duplicate-
-# authority cleanup). strict=False so an eventual curation fix doesn't surprise.
-_XFAIL_CURATION = pytest.mark.xfail(
-    strict=False, reason="report-only, pending curation (#58 D2/D4)"
-)
+# All four original audit violations (I1/N1 via fix_30, P3/E1 via fix_31) are
+# repaired and now enforce strictly — a regression fails the battery loudly.
 
 # --- All invariants that currently hold at 0 (~27) --------------------------
 # (invariant_id, description, sql). Audit SQL used verbatim where given.
@@ -166,8 +157,7 @@ INVARIANTS = [
         "SELECT COUNT(*) FROM publisher_variants pv "
         "JOIN publisher_authorities pa "
         "ON pa.canonical_name_lower=pv.variant_form_lower AND pa.id<>pv.authority_id",
-        "#58/D2",
-        marks=_XFAIL_CURATION,
+        "#58/D2 (fixed by fix_31)",
         id="P3-variant_never_shadows_foreign_canonical",
     ),
     pytest.param(
@@ -309,7 +299,6 @@ INVARIANTS = [
         "WHERE aa.wikidata_id IS NOT NULL AND ae.wikidata_id IS NOT NULL "
         "AND aa.wikidata_id <> ae.wikidata_id",
         "#58/D4",
-        marks=_XFAIL_CURATION,
         id="E1-enrichment_wikidata_agreement",
     ),
     pytest.param(
