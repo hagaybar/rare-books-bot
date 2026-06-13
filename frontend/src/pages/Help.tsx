@@ -567,6 +567,66 @@ const SECTIONS: Section[] = [
     ),
   },
   {
+    id: 'recipe',
+    title: '10. Stage 1, up close: turning your sentence into a recipe',
+    body: (
+      <>
+        <p>
+          This is the one stage where the AI exercises real judgment — so it's worth a close look.
+          It receives <strong>your question</strong> (plus a little recent-conversation context, so
+          follow-ups like "and only the Hebrew ones" make sense) and must produce a{' '}
+          <strong>structured recipe</strong> — not prose, not a search. The recipe has a few parts:
+          the <strong>steps</strong> to run, a short note of the <strong>intent</strong> it read
+          from your words, a <strong>confidence</strong> score, a <strong>clarification</strong> slot
+          (filled <em>instead</em> of steps when it needs to ask you back), and a{' '}
+          <strong>"dropped" log</strong> of anything it tried that had to be thrown out.
+        </p>
+        <p className="mt-2">
+          The key constraint: the AI can only build the recipe from a <strong>fixed menu</strong> —
+          the seven moves, a fixed list of fields (place, year, language, subject, title, publisher,
+          person, role) and four operators (equals, contains, range, is-one-of). It cannot invent a
+          new kind of search; it can only assemble one from known pieces.
+        </p>
+        <p className="mt-4 font-semibold text-gray-900">The rules it must follow</p>
+        <ul className="mt-1 list-disc space-y-2 pl-5">
+          <li>
+            <strong>Never invent constraints.</strong> The recipe must come only from what's in your
+            words. "Show me the interesting books" must <em>not</em> become a search for some subject
+            the AI made up — that fabrication is explicitly forbidden.
+          </li>
+          <li>
+            <strong>If a term looks garbled, ask — don't guess.</strong> A likely typo triggers a
+            clarification, never a silent swap for what the AI assumes you meant.
+          </li>
+          <li>
+            <strong>If the question is too vague, clarify.</strong> Filling the clarification slot{' '}
+            <strong>stops the whole process</strong> — you get a question back, not a guessed answer.
+          </li>
+          <li>
+            <strong>Route words to the right field.</strong> A descriptive word should become a{' '}
+            <em>subject</em> search, not be mistaken for an author's name.
+          </li>
+        </ul>
+        <p className="mt-4 font-semibold text-gray-900">The safety net behind it</p>
+        <p className="mt-1">
+          The recipe is <strong>not trusted blindly</strong> — it's checked against the fixed
+          rulebook before anything runs. A fixable slip is <strong>repaired</strong> (a single year
+          written as "equals 1805" becomes the range the engine supports); an unfixable one is{' '}
+          <strong>dropped and logged</strong>, so a half-understood question never pretends to be
+          fully understood. In one line: <strong>the AI is a planner whose plan must pass
+          validation; if it can't, the system fails safely rather than running a broken search.</strong>
+        </p>
+        <p className="mt-3">
+          <strong>Why this stage is the fragile one.</strong> Because it's the only place the AI
+          truly judges, it's where the recognizable mistakes are born: a filter silently{' '}
+          <em>dropped</em> (you asked for Venice <em>and</em> the 16th century; it kept only Venice),
+          a filter <em>invented</em>, or a word sent to the <em>wrong field</em>. Catching exactly
+          these was the point of the project's recent testing push.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'glossary',
     title: 'In plain words — a mini glossary',
     body: (
