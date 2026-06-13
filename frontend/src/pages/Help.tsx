@@ -105,7 +105,7 @@ const GLOSSARY: { term: string; plain: string }[] = [
   {
     term: 'Enrichment (Wikidata / web)',
     plain:
-      'Extra detail pulled in from outside sources (like Wikidata) to fill gaps the catalog left — e.g. a person’s occupation. Useful, but not reproducible from the catalog card alone.',
+      'Extra detail fetched from outside sources (Wikidata, Wikipedia, VIAF) to fill gaps the catalog left — dates, occupation, a name’s other-script form. A side-branch: it makes search and the map richer, but it is background, never evidence about what the collection holds, and it is the least reproducible part (a live web fetch, cached once).',
   },
 ];
 
@@ -802,6 +802,62 @@ const SECTIONS: Section[] = [
           what isn't fully guaranteed is perfect <em>wording or judgment</em>. That residual gap is
           exactly why the <strong>"Report" button</strong> on each answer exists — so a reader who
           spots an off answer can flag it, evidence and all.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'enrichment',
+    title: '14. Enrichment — reaching outside the catalog',
+    body: (
+      <>
+        <p>
+          One side-branch we set aside earlier: <strong>enrichment</strong> reaches <em>out</em> to
+          public knowledge bases — Wikidata, Wikipedia, VIAF — to add context the catalog card never
+          contained. It's keyed by the catalog's own identity links, so it can ask, in effect, "tell
+          me more about the person the library filed under this number."
+        </p>
+        <p className="mt-2">
+          <strong>What it pulls back</strong> (and saves, with a timestamp): a person's dates and
+          places (born / died), nationality, occupation, their <strong>name in other scripts</strong>{' '}
+          (the Hebrew form), a short description, sometimes an image and a Wikipedia link; for
+          presses, similar identity and location detail.
+        </p>
+        <p className="mt-4 font-semibold text-gray-900">It's behind several things you've already seen</p>
+        <ul className="mt-1 list-disc space-y-1 pl-5">
+          <li>
+            <strong>Cross-script bridging</strong> — the Hebrew name-form it returns is <em>how</em>{' '}
+            a person's two scripts get linked even when the catalog didn't.
+          </li>
+          <li>
+            <strong>Filling in roles</strong> — the occupations it pulls filled the blank or
+            non-standard roles in the people section.
+          </li>
+          <li>
+            <strong>Person &amp; press identity</strong> — the dates, locations, and outward links on
+            authority records; and the <strong>map and network</strong> views.
+          </li>
+          <li>
+            <strong>"General background"</strong> the writer may add — and must label as outside
+            knowledge.
+          </li>
+        </ul>
+        <p className="mt-4 font-semibold text-gray-900">The least reproducible part of all</p>
+        <p className="mt-1">
+          Everything else either comes straight from the catalog (fully reproducible) or from a
+          frozen file (reproducible because it was captured once). Enrichment is different: it's a{' '}
+          <strong>live reach-out to the open web</strong>, fetched once and cached with an expiry
+          date. Re-run it next year and Wikidata may have changed — so it's the <em>least</em>{' '}
+          reproducible component, and the <strong>only place facts from outside your collection
+          enter the system.</strong>
+        </p>
+        <p className="mt-3">
+          That's why the boundary matters: enrichment stays on a <strong>side-branch, never on the
+          main spine.</strong> The core promise — every <em>answer</em> traceable to a real catalog
+          field — does not depend on it and must not be blurred by it. Enrichment makes search richer
+          and the map possible, but a fact from Wikipedia is always <em>background</em>, never{' '}
+          <em>evidence</em> about what your collection holds. The system keeps those two kinds of
+          knowing in separate boxes on purpose.
         </p>
       </>
     ),
