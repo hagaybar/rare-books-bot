@@ -43,6 +43,52 @@ interface Section {
   body: ReactNode;
 }
 
+/** Plain-language definitions for the few unavoidable technical words. */
+const GLOSSARY: { term: string; plain: string }[] = [
+  {
+    term: 'Catalog record (MARC)',
+    plain:
+      "The library's digital catalog card for a book, written in MARC — the standard format libraries share. It's the single source of truth here.",
+  },
+  {
+    term: 'Field (e.g. 264, 008)',
+    plain:
+      'One labelled slot on the catalog card. Numbers like 264 (publication line) or 008 (coded summary) are just the librarians’ names for those slots.',
+  },
+  {
+    term: 'Normalize / tidy up',
+    plain:
+      'Adding a cleaned, standard version of a value next to the original — e.g. the messy printed date "c. 1650" gets a tidy "1645–1655" beside it. The original is never erased.',
+  },
+  {
+    term: 'Raw vs. normalized',
+    plain:
+      'Raw = exactly what the cataloger typed. Normalized = the tidy, searchable version. Both are kept, so nothing is lost and every answer can be traced back.',
+  },
+  {
+    term: 'Lookup list (alias map)',
+    plain:
+      'A translation dictionary that maps many spellings of one thing to a single standard name — ויניציאה / Venezia / In Venetia all → venice.',
+  },
+  {
+    term: 'Standard name (canonical form)',
+    plain: 'The one agreed spelling everything collapses to, so search works across spellings and scripts.',
+  },
+  {
+    term: 'Confidence',
+    plain: 'A 0–1 score for how sure the tidy-up is. An exact year scores ~0.99; a tricky Hebrew-calendar conversion scores lower.',
+  },
+  {
+    term: 'Evidence / provenance',
+    plain: 'A pointer from any answer back to the exact spot in the original record that justifies it — the "show your work" trail.',
+  },
+  {
+    term: 'Gives the same result every time',
+    plain:
+      'A step that, fed the same record, always produces the same output (no AI, nothing random in the moment). Most tidy-up steps are like this.',
+  },
+];
+
 // ---------------------------------------------------------------------------
 // The content. To grow the page, add a new {id, title, body} entry here.
 // ---------------------------------------------------------------------------
@@ -95,18 +141,20 @@ const SECTIONS: Section[] = [
         </p>
         <ol className="mt-2 list-decimal space-y-2 pl-5">
           <li>
-            <strong>Parse</strong> — read the XML into a tidy record, faithfully. Nothing is
-            interpreted or changed yet; the original values are preserved exactly.
+            <strong>Read it</strong> <span className="text-gray-400">(the step engineers call
+            "parsing")</span> — copy the catalog record into a tidy form, faithfully. Nothing is
+            interpreted or changed yet; the original wording is kept exactly.
           </li>
           <li>
-            <strong>Normalize</strong> — add a cleaned-up version of certain fields{' '}
-            <em>alongside</em> the original (never replacing it). This is what lets a search for
-            "Venice" find a book whose card says <bdi>ויניציאה</bdi>.
+            <strong>Tidy it up</strong> <span className="text-gray-400">("normalizing")</span> — add
+            a cleaned-up version of a few fields <em>next to</em> the original (never replacing it).
+            This is what lets a search for "Venice" find a book whose card says <bdi>ויניציאה</bdi>.
           </li>
           <li>
-            <strong>Index</strong> — write everything into the database tables the chatbot
-            actually searches (<code>records</code>, <code>imprints</code>, <code>agents</code>,{' '}
-            <code>subjects</code>, …).
+            <strong>File it away</strong> <span className="text-gray-400">("indexing")</span> — store
+            everything in organized lists the system can search in an instant: one list for the
+            books, one for places &amp; printers, one for the people involved, one for subjects, and
+            so on.
           </li>
         </ol>
         <Example title="Our book, step by step">
@@ -114,7 +162,7 @@ const SECTIONS: Section[] = [
           <BeforeAfter raw="ויניציאה" norm="venice" note="raw kept, normalized form added" />
           <p className="mt-2">
             The original <bdi>ויניציאה</bdi> is never thrown away — it sits right next to{' '}
-            <code>venice</code> in the <code>imprints</code> table, so the system can both{' '}
+            <code>venice</code> in the places &amp; printers list, so the system can both{' '}
             <em>find</em> the book and <em>show its true wording</em>.
           </p>
         </Example>
@@ -199,12 +247,12 @@ const SECTIONS: Section[] = [
           <BeforeAfter raw="תקס&quot;ה" norm="1804/05" note="Hebrew gematria · lower confidence" />
         </Example>
         <p className="mt-3">
-          <strong>Are these repeatable?</strong> Yes — every method is a fixed rule (no AI, no
-          randomness), so the same record always produces the same result. But two honest caveats:
-          a rule can be <em>reliably wrong</em> (a misread Hebrew year stays wrong every time), and
-          a handful of dates were later hand-corrected directly in the database. So re-reading the
-          XML reproduces the <em>parser's</em> output exactly — but not those manual corrections
-          unless their fix scripts are re-run.
+          <strong>Do these give the same result every time?</strong> Yes — every method is a
+          hand-written rule (no AI, nothing random), so the same record always produces the same
+          result. Two honest caveats, though: a rule can be <em>reliably wrong</em> (a misread
+          Hebrew year stays wrong every time it runs), and a handful of dates were later corrected
+          by hand directly in the database. So re-reading the catalog record reproduces the rules'
+          output exactly — but not those manual corrections, unless they're re-applied.
         </p>
       </>
     ),
@@ -217,17 +265,20 @@ const SECTIONS: Section[] = [
         <p>A book's place of publication can come from two spots in the record:</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>
-            <strong>The imprint line (MARC 264$a / 260$a)</strong> — the city as printed on the
-            book, in whatever spelling or script the cataloger used. This is the primary source.
+            <strong>The publication line</strong> — the city as printed on the book, in whatever
+            spelling or script the cataloger typed. This is the main source.{' '}
+            <span className="text-gray-400">(librarians call this field 264, or 260 on older
+            records)</span>
           </li>
           <li>
-            <strong>A country code (MARC 008)</strong> — a fallback used only when the imprint line
-            has no usable city; it gives a country, not a city.
+            <strong>A country code</strong> — a short coded country field, used only as a backup
+            when the publication line has no usable city; it gives a country, not a city.{' '}
+            <span className="text-gray-400">(field 008)</span>
           </li>
         </ul>
         <p className="mt-2">
-          The goal is to collapse every spelling and script of one city onto a single{' '}
-          <strong>canonical key</strong> (like <code>venice</code>) while keeping the original
+          The goal is to gather every spelling and script of one city under a single{' '}
+          <strong>standard name</strong> (like <code>venice</code>) while keeping the original
           wording untouched.
         </p>
         <Example title="Many spellings, one city">
@@ -240,22 +291,45 @@ const SECTIONS: Section[] = [
           </p>
         </Example>
         <p className="mt-3">
-          How does it know <bdi>ויניציאה</bdi> means Venice? It looks the cleaned-up name up in a{' '}
-          <strong>curated alias map</strong> — a big dictionary of "this spelling → this city".
-          Almost every place in the collection is matched this way (confidence 0.95); the few with
-          no city fall back to country-level or are honestly marked "unknown".
+          How does it know <bdi>ויניציאה</bdi> means Venice? It checks the cleaned-up name against a{' '}
+          <strong>lookup list</strong> — essentially a translation dictionary that says "this
+          spelling means this city."{' '}
+          <span className="text-gray-400">(engineers call it an "alias map")</span> Almost every
+          place in the collection is matched this way; the few with no city fall back to
+          country-level, or are honestly marked "unknown" rather than guessed.
         </p>
         <p className="mt-3">
-          <strong>The repeatability twist (this differs from dates).</strong> Looking a name up in
-          the map is a fixed, repeatable step — same record, same answer, no AI involved. But the{' '}
-          <em>map itself was built with the help of an AI model</em>, which decided mappings like{' '}
-          <bdi>ויניציאה</bdi> → <code>venice</code> (with guardrails, refusing anything ambiguous).
-          That building step is <em>not</em> repeatable on its own. The fix: the finished map is{' '}
-          <strong>frozen as a saved file</strong> in the project. So the whole pipeline is
-          reproducible today — because the one AI-assisted step already happened once and its
-          result was captured. Dates are deterministic all the way down; places are deterministic to{' '}
-          <em>apply</em>, but rest on a frozen, AI-authored dictionary underneath.
+          <strong>One subtle point — and it differs from dates.</strong> Checking a name against
+          that lookup list always gives the same answer for the same book; no AI is involved in that
+          moment. But the <em>list itself</em> was first drafted with the help of an AI model, which
+          proposed matches like <bdi>ויניציאה</bdi> → <code>venice</code> (with safeguards, and
+          refusing anything unclear). Drafting it that way isn't perfectly repeatable on its own — so
+          the finished list was <strong>saved once and frozen</strong> as a fixed file. The result:
+          the system gives the same answers today, because that one AI-assisted step already happened
+          and its output was locked in. Put simply — dates are spelled out by hand-written rules from
+          top to bottom; places are looked up against a dictionary that an AI helped write and that
+          is now fixed in place.
         </p>
+      </>
+    ),
+  },
+  {
+    id: 'glossary',
+    title: 'In plain words — a mini glossary',
+    body: (
+      <>
+        <p>
+          A few words turn up across the project. Here they are in everyday language — no library
+          or engineering background needed.
+        </p>
+        <dl className="mt-3 space-y-3">
+          {GLOSSARY.map((g) => (
+            <div key={g.term} className="rounded-lg bg-gray-50 p-3 ring-1 ring-gray-200">
+              <dt className="text-sm font-semibold text-gray-900">{g.term}</dt>
+              <dd className="mt-1 text-sm text-gray-700">{g.plain}</dd>
+            </div>
+          ))}
+        </dl>
       </>
     ),
   },
