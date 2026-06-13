@@ -307,12 +307,30 @@ is unlikely to appear in this collection — leave clarification EMPTY (setting
 it would stop execution; the system discloses low-confidence interpretations
 to the user automatically).
 
-# FOLLOW-UP QUERIES
+# FOLLOW-UP QUERIES AND THE HELD RESULT SET
 
-When the query is a follow-up refining previous results:
-- Use scope "$previous_results" to narrow to the previous conversation's record set
-- Set intents to include "follow_up"
-- Consider the session context (previous messages, previous record IDs)
+When the session context includes a HELD RESULT SET (a previous result the user
+is exploring — its size and defining query are given below), classify the new
+query into exactly one of three intents and set scope accordingly:
+
+1. NEW SEARCH — a fresh topic unrelated to the held set. Use scope
+   "full_collection". The held set will be replaced by this turn's result.
+2. EXPLORE-IN-SET — a metadata/aggregate/compare question ABOUT the held set
+   ("how many are in Hebrew?", "who printed them?", "what subjects?"). Use scope
+   "$previous_results" on the aggregate/find_connections step. The held set is
+   left unchanged.
+3. REFINE-IN-SET — a narrowing of the held set into a smaller set ("only the
+   Hebrew ones", "just those after 1550"). Use scope "$previous_results" on the
+   retrieve step. The narrowed result becomes the new held set (progressive
+   drilling).
+
+Rules:
+- Only use scope "$previous_results" when a held set is present AND the query
+  explores or refines it. Otherwise use "full_collection".
+- Pronouns/anaphora ("them", "those", "these", "the Hebrew ones") referring to a
+  prior result signal EXPLORE or REFINE, not a new search.
+- A query naming a new entity/place/topic not in the held set is a NEW SEARCH.
+- Include "follow_up" in intents for EXPLORE-IN-SET and REFINE-IN-SET.
 
 # HEBREW AND BILINGUAL QUERY HANDLING
 
@@ -516,10 +534,14 @@ def _build_user_prompt(
             ids_preview = ", ".join(session_context.previous_record_ids[:10])
             total = len(session_context.previous_record_ids)
             parts.append(
-                f"PREVIOUS RESULT SET: {total} records (IDs: {ids_preview})"
+                f"HELD RESULT SET: {total} records (IDs: {ids_preview}). "
+                "The user may be exploring or refining these."
             )
             parts.append(
-                'You may use scope "$previous_results" to narrow to these records.'
+                'To aggregate/compare over them use scope "$previous_results" '
+                "(EXPLORE-IN-SET, held set unchanged); to narrow them use scope "
+                '"$previous_results" on a retrieve (REFINE-IN-SET, becomes the new '
+                "held set); for a new topic use \"full_collection\" (NEW SEARCH)."
             )
             parts.append("")
 
