@@ -87,6 +87,16 @@ const GLOSSARY: { term: string; plain: string }[] = [
     plain:
       'A step that, fed the same record, always produces the same output (no AI, nothing random in the moment). Most tidy-up steps are like this.',
   },
+  {
+    term: 'Authority / who’s-who',
+    plain:
+      'A curated reference record for a real person or printing house — its true name, dates, and place — that many spellings across the catalog can be linked to. Built and corrected by people over time.',
+  },
+  {
+    term: 'Also-known-as spelling (variant)',
+    plain:
+      'One of the many ways a name was written on different books. All of a person or press’s variants are tied to its one authority record, so a search finds them all.',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -309,6 +319,53 @@ const SECTIONS: Section[] = [
           and its output was locked in. Put simply — dates are spelled out by hand-written rules from
           top to bottom; places are looked up against a dictionary that an AI helped write and that
           is now fixed in place.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'publisher',
+    title: '6. Printers & publishers — two layers',
+    body: (
+      <>
+        <p>
+          The printer or publisher is the <strong>"who printed it"</strong> part of the same
+          publication line, right after the place.{' '}
+          <span className="text-gray-400">(the subfield librarians call 264$b)</span> For our
+          Bragadin book it reads <bdi>נדפס במצות האדון מסיר אלוויז בראגאדין</bdi>. Publishers get{' '}
+          <strong>two</strong> layers of tidying, not one.
+        </p>
+        <p className="mt-3">
+          <strong>Layer 1 — the same tidy-up as places.</strong> Many spellings of one printer
+          collapse to a single standard name, using the same kind of lookup list:
+        </p>
+        <Example title="Many spellings, one press">
+          <BeforeAfter raw="G. Bragadin" norm="bragadin press, venice" />
+          <BeforeAfter raw="Nella Stamparia Bragadina" norm="bragadin press, venice" />
+          <BeforeAfter raw="נדפס במצות האדון … בראגאדין" norm="bragadin press, venice" />
+        </Example>
+        <p className="mt-3">
+          <strong>Layer 2 — a who's-who of printing houses.</strong> This is the part places don't
+          have. Alongside the tidy name there's a separate <strong>reference list of real printing
+          houses</strong> <span className="text-gray-400">(engineers call it the "publisher
+          authorities")</span> — about 230 of them, each with the press's actual identity: its real
+          name, its city, and the years it was active (the Bragadin press of Venice, roughly
+          1550–1710).
+        </p>
+        <p className="mt-2">
+          Each house also gathers its <strong>"also-known-as" spellings</strong> — the many ways
+          that printer's name was written, across both Latin and Hebrew — so they all point to the{' '}
+          <em>one</em> press. That's what lets a question like "books by the Bragadin press" find
+          Hebrew-printed books whose cards never contain the Latin word "Bragadin".
+        </p>
+        <p className="mt-3">
+          <strong>Same result every time?</strong> Layer 1 behaves just like places — fixed to
+          apply, resting on a frozen AI-drafted list. Layer 2 is different: the who's-who is a{' '}
+          <strong>curated reference list</strong>, built and corrected by people (with AI help) and
+          grown over time — not an automatic rule. Connecting those 1550s Hebrew Bragadin books to
+          the press, for instance, was a reviewed, human-approved addition to this list. It's your
+          first look at the project's <strong>"authorities"</strong> — a who's-who that matters even
+          more for people than for presses.
         </p>
       </>
     ),
