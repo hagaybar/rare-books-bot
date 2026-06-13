@@ -14,8 +14,13 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import type { ChatMessage, ChatResponse, StreamingState } from '../types/chat';
-import { sendChatMessage, fetchPrimoUrls } from '../api/chat';
+import type {
+  ChatMessage,
+  ChatResponse,
+  StreamingState,
+  ActiveSubgroupSummary,
+} from '../types/chat';
+import { sendChatMessage, fetchPrimoUrls, resetSubgroup } from '../api/chat';
 import { authenticatedFetch } from '../api/auth';
 import { useAppStore } from '../stores/appStore';
 import { useAuthStore } from '../stores/authStore';
@@ -83,6 +88,10 @@ export default function Chat() {
   const [tokenSaving, setTokenSaving] = useState(true);
   const [compareMode, setCompareMode] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  // Id of the assistant message whose held-set chip the user just cleared via
+  // "Search all". The chip is optimistically hidden for that message only; a
+  // later assistant message carrying a held set has a fresh id and re-shows it.
+  const [clearedSubgroupMsgId, setClearedSubgroupMsgId] = useState<string | null>(null);
 
   // Compare mode is available to admin users only
   const canCompare = user ? getRoleLevel(user.role) >= getRoleLevel('admin') : false;
@@ -627,11 +636,41 @@ export default function Chat() {
     setRestoredSessionId(null);
     setPrimoUrls({});
     setError(null);
+    setClearedSubgroupMsgId(null);
     // Strip ?session= or the restore effect immediately re-opens it (issue #15)
     setSearchParams({}, { replace: true });
     inputRef.current?.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearSession]);
+
+  // ------------------------------------------------------------------
+  // Held result set (active subgroup): derive from the latest assistant
+  // message's metadata, surface a chip on that message, and reset via
+  // DELETE /sessions/{id}/subgroup with an optimistic local clear.
+  // ------------------------------------------------------------------
+
+  const latestAssistantMsg = [...messages]
+    .reverse()
+    .find((m) => m.role === 'assistant');
+
+  const heldSet =
+    (latestAssistantMsg?.metadata?.active_subgroup as ActiveSubgroupSummary | null | undefined) ??
+    null;
+
+  // Hide the chip only for the message the user just cleared; a newer
+  // assistant message carrying a held set has a fresh id and re-shows it.
+  const heldSetVisible =
+    heldSet != null && latestAssistantMsg?.id !== clearedSubgroupMsgId;
+
+  const handleResetSubgroup = useCallback(() => {
+    const clearedId = latestAssistantMsg?.id ?? null;
+    // Optimistically drop the chip locally; the network call is non-fatal.
+    setClearedSubgroupMsgId(clearedId);
+    if (sessionId) {
+      // Fire-and-forget: a later full-collection query also clears the held set.
+      void resetSubgroup(sessionId);
+    }
+  }, [sessionId, latestAssistantMsg?.id]);
 
   // ------------------------------------------------------------------
   // Derived state: check if we are in streaming mode (WS active)
@@ -785,13 +824,18 @@ export default function Chat() {
         ) : (
           /* ---- Message history ---- */
           <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-            {messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                primoUrls={primoUrls}
-              />
-            ))}
+            {messages.map((msg) => {
+              const isLatestAssistant = msg.id === latestAssistantMsg?.id;
+              return (
+                <MessageBubble
+                  key={msg.id}
+                  message={msg}
+                  primoUrls={primoUrls}
+                  heldSet={isLatestAssistant && heldSetVisible ? heldSet : null}
+                  onResetHeldSet={isLatestAssistant ? handleResetSubgroup : undefined}
+                />
+              );
+            })}
 
             {/* Loading indicator (only when not streaming -- streaming has its own UI) */}
             {loading && !isStreamingActive && (

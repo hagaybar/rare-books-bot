@@ -8,7 +8,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import type { ChatMessage, GroundingData } from '../../types/chat';
+import type { ChatMessage, GroundingData, ActiveSubgroupSummary } from '../../types/chat';
 import { useAppStore } from '../../stores/appStore';
 import CandidateCard from '../shared/CandidateCard';
 import ConfidenceBadge from '../shared/ConfidenceBadge';
@@ -20,6 +20,14 @@ import { FeedbackDialog } from './FeedbackDialog';
 interface MessageBubbleProps {
   message: ChatMessage;
   primoUrls: Record<string, string>;
+  /**
+   * Held result set to surface as a chip on this message's phase header.
+   * Only the latest assistant message receives this (held-set state is
+   * session-current, not per-message history).
+   */
+  heldSet?: ActiveSubgroupSummary | null;
+  /** Reset handler for the held-set chip's "Search all" button. */
+  onResetHeldSet?: () => void;
 }
 
 /** Maximum candidates to render inline. */
@@ -52,6 +60,8 @@ function stripTrailingFollowups(markdown: string): string {
 export default function MessageBubble({
   message,
   primoUrls,
+  heldSet,
+  onResetHeldSet,
 }: MessageBubbleProps) {
   const [queryDetailsOpen, setQueryDetailsOpen] = useState(false);
   const [narrativeOpen, setNarrativeOpen] = useState(false);
@@ -133,9 +143,9 @@ export default function MessageBubble({
         )}
 
         {/* Phase + confidence header */}
-        {isStreamComplete && (message.phase || message.confidence !== null) && (
+        {isStreamComplete && (message.phase || message.confidence !== null || heldSet) && (
           <div className="flex items-center gap-2 flex-wrap">
-            <PhaseIndicator phase={message.phase} />
+            <PhaseIndicator phase={message.phase} heldSet={heldSet} onReset={onResetHeldSet} />
             {message.confidence !== null && (
               <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
                 Confidence: <ConfidenceBadge confidence={message.confidence} showLabel />

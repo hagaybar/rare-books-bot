@@ -71,6 +71,12 @@ export interface ChatResponse {
   metadata: Record<string, unknown>;
 }
 
+/** Held result set summary surfaced in ChatResponse.metadata.active_subgroup. */
+export interface ActiveSubgroupSummary {
+  defining_query: string;
+  count: number;
+}
+
 // ---------------------------------------------------------------------------
 // API wrapper (POST /chat response)
 // ---------------------------------------------------------------------------
