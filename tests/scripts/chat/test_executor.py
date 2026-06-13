@@ -799,6 +799,54 @@ def test_handle_aggregate_reports_distinct_total(test_db):
     assert full.facets_truncated is False
 
 
+def test_handle_aggregate_unknown_field_signals_error(test_db):
+    """Seam audit B9 (#57): an unsupported aggregate field must NOT return a
+    silent empty AggregationResult (indistinguishable from '0 records').
+
+    The handler raises a handled PlanValidationError, which _execute_step
+    converts to status='error' with an error_message — so the narrator/user
+    sees 'unsupported aggregation field', not 'no results'.
+    """
+    from scripts.chat.executor import PlanValidationError, _handle_aggregate
+
+    with pytest.raises(PlanValidationError) as exc_info:
+        _handle_aggregate(
+            AggregateParams(field="not_a_real_field", scope="full_collection"),
+            test_db, step_results={}, session_context=None,
+        )
+    msg = str(exc_info.value).lower()
+    assert "unsupported" in msg
+    assert "not_a_real_field" in str(exc_info.value)
+
+
+def test_unknown_aggregate_field_surfaces_as_error_step(test_db):
+    """Plan-level: an unknown aggregate field yields a step with status='error'
+    and an explicit message, never a silent 'empty' AggregationResult."""
+    from scripts.chat.executor import execute_plan
+
+    plan = InterpretationPlan.model_construct(
+        intents=["analytical"],
+        reasoning="Test",
+        execution_steps=[
+            ExecutionStep.model_construct(
+                action=StepAction.AGGREGATE,
+                params=AggregateParams(field="bogus_field", scope="full_collection"),
+                label="Aggregate bogus",
+                depends_on=[],
+            )
+        ],
+        directives=[],
+        confidence=0.9,
+        clarification=None,
+    )
+    result = execute_plan(plan, db_path=test_db)
+    step = result.steps_completed[0]
+    assert step.status == "error"
+    assert step.status != "empty"
+    assert "unsupported" in (step.error_message or "").lower()
+    assert "bogus_field" in (step.error_message or "")
+
+
 def test_handle_enrich(test_db):
     """enrich fetches authority_enrichment data for resolved agents."""
     from scripts.chat.executor import _handle_enrich

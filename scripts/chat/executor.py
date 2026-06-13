@@ -1406,7 +1406,17 @@ def _handle_aggregate(
 
         sql_template = field_map.get(normalized_field)
         if not sql_template:
-            return AggregationResult(field=params.field, facets=[], total_records=0)
+            # Issue #57 B9: an unsupported aggregate field must signal an
+            # explicit error, not a silent empty AggregationResult (which is
+            # indistinguishable from "0 records" and would violate the answer
+            # contract's evidence requirement). _execute_step converts this
+            # handled error into status="error" with this message, so the
+            # narrator/user sees "unsupported aggregation field" rather than
+            # "no results".
+            raise PlanValidationError(
+                f"Unsupported aggregation field: {params.field!r}. "
+                f"Supported fields: {sorted(field_map)}."
+            )
 
         rows = conn.execute(sql_template, scope_params + [params.limit]).fetchall()
         facets = [{"value": row["value"], "count": row["count"]} for row in rows]
