@@ -389,3 +389,32 @@ class TestNoDeadFollowupContent:
         prompt = _build_narrator_prompt("who was Karo?", _make_karo_result())
         assert "FOLLOW-UP HINT" not in prompt
         assert "Suggest follow-ups" not in prompt
+
+
+class TestSubjectConceptEvidenceAndHonesty:
+    """Semantic subject search (Task 6): when the turn resolved a topical
+    concept to the collection's real subject headings, the narrator MUST cite
+    those matched headings as evidence ("counted via: <heading> (n), ...") and
+    MUST NOT assert a fabricated zero — a threshold-miss (no heading cleared the
+    confidence threshold) is disclosed as such, never narrated as "there are
+    none"."""
+
+    def test_prompt_instructs_citing_matched_subject_headings(self):
+        from scripts.chat.narrator import NARRATOR_SYSTEM_PROMPT
+
+        # Isolate the dedicated rule block so the assertion discriminates the
+        # new guidance rather than incidental prompt wording.
+        assert "resolve_subject_concept" in NARRATOR_SYSTEM_PROMPT
+        block = NARRATOR_SYSTEM_PROMPT.split("resolve_subject_concept", 1)[1]
+        low = block.lower()
+        # (1) Cite the matched headings as evidence.
+        assert "counted via" in low
+
+    def test_prompt_forbids_fabricated_zero_on_threshold_miss(self):
+        from scripts.chat.narrator import NARRATOR_SYSTEM_PROMPT
+
+        block = NARRATOR_SYSTEM_PROMPT.split("resolve_subject_concept", 1)[1]
+        low = block.lower()
+        # (2) A threshold miss must be disclosed, not narrated as a real zero.
+        assert "threshold" in low
+        assert ("must not" in low) or ("never" in low) or ("do not" in low)

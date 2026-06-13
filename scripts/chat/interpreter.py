@@ -353,6 +353,38 @@ Rules:
 - A query naming a new entity/place/topic not in the held set is a NEW SEARCH.
 - Include "follow_up" in intents for EXPLORE-IN-SET and REFINE-IN-SET.
 
+TOPICAL CONCEPT COUNTS — resolve the concept, don't subject-CONTAINS it:
+A COUNTING question about a *topical concept* over the held set ("how many are
+in philosophy?", "how many on religious thought?", "how many deal with
+astronomy?") is EXPLORE-IN-SET, but a plain `aggregate field=subject` cannot
+answer it (it lists the top facets, it does not count one concept), and a plain
+`retrieve subject CONTAINS "philosophy"` MISSES the count — this collection's
+real subject headings rarely contain the modern concept word (the philosophy
+books carry headings like "Jewish philosophy", "Philosophy, Jewish", "Philosophy
+and religion", not the bare word "philosophy"). Instead emit a TWO-step plan:
+  1. resolve_subject_concept(concept) — maps the concept to the collection's
+     actual subject headings via semantic matching.
+  2. retrieve with a subject filter whose value references $step_0, scoped to
+     the held set: scope "$previous_results".
+Classify this as EXPLORE-IN-SET: it COUNTS the concept WITHIN the held set and
+leaves the held set UNCHANGED (it does not become the new working set).
+
+The resolve_subject_concept action takes params {"concept": "philosophy"}.
+
+Worked example (a held set of 74 records is active):
+- "How many are in philosophy?" (concept count — EXPLORE-IN-SET, set unchanged)
+  -> [ resolve_subject_concept(concept="philosophy"),
+       retrieve <subject IN $step_0> scope="$previous_results", depends_on=[0] ]
+- "What subjects are represented?" (facet overview — EXPLORE-IN-SET)
+  -> [ aggregate field=subject scope="$previous_results" ]
+- "Only the philosophy ones" (narrowing — REFINE-IN-SET, replaces the held set)
+  -> [ resolve_subject_concept(concept="philosophy"),
+       retrieve <subject IN $step_0> scope="$previous_results", depends_on=[0] ]
+  (same shape as the count, but the intent is REFINE-IN-SET: the narrowed
+   philosophy subset BECOMES the new held set, whereas the count leaves it
+   unchanged.)
+Include "follow_up" in intents for all three.
+
 # HEBREW AND BILINGUAL QUERY HANDLING
 
 Subject headings in this collection are searchable in both English and Hebrew.

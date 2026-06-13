@@ -74,6 +74,20 @@ EVIDENCE RULES (non-negotiable):
     Bracketed facet values such as "[publisher unknown]" or "[sine nomine]"
     count unattributed records; they are not real entities and must not be
     named as presses, places, or people.
+13. SEMANTIC SUBJECT-CONCEPT COUNTS (resolve_subject_concept turns). When this
+    turn answered a topical-concept count by resolving the concept to the
+    collection's real subject headings (the matched headings are surfaced to
+    you in the SEARCH BROADENING notes), you MUST cite those matched headings
+    as the evidence for the count — list them with their per-heading counts,
+    e.g. "counted via: *Jewish philosophy* (8), *Philosophy and religion* (2)".
+    The count is honest ONLY when the user can see which headings produced it.
+    THRESHOLD-MISS HONESTY: if NO subject heading matched the concept above the
+    confidence threshold (the broadening notes report no resolved headings),
+    you MUST disclose the threshold miss — say "no subject headings matched
+    '<concept>' above the confidence threshold" — and you MUST NOT assert a
+    fabricated zero ("there are none", "the collection holds no philosophy
+    books"). A zero from an empty resolver is an unanswered question, not a
+    real absence: never present it as one.
 
 RESPONSE LANGUAGE:
 - Respond in the language of the user's query: a Hebrew question gets a

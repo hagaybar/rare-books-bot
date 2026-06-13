@@ -1142,3 +1142,41 @@ class TestPromptThreeIntentHeldSet:
         # $previous_results without a narrowing retrieve.
         assert "$previous_results" in block
         assert ("do not" in low) or ("don't" in low) or ("never" in low)
+
+
+class TestPromptConceptCountRouting:
+    """Semantic subject search (Task 5): a COUNTING question about a *topical
+    concept* over the held set ("how many are in philosophy?") must NOT route to
+    a plain subject CONTAINS retrieve (which misses the collection's real
+    headings) — it routes to a TWO-step plan resolve_subject_concept ->
+    scoped retrieve under intent EXPLORE-IN-SET (held set unchanged). Contrast:
+    "what subjects are represented?" stays aggregate; "only the philosophy ones"
+    is a refine retrieve."""
+
+    def test_prompt_has_dedicated_concept_count_rule(self):
+        """A dedicated, isolatable rule block teaches concept-count routing."""
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+
+        assert "TOPICAL CONCEPT COUNTS" in INTERPRETER_SYSTEM_PROMPT
+
+    def test_prompt_routes_concept_count_to_resolve_subject_concept(self):
+        """Scope the assertion to the new rule block: a concept-count over the
+        held set emits resolve_subject_concept + a scoped retrieve, under the
+        explore intent (held set unchanged)."""
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+
+        prompt = INTERPRETER_SYSTEM_PROMPT
+        block = prompt.split("TOPICAL CONCEPT COUNTS", 1)[1].split("\n# ", 1)[0]
+        low = block.lower()
+        # The two-step action sequence is named.
+        assert "resolve_subject_concept" in block
+        assert "retrieve" in low
+        # Routed under EXPLORE-IN-SET (held set unchanged), scoped to the set.
+        assert "explore-in-set" in low
+        assert "$previous_results" in block
+        # The worked example uses philosophy.
+        assert "philosophy" in low
+        # Contrast cases are spelled out: aggregate for "what subjects",
+        # refine for "only the ... ones".
+        assert "aggregate" in low
+        assert "refine-in-set" in low
