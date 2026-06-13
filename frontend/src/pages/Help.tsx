@@ -496,6 +496,77 @@ const SECTIONS: Section[] = [
     ),
   },
   {
+    id: 'question',
+    title: '9. What happens when you ask a question',
+    body: (
+      <>
+        <p>
+          Everything so far was about <em>preparing</em> the data. Now the other half: turning your
+          question into an answer. It runs through <strong>three stages</strong> — and the key shape
+          is that <strong>the AI only touches the two ends; the actual searching in the middle has
+          no AI at all.</strong>
+        </p>
+        <ol className="mt-3 list-decimal space-y-2 pl-5">
+          <li>
+            <strong>Understand it</strong>{' '}
+            <span className="text-gray-400">(this is where the AI reads your question)</span> — the
+            AI's only job here is to turn your plain-English question into a precise{' '}
+            <strong>search recipe</strong>: a short list of steps for the engine to run. It doesn't
+            search and it doesn't write the answer. If the question is too vague to search ("show me
+            old books"), it stops and <strong>asks you to clarify</strong> rather than guess.
+          </li>
+          <li>
+            <strong>Do the search</strong> <span className="text-gray-400">(no AI — a fixed
+            engine)</span> — a step-by-step engine follows the recipe against the database lists and
+            produces the <strong>matching books plus the evidence</strong>: which field, in which
+            record, caused each match. Nothing is invented here; it's plain, repeatable work.
+          </li>
+          <li>
+            <strong>Write the answer</strong> <span className="text-gray-400">(AI again)</span> — the
+            AI takes what the engine actually found and writes it up in readable, cited prose. It's{' '}
+            <strong>fenced in</strong>: it can only talk about books the engine returned. No results,
+            no claims.
+          </li>
+        </ol>
+        <p className="mt-4 font-semibold text-gray-900">The moves the engine can make</p>
+        <p className="mt-1">The recipe is built from a small, fixed set of moves:</p>
+        <div className="mt-2 overflow-hidden rounded-lg ring-1 ring-gray-200">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-gray-200">
+              {[
+                ['Look up a person / a press', 'take a name and expand it to all its forms via the who’s-who'],
+                ['Search with filters', 'the core find — apply conditions (place, year, language…) and return matching books + evidence'],
+                ['Count & group', 'tallies and facets — "how many per century", "top places"'],
+                ['Pick a sample', 'a representative handful, for "show me some notable items"'],
+                ['Find connections', 'who worked with whom across books'],
+                ['Fetch extra detail', 'pull in outside info (Wikidata / Wikipedia) for display'],
+              ].map(([op, meaning]) => (
+                <tr key={op}>
+                  <td className="w-1/3 bg-gray-50 px-3 py-2 align-top font-medium text-gray-800">
+                    {op}
+                  </td>
+                  <td className="px-3 py-2 align-top text-gray-700">{meaning}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3">
+          A simple question uses one move ("books printed in Venice" → one <em>Search with
+          filters</em>). A richer one chains several ("What did the Bragadin press print?" →{' '}
+          <em>Look up a press</em>, then <em>Search with filters</em>).
+        </p>
+        <p className="mt-3">
+          <strong>Why this shape matters.</strong> The AI is a <em>translator</em> (your words →
+          a recipe) and a <em>writer</em> (results → prose) — never the authority on what's actually
+          in the collection. The finding, and the evidence trail back to the catalog record, happen
+          in the AI-free middle. That's the project's core promise made structural:{' '}
+          <strong>no answer exists before the evidence does.</strong>
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'glossary',
     title: 'In plain words — a mini glossary',
     body: (
