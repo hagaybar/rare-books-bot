@@ -805,7 +805,7 @@ async def _run_scholar_pipeline(
     # A retrieve that produced records defines/redefines the held set; an
     # aggregate-only (explore) turn leaves it unchanged.
     new_subgroup = build_subgroup_update(
-        plan, response.candidate_set, chat_request.message
+        plan, execution_result, chat_request.message
     )
     if new_subgroup is not None:
         store.set_active_subgroup(session.session_id, new_subgroup)
@@ -1211,7 +1211,7 @@ async def websocket_chat(websocket: WebSocket):
 
         # ---- Held-set lifecycle (issue #60 part 2) ----
         new_subgroup = build_subgroup_update(
-            plan, response.candidate_set, message
+            plan, execution_result, message
         )
         if new_subgroup is not None:
             try:
