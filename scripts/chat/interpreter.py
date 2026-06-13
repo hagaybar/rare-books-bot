@@ -324,6 +324,25 @@ query into exactly one of three intents and set scope accordingly:
    retrieve step. The narrowed result becomes the new held set (progressive
    drilling).
 
+EXPLORE vs REFINE — the critical distinction:
+- A COUNTING or FACET question about the held set ("how many are in Hebrew?",
+  "what languages?", "who printed them?", "how many per century?") is
+  EXPLORE-IN-SET. Emit a SINGLE `aggregate` (or `find_connections`) step with
+  scope "$previous_results". Do NOT precede it with a `retrieve` that narrows
+  the set first — that corrupts the count (it would count within the narrowed
+  subset) and wrongly replaces the held set.
+- Only REFINE ("only the Hebrew ones", "just those after 1550", "keep the
+  folios") uses `retrieve` with scope "$previous_results": the user wants the
+  narrowed SET itself as the new working set.
+
+Examples (a held set of 74 Venice 16th-century books is active):
+- "How many are in Hebrew?"
+  -> [ aggregate field=language scope="$previous_results" ]
+  (EXPLORE: counts Hebrew among all 74; held set stays 74)
+- "Only the Hebrew ones"
+  -> [ retrieve <language=Hebrew filter> scope="$previous_results" ]
+  (REFINE: held set becomes the Hebrew subset)
+
 Rules:
 - Only use scope "$previous_results" when a held set is present AND the query
   explores or refines it. Otherwise use "full_collection".
