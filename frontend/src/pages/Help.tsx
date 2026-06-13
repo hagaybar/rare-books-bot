@@ -905,10 +905,15 @@ const SECTIONS: Section[] = [
           research:
         </p>
         <p className="mt-3">
-          <strong>You can follow up.</strong> The conversation remembers what you just asked, so you
-          can refine instead of starting over: "books printed in Venice in the 1500s" → "only the
-          Hebrew ones" → "and who printed them?" Each follow-up narrows the previous result rather
-          than asking from scratch.
+          <strong>You can follow up.</strong> After a search, the conversation holds onto exactly the
+          books it found, so a follow-up is scoped to <em>exactly those records</em> — not searched
+          afresh against the whole collection. You can <strong>ask about them</strong> ("how many
+          are in Hebrew?", "who printed them?"), which leaves the set as it is, or you can{' '}
+          <strong>narrow them</strong> ("only the Hebrew ones", "just those after 1550"), which keeps
+          the smaller set for the next question. So "books printed in Venice in the 1500s" → "only
+          the Hebrew ones" → "and who printed them?" builds on each step instead of starting over. A
+          small note shows which set you're working within, and <strong>"Search all"</strong> clears
+          it whenever you want to start a fresh search across everything.
         </p>
         <p className="mt-3">
           <strong>What you can ask about.</strong> Beyond place, year, language, subject, title,

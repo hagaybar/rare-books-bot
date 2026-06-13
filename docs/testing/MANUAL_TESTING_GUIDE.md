@@ -779,6 +779,61 @@ curl -s -X POST http://localhost:8000/feedback/sync -H "Authorization: Bearer <a
 
 ---
 
+## I. Held Result Set (Active Subgroup)
+
+The chat holds onto the result the user is looking at and scopes follow-ups to exactly those records (issue #60). The three-intent model: a **new search** replaces the held set, **explore-in-set** leaves it unchanged, **refine-in-set** narrows it. The frontend surfaces it as a chip with a "Search all" reset.
+
+### I1. Held-set chip lifecycle (UI)
+
+Run this in the browser (`cd frontend && npm run dev`), watching the held-set chip in the phase indicator.
+
+**Step 1: Search → chip appears**
+- Ask: "books printed in Venice in the 1500s"
+- A held-set chip appears naming the defining query and a count (e.g. "Venice, 1500s · 42 records").
+
+**Step 2: Explore → count keeps the chip**
+- Ask: "how many are in Hebrew?"
+- The chip stays unchanged (same defining query, same count) — exploring does not redefine the held set. The answer is scoped to those records, and the response phase is `corpus_exploration`.
+
+**Step 3: Refine → chip count narrows**
+- Ask: "only the Hebrew ones"
+- The chip is replaced by the narrowed set with a smaller count (progressive drilling). The new defining query reflects the refinement.
+
+**Step 4: "Search all" → chip clears**
+- Click **"Search all"** on the chip.
+- The chip disappears; the next question searches the whole collection again, not the prior set.
+
+**Good Result:**
+- Chip appears after the first search, persists through explore, shrinks on refine, and disappears on "Search all".
+- Explore answers and the narrative acknowledge they are scoped to the held set ("Among the N you're exploring…").
+
+### I2. Held-set metadata + reset endpoint (API)
+
+**Inspect the metadata** (REST):
+```bash
+RESPONSE=$(curl -s -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "books printed in Venice in the 1500s"}')
+SESSION_ID=$(echo $RESPONSE | jq -r '.response.session_id')
+echo $RESPONSE | jq '.response.metadata.active_subgroup'   # {"defining_query": "...", "count": N}
+```
+
+**Reset the held set:**
+```bash
+# 200 + clears the set (use the same auth the suite uses for /chat)
+curl -s -o /dev/null -w "%{http_code}\n" -X DELETE http://localhost:8000/sessions/$SESSION_ID/subgroup
+# 200 no-op when nothing is held (run the DELETE twice)
+curl -s -o /dev/null -w "%{http_code}\n" -X DELETE http://localhost:8000/sessions/$SESSION_ID/subgroup
+# 404 for an unknown session
+curl -s -o /dev/null -w "%{http_code}\n" -X DELETE http://localhost:8000/sessions/does-not-exist/subgroup
+```
+
+**Good Result:**
+- `metadata.active_subgroup` is `{defining_query, count}` after a search, `null` after the reset.
+- DELETE returns 200 on success, 200 again as a no-op, and 404 for an unknown session.
+
+---
+
 ## Database Inspection Cheat Sheet
 
 ### Quick Record Lookup
