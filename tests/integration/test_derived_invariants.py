@@ -2,13 +2,12 @@
 
 Encodes every derived-artifact invariant from the seam audit as a permanent
 regression guard: each invariant is a read-only SELECT against the live DB that
-returns a *violation count*, asserted == 0. The four invariants that are
-currently violated (D1=I1, D2=P3, D3=N1, D4=E1 per issue #58) are marked
-``xfail(strict=False)`` so the battery is GREEN today and will flip to enforcing
-the moment fix_30 lands.
-
-TODO: make those four xfails strict after fix_30 applied (#58) — i.e. drop the
-xfail markers entirely so a regression (or an unexpected fix) fails loudly.
+returns a *violation count*, asserted == 0. fix_30 (applied 2026-06-13) repaired
+two of the four audit violations: D1=I1 (vanished aliases) and D3=N1 (orphan
+network edges) now enforce strictly. The remaining two — D2=P3 (Proops
+placeholder/variant shadows) and D4=E1 (d'Alembert wikidata disagreement) — are
+report-only curation decisions fix_30 deliberately did not touch and stay
+``xfail(strict=False)`` until curated (#58 D2/D4, related to #54).
 
 Rules honoured:
 - DB is opened strictly read-only (``mode=ro`` URI); only SELECT/PRAGMA run.
@@ -66,11 +65,14 @@ def _count(conn: sqlite3.Connection, sql: str) -> int:
     return conn.execute(sql).fetchone()[0]
 
 
-# --- The four currently-violating invariants (#58, pending fix_30) ----------
-# Each is a tuple of (invariant_id, description, sql, issue_ref) and is marked
-# xfail(strict=False) so today's known violation does not fail the battery.
-_XFAIL = pytest.mark.xfail(
-    strict=False, reason="#58 — pending fix_30 approval"
+# I1 (D1) and N1 (D3) were repaired by fix_30 (applied 2026-06-13) and now
+# enforce strictly — a regression fails the battery loudly. The remaining two
+# violations, P3 (D2 Proops placeholder shadows) and E1 (D4 d'Alembert wikidata
+# disagreement), are report-only curation decisions fix_30 deliberately did not
+# touch; they stay xfail until curated (tracked with #54 / the duplicate-
+# authority cleanup). strict=False so an eventual curation fix doesn't surprise.
+_XFAIL_CURATION = pytest.mark.xfail(
+    strict=False, reason="report-only, pending curation (#58 D2/D4)"
 )
 
 # --- All invariants that currently hold at 0 (~27) --------------------------
@@ -83,8 +85,7 @@ INVARIANTS = [
         "SELECT COUNT(*) FROM (SELECT DISTINCT ag.agent_norm FROM agents ag "
         "JOIN agent_authorities aa ON aa.authority_uri=ag.authority_uri "
         "WHERE ag.agent_norm NOT IN (SELECT alias_form_lower FROM agent_aliases))",
-        "#58/D1",
-        marks=_XFAIL,
+        "#58/D1 (fixed by fix_30)",
         id="I1-authority_linked_norm_has_alias",
     ),
     pytest.param(
@@ -166,7 +167,7 @@ INVARIANTS = [
         "JOIN publisher_authorities pa "
         "ON pa.canonical_name_lower=pv.variant_form_lower AND pa.id<>pv.authority_id",
         "#58/D2",
-        marks=_XFAIL,
+        marks=_XFAIL_CURATION,
         id="P3-variant_never_shadows_foreign_canonical",
     ),
     pytest.param(
@@ -233,8 +234,7 @@ INVARIANTS = [
         "SELECT COUNT(*) FROM network_edges e "
         "WHERE e.source_agent_norm NOT IN (SELECT agent_norm FROM network_agents) "
         "OR e.target_agent_norm NOT IN (SELECT agent_norm FROM network_agents)",
-        "#58/D3",
-        marks=_XFAIL,
+        "#58/D3 (fixed by fix_30)",
         id="N1-network_edge_endpoints_resolve",
     ),
     pytest.param(
@@ -309,7 +309,7 @@ INVARIANTS = [
         "WHERE aa.wikidata_id IS NOT NULL AND ae.wikidata_id IS NOT NULL "
         "AND aa.wikidata_id <> ae.wikidata_id",
         "#58/D4",
-        marks=_XFAIL,
+        marks=_XFAIL_CURATION,
         id="E1-enrichment_wikidata_agreement",
     ),
     pytest.param(

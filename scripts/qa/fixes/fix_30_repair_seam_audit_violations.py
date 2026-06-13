@@ -250,6 +250,7 @@ def run(db_path: Path, apply: bool = False) -> dict:
             inserted += cur.rowcount
 
         deleted = 0
+        affected_nodes: set[str] = set()
         for src, tgt, ctype in d3_deletions:
             cur = conn.execute(
                 "DELETE FROM network_edges WHERE source_agent_norm = ? "
@@ -257,6 +258,23 @@ def run(db_path: Path, apply: bool = False) -> dict:
                 (src, tgt, ctype),
             )
             deleted += cur.rowcount
+            affected_nodes.update((src, tgt))
+
+        # Deleting edges leaves network_agents.connection_count stale on the
+        # surviving endpoints (the merged-away node is not a node, so only the
+        # real endpoints need it). Recompute their degree from the live edges
+        # so invariant N4 (connection_count == edges touching node) holds.
+        recounted = 0
+        for norm in affected_nodes:
+            cur = conn.execute(
+                "UPDATE network_agents SET connection_count = "
+                "(SELECT COUNT(*) FROM network_edges e "
+                " WHERE e.source_agent_norm = network_agents.agent_norm "
+                "    OR e.target_agent_norm = network_agents.agent_norm) "
+                "WHERE agent_norm = ?",
+                (norm,),
+            )
+            recounted += cur.rowcount
         conn.commit()
 
         # Post-apply verification (I1 + N1 floors).
@@ -275,20 +293,28 @@ def run(db_path: Path, apply: bool = False) -> dict:
             "SELECT COUNT(*) FROM (SELECT alias_form_lower FROM agent_aliases "
             "GROUP BY alias_form_lower HAVING COUNT(*) > 1)"
         ).fetchone()[0]
+        n4_mismatch = conn.execute(
+            "SELECT COUNT(*) FROM network_agents na WHERE na.connection_count <> "
+            "(SELECT COUNT(*) FROM network_edges e WHERE "
+            "e.source_agent_norm = na.agent_norm OR e.target_agent_norm = na.agent_norm)"
+        ).fetchone()[0]
 
         print(f"[{FIX_ID}] applied: inserted {inserted} aliases, deleted "
-              f"{deleted} edges.")
+              f"{deleted} edges, recounted {recounted} node degrees.")
         print(f"[{FIX_ID}] verify: I1 residual={i1_remaining} "
               f"(expected: the {len(d1_collisions)} collision norms), "
               f"N1 orphan edges={n1_remaining} (expected 0), "
-              f"alias_form_lower dupes={dupes} (expected 0)")
+              f"alias_form_lower dupes={dupes} (expected 0), "
+              f"N4 count mismatch={n4_mismatch} (expected 0)")
         result.update({
             "applied": True,
             "inserted": inserted,
             "deleted": deleted,
+            "recounted": recounted,
             "i1_remaining": i1_remaining,
             "n1_remaining": n1_remaining,
             "alias_dupes": dupes,
+            "n4_mismatch": n4_mismatch,
         })
         return result
     finally:

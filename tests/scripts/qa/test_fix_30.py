@@ -66,7 +66,8 @@ def _make_db(path: Path) -> None:
         CREATE TABLE network_agents (
             agent_norm TEXT PRIMARY KEY,
             display_name TEXT NOT NULL,
-            node_type TEXT DEFAULT 'person'
+            node_type TEXT DEFAULT 'person',
+            connection_count INTEGER NOT NULL DEFAULT 0
         );
         CREATE TABLE network_edges (
             source_agent_norm TEXT NOT NULL,
@@ -136,15 +137,19 @@ def _make_db(path: Path) -> None:
 
     # --- Network nodes + edges (D3) ---------------------------------------
     # 'manasseh ben israel' survives the merge; 'מנשה בן ישראל' node is gone.
-    for norm, disp in [
-        ("manasseh ben israel", "Manasseh ben Israel"),
-        ("דרוקר, חיים בן יעקב", "Druker"),
-        ("קארו, יוסף בן אפרים", "Karo"),
+    # connection_count seeded to the true pre-deletion degree (edges touching
+    # the node), so invariant N4 holds before fix_30 runs: manasseh=1 (valid
+    # edge), druker=1 (orphan edge), karo=2 (orphan + valid edge).
+    for norm, disp, count in [
+        ("manasseh ben israel", "Manasseh ben Israel", 1),
+        ("דרוקר, חיים בן יעקב", "Druker", 1),
+        ("קארו, יוסף בן אפרים", "Karo", 2),
     ]:
         conn.execute(
-            "INSERT INTO network_agents (agent_norm, display_name, node_type) "
-            "VALUES (?, ?, 'person')",
-            (norm, disp),
+            "INSERT INTO network_agents "
+            "(agent_norm, display_name, node_type, connection_count) "
+            "VALUES (?, ?, 'person', ?)",
+            (norm, disp, count),
         )
     # Two orphan same_place_period edges referencing the merged-away node.
     conn.execute(
@@ -263,5 +268,37 @@ def test_d1_insertion_resolves_invariant_i1(tmp_path):
         ).fetchone()[0]
         assert orphans == 0
         assert conn.execute("SELECT COUNT(*) FROM network_edges").fetchone()[0] == 1
+    finally:
+        conn.close()
+
+
+def test_d3_recomputes_connection_count(tmp_path):
+    """Deleting orphan edges must recompute connection_count on the surviving
+    endpoints so invariant N4 (connection_count == edges touching node) holds.
+
+    Regression for the cascade the invariant battery caught: the first fix_30
+    deleted edges without updating counts, leaving N4 violated by 2.
+    """
+    db = tmp_path / "fixture.db"
+    _make_db(db)
+
+    run(db, apply=True)
+
+    conn = sqlite3.connect(str(db))
+    try:
+        n4_mismatch = conn.execute(
+            "SELECT COUNT(*) FROM network_agents na WHERE na.connection_count <> "
+            "(SELECT COUNT(*) FROM network_edges e WHERE "
+            "e.source_agent_norm = na.agent_norm OR e.target_agent_norm = na.agent_norm)"
+        ).fetchone()[0]
+        assert n4_mismatch == 0
+
+        # Druker lost its only (orphan) edge -> 0; Karo kept the valid edge -> 1.
+        counts = dict(
+            conn.execute("SELECT agent_norm, connection_count FROM network_agents")
+        )
+        assert counts["דרוקר, חיים בן יעקב"] == 0
+        assert counts["קארו, יוסף בן אפרים"] == 1
+        assert counts["manasseh ben israel"] == 1
     finally:
         conn.close()
