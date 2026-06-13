@@ -4,10 +4,12 @@ from pydantic import ValidationError
 
 
 def test_step_action_enum_values():
-    """All 7 executor actions are defined."""
+    """All 8 executor actions are defined (resolve_subject_concept added by
+    semantic subject search, Phase 1)."""
     from scripts.chat.plan_models import StepAction
-    assert len(StepAction) == 7
+    assert len(StepAction) == 8
     assert StepAction.RESOLVE_AGENT == "resolve_agent"
+    assert StepAction.RESOLVE_SUBJECT_CONCEPT == "resolve_subject_concept"
     assert StepAction.RETRIEVE == "retrieve"
     assert StepAction.AGGREGATE == "aggregate"
 

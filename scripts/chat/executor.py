@@ -36,7 +36,9 @@ from scripts.chat.plan_models import (
     RecordSummary,
     ResolveAgentParams,
     ResolvedEntity,
+    ResolvedHeadings,
     ResolvePublisherParams,
+    ResolveSubjectConceptParams,
     RetrieveParams,
     SampleParams,
     SessionContext,
@@ -56,6 +58,29 @@ CONFIDENCE_LOW = 0.70
 
 # Regex for $step_N references
 _STEP_REF_RE = re.compile(r"^\$step_(\d+)$")
+
+
+# =============================================================================
+# Subject-concept resolver seam (semantic subject search, Phase 1)
+# =============================================================================
+#
+# The ``resolve_subject_concept`` handler obtains its resolver through this
+# module-level seam rather than constructing one directly. Tests monkeypatch
+# ``get_subject_resolver`` to inject a FAKE resolver (no model / onnxruntime /
+# DB vectors). The REAL factory — building a ``SubjectConceptResolver`` from the
+# ``subject_embeddings`` table + an ``OnnxEmbedder`` — is wired in Task 7; until
+# then this returns ``None`` (the handler then reports an honest empty result).
+
+
+def get_subject_resolver(db_path: Path):
+    """Return the subject-concept resolver, or ``None`` if unavailable.
+
+    Injection seam: the real model-backed factory is wired in Task 7. Tests
+    replace this with a fake resolver so no model is loaded. A resolver must
+    expose ``resolve(concept) -> list[HeadingMatch]`` where each match carries
+    ``heading_value`` and ``score``.
+    """
+    return None
 
 
 # =============================================================================
@@ -132,6 +157,21 @@ def execute_plan(
     fanout_note = _concept_fanout_note(plan.execution_steps)
     if fanout_note:
         grounding.broadening_notes.append(fanout_note)
+
+    # Semantic subject search: when a resolve_subject_concept step ran, surface
+    # the matched headings (+ per-heading counts) on the narrator-facing
+    # broadening surface so the count is transparent and never a fabricated
+    # zero. Only headings that actually cleared the resolver are cited; the
+    # concept the user asked is named so the narrator can attribute the count.
+    for step_idx, sr in step_results.items():
+        if isinstance(sr.data, ResolvedHeadings) and sr.data.headings:
+            concept = ""
+            step = plan.execution_steps[step_idx]
+            if isinstance(step.params, ResolveSubjectConceptParams):
+                concept = step.params.concept
+            grounding.broadening_notes.append(
+                _matched_headings_note(sr.data, concept)
+            )
 
     # Build ordered list of step results
     steps_completed = [step_results[i] for i in execution_order]
@@ -253,6 +293,11 @@ def _resolve_step_ref(
         # Extract matched values from resolve actions
         if isinstance(data, ResolvedEntity):
             return data.matched_values
+        # Semantic subject search: a resolve_subject_concept step yields the
+        # real collection headings a downstream `subject IN $step_N` retrieve
+        # matches on exactly (the matched headings are the evidence).
+        if isinstance(data, ResolvedHeadings):
+            return list(data.headings)
         # Fallback: return mms_ids if it's a RecordSet
         if isinstance(data, RecordSet):
             return data.mms_ids
@@ -349,6 +394,7 @@ def _execute_step(
     handlers: Dict[str, Callable] = {
         StepAction.RESOLVE_AGENT: _handle_resolve_agent,
         StepAction.RESOLVE_PUBLISHER: _handle_resolve_publisher,
+        StepAction.RESOLVE_SUBJECT_CONCEPT: _handle_resolve_subject_concept,
         StepAction.RETRIEVE: _handle_retrieve,
         StepAction.AGGREGATE: _handle_aggregate,
         StepAction.FIND_CONNECTIONS: _handle_find_connections,
@@ -402,6 +448,8 @@ def _determine_status(data: StepOutputData) -> str:
     """Determine step status based on output data."""
     if isinstance(data, ResolvedEntity):
         return "ok" if data.matched_values else "empty"
+    if isinstance(data, ResolvedHeadings):
+        return "ok" if data.headings else "empty"
     if isinstance(data, RecordSet):
         return "ok" if data.mms_ids else "empty"
     if isinstance(data, AggregationResult):
@@ -756,6 +804,118 @@ def _handle_resolve_publisher(
         )
     finally:
         conn.close()
+
+
+def _handle_resolve_subject_concept(
+    params: ResolveSubjectConceptParams,
+    db_path: Path,
+    step_results: Dict[int, StepResult],
+    session_context: Optional[SessionContext],
+) -> ResolvedHeadings:
+    """Resolve a user concept to the collection's real subject headings.
+
+    Semantic subject search (Phase 1): the injectable resolver (see
+    ``get_subject_resolver``) maps a concept ('philosophy') to the actual
+    ``subjects.value`` headings catalogued in the collection. For each heading
+    we attach a transparent per-heading ``record_count`` — COUNT of records
+    carrying that exact heading, *within the held set* when one is in scope
+    (``session_context.previous_record_ids``), so the count never exceeds the
+    set the user is exploring.
+
+    Records still match exactly on these headings downstream (a
+    ``subject IN $step_N`` retrieve); the matched headings are the evidence.
+    Returns a ``ResolvedHeadings`` — empty (honest) when the resolver is
+    unavailable or nothing clears its threshold; never fabricated headings.
+    """
+    resolver = get_subject_resolver(db_path)
+    if resolver is None:
+        logger.warning(
+            "resolve_subject_concept: no subject resolver available for "
+            "concept %r; returning empty (honest) result", params.concept
+        )
+        return ResolvedHeadings(headings=[], matches=[])
+
+    matches = resolver.resolve(params.concept)[: params.top_k]
+    if not matches:
+        return ResolvedHeadings(headings=[], matches=[])
+
+    # Count within the held set when one is in scope, else collection-wide.
+    scope_ids: Optional[List[str]] = None
+    if session_context and session_context.previous_record_ids:
+        scope_ids = list(session_context.previous_record_ids)
+
+    headings: List[str] = []
+    detail: List[dict] = []
+    conn = _get_conn(db_path)
+    try:
+        for m in matches:
+            heading = m.heading_value
+            if heading in headings:
+                continue
+            headings.append(heading)
+            record_count = _count_records_for_heading(conn, heading, scope_ids)
+            detail.append({
+                "heading": heading,
+                "score": round(float(m.score), 4),
+                "record_count": record_count,
+            })
+    finally:
+        conn.close()
+
+    return ResolvedHeadings(headings=headings, matches=detail)
+
+
+def _count_records_for_heading(
+    conn: sqlite3.Connection,
+    heading: str,
+    scope_ids: Optional[List[str]],
+) -> int:
+    """COUNT of records carrying ``heading`` exactly, within ``scope_ids``.
+
+    Exact (case-insensitive) match on ``subjects.value`` — the resolved
+    headings are real catalogued values, so the count is deterministic and
+    not a substring/FTS approximation. ``scope_ids=None`` counts collection-
+    wide; an empty list counts zero.
+    """
+    if scope_ids is not None and not scope_ids:
+        return 0
+    sql = (
+        "SELECT COUNT(DISTINCT r.mms_id) AS cnt "
+        "FROM records r JOIN subjects s ON r.id = s.record_id "
+        "WHERE LOWER(s.value) = LOWER(?)"
+    )
+    sql_params: List[str] = [heading]
+    if scope_ids is not None:
+        placeholders = ",".join("?" for _ in scope_ids)
+        sql += f" AND r.mms_id IN ({placeholders})"
+        sql_params.extend(scope_ids)
+    row = conn.execute(sql, sql_params).fetchone()
+    return row["cnt"] if row else 0
+
+
+def _matched_headings_note(resolved: ResolvedHeadings, concept: str = "") -> str:
+    """Evidence note naming the matched subject headings (+ per-heading count).
+
+    Surfaced on the narrator-facing relaxation/broadening surface so the count
+    is transparent ("counted via: Jewish philosophy (8), Philosophy (2)…") and
+    never a fabricated zero (issue: held-set concept-count honesty). ``concept``
+    (when known) names the term the user asked so the narrator can attribute
+    the count to it.
+    """
+    parts: List[str] = []
+    by_heading = {m.get("heading"): m for m in resolved.matches}
+    for h in resolved.headings:
+        m = by_heading.get(h)
+        if m is not None and m.get("record_count") is not None:
+            parts.append(f"{h} ({m['record_count']})")
+        else:
+            parts.append(h)
+    prefix = (
+        f"'{concept}' counted via matched subject heading(s): "
+        if concept
+        else "counted via matched subject heading(s): "
+    )
+    return prefix + ", ".join(parts)
 
 
 _TOPICAL_CONTAINS_FIELDS = {FilterField.SUBJECT, FilterField.TITLE, FilterField.PHYSICAL_DESC}
@@ -1209,9 +1369,30 @@ def _handle_retrieve(
     unresolved_notes: List[str] = []
     fallback_indices: set = set()
     fallback_refs: Dict[int, str] = {}
+    headings_notes: List[str] = []  # matched subject headings -> evidence
+    saw_empty_headings = False
     for f in params.filters:
         if isinstance(f.value, str):
             match = _STEP_REF_RE.match(f.value)
+            # Semantic subject search: a `subject IN $step_N` filter whose
+            # referenced step produced ResolvedHeadings matches `subjects.value`
+            # exactly on the resolved headings. Bind the WHOLE headings list as
+            # the IN value (db_adapter renders exact membership), and surface
+            # the matched headings as evidence the narrator can cite.
+            if match and f.field == FilterField.SUBJECT:
+                src = step_results.get(int(match.group(1)))
+                if src is not None and isinstance(src.data, ResolvedHeadings):
+                    headings = list(src.data.headings)
+                    if not headings:
+                        # Honest empty: never query the literal '$step_N'
+                        # string. Drop this filter and mark the retrieve empty.
+                        saw_empty_headings = True
+                        continue
+                    resolved_filters.append(
+                        f.model_copy(update={"op": FilterOp.IN, "value": headings})
+                    )
+                    headings_notes.append(_matched_headings_note(src.data))
+                    continue
             if match:
                 values = _resolve_step_ref(f.value, step_results, context="value")
                 if isinstance(values, list) and values:
@@ -1253,6 +1434,19 @@ def _handle_retrieve(
                 continue
         resolved_filters.append(f)
 
+    # Semantic subject search honest-empty: the concept resolved to NO
+    # headings, so the subject filter was dropped above. Counting/relaxing on
+    # the remaining filters would silently change the meaning of the turn —
+    # return zero and disclose that no headings matched, instead.
+    if saw_empty_headings:
+        return RecordSet(
+            mms_ids=[],
+            total_count=0,
+            filters_applied=[f.model_dump() for f in resolved_filters],
+            relaxations=unresolved_notes
+            + ["no subject headings matched the concept above the threshold"],
+        )
+
     # Resolve scope
     scope_ids = _resolve_scope(params.scope, step_results, session_context)
 
@@ -1271,7 +1465,10 @@ def _handle_retrieve(
     conn = _get_conn(db_path)
     try:
         mms_ids = _run_filter_query(conn, resolved_filters, scope_ids, multi_value_map)
-        relaxations: List[str] = list(unresolved_notes)
+        # ``headings_notes`` (matched subject headings + per-heading counts) are
+        # evidence of HOW the count was obtained, not a relaxation — record
+        # them first so the narrator can cite them even on an exact match.
+        relaxations: List[str] = list(headings_notes) + list(unresolved_notes)
         if not mms_ids and resolved_filters:
             ladder_ids, ladder_notes = _relax_and_retry(conn, resolved_filters, scope_ids)
             mms_ids = ladder_ids

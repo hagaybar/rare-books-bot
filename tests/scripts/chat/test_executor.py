@@ -24,9 +24,12 @@ from scripts.chat.plan_models import (
     ResolveAgentParams,
     ResolvePublisherParams,
     ResolvedEntity,
+    ResolvedHeadings,
+    ResolveSubjectConceptParams,
     RetrieveParams,
     SampleParams,
     ScholarlyDirective,
+    SessionContext,
     StepAction,
     StepResult,
 )
@@ -1890,3 +1893,142 @@ class TestConceptFanoutTransparency:
         ])
         result = execute_plan(plan, test_db)
         assert result.grounding.broadening_notes == []
+
+
+# =============================================================================
+# resolve_subject_concept action (semantic subject search, Phase 1)
+# =============================================================================
+
+
+class _FakeSubjectResolver:
+    """Deterministic concept->heading mapping for tests (no model/onnx/DB).
+
+    Mirrors the SubjectConceptResolver.resolve() contract: returns a list of
+    HeadingMatch-like objects carrying ``heading_value`` and ``score``.
+    """
+
+    def __init__(self, mapping):
+        # mapping: concept(casefold) -> list[(heading_value, score)]
+        self._mapping = {k.casefold(): v for k, v in mapping.items()}
+
+    def resolve(self, concept):
+        from scripts.chat.subject_concept_resolver import HeadingMatch
+
+        return [
+            HeadingMatch(heading_value=h, score=s)
+            for h, s in self._mapping.get(concept.casefold(), [])
+        ]
+
+
+def test_handle_resolve_subject_concept_counts_in_scope(test_db, monkeypatch):
+    """resolve_subject_concept resolves a concept to real headings and counts
+    records carrying those headings WITHIN the provided scope."""
+    import scripts.chat.executor as executor
+
+    fake = _FakeSubjectResolver(
+        {"philosophy": [("Jewish law", 0.91), ("Talmud", 0.88)]}
+    )
+    monkeypatch.setattr(executor, "get_subject_resolver", lambda db_path: fake)
+
+    # scope = the held set (records 1 and 3 carry the resolved headings)
+    ctx = SessionContext(
+        session_id="s1",
+        previous_record_ids=["990001234", "990009999", "990005678"],
+    )
+
+    params = ResolveSubjectConceptParams(concept="philosophy")
+    result = executor._handle_resolve_subject_concept(
+        params, test_db, step_results={}, session_context=ctx
+    )
+
+    assert isinstance(result, ResolvedHeadings)
+    assert set(result.headings) == {"Jewish law", "Talmud"}
+    # Each matched heading carries a transparent per-heading record_count.
+    by_heading = {m["heading"]: m for m in result.matches}
+    assert by_heading["Jewish law"]["record_count"] == 1  # record 1 in scope
+    assert by_heading["Talmud"]["record_count"] == 1       # record 3 in scope
+    assert by_heading["Jewish law"]["score"] == 0.91
+
+
+def test_resolve_subject_concept_plan_counts_and_grounds(test_db, monkeypatch):
+    """End-to-end: [resolve_subject_concept -> retrieve(subject IN $step_0)
+    scope=$previous_results] returns the right count over the held set, surfaces
+    the matched headings as evidence, and DOES NOT mutate the held set."""
+    import scripts.chat.executor as executor
+
+    fake = _FakeSubjectResolver(
+        {"philosophy": [("Jewish law", 0.91), ("Talmud", 0.88)]}
+    )
+    monkeypatch.setattr(executor, "get_subject_resolver", lambda db_path: fake)
+
+    held = ["990001234", "990009999", "990005678"]
+    ctx = SessionContext(session_id="s1", previous_record_ids=list(held))
+
+    plan = InterpretationPlan(
+        intents=["explore-in-set"],
+        reasoning="how many in philosophy",
+        execution_steps=[
+            ExecutionStep(
+                action=StepAction.RESOLVE_SUBJECT_CONCEPT,
+                params=ResolveSubjectConceptParams(concept="philosophy"),
+                label="resolve concept",
+            ),
+            ExecutionStep(
+                action=StepAction.RETRIEVE,
+                params=RetrieveParams(
+                    filters=[
+                        Filter(
+                            field=FilterField.SUBJECT,
+                            op=FilterOp.IN,
+                            value="$step_0",
+                        )
+                    ],
+                    scope="$previous_results",
+                ),
+                label="count on headings",
+                depends_on=[0],
+            ),
+        ],
+        directives=[],
+        confidence=0.9,
+    )
+
+    result = executor.execute_plan(plan, test_db, session_context=ctx)
+
+    # The retrieve found records 1 and 3 (carry the resolved headings), scoped
+    # to the held set.
+    retrieve_step = result.steps_completed[-1]
+    assert isinstance(retrieve_step.data, RecordSet)
+    assert set(retrieve_step.data.mms_ids) == {"990001234", "990009999"}
+    assert retrieve_step.data.total_count == 2
+
+    # Matched headings are surfaced as evidence the narrator can cite.
+    joined = " ".join(result.grounding.broadening_notes).lower()
+    assert "jewish law" in joined
+    assert "talmud" in joined
+    assert "philosophy" in joined
+
+    # The held set is NOT mutated by this turn.
+    assert ctx.previous_record_ids == held
+
+
+def test_resolve_subject_concept_no_match_is_honest_empty(test_db, monkeypatch):
+    """When no heading clears the resolver threshold, the action returns an
+    empty ResolvedHeadings (no fabricated headings) and the scoped retrieve
+    yields zero -- never the literal '$step_0' string."""
+    import scripts.chat.executor as executor
+
+    fake = _FakeSubjectResolver({})  # 'philosophy' resolves to nothing
+    monkeypatch.setattr(executor, "get_subject_resolver", lambda db_path: fake)
+
+    ctx = SessionContext(
+        session_id="s1", previous_record_ids=["990001234", "990009999"]
+    )
+    params = ResolveSubjectConceptParams(concept="philosophy")
+    result = executor._handle_resolve_subject_concept(
+        params, test_db, step_results={}, session_context=ctx
+    )
+
+    assert isinstance(result, ResolvedHeadings)
+    assert result.headings == []
+    assert result.matches == []
