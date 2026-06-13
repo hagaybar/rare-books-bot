@@ -1037,13 +1037,126 @@ const SECTIONS: Section[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Grouping + one-line summaries (so the page is scannable; full text stays in
+// SECTIONS above and opens on click). To add a section: add it to SECTIONS,
+// then list its id under the right Part and give it a SUMMARY line.
+// ---------------------------------------------------------------------------
+
+interface Part {
+  label: string;
+  blurb: string;
+  sectionIds: string[];
+}
+
+const PARTS: Part[] = [
+  {
+    label: 'Part 1 · Preparing the data',
+    blurb: 'How a catalog record becomes something searchable.',
+    sectionIds: ['source', 'journey', 'normalized', 'dates', 'place', 'publisher', 'agents', 'authorities'],
+  },
+  {
+    label: 'Part 2 · From a question to an answer',
+    blurb: 'How your question turns into a cited answer.',
+    sectionIds: ['question', 'recipe', 'engine', 'widening', 'writer', 'enrichment'],
+  },
+  {
+    label: 'Part 3 · Using it',
+    blurb: 'Asking in Hebrew, following up, and the map.',
+    sectionIds: ['hebrew', 'using', 'map'],
+  },
+  {
+    label: 'Part 4 · What to trust',
+    blurb: 'Where the system is solid, and where to be careful.',
+    sectionIds: ['trust'],
+  },
+  {
+    label: 'Reference',
+    blurb: 'The technical words, in everyday language.',
+    sectionIds: ['glossary'],
+  },
+];
+
+const SUMMARY: Record<string, string> = {
+  source: 'The catalog record (MARC) is the single source of truth — every answer points back to it.',
+  journey: 'Raw records are read, tidied, then filed into searchable lists — three faithful steps.',
+  normalized: 'Five fields get a tidy version; titles and subjects are kept exactly as written.',
+  dates: 'Hand-written rules; reproducible — but Hebrew-calendar dates can be reliably off.',
+  place: 'Many spellings collapse to one city via a lookup list that was AI-drafted, then frozen.',
+  publisher: 'Two layers: the same lookup-list tidy, plus a curated who’s-who of real printing houses.',
+  agents: 'A mechanical name-tidy that does NOT unify identities; roles part-catalog, part-enrichment.',
+  authorities: 'How the who’s-who is assembled (catalog identity numbers + aliases) and used to expand a search.',
+  question: 'Three stages — Understand, Search, Write — with AI only at the two ends.',
+  recipe: 'Stage 1: the AI turns your sentence into a fixed-vocabulary recipe, or asks you to clarify.',
+  engine: 'Stage 2: a no-AI engine runs the recipe and produces the evidence trail.',
+  widening: 'When nothing matches, the search broadens gently and openly — never loosening hard limits.',
+  writer: 'Stage 3: the AI writes the answer, fenced to only what was found, with citations.',
+  enrichment: 'Outside data (Wikidata/Wikipedia) adds context — the least reproducible part, kept off the spine.',
+  hebrew: 'You can ask in Hebrew and it searches natively — bilingual subjects, Hebrew titles, cross-script.',
+  using: 'Follow-up questions, what you can search (incl. maps & plates), and links back to the real book.',
+  map: 'A places-first map and people-networks — a second, visual way to explore.',
+  trust: 'Where to trust and where to be careful: dates, unlinked people, subject gaps, publishers.',
+  glossary: 'The handful of technical words, in everyday language.',
+};
+
+const SECTION_BY_ID: Record<string, Section> = Object.fromEntries(
+  SECTIONS.map((s) => [s.id, s]),
+);
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={`mt-1 h-4 w-4 shrink-0 text-gray-400 transition-transform ${open ? 'rotate-90' : ''}`}
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default function Help() {
+  const [open, setOpen] = useState<Set<string>>(() => {
+    // Open a section straight away if the URL carries a #hash (deep links).
+    const hash = typeof window !== 'undefined' ? window.location.hash.slice(1) : '';
+    return hash && SECTION_BY_ID[hash] ? new Set([hash]) : new Set();
+  });
   const [active, setActive] = useState<string>(SECTIONS[0].id);
 
-  // Highlight the table-of-contents entry for the section currently in view.
+  const toggle = (id: string) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const expandAll = () => setOpen(new Set(SECTIONS.map((s) => s.id)));
+  const collapseAll = () => setOpen(new Set());
+
+  const openAndScroll = (id: string) => {
+    setOpen((prev) => new Set(prev).add(id));
+    requestAnimationFrame(() =>
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
+  };
+
+  // Scroll to the deep-linked section on mount (it was opened in state init).
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash && SECTION_BY_ID[hash]) {
+      requestAnimationFrame(() => document.getElementById(hash)?.scrollIntoView());
+    }
+  }, []);
+
+  // Scroll-spy: highlight the TOC entry whose card is currently in view.
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -1052,7 +1165,7 @@ export default function Help() {
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
         if (visible) setActive(visible.target.id);
       },
-      { rootMargin: '-20% 0px -70% 0px' },
+      { rootMargin: '-12% 0px -78% 0px' },
     );
     SECTIONS.forEach((s) => {
       const el = document.getElementById(s.id);
@@ -1063,47 +1176,113 @@ export default function Help() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
-      <header className="mb-8">
+      <header className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">How it works</h1>
         <p className="mt-1 text-gray-600">
           From an old book to an answer — follow one real 1553 Venice book through the whole
-          journey. This page grows as we map more of the flow.
+          journey. Skim the summaries; open any card for the full story.
         </p>
       </header>
 
+      {/* At a glance — the four parts as a quick map + jump-in */}
+      <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {PARTS.filter((p) => p.sectionIds[0] !== 'glossary').map((part) => (
+          <button
+            key={part.label}
+            type="button"
+            onClick={() => openAndScroll(part.sectionIds[0])}
+            className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-left transition-colors hover:border-gray-300 hover:bg-gray-100"
+          >
+            <div className="text-xs font-semibold text-gray-900">{part.label}</div>
+            <div className="mt-1 text-xs leading-snug text-gray-500">{part.blurb}</div>
+          </button>
+        ))}
+      </div>
+
       <div className="flex gap-10">
-        {/* Sticky mini table of contents */}
-        <nav className="hidden w-48 shrink-0 lg:block">
+        {/* Sticky grouped table of contents */}
+        <nav className="hidden w-56 shrink-0 lg:block">
           <div className="sticky top-8">
-            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-              On this page
+            <div className="mb-3 flex gap-3 text-xs font-medium">
+              <button type="button" onClick={expandAll} className="text-blue-600 hover:text-blue-800">
+                Expand all
+              </button>
+              <button type="button" onClick={collapseAll} className="text-gray-500 hover:text-gray-700">
+                Collapse all
+              </button>
             </div>
-            <ul className="space-y-1 text-sm">
-              {SECTIONS.map((s) => (
-                <li key={s.id}>
-                  <a
-                    href={`#${s.id}`}
-                    className={`block rounded px-2 py-1 transition-colors ${
-                      active === s.id
-                        ? 'bg-gray-100 font-medium text-gray-900'
-                        : 'text-gray-500 hover:text-gray-800'
-                    }`}
-                  >
-                    {s.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {PARTS.map((part) => (
+              <div key={part.label} className="mb-3">
+                <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                  {part.label}
+                </div>
+                <ul className="space-y-0.5 text-sm">
+                  {part.sectionIds.map((id) => (
+                    <li key={id}>
+                      <button
+                        type="button"
+                        onClick={() => openAndScroll(id)}
+                        className={`block w-full rounded px-2 py-1 text-left transition-colors ${
+                          active === id
+                            ? 'bg-gray-100 font-medium text-gray-900'
+                            : 'text-gray-500 hover:text-gray-800'
+                        }`}
+                      >
+                        {SECTION_BY_ID[id].title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </nav>
 
-        {/* Sections */}
-        <div className="min-w-0 flex-1 space-y-12">
-          {SECTIONS.map((s) => (
-            <section key={s.id} id={s.id} className="scroll-mt-8">
-              <h2 className="mb-3 text-lg font-semibold text-gray-900">{s.title}</h2>
-              <div className="leading-relaxed text-gray-700">{s.body}</div>
-            </section>
+        {/* Grouped, collapsible section cards */}
+        <div className="min-w-0 flex-1">
+          {PARTS.map((part) => (
+            <div key={part.label} className="mb-8">
+              <div className="mb-3">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                  {part.label}
+                </h2>
+              </div>
+              <div className="space-y-3">
+                {part.sectionIds.map((id) => {
+                  const s = SECTION_BY_ID[id];
+                  const isOpen = open.has(id);
+                  return (
+                    <div
+                      key={id}
+                      id={id}
+                      className="scroll-mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggle(id)}
+                        aria-expanded={isOpen}
+                        className="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-gray-50"
+                      >
+                        <Chevron open={isOpen} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-semibold text-gray-900">{s.title}</span>
+                          {!isOpen && (
+                            <span className="mt-0.5 block text-sm leading-snug text-gray-500">
+                              {SUMMARY[id]}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                      {isOpen && (
+                        <div className="border-t border-gray-100 px-4 pb-5 pt-4 leading-relaxed text-gray-700">
+                          {s.body}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </div>
       </div>
