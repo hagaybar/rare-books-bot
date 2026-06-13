@@ -78,6 +78,22 @@ def held_record_ids(execution_result: ExecutionResult) -> list[str]:
     return ordered
 
 
+def _is_explore_intent(plan: InterpretationPlan) -> bool:
+    """True if the plan's intents indicate exploration (counting/aggregating
+    over the held set) rather than a narrowing refinement.
+
+    Intents are free-form LLM output, so match case-insensitively by substring:
+    "explore" beats "refine". A concept-count turn (explore-in-set) runs a
+    scoped retrieve only to COUNT, and must NOT replace the held set — even
+    though a retrieve produced records.
+    """
+    for intent in plan.intents or []:
+        text = str(intent).casefold()
+        if "explore" in text:
+            return True
+    return False
+
+
 def build_subgroup_update(
     plan: InterpretationPlan,
     execution_result: ExecutionResult,
@@ -86,16 +102,25 @@ def build_subgroup_update(
     """Decide the held-set update for a completed turn.
 
     Returns an ActiveSubgroup to replace the held set, or None to leave it
-    unchanged. A turn redefines the held set iff it produced a non-empty retrieve
-    result (new search or refine-in-set). The held set's record_ids are the FULL
-    match set (held_record_ids), NOT the truncated display set — fixes the
-    74-vs-30 defect. Aggregate-only (explore) and empty/clarification turns return
-    None.
+    unchanged. A turn redefines the held set only when its intent is a NEW SEARCH
+    (full-collection retrieve) or a REFINE-IN-SET (a narrowing). When the intent
+    is EXPLORE-IN-SET — counting/aggregating over the held set, e.g. a concept-
+    count that runs a scoped retrieve only to COUNT — the held set is left
+    unchanged (return None) EVEN IF a retrieve produced records.
+
+    The held set's record_ids are the FULL match set (held_record_ids), NOT the
+    truncated display set — fixes the 74-vs-30 defect. Aggregate-only and
+    empty/clarification turns return None.
     """
     has_retrieve = any(
         step.action == StepAction.RETRIEVE for step in plan.execution_steps
     )
     if not has_retrieve:
+        return None
+
+    # Explore-in-set (e.g. concept-count) runs a retrieve only to count over the
+    # held set; it must not replace it. New-search and refine-in-set do replace.
+    if _is_explore_intent(plan):
         return None
 
     record_ids = held_record_ids(execution_result)
