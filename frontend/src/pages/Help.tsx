@@ -746,6 +746,67 @@ const SECTIONS: Section[] = [
     ),
   },
   {
+    id: 'writer',
+    title: '13. Stage 3, up close: writing the answer — and keeping it honest',
+    body: (
+      <>
+        <p>
+          The final stage is the writer — an AI again, and the most "AI-like" part of the whole
+          system. It receives a <strong>sealed package from the engine</strong> — the books found,{' '}
+          <em>why</em> each matched, any broadening that happened, and the true counts — and turns
+          that into readable prose plus a few suggested follow-up questions. Its entire job is to{' '}
+          <strong>present what's in the package, well.</strong> It does not search, and it cannot
+          reach outside the package for more books.
+        </p>
+        <p className="mt-4 font-semibold text-gray-900">How the writer is fenced</p>
+        <p className="mt-1">
+          Because fluent prose is exactly where an AI could <em>sound</em> authoritative about things
+          that aren't true, the writer runs under strict evidence rules:
+        </p>
+        <ul className="mt-2 list-disc space-y-2 pl-5">
+          <li>
+            <strong>Only speak about books the engine returned.</strong> It cannot add a book it
+            "knows" from training — if it isn't in the package, it doesn't exist for the writer.
+          </li>
+          <li>
+            <strong>Cite.</strong> Claims point back to actual records, with links to the catalog,
+            so you can check any statement against the source.
+          </li>
+          <li>
+            <strong>Be honest about how the answer was reached.</strong> If the search was broadened,
+            the writer must say so; if nothing was found, it says that plainly — no padding.
+          </li>
+          <li>
+            <strong>Counts must be true.</strong> If it shows 10 books out of 103, it must say{' '}
+            <strong>103</strong>, never imply the 10 are everything.
+          </li>
+          <li>
+            <strong>Separate "from the collection" from "general background."</strong> If it adds
+            outside context about, say, Maimonides, it must flag that as general scholarly
+            background — not present it as something found in your collection.
+          </li>
+        </ul>
+        <p className="mt-4 font-semibold text-gray-900">Why the fence is the whole point</p>
+        <p className="mt-1">
+          This stage is where the system is most persuasive — and so most dangerous if loose.
+          Everything upstream (the AI-free engine, the evidence trail, the recorded broadening)
+          exists so that this fluent writer <strong>can only ever describe real findings</strong>.
+          The fence controls <em>what it may say</em>; it cannot manufacture evidence.{' '}
+          <strong>No results, no claims.</strong>
+        </p>
+        <p className="mt-4 font-semibold text-gray-900">The honest limit</p>
+        <p className="mt-1">
+          The fence guarantees the writer won't <strong>invent records or evidence</strong> — but
+          it's still an AI writing prose, so it can phrase something awkwardly, over-emphasize, or
+          strike a too-confident tone. What's structurally prevented is fabrication of <em>facts</em>;
+          what isn't fully guaranteed is perfect <em>wording or judgment</em>. That residual gap is
+          exactly why the <strong>"Report" button</strong> on each answer exists — so a reader who
+          spots an off answer can flag it, evidence and all.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'glossary',
     title: 'In plain words — a mini glossary',
     body: (
