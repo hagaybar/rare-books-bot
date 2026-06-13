@@ -449,3 +449,30 @@ def test_assistant_message_persists_plan_and_candidate(store):
     msg = restored.messages[-1]
     assert msg.query_plan == plan_dict
     assert msg.candidate_set is not None and msg.candidate_set.total_count == 3
+
+
+def test_get_session_attaches_active_subgroup(store):
+    """get_session populates ChatSession.active_subgroup from the table."""
+    from scripts.chat.models import ActiveSubgroup
+
+    session = store.create_session(user_id="u1")
+    store.set_active_subgroup(
+        session.session_id,
+        ActiveSubgroup(
+            defining_query="printed in Venice",
+            filter_summary="place contains Venice",
+            record_ids=["100", "101", "102"],
+        ),
+    )
+
+    loaded = store.get_session(session.session_id)
+    assert loaded.active_subgroup is not None
+    assert loaded.active_subgroup.record_ids == ["100", "101", "102"]
+    assert loaded.active_subgroup.defining_query == "printed in Venice"
+
+
+def test_get_session_active_subgroup_none_when_absent(store):
+    """get_session leaves active_subgroup None when no set is held."""
+    session = store.create_session(user_id="u1")
+    loaded = store.get_session(session.session_id)
+    assert loaded.active_subgroup is None
