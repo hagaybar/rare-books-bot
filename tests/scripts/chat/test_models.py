@@ -144,6 +144,29 @@ def test_chat_session_context():
     assert session.context["result_count"] == 5
 
 
+def test_chat_session_active_subgroup_defaults_none():
+    """ChatSession.active_subgroup defaults to None."""
+    session = ChatSession()
+    assert session.active_subgroup is None
+
+
+def test_chat_session_active_subgroup_round_trips():
+    """ChatSession carries an ActiveSubgroup and serializes it."""
+    from scripts.chat.models import ActiveSubgroup
+
+    sub = ActiveSubgroup(
+        defining_query="books printed in Venice",
+        filter_summary="place contains Venice",
+        record_ids=["991", "992"],
+    )
+    session = ChatSession(active_subgroup=sub)
+    assert session.active_subgroup is not None
+    assert session.active_subgroup.record_ids == ["991", "992"]
+
+    session2 = ChatSession.model_validate_json(session.model_dump_json())
+    assert session2.active_subgroup.defining_query == "books printed in Venice"
+
+
 def test_chat_response_with_clarification():
     """Test ChatResponse with clarification needed."""
     response = ChatResponse(
