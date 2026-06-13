@@ -113,6 +113,12 @@ Defined in `scripts/schemas/candidate_set.py`:
 
 Why a record matched: field, value, operator, matched_against, source (MARC path), confidence.
 
+`extract_evidence_for_filter` (`scripts/query/execute.py`) builds the `source` string as a precise MARC path (issue #51 — evidence strings are contracts):
+- **Imprint fields** cite the actual tag from the row's `source_tags` plus the subfield: place `marc:264$a`, publisher `marc:264$b`, date `marc:264$c` (falling back to `260` when `source_tags` is absent; a subfield already encoded in `source_tags` is kept verbatim).
+- **Language** source collapses the JSON-list `source` column (`["041$a"]`) to a clean `marc:041$a`, defaulting to `marc:008` when absent — never a serialized list.
+- **Country** (`marc:008`) and **physical_desc** (`marc:300`) have real extractor branches rather than falling through to `source:"unknown"`.
+- **FTS matches** (title/subject via FTS5) re-read the matched value from the base table by `mms_id` so `value` is non-null on a real match, since the FTS `EXISTS` subquery leaves the value off the result row.
+
 ### Candidate (BaseModel)
 
 Single matched record with rationale and evidence list, plus display fields.

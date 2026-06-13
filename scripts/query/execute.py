@@ -235,10 +235,99 @@ def _marc_source_from_provenance(row, default: str = "unknown") -> str:
         return default
 
 
+def _first_source_tag(row, default_tag: str) -> str:
+    """Return the first MARC tag recorded in the imprint ``source_tags`` JSON.
+
+    ``source_tags`` is stored as a JSON list, e.g. ``["264"]`` or, in older
+    data, with the subfield already attached (``["260$b"]``). The first entry
+    is returned verbatim; ``default_tag`` is used when the column is absent or
+    unparseable.
+    """
+    if "source_tags" not in row.keys() or not row["source_tags"]:
+        return default_tag
+    try:
+        tags = json.loads(row["source_tags"])
+        if isinstance(tags, list) and tags:
+            return str(tags[0])
+        if isinstance(tags, str) and tags:
+            return tags
+        return default_tag
+    except (json.JSONDecodeError, IndexError, TypeError):
+        return default_tag
+
+
+def _imprint_marc_source(row, subfield: str, default_tag: str) -> str:
+    """Build the ``marc:<tag>$<subfield>`` label for an imprint-derived field.
+
+    Subfield precision (issue #51a): place ``$a``, publisher ``$b``, date
+    ``$c``. The tag is read from the row's ``source_tags`` (e.g. ``264``); if
+    that tag already encodes a subfield (``264$b``) it is used as-is.
+    """
+    tag = _first_source_tag(row, default_tag)
+    if "$" in tag:
+        return tag
+    return f"{tag}${subfield}"
+
+
+def _clean_marc_source_string(raw, default: str) -> str:
+    """Normalize a per-row MARC source value into a clean label string.
+
+    Sources such as ``languages.source`` / ``subjects.source`` are stored as
+    JSON-list strings (``["041$a"]``). Returning that verbatim leaks the list
+    into the evidence string (issue #51b: ``marc:["041$a"]``). This collapses
+    the value to the first element, accepts a plain string as-is, and falls
+    back to ``default`` when empty or unparseable.
+    """
+    if raw is None or raw == "":
+        return default
+    if isinstance(raw, str):
+        stripped = raw.strip()
+        if stripped.startswith("["):
+            try:
+                parsed = json.loads(stripped)
+                if isinstance(parsed, list) and parsed:
+                    return str(parsed[0])
+                return default
+            except json.JSONDecodeError:
+                return default
+        return stripped
+    if isinstance(raw, list) and raw:
+        return str(raw[0])
+    return default
+
+
+def _reread_fts_value(conn, row, table: str) -> Any:
+    """Re-read the matched value for an FTS hit from its base table by mms_id.
+
+    FTS5 filters (title/subject CONTAINS) match via an EXISTS subquery, so the
+    matched value is not present on the result row and evidence collapses to
+    ``value=None`` (issue #51d). Given the record's ``mms_id``, fetch the first
+    base-table value for that record so the evidence carries a real, non-null
+    value. Returns ``None`` if no connection/mms_id or no row is found.
+    """
+    if conn is None or "mms_id" not in row.keys() or not row["mms_id"]:
+        return None
+    try:
+        cur = conn.execute(
+            f"SELECT t.value FROM {table} t "
+            "JOIN records r ON r.id = t.record_id "
+            "WHERE r.mms_id = ? AND t.value IS NOT NULL "
+            "ORDER BY t.id LIMIT 1",
+            (row["mms_id"],),
+        )
+        fetched = cur.fetchone()
+        if fetched is not None:
+            return fetched[0]
+    except sqlite3.Error:
+        return None
+    return None
+
+
 def extract_evidence_for_filter(
     filter_obj,
     row: sqlite3.Row,
-    field_prefix: str = ""
+    field_prefix: str = "",
+    conn: sqlite3.Connection | None = None,
 ) -> Evidence:
     """Extract evidence for a single filter from result row.
 
@@ -246,56 +335,37 @@ def extract_evidence_for_filter(
         filter_obj: Filter from QueryPlan
         row: Result row from database
         field_prefix: Optional prefix for field names
+        conn: Optional read connection used to re-read FTS-matched values
+            (title/subject) from their base tables when the value is not on
+            the result row (issue #51d).
 
     Returns:
         Evidence object
     """
     if filter_obj.field == FilterField.PUBLISHER:
-        # Parse source tags if available
-        source_tags = "unknown"
-        if "source_tags" in row.keys() and row["source_tags"]:
-            try:
-                tags = json.loads(row["source_tags"])
-                source_tags = tags[0] if tags else "unknown"
-            except (json.JSONDecodeError, IndexError, TypeError):
-                source_tags = "unknown"
-
+        # Subfield precision (#51a): publisher comes from $b of the imprint tag.
         return Evidence(
             field="publisher_norm",
             value=row["publisher_norm"] if row["publisher_norm"] else None,
             operator="=" if filter_obj.op == FilterOp.EQUALS else "LIKE",
             matched_against=filter_obj.value,
-            source=f"db.imprints.publisher_norm (marc:{source_tags})",
+            source=f"db.imprints.publisher_norm (marc:{_imprint_marc_source(row, 'b', '260')})",
             confidence=row["publisher_confidence"] if "publisher_confidence" in row.keys() else None
         )
 
     elif filter_obj.field == FilterField.IMPRINT_PLACE:
-        source_tags = "unknown"
-        if "source_tags" in row.keys() and row["source_tags"]:
-            try:
-                tags = json.loads(row["source_tags"])
-                source_tags = tags[0] if tags else "unknown"
-            except (json.JSONDecodeError, IndexError, TypeError):
-                source_tags = "unknown"
-
+        # Subfield precision (#51a): place comes from $a of the imprint tag.
         return Evidence(
             field="place_norm",
             value=row["place_norm"] if row["place_norm"] else None,
             operator="=" if filter_obj.op == FilterOp.EQUALS else "LIKE",
             matched_against=filter_obj.value,
-            source=f"db.imprints.place_norm (marc:{source_tags})",
+            source=f"db.imprints.place_norm (marc:{_imprint_marc_source(row, 'a', '260')})",
             confidence=row["place_confidence"] if "place_confidence" in row.keys() else None
         )
 
     elif filter_obj.field == FilterField.YEAR:
-        source_tags = "unknown"
-        if "source_tags" in row.keys() and row["source_tags"]:
-            try:
-                tags = json.loads(row["source_tags"])
-                source_tags = tags[0] if tags else "unknown"
-            except (json.JSONDecodeError, IndexError, TypeError):
-                source_tags = "unknown"
-
+        # Subfield precision (#51a): date comes from $c of the imprint tag.
         date_start = row["date_start"] if "date_start" in row.keys() else None
         date_end = row["date_end"] if "date_end" in row.keys() else None
 
@@ -304,12 +374,15 @@ def extract_evidence_for_filter(
             value=f"{date_start}-{date_end}" if date_start and date_end else None,
             operator="OVERLAPS",
             matched_against=f"{filter_obj.start}-{filter_obj.end}",
-            source=f"db.imprints.date_start/date_end (marc:{source_tags})",
+            source=f"db.imprints.date_start/date_end (marc:{_imprint_marc_source(row, 'c', '260')})",
             confidence=row["date_confidence"] if "date_confidence" in row.keys() else None
         )
 
     elif filter_obj.field == FilterField.LANGUAGE:
-        lang_source = row["language_source"] if "language_source" in row.keys() else "unknown"
+        # Clean source string (#51b): language_source is stored as a JSON-list
+        # string (["041$a"]); collapse it and default to 008 when absent.
+        raw_lang_source = row["language_source"] if "language_source" in row.keys() else None
+        lang_source = _clean_marc_source_string(raw_lang_source, "008")
         return Evidence(
             field="language_code",
             value=row["language_code"] if "language_code" in row.keys() else None,
@@ -320,9 +393,15 @@ def extract_evidence_for_filter(
         )
 
     elif filter_obj.field == FilterField.TITLE:
+        # FTS match (#51d): title CONTAINS matches via an EXISTS subquery, so
+        # title_value is absent from the row. Re-read it from the base table by
+        # mms_id so the evidence value is non-null on a real match.
+        title_val = row["title_value"] if "title_value" in row.keys() else None
+        if title_val is None:
+            title_val = _reread_fts_value(conn, row, "titles")
         return Evidence(
             field="title_value",
-            value=row["title_value"] if "title_value" in row.keys() else None,
+            value=title_val,
             operator="MATCH",
             matched_against=filter_obj.value,
             source="db.titles.value (FTS5)",
@@ -330,17 +409,23 @@ def extract_evidence_for_filter(
         )
 
     elif filter_obj.field == FilterField.SUBJECT:
-        # Subject queries use EXISTS subquery so subject_value may not be in
-        # the result row columns. Fall back to the matched search term.
-        subject_val = None
-        if "subject_value" in row.keys():
-            subject_val = row["subject_value"]
+        # FTS match (#51d): subject CONTAINS matches via an EXISTS subquery, so
+        # subject_value may be absent/null. Re-read it from the base table by
+        # mms_id; fall back to the matched search term only as a last resort.
+        subject_val = row["subject_value"] if "subject_value" in row.keys() else None
+        if subject_val is None:
+            subject_val = _reread_fts_value(conn, row, "subjects")
+        if subject_val is None:
+            subject_val = str(filter_obj.value)
+        # Clean source string (#51b): subject_source is also a JSON-list string.
         subject_source = "db.subjects (FTS5)"
         if "subject_source" in row.keys() and row["subject_source"]:
-            subject_source = f"db.subjects.value (marc:{row['subject_source']})"
+            cleaned = _clean_marc_source_string(row["subject_source"], "")
+            if cleaned:
+                subject_source = f"db.subjects.value (marc:{cleaned})"
         return Evidence(
             field="subject_value",
-            value=subject_val if subject_val else str(filter_obj.value),
+            value=subject_val,
             operator="MATCH",
             matched_against=filter_obj.value,
             source=subject_source,
@@ -397,6 +482,38 @@ def extract_evidence_for_filter(
             operator="=",
             matched_against=filter_obj.value,
             source=f"db.agents.agent_type (marc:{marc_source})",
+            confidence=None
+        )
+
+    elif filter_obj.field == FilterField.COUNTRY:
+        # Real branch (#51c): country of publication derives from MARC 008/15-17.
+        country_val = row["country_name"] if "country_name" in row.keys() else None
+        return Evidence(
+            field="country_name",
+            value=country_val,
+            operator="=" if filter_obj.op == FilterOp.EQUALS else (
+                "IN" if filter_obj.op == FilterOp.IN else "LIKE"
+            ),
+            matched_against=filter_obj.value,
+            source="db.imprints.country_name (marc:008)",
+            confidence=None
+        )
+
+    elif filter_obj.field == FilterField.PHYSICAL_DESC:
+        # Real branch (#51c): physical description is MARC 300. The matching
+        # value is found via an EXISTS subquery (no FTS), so the row may not
+        # carry it; fall back to the matched search term.
+        phys_val = None
+        if "physical_desc_value" in row.keys():
+            phys_val = row["physical_desc_value"]
+        if phys_val is None:
+            phys_val = str(filter_obj.value)
+        return Evidence(
+            field="physical_desc",
+            value=phys_val,
+            operator="IN" if filter_obj.op == FilterOp.IN else "LIKE",
+            matched_against=filter_obj.value,
+            source="db.physical_descriptions.value (marc:300)",
             confidence=None
         )
 
@@ -563,7 +680,7 @@ def execute_plan(
             evidence_list = []
             for filter_obj in plan.filters:
                 try:
-                    evidence = extract_evidence_for_filter(filter_obj, row)
+                    evidence = extract_evidence_for_filter(filter_obj, row, conn=conn)
                     evidence_list.append(evidence)
                 except Exception as e:
                     # Log and mark but don't fail on evidence extraction errors
