@@ -28,6 +28,7 @@ from scripts.chat.plan_models import (
     # Typed params
     ResolveAgentParams,
     ResolvePublisherParams,
+    ResolveSubjectConceptParams,
     RetrieveParams,
     AggregateParams,
     FindConnectionsParams,
@@ -51,6 +52,7 @@ logger = logging.getLogger(__name__)
 _ACTION_PARAMS_MODEL = {
     StepAction.RESOLVE_AGENT: ResolveAgentParams,
     StepAction.RESOLVE_PUBLISHER: ResolvePublisherParams,
+    StepAction.RESOLVE_SUBJECT_CONCEPT: ResolveSubjectConceptParams,
     StepAction.RETRIEVE: RetrieveParams,
     StepAction.AGGREGATE: AggregateParams,
     StepAction.FIND_CONNECTIONS: FindConnectionsParams,
