@@ -209,6 +209,56 @@ const SECTIONS: Section[] = [
       </>
     ),
   },
+  {
+    id: 'place',
+    title: '5. Places, and a twist about repeatability',
+    body: (
+      <>
+        <p>A book's place of publication can come from two spots in the record:</p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            <strong>The imprint line (MARC 264$a / 260$a)</strong> — the city as printed on the
+            book, in whatever spelling or script the cataloger used. This is the primary source.
+          </li>
+          <li>
+            <strong>A country code (MARC 008)</strong> — a fallback used only when the imprint line
+            has no usable city; it gives a country, not a city.
+          </li>
+        </ul>
+        <p className="mt-2">
+          The goal is to collapse every spelling and script of one city onto a single{' '}
+          <strong>canonical key</strong> (like <code>venice</code>) while keeping the original
+          wording untouched.
+        </p>
+        <Example title="Many spellings, one city">
+          <BeforeAfter raw="In Venetia" norm="venice" />
+          <BeforeAfter raw="Venezia" norm="venice" />
+          <BeforeAfter raw="ויניציאה" norm="venice" note="our Bragadin book" />
+          <p className="mt-2">
+            All three land on <code>venice</code>, so a search for "Venice" finds the Hebrew book —
+            and the screen still shows its real wording <bdi>ויניציאה</bdi>.
+          </p>
+        </Example>
+        <p className="mt-3">
+          How does it know <bdi>ויניציאה</bdi> means Venice? It looks the cleaned-up name up in a{' '}
+          <strong>curated alias map</strong> — a big dictionary of "this spelling → this city".
+          Almost every place in the collection is matched this way (confidence 0.95); the few with
+          no city fall back to country-level or are honestly marked "unknown".
+        </p>
+        <p className="mt-3">
+          <strong>The repeatability twist (this differs from dates).</strong> Looking a name up in
+          the map is a fixed, repeatable step — same record, same answer, no AI involved. But the{' '}
+          <em>map itself was built with the help of an AI model</em>, which decided mappings like{' '}
+          <bdi>ויניציאה</bdi> → <code>venice</code> (with guardrails, refusing anything ambiguous).
+          That building step is <em>not</em> repeatable on its own. The fix: the finished map is{' '}
+          <strong>frozen as a saved file</strong> in the project. So the whole pipeline is
+          reproducible today — because the one AI-assisted step already happened once and its
+          result was captured. Dates are deterministic all the way down; places are deterministic to{' '}
+          <em>apply</em>, but rest on a frozen, AI-authored dictionary underneath.
+        </p>
+      </>
+    ),
+  },
 ];
 
 // ---------------------------------------------------------------------------
