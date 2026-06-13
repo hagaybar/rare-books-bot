@@ -10,6 +10,7 @@ import { useAuthStore } from './stores/authStore';
 
 // Lazy-loaded pages — code-split into separate chunks
 const Network = lazy(() => import('./pages/Network'));
+const Help = lazy(() => import('./pages/Help'));
 const Coverage = lazy(() => import('./pages/operator/Coverage'));
 const Workbench = lazy(() => import('./pages/operator/Workbench'));
 const AgentChat = lazy(() => import('./pages/operator/AgentChat'));
@@ -70,6 +71,7 @@ function App() {
             <Route path="/" element={<RootRedirect />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/network" element={<Suspense fallback={<LoadingSpinner />}><Network /></Suspense>} />
+            <Route path="/help" element={<Suspense fallback={<LoadingSpinner />}><Help /></Suspense>} />
             <Route path="/operator/coverage" element={<Suspense fallback={<LoadingSpinner />}><Coverage /></Suspense>} />
             <Route path="/operator/workbench" element={<Suspense fallback={<LoadingSpinner />}><Workbench /></Suspense>} />
             <Route path="/operator/agent" element={<Suspense fallback={<LoadingSpinner />}><AgentChat /></Suspense>} />
