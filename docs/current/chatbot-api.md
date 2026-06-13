@@ -353,6 +353,49 @@ Response: {
 
 ---
 
+## Held result set (active subgroup)
+
+After a search, the chat keeps the result the user is looking at as a **held result set** (the session's "active subgroup", issue #60). Follow-up turns can stay scoped to exactly those records instead of searching the whole collection again. This is wired end to end; the lifecycle decision is deterministic and LLM-free (`scripts/chat/subgroup_policy.py`).
+
+### Three-intent model
+
+The interpreter classifies each turn, when a held set is present, into exactly one of three intents and sets step scope accordingly:
+
+| Intent | Example | Scope | Effect on held set |
+|--------|---------|-------|--------------------|
+| **New search** | "books printed in Venice" | `full_collection` | Replaced by this turn's result |
+| **Explore-in-set** | "how many are in Hebrew?", "who printed them?" | `$previous_results` (aggregate / find_connections) | Left unchanged |
+| **Refine-in-set** | "only the Hebrew ones", "just those after 1550" | `$previous_results` (retrieve) | Replaced by the narrowed result (progressive drilling) |
+
+Anaphora ("them", "those", "the Hebrew ones") signal explore/refine, not a new search. The interpreter prompt teaches this vocabulary (`scripts/chat/interpreter.py`, FOLLOW-UP section); the held set's size + IDs are rendered into the user-prompt context.
+
+### Scoping reuses `$previous_results`
+
+No new scope keyword was introduced. Scoping reuses the pre-existing reserved keyword **`$previous_results`**, which `executor._resolve_scope` already resolves to `SessionContext.previous_record_ids` (degrading to the full collection when empty). The held set flows into that context on each turn via the load path documented in `architecture.md`.
+
+### Lifecycle (deterministic)
+
+`build_subgroup_update(plan, candidate_set, query_text)` decides replace-vs-unchanged from the resulting step shape:
+- A turn **redefines** the held set iff it has a `retrieve` step **and** produced a non-empty `CandidateSet` (new search or refine-in-set).
+- `aggregate`/`find_connections`-only turns (explore-in-set), empty results, and clarification turns leave the held set unchanged.
+
+### Surfacing in the response
+
+- **`ChatResponse.metadata.active_subgroup`** carries a compact summary `{ "defining_query": str, "count": int }` when a set is held, or `null` when none is. Built by `subgroup_summary(...)`; present on both narrative and clarification responses, on REST and WebSocket paths. Drives the frontend "held set" chip.
+- **`phase = corpus_exploration`** when the turn was scoped to the held set (`was_scoped_to_held_set(plan)` true). Otherwise the phase stays `query_definition`.
+
+### DELETE /sessions/{session_id}/subgroup
+
+Clears the held set for a session — the frontend "Search all" reset calls this.
+
+- Requires `limited` role or higher (same gate as POST /chat); non-admin users may only reset their own sessions (403 otherwise).
+- **200** on success, and a **200 no-op** when the session holds no set (clearing is idempotent; `set_active_subgroup(session_id, None)` deletes the row, no separate clear method).
+- **404** for an unknown session.
+
+**Response**: `{"status": "success", "message": "Active subgroup cleared"}`
+
+---
+
 ## Implementation Status
 
 | Component | Status |

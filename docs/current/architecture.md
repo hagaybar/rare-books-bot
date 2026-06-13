@@ -1,5 +1,5 @@
 # Architecture
-> Last verified: 2026-06-12
+> Last verified: 2026-06-13
 > Source of truth for: Project structure, core modules, data model index, and key architectural patterns
 
 ## Project Structure
@@ -173,7 +173,7 @@ The project uses 123 Pydantic models (7 Enums + 116 BaseModels) across 12 files.
 |-------|-------------|
 | `ConversationPhase` | Enum: QUERY_DEFINITION or CORPUS_EXPLORATION |
 | `ExplorationIntent` | Enum: 9 intent values (METADATA_QUESTION, AGGREGATION, etc.) |
-| `ActiveSubgroup` | Currently defined CandidateSet being explored |
+| `ActiveSubgroup` | The held result set being explored. **WIRED** (issue #60): written/loaded per turn, scopes follow-ups — see "Held result set load path" below |
 | `UserGoal` | Elicited user goal for corpus exploration |
 | `Message` | Single conversation message with role, content, optional QueryPlan/CandidateSet |
 | `ChatSession` | Conversation session with message history and context |
@@ -311,3 +311,16 @@ MARC XML -> M1 (CanonicalRecord JSONL)
 ```
 
 Each stage has clear input/output contracts and is independently testable.
+
+### Held result set load path (active subgroup)
+
+The session's held result set ("active subgroup", issue #60) is **wired end to end** — no longer dormant scaffolding. Its lifecycle is decided deterministically (LLM-free) by the policy module `scripts/chat/subgroup_policy.py` (`build_subgroup_update`, `subgroup_summary`, `was_scoped_to_held_set`).
+
+On each turn the held set flows into query scope through this read path:
+
+```
+get_session  ->  get_active_subgroup  ->  ChatSession.active_subgroup
+             ->  SessionContext.previous_record_ids  ->  executor "$previous_results"
+```
+
+`session_store.get_session` calls `get_active_subgroup(session_id)` and attaches it to `ChatSession.active_subgroup`; the chat handlers (`app/api/main.py`, REST + WS) read its `record_ids` into `SessionContext.previous_record_ids`; `executor._resolve_scope` resolves the reused `$previous_results` keyword to those IDs. After the turn, `build_subgroup_update` decides whether to replace the held set (retrieve with results) or leave it unchanged (aggregate-only), and `subgroup_summary` surfaces `{defining_query, count}` in `ChatResponse.metadata.active_subgroup`. See `docs/current/chatbot-api.md` for the three-intent model and the reset endpoint.

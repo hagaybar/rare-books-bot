@@ -156,6 +156,9 @@ class ChatSession(BaseModel):
     messages: List[Message] = Field(default_factory=list)
     context: Dict[str, Any] = Field(default_factory=dict)
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    # The held result set being explored (Phase 2). Loaded by
+    # SessionStore.get_session; None when no set is held (issue #60 part 2).
+    active_subgroup: Optional[ActiveSubgroup] = None
 
     model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
 

@@ -831,6 +831,17 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
             sections.append(f"  {msg.role.upper()}: {msg.content[:200]}")
         sections.append("")
 
+    # --- Held-set disclosure (issue #60 part 2) ---
+    if result.session_context and result.session_context.previous_record_ids:
+        held_n = len(result.session_context.previous_record_ids)
+        sections.append(
+            f"HELD RESULT SET: this turn is scoped to {held_n} records the user "
+            "is exploring. If the answer is about that subset, disclose the scope "
+            f"naturally (e.g. \"Among the {held_n} you're exploring, ...\") so the "
+            "user knows the count is within their held set, not the whole collection."
+        )
+        sections.append("")
+
     # (FOLLOW-UP HINT DATA removed 2026-06-11, issue #12: follow-up
     # suggestions are no longer a product feature — the hint section and
     # instruction were pure token waste the schema had nowhere to receive.)

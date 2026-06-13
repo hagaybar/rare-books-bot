@@ -148,6 +148,9 @@ class SessionStore:
         messages = self._get_messages(session_id)
         session.messages = messages
 
+        # Load the held result set being explored (issue #60 part 2)
+        session.active_subgroup = self.get_active_subgroup(session_id)
+
         return session
 
     def _get_messages(self, session_id: str) -> List[Message]:

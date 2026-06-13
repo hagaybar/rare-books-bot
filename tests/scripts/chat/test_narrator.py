@@ -10,7 +10,7 @@ import pytest
 from scripts.chat.plan_models import (
     ExecutionResult, ScholarResponse, GroundingData,
     RecordSummary, AgentSummary, GroundingLink,
-    StepResult, RecordSet, ScholarlyDirective,
+    StepResult, RecordSet, ScholarlyDirective, SessionContext,
 )
 
 
@@ -179,6 +179,36 @@ def test_aggregation_prompts_state_distinct_total():
 
     full = _build_narrator_prompt(exec_result.original_query, exec_result)
     assert "2130 distinct values total — showing top 20" in full
+
+
+def test_narrator_prompt_discloses_held_set_when_scoped():
+    """When the turn is scoped to a held set, the prompt tells the narrator
+    to disclose it ('Among the N you're exploring')."""
+    from scripts.chat.narrator import build_lean_narrator_prompt
+
+    held_ids = [f"99000{i}" for i in range(73)]  # held set of 73 records
+    exec_result = _make_execution_result(
+        session_context=SessionContext(
+            session_id="s",
+            previous_record_ids=held_ids,
+        ),
+        original_query="how many are in Venice?",
+    )
+    prompt = build_lean_narrator_prompt(exec_result.original_query, exec_result)
+    assert "exploring" in prompt.lower()
+    assert "73" in prompt
+
+
+def test_narrator_prompt_omits_held_set_when_unscoped():
+    """With no held set, the prompt makes no held-set disclosure."""
+    from scripts.chat.narrator import build_lean_narrator_prompt
+
+    exec_result = _make_execution_result(
+        session_context=SessionContext(session_id="s", previous_record_ids=[]),
+        original_query="how many are in Venice?",
+    )
+    prompt = build_lean_narrator_prompt(exec_result.original_query, exec_result)
+    assert "HELD RESULT SET" not in prompt
 
 
 def test_narrate_fallback_on_llm_failure():

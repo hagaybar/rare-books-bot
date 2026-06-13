@@ -71,6 +71,29 @@ export async function sendChatMessage(
 }
 
 /**
+ * Clear the held result set (active subgroup) for a session so subsequent
+ * queries search the whole collection again.
+ *
+ * Backed by DELETE /sessions/{id}/subgroup. Non-fatal on error: the next
+ * full-collection query also clears the held set, so callers may swallow
+ * failures.
+ *
+ * @param sessionId  The current session id
+ * @returns true if the reset succeeded (HTTP ok), false otherwise
+ */
+export async function resetSubgroup(sessionId: string): Promise<boolean> {
+  try {
+    const res = await authenticatedFetch(
+      `/sessions/${encodeURIComponent(sessionId)}/subgroup`,
+      { method: 'DELETE' },
+    );
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Batch-resolve Primo URLs for a set of MMS IDs.
  *
  * @param mmsIds  Array of MMS IDs to resolve

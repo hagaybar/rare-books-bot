@@ -1093,3 +1093,34 @@ class TestPromptClarificationContractCoherence:
     def test_out_of_scope_rule_no_longer_pairs_plan_with_clarification(self):
         from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
         assert "add a clarification noting that the topic is" not in INTERPRETER_SYSTEM_PROMPT
+
+
+class TestPromptThreeIntentHeldSet:
+    """Issue #60: the interpreter must classify each follow-up turn against a
+    held result set as one of three intents -- new search / explore-in-set /
+    refine-in-set -- and map that to full_collection vs $previous_results
+    scope. Prompt-discipline assertions: the vocabulary + the $previous_results
+    keyword are present, and a held set's record count reaches the user prompt."""
+
+    def test_system_prompt_teaches_three_intent_model(self):
+        """The system prompt names the three held-set intents and the keyword."""
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+
+        prompt = INTERPRETER_SYSTEM_PROMPT
+        assert "$previous_results" in prompt
+        # the three-intent vocabulary
+        for token in ("new search", "explore", "refine"):
+            assert token.lower() in prompt.lower()
+
+    def test_held_set_context_rendered_with_count_and_keyword(self):
+        """When a held set is present, its count + the scope keyword reach the
+        user prompt."""
+        from scripts.chat.interpreter import _build_user_prompt
+
+        ctx = SessionContext(
+            session_id="s1",
+            previous_record_ids=[str(i) for i in range(73)],
+        )
+        user_prompt = _build_user_prompt("how many are in Hebrew?", session_context=ctx)
+        assert "73" in user_prompt
+        assert "$previous_results" in user_prompt

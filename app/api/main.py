@@ -63,6 +63,11 @@ from scripts.chat.plan_models import (
     RecordSet,
     SessionContext,
 )
+from scripts.chat.subgroup_policy import (
+    build_subgroup_update,
+    subgroup_summary,
+    was_scoped_to_held_set,
+)
 from scripts.schemas.candidate_set import CandidateSet, Candidate, Evidence
 
 from scripts.utils.logger import LoggerManager
@@ -711,7 +716,13 @@ async def _run_scholar_pipeline(
             session_id=session.session_id,
             phase=ConversationPhase.QUERY_DEFINITION,
             confidence=plan.confidence,
-            metadata={"intents": plan.intents, "reasoning": plan.reasoning},
+            metadata={
+                "intents": plan.intents,
+                "reasoning": plan.reasoning,
+                "active_subgroup": subgroup_summary(
+                    getattr(session, "active_subgroup", None)
+                ),
+            },
         )
         msg_db_id = store.add_message(
             session.session_id,
@@ -789,6 +800,24 @@ async def _run_scholar_pipeline(
                 query_plan=plan.model_dump(), candidate_set=response.candidate_set),
     )
     response.metadata["message_db_id"] = msg_db_id
+
+    # ---- Held-set lifecycle (issue #60 part 2) ----
+    # A retrieve that produced records defines/redefines the held set; an
+    # aggregate-only (explore) turn leaves it unchanged.
+    new_subgroup = build_subgroup_update(
+        plan, response.candidate_set, chat_request.message
+    )
+    if new_subgroup is not None:
+        store.set_active_subgroup(session.session_id, new_subgroup)
+        held = new_subgroup
+    else:
+        held = getattr(session, "active_subgroup", None)
+
+    # Surface: phase reflects whether this turn explored the held set; metadata
+    # carries the post-turn held-set summary for the chip.
+    if was_scoped_to_held_set(plan):
+        response.phase = ConversationPhase.CORPUS_EXPLORATION
+    response.metadata["active_subgroup"] = subgroup_summary(held)
 
     return ChatResponseAPI(success=True, response=response, error=None)
 
@@ -891,6 +920,44 @@ async def expire_session(session_id: str, user=Depends(require_role("limited")))
 
     store.expire_session(session_id)
     return {"status": "success", "message": f"Session {session_id} expired"}
+
+
+@app.delete("/sessions/{session_id}/subgroup")
+async def reset_subgroup(session_id: str, user=Depends(require_role("limited"))):
+    """Clear the held result set ("active subgroup") for a session.
+
+    The frontend "Search all" reset calls this. Requires 'limited' role or
+    higher; users may only reset their own sessions (admins, any). Clearing a
+    session with no held set is a 200 no-op (issue #60 part 2).
+
+    Args:
+        session_id: Session identifier
+        user: Authenticated user from JWT
+
+    Returns:
+        Success message
+
+    Raises:
+        HTTPException: If session not found or access denied
+    """
+    store = get_session_store()
+    session = store.get_session(session_id)
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session {session_id} not found",
+        )
+
+    if str(session.user_id) != str(user["user_id"]) and user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied",
+        )
+
+    # set_active_subgroup(None) deletes the row (no separate clear method).
+    store.set_active_subgroup(session_id, None)
+    return {"status": "success", "message": "Active subgroup cleared"}
 
 
 @app.websocket("/ws/chat")
@@ -1041,7 +1108,13 @@ async def websocket_chat(websocket: WebSocket):
                 session_id=session_id,
                 phase=ConversationPhase.QUERY_DEFINITION,
                 confidence=plan.confidence,
-                metadata={"intents": plan.intents, "reasoning": plan.reasoning},
+                metadata={
+                    "intents": plan.intents,
+                    "reasoning": plan.reasoning,
+                    "active_subgroup": subgroup_summary(
+                        getattr(session, "active_subgroup", None)
+                    ),
+                },
             )
             msg_db_id = store.add_message(
                 session_id,
@@ -1135,6 +1208,23 @@ async def websocket_chat(websocket: WebSocket):
             )
         except Exception:
             logger.exception("Failed to save assistant message to session store")
+
+        # ---- Held-set lifecycle (issue #60 part 2) ----
+        new_subgroup = build_subgroup_update(
+            plan, response.candidate_set, message
+        )
+        if new_subgroup is not None:
+            try:
+                store.set_active_subgroup(session_id, new_subgroup)
+            except Exception:
+                logger.exception("Failed to persist active subgroup")
+            held = new_subgroup
+        else:
+            held = getattr(session, "active_subgroup", None)
+
+        if was_scoped_to_held_set(plan):
+            response.phase = ConversationPhase.CORPUS_EXPLORATION
+        response.metadata["active_subgroup"] = subgroup_summary(held)
 
         await websocket.send_json({
             "type": "complete",
