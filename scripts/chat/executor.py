@@ -528,6 +528,38 @@ def _handle_resolve_agent(
         conn.close()
 
 
+# Issue #50: a Latin-script needle shorter than this matches as a bare
+# substring inside far too many unrelated words; require a word boundary.
+_MIN_LATIN_SUBSTRING_LEN = 4
+
+
+def _is_latin(needle: str) -> bool:
+    """A needle is Latin-script iff it carries no non-ASCII letter.
+
+    Mirrors the ASCII-only convention used elsewhere in this module: any
+    non-ASCII letter marks the term as Hebrew (or otherwise non-Latin).
+    """
+    return not any(not ch.isascii() and ch.isalpha() for ch in needle)
+
+
+def _requires_word_boundary(needle: str) -> bool:
+    """Issue #50: short Latin needles must match on a word boundary, not as a
+    bare substring. Hebrew needles and distinctive long Latin tokens (>= 4
+    chars) keep the permissive substring path.
+    """
+    return _is_latin(needle) and len(needle.strip()) < _MIN_LATIN_SUBSTRING_LEN
+
+
+def _matches_on_word_boundary(needle: str, *haystacks: Optional[str]) -> bool:
+    """True iff ``needle`` appears as a whole word in any haystack.
+
+    Used to gate short Latin needles so 'rom' resolves a standalone 'rom'
+    token but never 'lagerstroms' / 'jérôme' / 'romănia' (issue #50).
+    """
+    pattern = re.compile(r"\b" + re.escape(needle.strip()) + r"\b", re.IGNORECASE)
+    return any(h and pattern.search(h) for h in haystacks)
+
+
 def _handle_resolve_publisher(
     params: ResolvePublisherParams,
     db_path: Path,
@@ -652,15 +684,34 @@ def _handle_resolve_publisher(
         # confidently resolving to nothing.
         if not matched_canonical:
             def _probe_imprints(needle: str) -> list[str]:
+                # Issue #50: a short Latin needle ('rom'/'ram') matched as a
+                # bare substring lights up unrelated words ('lagerst*rom*s',
+                # 'jé*rôm*e', '*rom*ănia'). Require a word-boundary match for
+                # short Latin needles; Hebrew and distinctive long Latin
+                # tokens keep the cheap substring path.
+                boundary = _requires_word_boundary(needle)
                 rows = conn.execute(
-                    """SELECT DISTINCT publisher_norm FROM imprints
+                    """SELECT DISTINCT publisher_norm, publisher_raw
+                       FROM imprints
                        WHERE publisher_norm IS NOT NULL AND (
                              LOWER(publisher_norm) LIKE '%' || LOWER(?) || '%'
                           OR publisher_raw LIKE '%' || ? || '%')
-                       LIMIT 12""",
+                       LIMIT 50""",
                     (needle, needle),
                 ).fetchall()
-                return [r["publisher_norm"] for r in rows if r["publisher_norm"]]
+                hits: list[str] = []
+                for r in rows:
+                    norm = r["publisher_norm"]
+                    if not norm:
+                        continue
+                    if boundary and not _matches_on_word_boundary(
+                        needle, norm, r["publisher_raw"]
+                    ):
+                        continue
+                    hits.append(norm)
+                    if len(hits) >= 12:
+                        break
+                return hits
 
             for candidate in candidates_to_try:
                 needle = candidate.strip()

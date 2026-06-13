@@ -174,6 +174,45 @@ def test_db(tmp_path):
              'venice', 'Venice', 0.95, 'place_alias_map',
              'bomberg', 'Bomberg', 0.95, 'publisher_authority',
              'it', 'italy');
+        -- Issue #50: imprints whose publisher_norm merely *contains* 'rom'
+        -- inside an unrelated word. The substring fallback must NOT match
+        -- these on a short Latin variant ('rom'/'ram').
+        INSERT INTO imprints VALUES
+            (50, 50, 0, '1890', 'Stockholm', 'Broderna Lagerstroms Forlag',
+             NULL, '["264"]', 1890, 1890, '1890', 0.99, 'exact',
+             'stockholm', 'Stockholm', 0.95, 'place_alias_map',
+             'broderna lagerstroms forlag', 'Broderna Lagerstroms Forlag',
+             0.95, 'publisher_authority', 'sw', 'sweden');
+        INSERT INTO imprints VALUES
+            (51, 51, 0, '1901', 'Paris', 'Imprimerie de Jerome Perret',
+             NULL, '["264"]', 1901, 1901, '1901', 0.99, 'exact',
+             'paris', 'Paris', 0.95, 'place_alias_map',
+             'imprimerie de jerome perret', 'Imprimerie de Jerome Perret',
+             0.95, 'publisher_authority', 'fr', 'france');
+        INSERT INTO imprints VALUES
+            (52, 52, 0, '1925', 'Bucharest', 'Evreilor din Romania',
+             NULL, '["264"]', 1925, 1925, '1925', 0.99, 'exact',
+             'bucharest', 'Bucharest', 0.95, 'place_alias_map',
+             'evreilor din romania', 'Evreilor din Romania',
+             0.95, 'publisher_authority', 'ro', 'romania');
+        -- Issue #50: the legitimate Romm press, Hebrew form. The Hebrew
+        -- path must still resolve 'ראם' as a substring of this norm.
+        INSERT INTO imprints VALUES
+            (53, 53, 0, '1860', 'Vilna',
+             'האלמנה והאחים ראם',
+             NULL, '["264"]', 1860, 1860, '1860', 0.99, 'exact',
+             'vilna', 'Vilna', 0.95, 'place_alias_map',
+             'האלמנה והאחים ראם',
+             'Widow and Brothers Romm', 0.95, 'publisher_authority',
+             'lt', 'lithuania');
+        -- Issue #50: a distinctive longer Latin token must still match as a
+        -- legitimate substring ('plantin' inside 'officina plantiniana').
+        INSERT INTO imprints VALUES
+            (54, 54, 0, '1600', 'Antwerp', 'Officina Plantiniana',
+             NULL, '["264"]', 1600, 1600, '1600', 0.99, 'exact',
+             'antwerp', 'Antwerp', 0.95, 'place_alias_map',
+             'officina plantiniana', 'Officina Plantiniana',
+             0.95, 'publisher_authority', 'be', 'belgium');
 
         -- Agent: Karo on records 1 and 2
         INSERT INTO agents VALUES
@@ -613,6 +652,54 @@ def test_handle_resolve_publisher_not_found(test_db):
     assert isinstance(result, ResolvedEntity)
     assert len(result.matched_values) == 0
     assert result.match_method == "none"
+
+
+def test_resolve_publisher_short_latin_variant_no_bare_substring(test_db):
+    """Issue #50: a short Latin variant ('rom'/'ram') must NOT match inside
+    unrelated words via the imprint_substring fallback.
+
+    'lagerstroms', 'jerome', 'romania' all contain 'rom' as a bare substring
+    but none is the Romm press. Word-boundary / min-length anchoring must
+    exclude them entirely.
+    """
+    from scripts.chat.executor import _handle_resolve_publisher
+
+    params = ResolvePublisherParams(name="Romm", variants=["Rom", "Ram"])
+    result = _handle_resolve_publisher(params, test_db, step_results={}, session_context=None)
+
+    noise = {
+        "broderna lagerstroms forlag",
+        "imprimerie de jerome perret",
+        "evreilor din romania",
+    }
+    matched = {v.lower() for v in result.matched_values}
+    assert not (matched & noise), f"short Latin variant leaked noise: {matched & noise}"
+
+
+def test_resolve_publisher_legit_latin_substring_still_matches(test_db):
+    """Issue #50: a distinctive longer Latin token must still resolve as a
+    legitimate substring ('plantin' inside 'officina plantiniana')."""
+    from scripts.chat.executor import _handle_resolve_publisher
+
+    params = ResolvePublisherParams(name="Plantin", variants=[])
+    result = _handle_resolve_publisher(params, test_db, step_results={}, session_context=None)
+
+    matched = {v.lower() for v in result.matched_values}
+    assert "officina plantiniana" in matched
+    assert result.match_method == "imprint_substring"
+
+
+def test_resolve_publisher_hebrew_substring_still_resolves(test_db):
+    """Issue #50: the Hebrew path must keep working -- 'ראם' is a genuine
+    substring of 'האלמנה והאחים ראם' and must still resolve."""
+    from scripts.chat.executor import _handle_resolve_publisher
+
+    params = ResolvePublisherParams(name="ראם", variants=[])
+    result = _handle_resolve_publisher(params, test_db, step_results={}, session_context=None)
+
+    matched = result.matched_values
+    assert "האלמנה והאחים ראם" in matched
+    assert result.match_method == "imprint_substring"
 
 
 def test_handle_retrieve_basic(test_db):
