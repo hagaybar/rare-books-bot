@@ -214,7 +214,7 @@ class SessionStore:
                 session_id,
                 message.role,
                 message.content,
-                json.dumps(message.query_plan.model_dump()) if message.query_plan else None,
+                json.dumps(message.query_plan) if message.query_plan else None,
                 (
                     json.dumps(message.candidate_set.model_dump())
                     if message.candidate_set

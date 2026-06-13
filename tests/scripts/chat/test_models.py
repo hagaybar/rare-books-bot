@@ -104,10 +104,11 @@ def test_message_with_query_plan():
         query_text="books by Oxford",
         filters=[Filter(field=FilterField.PUBLISHER, op=FilterOp.CONTAINS, value="Oxford")]
     )
-    msg = Message(role="user", content="books by Oxford", query_plan=plan)
+    # query_plan is stored as raw JSON (dict), not a typed QueryPlan (#60)
+    msg = Message(role="user", content="books by Oxford", query_plan=plan.model_dump())
 
     assert msg.query_plan is not None
-    assert msg.query_plan.filters[0].value == "Oxford"
+    assert msg.query_plan["filters"][0]["value"] == "Oxford"
 
 
 def test_message_with_candidate_set():

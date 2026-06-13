@@ -82,15 +82,14 @@ def test_add_message_with_query_plan(store):
         query_text="books by Oxford",
         filters=[Filter(field=FilterField.PUBLISHER, op=FilterOp.CONTAINS, value="Oxford")],
     )
-    msg = Message(role="user", content="books by Oxford", query_plan=plan)
+    msg = Message(role="user", content="books by Oxford", query_plan=plan.model_dump())
 
     store.add_message(session.session_id, msg)
 
-    # Retrieve and verify QueryPlan preserved
+    # Retrieve and verify the plan JSON round-trips (stored as raw dict, #60)
     retrieved = store.get_session(session.session_id)
     assert retrieved.messages[0].query_plan is not None
-    # Note: query_plan is deserialized as QueryPlan object by Pydantic
-    assert retrieved.messages[0].query_plan.filters[0].value == "Oxford"
+    assert retrieved.messages[0].query_plan["filters"][0]["value"] == "Oxford"
 
 
 def test_add_message_with_candidate_set(store):
@@ -276,7 +275,7 @@ def test_multiple_messages_with_plans_and_results(store):
         query_text="books by Oxford",
         filters=[Filter(field=FilterField.PUBLISHER, op=FilterOp.CONTAINS, value="Oxford")],
     )
-    msg1 = Message(role="user", content="books by Oxford", query_plan=plan1)
+    msg1 = Message(role="user", content="books by Oxford", query_plan=plan1.model_dump())
     store.add_message(session.session_id, msg1)
 
     # Assistant response
@@ -298,7 +297,7 @@ def test_multiple_messages_with_plans_and_results(store):
             Filter(field=FilterField.YEAR, op=FilterOp.RANGE, start=1600, end=1700),
         ],
     )
-    msg3 = Message(role="user", content="books by Oxford from 17th century", query_plan=plan2)
+    msg3 = Message(role="user", content="books by Oxford from 17th century", query_plan=plan2.model_dump())
     store.add_message(session.session_id, msg3)
 
     # Retrieve and verify
@@ -307,7 +306,7 @@ def test_multiple_messages_with_plans_and_results(store):
     assert retrieved.messages[0].query_plan is not None
     assert retrieved.messages[1].candidate_set is not None
     assert retrieved.messages[2].query_plan is not None
-    assert len(retrieved.messages[2].query_plan.filters) == 2
+    assert len(retrieved.messages[2].query_plan["filters"]) == 2
 
 
 def test_anonymous_session(store):
@@ -429,3 +428,24 @@ def test_get_active_subgroup_null_candidate_set_does_not_raise(store):
     assert loaded is not None
     assert loaded.defining_query == "venice books"
     assert loaded.record_ids == ["991", "992"]
+
+
+def test_assistant_message_persists_plan_and_candidate(store):
+    """Issue #60: the interpreter plan + candidate set are written to
+    chat_messages and round-trip, so 'Mark as problematic' reports carry real
+    plan/evidence instead of null."""
+    from scripts.schemas import CandidateSet
+
+    session = store.create_session(user_id="u60")
+    plan_dict = {"intents": ["retrieval"], "execution_steps": [{"action": "retrieve"}]}
+    cs = CandidateSet(query_text="venice", plan_hash="h", sql="SELECT 1",
+                      candidates=[], total_count=3)
+    store.add_message(
+        session.session_id,
+        Message(role="assistant", content="a", query_plan=plan_dict, candidate_set=cs),
+    )
+
+    restored = store.get_session(session.session_id)
+    msg = restored.messages[-1]
+    assert msg.query_plan == plan_dict
+    assert msg.candidate_set is not None and msg.candidate_set.total_count == 3

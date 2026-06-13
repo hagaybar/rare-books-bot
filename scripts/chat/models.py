@@ -19,7 +19,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field, ConfigDict
 
-from scripts.schemas import CandidateSet, QueryPlan
+from scripts.schemas import CandidateSet
 
 
 # =============================================================================
@@ -116,14 +116,17 @@ class Message(BaseModel):
     Attributes:
         role: Who sent the message (user, assistant, system)
         content: Text content of the message
-        query_plan: Optional QueryPlan if this was a search query
+        query_plan: Optional plan JSON for a search turn. A plain dict (raw
+            JSON), not a typed model — it may hold either the legacy QueryPlan
+            shape or the scholar-pipeline InterpretationPlan shape, so it is
+            stored/read as-is rather than coerced to one schema (issue #60).
         candidate_set: Optional results if this message has search results
         timestamp: When the message was created
     """
 
     role: Literal["user", "assistant", "system"]
     content: str
-    query_plan: Optional[QueryPlan] = None
+    query_plan: Optional[dict] = None
     candidate_set: Optional[CandidateSet] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     # chat_messages.id — set when loading from the store; lets the frontend

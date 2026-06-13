@@ -139,7 +139,10 @@ def chat_history(
     for i, msg in enumerate(session.messages, 1):
         typer.echo(f"{i}. [{msg.role}] {msg.content}")
         if msg.query_plan:
-            typer.echo(f"   QueryPlan: {len(msg.query_plan.filters)} filters")
+            # query_plan is raw JSON (dict) — legacy QueryPlan ("filters") or
+            # scholar InterpretationPlan ("execution_steps"); show whichever.
+            steps = msg.query_plan.get("filters") or msg.query_plan.get("execution_steps") or []
+            typer.echo(f"   Plan: {len(steps)} step(s)")
         if msg.candidate_set:
             typer.echo(f"   Results: {msg.candidate_set.total_count} candidates")
         typer.echo(f"   Time: {msg.timestamp}")

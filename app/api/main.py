@@ -715,7 +715,8 @@ async def _run_scholar_pipeline(
         )
         msg_db_id = store.add_message(
             session.session_id,
-            Message(role="assistant", content=plan.clarification),
+            Message(role="assistant", content=plan.clarification,
+                    query_plan=plan.model_dump()),
         )
         response.metadata["message_db_id"] = msg_db_id
         logger.info(
@@ -780,10 +781,12 @@ async def _run_scholar_pipeline(
         },
     )
 
-    # Store assistant message in session
+    # Store assistant message in session, with the plan + candidate set so
+    # feedback reports carry real plan/evidence (issue #60).
     msg_db_id = store.add_message(
         session.session_id,
-        Message(role="assistant", content=scholar_response.narrative),
+        Message(role="assistant", content=scholar_response.narrative,
+                query_plan=plan.model_dump(), candidate_set=response.candidate_set),
     )
     response.metadata["message_db_id"] = msg_db_id
 
@@ -1042,7 +1045,8 @@ async def websocket_chat(websocket: WebSocket):
             )
             msg_db_id = store.add_message(
                 session_id,
-                Message(role="assistant", content=plan.clarification),
+                Message(role="assistant", content=plan.clarification,
+                        query_plan=plan.model_dump()),
             )
             await websocket.send_json({
                 "type": "complete",
@@ -1126,7 +1130,8 @@ async def websocket_chat(websocket: WebSocket):
         try:
             msg_db_id = store.add_message(
                 session_id,
-                Message(role="assistant", content=narrative),
+                Message(role="assistant", content=narrative,
+                        query_plan=plan.model_dump(), candidate_set=response.candidate_set),
             )
         except Exception:
             logger.exception("Failed to save assistant message to session store")
