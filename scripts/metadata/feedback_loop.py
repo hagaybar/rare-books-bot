@@ -24,6 +24,19 @@ from typing import Dict, List, Optional
 
 
 # ---------------------------------------------------------------------------
+# Errors
+# ---------------------------------------------------------------------------
+
+class CorrectionApplyError(Exception):
+    """Raised when re-normalizing records in the DB fails.
+
+    Distinct from a legitimate "0 rows matched" result: a DB error
+    (locked DB, missing column, unopenable file) must never be collapsed
+    into a zero rows-updated count (issue #55).
+    """
+
+
+# ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
 
@@ -128,7 +141,24 @@ class FeedbackLoop:
                 error=str(exc),
             )
 
-        records_updated = self._renormalize_records(field, raw_value, canonical_value)
+        try:
+            records_updated = self._renormalize_records(
+                field, raw_value, canonical_value
+            )
+        except CorrectionApplyError as exc:
+            # Alias map was already written; the DB update failed. Surface
+            # a distinct error — never report this as "0 rows updated".
+            return CorrectionResult(
+                field=field,
+                raw_value=raw_value,
+                canonical_value=canonical_value,
+                records_updated=0,
+                alias_map_path=str(alias_path),
+                success=False,
+                error=(
+                    f"Alias map updated but DB re-normalization failed: {exc}"
+                ),
+            )
 
         self._log_correction(
             field=field,
@@ -209,7 +239,19 @@ class FeedbackLoop:
 
                 # Duplicate check (already correct)
                 if raw_val in alias_map and alias_map[raw_val] == canon_val:
-                    updated = self._renormalize_records(fld, raw_val, canon_val)
+                    try:
+                        updated = self._renormalize_records(fld, raw_val, canon_val)
+                    except CorrectionApplyError as exc:
+                        results.append(CorrectionResult(
+                            field=fld,
+                            raw_value=raw_val,
+                            canonical_value=canon_val,
+                            records_updated=0,
+                            alias_map_path=str(alias_path),
+                            success=False,
+                            error=f"DB re-normalization failed: {exc}",
+                        ))
+                        continue
                     self._log_correction(fld, raw_val, canon_val, evidence, src, updated)
                     results.append(CorrectionResult(
                         field=fld,
@@ -224,7 +266,22 @@ class FeedbackLoop:
                 alias_map[raw_val] = canon_val
                 map_modified = True
 
-                updated = self._renormalize_records(fld, raw_val, canon_val)
+                try:
+                    updated = self._renormalize_records(fld, raw_val, canon_val)
+                except CorrectionApplyError as exc:
+                    results.append(CorrectionResult(
+                        field=fld,
+                        raw_value=raw_val,
+                        canonical_value=canon_val,
+                        records_updated=0,
+                        alias_map_path=str(alias_path),
+                        success=False,
+                        error=(
+                            f"Alias map updated but DB re-normalization "
+                            f"failed: {exc}"
+                        ),
+                    ))
+                    continue
                 self._log_correction(fld, raw_val, canon_val, evidence, src, updated)
 
                 results.append(CorrectionResult(
@@ -369,7 +426,12 @@ class FeedbackLoop:
         the pipeline populates from the MARC source).  For agents the match
         is on ``agent_raw``.
 
-        Returns the count of updated rows.
+        Returns the count of updated rows (0 means "no rows matched",
+        which is a legitimate outcome).
+
+        Raises:
+            CorrectionApplyError: On any DB error. A failure is never
+                collapsed into a 0 rows-updated count.
         """
         if field not in _UPDATE_MAP:
             return 0
@@ -378,6 +440,7 @@ class FeedbackLoop:
 
         method_value = f"{field}_alias_map_correction"
 
+        conn = None
         try:
             conn = sqlite3.connect(str(self.db_path))
             cur = conn.cursor()
@@ -389,10 +452,16 @@ class FeedbackLoop:
             )
             updated = cur.rowcount
             conn.commit()
-            conn.close()
             return updated
-        except Exception:
-            return 0
+        except Exception as exc:
+            raise CorrectionApplyError(
+                f"Failed to re-normalize {field} records "
+                f"({raw_value!r} -> {canonical_value!r}) in {self.db_path}: "
+                f"{type(exc).__name__}: {exc}"
+            ) from exc
+        finally:
+            if conn is not None:
+                conn.close()
 
     def _log_correction(
         self,

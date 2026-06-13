@@ -1,5 +1,5 @@
 # Query Engine
-> Last verified: 2026-06-12
+> Last verified: 2026-06-13
 > Source of truth for: Query compilation (NL to SQL), LLM usage rules, query plan schema, execution pipeline, relaxation ladder, concept bridge, FTS5 sanitization, bilingual search, and acceptance tests
 
 ## Overview
@@ -78,13 +78,22 @@ Defined in `scripts/schemas/query_plan.py`:
 
 12 supported filter fields: `PUBLISHER`, `IMPRINT_PLACE`, `COUNTRY`, `YEAR`, `LANGUAGE`, `TITLE`, `SUBJECT`, `PHYSICAL_DESC`, `AGENT`, `AGENT_NORM`, `AGENT_ROLE`, `AGENT_TYPE`
 
-`PHYSICAL_DESC` (MARC 300, physical description -- "maps", "plates", "engravings") supports **CONTAINS only**. The SQL is an `EXISTS` subquery against the `physical_descriptions` table using a case-insensitive `LIKE` substring match -- there is **no FTS table** for physical descriptions (the table is small), so FTS5 sanitization does not apply to this field (`scripts/query/db_adapter.py`).
+`PHYSICAL_DESC` (MARC 300, physical description -- "maps", "plates", "engravings") supports **CONTAINS and IN only** (IN is any-of substring -- the field has no exact-match representation). The SQL is an `EXISTS` subquery against the `physical_descriptions` table using a case-insensitive `LIKE` substring match -- there is **no FTS table** for physical descriptions (the table is small), so FTS5 sanitization does not apply to this field (`scripts/query/db_adapter.py`).
 
 ### FilterOp (Enum)
 
 4 filter operations: `EQUALS`, `CONTAINS`, `RANGE`, `IN`
 
-**Per-field support is not uniform**: `year` supports only `RANGE` in the SQL adapter. The chat interpreter's `_convert_filter_dict` repairs common LLM shape mistakes at the conversion boundary: `IN` with a bare string is wrapped in a list, `EQUALS`/`CONTAINS` with a list is promoted to `IN`, and `year EQUALS <v>` with a parseable year is coerced to the degenerate `RANGE(start=v, end=v)` (issue #44 — previously crashed the retrieve step). `$step_N` references and unparseable values pass through untouched.
+**Per-field support is not uniform**, and the full 12x4 field/op matrix is a pinned contract (issue #56; enforced by `tests/scripts/query/test_field_op_matrix.py`). Every cell is exactly one of *supported* (native arm in `build_where_clause`), *coerced* (repaired by `_convert_filter_dict` before validation), or *rejected* (refused by `Filter` validation with a clear message). No combination may reach SQL generation as an unhandled `ValueError`.
+
+- `RANGE` is supported **only for `year`**; every other field rejects it at validation.
+- `year` supports `RANGE` and `IN` (an IN list executes as an OR of per-year overlap conditions -- **not** a min-max range, which would wrongly include gap years). `year IN` values must be integer-parseable; `year EQUALS`/`CONTAINS` with a parseable year is coerced to the degenerate `RANGE(start=v, end=v)` (issue #44, extended to CONTAINS by #56); unparseable values and `$step_N` refs are **rejected at validation** (the interpreter drops the step and records it in `dropped_steps`).
+- `subject` supports `EQUALS` (exact heading match), `CONTAINS` (FTS5), and `IN` (exact membership).
+- `language`, `agent_role`, `agent_type` support `CONTAINS` (substring `LIKE`) and `IN` in addition to `EQUALS`.
+- `publisher`, `imprint_place`, `country`, `title`, `agent_norm` support `IN` natively (exact membership over normalized values; `agent_norm IN` keeps the alias-resolution branch). Negated `IN` executes as `NOT (... IN ...)`.
+- the deprecated raw `agent` field is CONTAINS-only; other ops are rejected with a pointer to `agent_norm`.
+
+The chat interpreter's `_convert_filter_dict` repairs common LLM shape mistakes at the conversion boundary: `IN` with a bare string is wrapped in a list, `IN` list members are stringified (year lists arrive as JSON ints), and `EQUALS`/`CONTAINS` with a list is promoted to `IN`.
 
 ### Filter (BaseModel)
 

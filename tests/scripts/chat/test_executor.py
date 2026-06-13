@@ -659,6 +659,25 @@ def test_handle_aggregate(test_db):
     assert venice_facets[0]["count"] == 2
 
 
+def test_handle_aggregate_country_returns_country_facets(test_db):
+    """Seam audit B8 (#56): aggregate field 'country' must facet on
+    imprints.country_name, not silently alias to city facets."""
+    from scripts.chat.executor import _handle_aggregate
+
+    result = _handle_aggregate(
+        AggregateParams(field="country", scope="full_collection"),
+        test_db, step_results={}, session_context=None,
+    )
+    values = {f["value"] for f in result.facets}
+    # Fixture countries: italy (records 1, 3), netherlands (2, 4)
+    assert "italy" in values
+    assert "netherlands" in values
+    # City names must NOT leak in (the old alias returned place facets)
+    assert "venice" not in values
+    italy = next(f for f in result.facets if f["value"] == "italy")
+    assert italy["count"] == 2
+
+
 def test_handle_aggregate_reports_distinct_total(test_db):
     """aggregate carries the true distinct-value count even when facets are
     truncated by limit (issue #42: 'exactly 5 printing houses' confabulation)."""
@@ -1220,6 +1239,38 @@ class TestMultiValueFilterNormalization:
         assert out[0].op == FilterOp.EQUALS
         assert "aldine press, venice" in mv[0]
         assert "venice" in mv[0]
+
+    def test_multivalue_language_binds_all_values(self):
+        """Seam audit B7 (#56): db_adapter names the language param
+        'filter_{idx}_lang' (not '_language') and its EQUALS arm has no
+        LOWER() wrapper — the multi-value SQL rewrite must still bind
+        every value, not silently narrow to the first."""
+        from scripts.chat.executor import _run_filter_query
+
+        conn = sqlite3.connect(":memory:")
+        conn.row_factory = sqlite3.Row
+        conn.executescript("""
+            CREATE TABLE records (id INTEGER PRIMARY KEY, mms_id TEXT UNIQUE);
+            CREATE TABLE languages (
+                id INTEGER PRIMARY KEY, record_id INTEGER, code TEXT, source TEXT
+            );
+            INSERT INTO records VALUES (1, '990001111');
+            INSERT INTO records VALUES (2, '990002222');
+            INSERT INTO records VALUES (3, '990003333');
+            INSERT INTO languages VALUES (1, 1, 'heb', '008');
+            INSERT INTO languages VALUES (2, 2, 'lat', '008');
+            INSERT INTO languages VALUES (3, 3, 'ger', '008');
+        """)
+        try:
+            mms_ids = _run_filter_query(
+                conn,
+                [Filter(field=FilterField.LANGUAGE, op=FilterOp.EQUALS, value="heb")],
+                scope_ids=None,
+                multi_value_map={0: ["heb", "lat"]},
+            )
+            assert set(mms_ids) == {"990001111", "990002222"}
+        finally:
+            conn.close()
 
 
 class TestUnresolvedStepRefFallback:

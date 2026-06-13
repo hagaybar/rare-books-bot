@@ -39,7 +39,7 @@ def parse_marc(
 
     This implements M1: MARC XML → Canonical JSONL
     """
-    from scripts.marc.parse import parse_marc_xml_file
+    from scripts.marc.parse import MarcParseError, parse_marc_xml_file
 
     # Set defaults if not provided
     if output_file is None:
@@ -54,11 +54,16 @@ def parse_marc(
         raise typer.Exit(code=1)
 
     # Run the parser
-    report = parse_marc_xml_file(
-        marc_xml_path=input_file,
-        output_path=output_file,
-        report_path=report_file
-    )
+    try:
+        report = parse_marc_xml_file(
+            marc_xml_path=input_file,
+            output_path=output_file,
+            report_path=report_file
+        )
+    except MarcParseError as exc:
+        typer.echo(f"Error: {exc}")
+        typer.echo("Pipeline stopped — no canonical output was written.")
+        raise typer.Exit(code=1)
 
     # Print summary
     typer.echo("\n✅ Parsing complete!")

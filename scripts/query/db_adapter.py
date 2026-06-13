@@ -19,15 +19,22 @@ logger = logging.getLogger(__name__)
 _schema_validated = False
 
 # Module-level cache for agent alias table existence check.
-# None = not yet checked; True/False = cached result.
+# None = not yet positively detected; True = tables confirmed present.
+# Negative/error outcomes are never cached (re-probed each call) so a
+# transient DB error cannot disable alias expansion for the process
+# lifetime (issue #55).
 _agent_alias_tables_present: bool | None = None
 
 
 def _agent_alias_tables_exist(conn: sqlite3.Connection) -> bool:
     """Check whether the agent_aliases and agent_authorities tables exist.
 
-    The result is cached at module level so the check runs at most once
-    per process.
+    Only a *positive* detection is cached at module level. A transient
+    probe error (locked DB, bad connection, I/O hiccup) must not disable
+    alias expansion for the process lifetime: it logs a warning, returns
+    False for this call only, and re-probes on the next call. A successful
+    probe that finds the tables absent is also re-probed (cheap
+    sqlite_master query) so a later schema migration is picked up.
 
     Args:
         conn: Active database connection
@@ -48,11 +55,21 @@ def _agent_alias_tables_exist(conn: sqlite3.Connection) -> bool:
               AND name IN ('agent_aliases', 'agent_authorities')
             """
         ).fetchone()
-        _agent_alias_tables_present = (row[0] == 2)
-    except Exception:
-        _agent_alias_tables_present = False
+    except Exception as exc:
+        logger.warning(
+            "Agent alias table availability probe failed (%s: %s); "
+            "alias expansion disabled for this query only — will re-probe "
+            "on the next call",
+            type(exc).__name__,
+            exc,
+        )
+        return False
 
-    return _agent_alias_tables_present
+    present = row[0] == 2
+    if present:
+        # Cache only positive detection (see docstring).
+        _agent_alias_tables_present = True
+    return present
 
 
 def reset_agent_alias_cache() -> None:
@@ -218,6 +235,16 @@ def build_where_clause(
     params = {}
     needed_joins = set()  # Track which tables need to be joined
 
+    def _in_values(filter) -> List[str]:
+        """Values of an IN filter as a list.
+
+        A single string (e.g. a $step_N reference resolved to one value
+        by the executor) is treated as a one-element list.
+        """
+        if isinstance(filter.value, list):
+            return [str(v) for v in filter.value]
+        return [str(filter.value)]
+
     for idx, filter in enumerate(plan.filters):
         # Generate unique parameter names for this filter
         param_prefix = f"filter_{idx}"
@@ -232,6 +259,17 @@ def build_where_clause(
                 param_name = f"{param_prefix}_publisher"
                 condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.PUBLISHER_NORM}) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B5: exact membership over normalized values.
+                in_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_publisher_{v_idx}"
+                    in_parts.append(f"LOWER(:{param_name})")
+                    params[param_name] = normalize_filter_value(filter.field, v)
+                condition = (
+                    f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.PUBLISHER_NORM})"
+                    f" IN ({', '.join(in_parts)})"
+                )
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for publisher")
 
@@ -249,6 +287,17 @@ def build_where_clause(
                 param_name = f"{param_prefix}_place"
                 condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.PLACE_NORM}) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B5: exact membership over normalized values.
+                in_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_place_{v_idx}"
+                    in_parts.append(f"LOWER(:{param_name})")
+                    params[param_name] = normalize_filter_value(filter.field, v)
+                condition = (
+                    f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.PLACE_NORM})"
+                    f" IN ({', '.join(in_parts)})"
+                )
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for imprint_place")
 
@@ -267,6 +316,17 @@ def build_where_clause(
                 param_name = f"{param_prefix}_country"
                 condition = f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.COUNTRY_NAME}) LIKE LOWER(:{param_name})"
                 params[param_name] = f"%{filter.value.lower().strip()}%"
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B5: exact membership over normalized values.
+                in_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_country_{v_idx}"
+                    in_parts.append(f"LOWER(:{param_name})")
+                    params[param_name] = v.lower().strip()
+                condition = (
+                    f"LOWER({M3Aliases.IMPRINTS}.{M3Columns.Imprints.COUNTRY_NAME})"
+                    f" IN ({', '.join(in_parts)})"
+                )
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for country")
 
@@ -286,6 +346,31 @@ def build_where_clause(
                 )
                 params[start_param] = filter.start
                 params[end_param] = filter.end
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B2: a year list ("printed in 1525 or 1530") is an
+                # OR of per-year overlap conditions — NOT a min-max RANGE,
+                # which would wrongly include every year in the gap.
+                # Filter validation guarantees integer-parseable values for
+                # planner-emitted lists; anything else (e.g. a misresolved
+                # $step_N reference) is rejected here with a clear message.
+                year_conds = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    try:
+                        year = int(str(v).strip())
+                    except ValueError:
+                        raise ValueError(
+                            f"year IN received non-integer value {v!r} "
+                            f"(likely an unresolved $step_N reference)"
+                        ) from None
+                    start_param = f"{param_prefix}_year_{v_idx}_start"
+                    end_param = f"{param_prefix}_year_{v_idx}_end"
+                    year_conds.append(
+                        f"({M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_END} >= :{start_param}"
+                        f" AND {M3Aliases.IMPRINTS}.{M3Columns.Imprints.DATE_START} <= :{end_param})"
+                    )
+                    params[start_param] = year
+                    params[end_param] = year
+                condition = f"({' OR '.join(year_conds)})"
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for year")
 
@@ -307,6 +392,11 @@ def build_where_clause(
                     lang_params.append(f":{param_name}")
                     params[param_name] = normalize_filter_value(filter.field, lang)
                 condition = f"{M3Aliases.LANGUAGES}.{M3Columns.Languages.CODE} IN ({', '.join(lang_params)})"
+            elif filter.op == FilterOp.CONTAINS:
+                # Issue #56 B6: substring match on the ISO 639-2 code.
+                param_name = f"{param_prefix}_lang"
+                condition = f"{M3Aliases.LANGUAGES}.{M3Columns.Languages.CODE} LIKE :{param_name}"
+                params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for language")
 
@@ -332,6 +422,21 @@ def build_where_clause(
                     AND {M3Tables.TITLES_FTS} MATCH :{param_name}
                 )"""
                 params[param_name] = normalize_filter_value(filter.field, filter.value, filter.op)
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B4: exact membership over title values (the
+                # set form of the EQUALS arm).
+                needed_joins.add(M3Tables.TITLES)
+                in_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_title_{v_idx}"
+                    in_parts.append(f"LOWER(:{param_name})")
+                    params[param_name] = normalize_filter_value(
+                        filter.field, v, filter.op
+                    )
+                condition = (
+                    f"LOWER({M3Aliases.TITLES}.{M3Columns.Titles.VALUE})"
+                    f" IN ({', '.join(in_parts)})"
+                )
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for title")
 
@@ -340,7 +445,32 @@ def build_where_clause(
             conditions.append(condition)
 
         elif filter.field == FilterField.SUBJECT:
-            if filter.op == FilterOp.CONTAINS:
+            if filter.op == FilterOp.EQUALS:
+                # Issue #56 B1: exact heading match (mirrors title EQUALS).
+                needed_joins.add(M3Tables.SUBJECTS)
+                param_name = f"{param_prefix}_subject"
+                condition = (
+                    f"LOWER({M3Aliases.SUBJECTS}.{M3Columns.Subjects.VALUE})"
+                    f" = LOWER(:{param_name})"
+                )
+                params[param_name] = normalize_filter_value(
+                    filter.field, filter.value, filter.op
+                )
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B4: exact membership over subject headings.
+                needed_joins.add(M3Tables.SUBJECTS)
+                in_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_subject_{v_idx}"
+                    in_parts.append(f"LOWER(:{param_name})")
+                    params[param_name] = normalize_filter_value(
+                        filter.field, v, filter.op
+                    )
+                condition = (
+                    f"LOWER({M3Aliases.SUBJECTS}.{M3Columns.Subjects.VALUE})"
+                    f" IN ({', '.join(in_parts)})"
+                )
+            elif filter.op == FilterOp.CONTAINS:
                 # Use FTS5 for full-text search
                 # FTS5 content table is 'subjects', so we need to join through subjects to records
                 param_name = f"{param_prefix}_subject"
@@ -433,6 +563,38 @@ def build_where_clause(
                 else:
                     condition = direct_cond
 
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B4: exact membership, comma-insensitive, with the
+                # same alias-resolution branch as EQUALS.
+                agent_col = f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_NORM}"
+                direct_parts = []
+                alias_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_agent_norm_{v_idx}"
+                    direct_parts.append(f"LOWER(:{param_name})")
+                    params[param_name] = normalize_filter_value(filter.field, v)
+                    if include_alias:
+                        alias_param = f"{param_prefix}_agent_norm_alias_{v_idx}"
+                        alias_parts.append(f"LOWER(:{alias_param})")
+                        params[alias_param] = normalize_filter_value(filter.field, v)
+                direct_cond = (
+                    f"LOWER(REPLACE({agent_col}, ',', ''))"
+                    f" IN ({', '.join(direct_parts)})"
+                )
+                if include_alias:
+                    alias_cond = (
+                        f"EXISTS ("
+                        f"SELECT 1 FROM agent_aliases al "
+                        f"JOIN agent_authorities aa ON al.authority_id = aa.id "
+                        f"JOIN {M3Tables.AGENTS} a2 ON a2.{M3Columns.Agents.AUTHORITY_URI} = aa.authority_uri "
+                        f"WHERE LOWER(REPLACE(al.alias_form_lower, ',', '')) IN ({', '.join(alias_parts)}) "
+                        f"AND a2.{M3Columns.Agents.RECORD_ID} = {M3Aliases.RECORDS}.{M3Columns.Records.ID}"
+                        f")"
+                    )
+                    condition = f"({direct_cond} OR {alias_cond})"
+                else:
+                    condition = direct_cond
+
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent_norm")
 
@@ -447,6 +609,22 @@ def build_where_clause(
                 param_name = f"{param_prefix}_agent_role"
                 condition = f"{M3Aliases.AGENTS}.{M3Columns.Agents.ROLE_NORM} = :{param_name}"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
+            elif filter.op == FilterOp.CONTAINS:
+                # Issue #56 B6: substring match on the normalized role.
+                param_name = f"{param_prefix}_agent_role"
+                condition = f"LOWER({M3Aliases.AGENTS}.{M3Columns.Agents.ROLE_NORM}) LIKE LOWER(:{param_name})"
+                params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B4: exact membership over normalized roles.
+                in_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_agent_role_{v_idx}"
+                    in_parts.append(f":{param_name}")
+                    params[param_name] = normalize_filter_value(filter.field, v)
+                condition = (
+                    f"{M3Aliases.AGENTS}.{M3Columns.Agents.ROLE_NORM}"
+                    f" IN ({', '.join(in_parts)})"
+                )
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent_role")
 
@@ -461,6 +639,22 @@ def build_where_clause(
                 param_name = f"{param_prefix}_agent_type"
                 condition = f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_TYPE} = :{param_name}"
                 params[param_name] = normalize_filter_value(filter.field, filter.value)
+            elif filter.op == FilterOp.CONTAINS:
+                # Issue #56 B6: substring match on the agent type.
+                param_name = f"{param_prefix}_agent_type"
+                condition = f"LOWER({M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_TYPE}) LIKE LOWER(:{param_name})"
+                params[param_name] = f"%{normalize_filter_value(filter.field, filter.value)}%"
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B4: exact membership over agent types.
+                in_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_agent_type_{v_idx}"
+                    in_parts.append(f":{param_name}")
+                    params[param_name] = normalize_filter_value(filter.field, v)
+                condition = (
+                    f"{M3Aliases.AGENTS}.{M3Columns.Agents.AGENT_TYPE}"
+                    f" IN ({', '.join(in_parts)})"
+                )
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for agent_type")
 
@@ -479,6 +673,22 @@ def build_where_clause(
                     f"AND LOWER(pd.value) LIKE '%' || LOWER(:{param_name}) || '%')"
                 )
                 params[param_name] = filter.value
+            elif filter.op == FilterOp.IN:
+                # Issue #56 B4: any-of substring. physical_desc has no exact
+                # representation (MARC 300 is free text), so IN is the OR
+                # form of the CONTAINS arm rather than exact membership.
+                like_parts = []
+                for v_idx, v in enumerate(_in_values(filter)):
+                    param_name = f"{param_prefix}_phys_{v_idx}"
+                    like_parts.append(
+                        f"LOWER(pd.value) LIKE '%' || LOWER(:{param_name}) || '%'"
+                    )
+                    params[param_name] = v
+                condition = (
+                    f"EXISTS (SELECT 1 FROM {M3Tables.PHYSICAL_DESCRIPTIONS} pd "
+                    f"WHERE pd.record_id = {M3Aliases.RECORDS}.id "
+                    f"AND ({' OR '.join(like_parts)}))"
+                )
             else:
                 raise ValueError(f"Unsupported operation {filter.op} for physical_desc")
 

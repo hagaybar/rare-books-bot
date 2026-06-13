@@ -427,12 +427,17 @@ class ScholarResponse(BaseModel):
     The ``narrative`` is markdown text suitable for display.
     ``grounding`` is passed through from the executor for
     structured frontend rendering.
+
+    ``confidence`` may be None when measurement failed (e.g. the
+    post-streaming meta-extraction call errored); in that case
+    ``metadata["confidence_reason"]`` carries the explicit reason.
+    A fabricated score is never substituted.
     """
 
     narrative: str
     suggested_followups: list[str] = Field(default_factory=list)
     grounding: GroundingData
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     metadata: dict = Field(default_factory=dict)
 
 

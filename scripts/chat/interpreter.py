@@ -243,6 +243,16 @@ OPERATIONS:
 - "French books" → country=france (adjective implies country)
 - "books printed in Paris" → imprint_place=paris (specific city)
 
+# MISSING PLACE OF PUBLICATION — THE [sine loco] SENTINEL
+
+The database reifies a MISSING place of publication as the sentinel value
+"[sine loco]" in imprint_place (raw MARC ח"מ — chasar makom; 41 records).
+Queries about books with no/unknown place of publication ("no place of
+publication", "sine loco", "s.l.", ח"מ, "ללא מקום הוצאה") compile to:
+  {"field": "imprint_place", "op": "EQUALS", "value": "[sine loco]"}
+NEVER use an empty-string filter value ("") to express absence — empty
+values are invalid and match nothing.
+
 # CENTURY CONVERSION
 
 - 15th century = 1401-1500
@@ -571,7 +581,7 @@ async def _call_llm(
 # ============================================================================
 
 
-def _convert_filter_dict(f: dict) -> Filter:
+def _convert_filter_dict(f: dict) -> Filter | None:
     """Convert a raw filter dict from the LLM into a typed Filter.
 
     The filter ``value`` may be a ``$step_N`` reference string, which is
@@ -579,13 +589,26 @@ def _convert_filter_dict(f: dict) -> Filter:
 
     Handles common LLM mistakes:
     - IN filter with a plain string value -> wraps in a list
+    - IN filter with non-string list members (e.g. year ints) -> stringified
     - EQUALS/CONTAINS filter with a list value -> converts to IN
+    - year EQUALS/CONTAINS with a parseable year -> degenerate RANGE (#44)
+    - empty/whitespace-only string value -> the filter is DROPPED with a
+      warning and ``None`` is returned (issue #49): Filter validation now
+      rejects empty values, and one bad filter must not kill the whole
+      retrieve step. Empty IN members are pruned; an IN that becomes
+      empty is dropped.
+
+    Combinations that cannot be coerced into an executable shape (e.g.
+    year EQUALS with an unparseable value) are rejected by Filter
+    validation with a clear message (issue #56) — the caller skips the
+    step and records the reason in dropped_steps.
 
     Args:
         f: Raw filter dictionary from the LLM output.
 
     Returns:
-        Typed Filter object.
+        Typed Filter object, or ``None`` if the filter was dropped
+        because its value was empty (issue #49).
     """
     op_str = f.get("op", "EQUALS")
     value = f.get("value")
@@ -610,16 +633,49 @@ def _convert_filter_dict(f: dict) -> Filter:
         )
         op_str = "IN"
 
-    # Fix (issue #44): LLM sometimes emits year EQUALS <v>, but the SQL
-    # adapter supports only RANGE for year — the step would die with
-    # "Unsupported operation FilterOp.EQUALS for year". Coerce a parseable
-    # single year to the degenerate RANGE start=end. $step_N references and
-    # unparseable values are left untouched.
+    # Fix (issue #56): LLM emits JSON numbers in IN lists (year IN
+    # [1525, 1530]) — the validator requires strings. Stringify members.
+    if op_str == "IN" and isinstance(value, list):
+        value = [str(v) for v in value]
+
+    # Fix (issue #49): empty/whitespace-only string values match nothing —
+    # Filter validation rejects them loudly, but at conversion time one bad
+    # filter must not kill the whole step. Drop just this filter (absence
+    # is reified in the DB as a sentinel, e.g. imprint_place '[sine loco]').
+    if op_str in ("EQUALS", "CONTAINS") and isinstance(value, str) and not value.strip():
+        logger.warning(
+            "%s filter on %r got empty value — dropping filter (issue #49)",
+            op_str,
+            f.get("field"),
+        )
+        return None
+    if op_str == "IN" and isinstance(value, list):
+        non_empty = [v for v in value if v.strip()]
+        if len(non_empty) != len(value):
+            logger.warning(
+                "IN filter on %r had %d empty member(s) — pruned (issue #49)",
+                f.get("field"),
+                len(value) - len(non_empty),
+            )
+            value = non_empty
+        if not value:
+            logger.warning(
+                "IN filter on %r had only empty members — dropping filter (issue #49)",
+                f.get("field"),
+            )
+            return None
+
+    # Fix (issue #44, extended by #56 to CONTAINS): LLM sometimes emits
+    # year EQUALS/CONTAINS <v>, but the SQL adapter supports only RANGE/IN
+    # for year. Coerce a parseable single year to the degenerate RANGE
+    # start=end. $step_N references and unparseable values are left for
+    # Filter validation to reject loudly (issue #56 B3) — they must never
+    # reach SQL generation.
     start = f.get("start")
     end = f.get("end")
     if (
         f.get("field") == "year"
-        and op_str == "EQUALS"
+        and op_str in ("EQUALS", "CONTAINS")
         and value is not None
         and not (isinstance(value, str) and _STEP_REF_RE.match(value))
     ):
@@ -629,7 +685,7 @@ def _convert_filter_dict(f: dict) -> Filter:
             pass
         else:
             logger.warning(
-                "year EQUALS %r — coercing to RANGE %d-%d", value, year, year
+                "year %s %r — coercing to RANGE %d-%d", op_str, value, year, year
             )
             op_str = "RANGE"
             start = end = year
@@ -792,11 +848,12 @@ def _convert_llm_step(llm_step: ExecutionStepLLM) -> ExecutionStep:
     params_model = _ACTION_PARAMS_MODEL[action]
     raw_params = _parse_json_params(llm_step.params) if isinstance(llm_step.params, str) else dict(llm_step.params)
 
-    # Special handling for RetrieveParams: convert filter dicts to Filter objects
+    # Special handling for RetrieveParams: convert filter dicts to Filter
+    # objects. _convert_filter_dict returns None for filters dropped because
+    # of empty values (issue #49) — keep the step, lose only that filter.
     if action == StepAction.RETRIEVE and "filters" in raw_params:
-        raw_params["filters"] = [
-            _convert_filter_dict(f) for f in raw_params["filters"]
-        ]
+        converted = [_convert_filter_dict(f) for f in raw_params["filters"]]
+        raw_params["filters"] = [filt for filt in converted if filt is not None]
 
     typed_params = params_model(**raw_params)
 

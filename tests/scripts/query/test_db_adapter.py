@@ -353,13 +353,10 @@ class TestPhysicalDescFilter:
         # No join needed: EXISTS correlates on record id
         assert "physical_descriptions" not in needed_joins
 
-    def test_physical_desc_equals_raises(self):
-        plan = QueryPlan(
-            query_text="test",
-            filters=[Filter(field=FilterField.PHYSICAL_DESC, op=FilterOp.EQUALS, value="map")],
-        )
+    def test_physical_desc_equals_rejected_at_validation(self):
+        """Issue #56: rejected loudly at Filter validation, never reaches SQL."""
         with pytest.raises(ValueError, match="physical_desc"):
-            build_where_clause(plan)
+            Filter(field=FilterField.PHYSICAL_DESC, op=FilterOp.EQUALS, value="map")
 
     def test_physical_desc_negate_wraps_not(self):
         plan = QueryPlan(
