@@ -865,10 +865,6 @@ def _handle_resolve_subject_concept(
         )
         return ResolvedHeadings(headings=[], matches=[])
 
-    matches = resolver.resolve(params.concept)[: params.top_k]
-    if not matches:
-        return ResolvedHeadings(headings=[], matches=[])
-
     # Count within the held set when one is in scope, else collection-wide.
     scope_ids: Optional[List[str]] = None
     if session_context and session_context.previous_record_ids:
@@ -878,6 +874,19 @@ def _handle_resolve_subject_concept(
     detail: List[dict] = []
     conn = _get_conn(db_path)
     try:
+        # When a held set is in scope, resolve within ITS OWN heading
+        # vocabulary so the top-K isn't spent on headings that score high
+        # globally but are absent from the set — recovers the in-set matches
+        # (fixes the "8 of 11" undercount). No held set -> global resolve.
+        scope_headings = (
+            _held_set_headings(conn, scope_ids) if scope_ids else None
+        )
+        matches = resolver.resolve(
+            params.concept, scope_headings=scope_headings
+        )[: params.top_k]
+        if not matches:
+            return ResolvedHeadings(headings=[], matches=[])
+
         for m in matches:
             heading = m.heading_value
             if heading in headings:
@@ -893,6 +902,23 @@ def _handle_resolve_subject_concept(
         conn.close()
 
     return ResolvedHeadings(headings=headings, matches=detail)
+
+
+def _held_set_headings(
+    conn: sqlite3.Connection, scope_ids: List[str]
+) -> set[str]:
+    """Distinct ``subjects.value`` carried by the held-set records — the held
+    set's own subject vocabulary, used to scope concept resolution so the
+    resolver ranks only headings that actually occur in the set."""
+    if not scope_ids:
+        return set()
+    placeholders = ",".join("?" for _ in scope_ids)
+    rows = conn.execute(
+        "SELECT DISTINCT s.value FROM records r JOIN subjects s "
+        f"ON r.id = s.record_id WHERE r.mms_id IN ({placeholders})",
+        list(scope_ids),
+    ).fetchall()
+    return {r[0] for r in rows if r[0]}
 
 
 def _count_records_for_heading(

@@ -1910,10 +1910,12 @@ class _FakeSubjectResolver:
     def __init__(self, mapping):
         # mapping: concept(casefold) -> list[(heading_value, score)]
         self._mapping = {k.casefold(): v for k, v in mapping.items()}
+        self.last_scope_headings = None  # captures the scope passed by the executor
 
-    def resolve(self, concept):
+    def resolve(self, concept, scope_headings=None):
         from scripts.chat.subject_concept_resolver import HeadingMatch
 
+        self.last_scope_headings = scope_headings
         return [
             HeadingMatch(heading_value=h, score=s)
             for h, s in self._mapping.get(concept.casefold(), [])
@@ -1948,6 +1950,41 @@ def test_handle_resolve_subject_concept_counts_in_scope(test_db, monkeypatch):
     assert by_heading["Jewish law"]["record_count"] == 1  # record 1 in scope
     assert by_heading["Talmud"]["record_count"] == 1       # record 3 in scope
     assert by_heading["Jewish law"]["score"] == 0.91
+
+
+def test_resolve_subject_concept_scopes_to_held_set_vocabulary(test_db, monkeypatch):
+    """With a held set, the executor resolves within the set's OWN heading
+    vocabulary so the top-K is not spent on headings absent from the set
+    (fixes the in-set undercount)."""
+    import scripts.chat.executor as executor
+
+    fake = _FakeSubjectResolver({"philosophy": [("Jewish law", 0.91)]})
+    monkeypatch.setattr(executor, "get_subject_resolver", lambda db_path: fake)
+
+    ctx = SessionContext(
+        session_id="s1",
+        previous_record_ids=["990001234", "990009999", "990005678"],
+    )
+    executor._handle_resolve_subject_concept(
+        ResolveSubjectConceptParams(concept="philosophy"),
+        test_db, step_results={}, session_context=ctx,
+    )
+    assert fake.last_scope_headings is not None
+    assert "Jewish law" in fake.last_scope_headings
+
+
+def test_resolve_subject_concept_global_when_no_held_set(test_db, monkeypatch):
+    """No held set -> global resolve (scope_headings is None)."""
+    import scripts.chat.executor as executor
+
+    fake = _FakeSubjectResolver({"philosophy": [("Jewish law", 0.91)]})
+    monkeypatch.setattr(executor, "get_subject_resolver", lambda db_path: fake)
+
+    executor._handle_resolve_subject_concept(
+        ResolveSubjectConceptParams(concept="philosophy"),
+        test_db, step_results={}, session_context=None,
+    )
+    assert fake.last_scope_headings is None
 
 
 def test_resolve_subject_concept_plan_counts_and_grounds(test_db, monkeypatch):
