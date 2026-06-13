@@ -97,6 +97,16 @@ const GLOSSARY: { term: string; plain: string }[] = [
     plain:
       'One of the many ways a name was written on different books. All of a person or press’s variants are tied to its one authority record, so a search finds them all.',
   },
+  {
+    term: 'Role / relator',
+    plain:
+      'What a person did on the book — author, printer, translator, editor. Catalogers record these with standard codes called "relators".',
+  },
+  {
+    term: 'Enrichment (Wikidata / web)',
+    plain:
+      'Extra detail pulled in from outside sources (like Wikidata) to fill gaps the catalog left — e.g. a person’s occupation. Useful, but not reproducible from the catalog card alone.',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -366,6 +376,61 @@ const SECTIONS: Section[] = [
           the press, for instance, was a reviewed, human-approved addition to this list. It's your
           first look at the project's <strong>"authorities"</strong> — a who's-who that matters even
           more for people than for presses.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'agents',
+    title: '7. People & groups — the richest case',
+    body: (
+      <>
+        <p>
+          "Agents" are the people and groups attached to a book — authors, printers, translators,
+          editors, and also organizations and collections.{' '}
+          <span className="text-gray-400">(catalog fields 100/700 for people, 110/710 for
+          organizations)</span> In this collection: about 4,600 people, 280 organizations, a handful
+          of meetings. Each carries a <strong>name</strong> and a <strong>role</strong> (their job
+          on the book). Two things get tidied — with one honest limit.
+        </p>
+        <p className="mt-3">
+          <strong>1. The name → a tidy name.</strong> This is purely mechanical: lowercase, remove
+          punctuation. <em>That's all.</em> The honest catch: this step does <strong>not</strong>{' '}
+          merge a person's different-language names. <bdi>Maimonides, Moses</bdi> and{' '}
+          <bdi>משה בן מימון</bdi> come out as two separate tidy names — light cleaning, no
+          identity-matching here.
+        </p>
+        <p className="mt-3">
+          <strong>2. The role → a standard job word</strong> (author, printer, translator…). Most
+          come straight from codes the cataloger recorded{' '}
+          <span className="text-gray-400">(librarians call these "relators")</span>. But where the
+          card left the role blank or non-standard, many were <strong>filled in from outside
+          sources</strong> — matched against Wikidata, and a few by web search. Some still have no
+          role at all, and that's left honestly blank.
+        </p>
+        <p className="mt-3">
+          <strong>The who's-who, at full strength.</strong> Pulling a person's many name-forms
+          together into one identity happens in the same who's-who layer as printers — but here it
+          goes furthest, and it leans on the <strong>catalog's own identity numbers</strong>. The
+          National Library of Israel filed both <bdi>Maimonides, Moses</bdi> and{' '}
+          <bdi>משה בן מימון</bdi> under the <em>same</em> number — so the system ties both scripts to{' '}
+          <strong>one person</strong>, automatically.
+        </p>
+        <Example title="One person, two scripts, one identity">
+          <BeforeAfter raw="Maimonides, Moses" norm="① person #…654005171" />
+          <BeforeAfter raw="משה בן מימון" norm="① person #…654005171" note="same identity number" />
+          <p className="mt-2">
+            About 85% of people carry such a catalog link, so they unify cleanly. The other ~15%
+            don't — and for those the system falls back on hand-built "also-known-as" lists, which
+            are incomplete. <em>That gap is where several recent bugs lived.</em>
+          </p>
+        </Example>
+        <p className="mt-3">
+          <strong>Same result every time?</strong> This field braids three answers at once. The{' '}
+          <strong>tidy name</strong> is fully repeatable. The <strong>role</strong> is mixed — the
+          catalog-code part repeats, but the Wikidata/web-filled part comes from outside and may
+          change if re-run. The <strong>identity link</strong> repeats where the catalog did the
+          linking, but the gap-filling is human curation that lives outside the catalog record.
         </p>
       </>
     ),
