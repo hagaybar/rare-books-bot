@@ -685,6 +685,67 @@ const SECTIONS: Section[] = [
     ),
   },
   {
+    id: 'widening',
+    title: '12. When a search finds nothing: the widening ladder, step by step',
+    body: (
+      <>
+        <p>
+          When a strict search returns nothing, the engine climbs a <strong>ladder of gentle
+          widenings, in a fixed order</strong>. Two principles hold at <em>every</em> rung:{' '}
+          <strong>hard limits never loosen, and every widening is recorded and shown to you.</strong>
+        </p>
+        <ol className="mt-3 list-decimal space-y-3 pl-5">
+          <li>
+            <strong>Soften an exact name to a partial match.</strong> If you pinned a publisher by
+            exact name and found nothing, exact-match was probably too strict — a printer's name as
+            written on a book is freeform text, not a fixed vocabulary. So a search for "Soncino"
+            then also finds the stored form "H. de Soncino". (Only for name-shaped fields — it would
+            never do this to a place or a year.)
+          </li>
+          <li>
+            <strong>Split AND'd topics into an OR.</strong> If you asked for several topic words at
+            once ("liturgy and poetry") and the combination is empty, maybe each works alone. The
+            engine runs each topic separately — still carrying all your hard limits — and{' '}
+            <strong>unions</strong> the results, noting which topic brought back which books.
+          </li>
+          <li>
+            <strong>Expand a topic to related ideas.</strong> Each topic word is looked up in a{' '}
+            <strong>small, hand-built map of related terms</strong> — "cartography" → "geography",
+            "maps" — and the engine searches those instead, recording the swap. (That map is curated
+            and fixed, not the AI improvising.)
+          </li>
+          <li>
+            <strong>Try the plural/singular.</strong> If a topic still found nothing, it toggles a
+            trailing "-s": "limited edition" → "limited editions". Small, but it closes a real gap
+            between how the catalog stores a term and how you might type it.
+          </li>
+          <li>
+            <strong>Honest empty.</strong> If none of that recovers anything, you get a truthful
+            "no matches" — never a fabricated or padded result.
+          </li>
+        </ol>
+        <p className="mt-4 font-semibold text-gray-900">The rule that governs all of it</p>
+        <p className="mt-1">
+          At every rung, your <strong>hard limits ride unchanged into every probe</strong>: place,
+          year, language, a named person, and any "not-this" exclusion. Only the{' '}
+          <strong>descriptive/topic words</strong> are ever widened. That's why "Hebrew grammar,
+          Amsterdam, 1600s" can broaden "grammar" but can <em>never</em> hand you a Frankfurt book
+          from 1750 — the widening makes the <em>topic</em> more generous; it never quietly relaxes{' '}
+          where, when, what language, or by whom.
+        </p>
+        <p className="mt-4 font-semibold text-gray-900">A separate path: rescuing an unrecognized name</p>
+        <p className="mt-1">
+          A second kind of widening fires when a <strong>person or press name couldn't be matched to
+          the who's-who at all</strong>. The engine then probes the name's distinctive words one by
+          one — but <strong>rejects any word too common to be meaningful</strong>. So an
+          unrecognized "Jacob ibn Habib" probes the rare part ("Habib") and refuses the flooding
+          part ("Jacob"), instead of returning every Jacob in the collection. (Without this cap, that
+          one query used to return 119 wrong books.)
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'glossary',
     title: 'In plain words — a mini glossary',
     body: (
