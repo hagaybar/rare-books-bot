@@ -35,12 +35,13 @@ RUN poetry config virtualenvs.create false \
 COPY app/ app/
 COPY scripts/ scripts/
 
-# Copy the exported ONNX subject-embedding model into the image.
-# This ships the semantic subject-search model (multilingual-e5-small, ~465 MB)
-# from the build context — it is NOT in git (see .gitignore data/models/), so
-# the export step (scripts/index/export_embed_model.py) is a pre-build/pre-deploy
-# requirement. onnxruntime + tokenizers come from the main deps installed above.
-COPY data/models/e5-small-onnx /app/data/models/e5-small-onnx
+# NOTE: the semantic subject-search model (multilingual-e5-small ONNX, ~465 MB)
+# is NOT baked into the image. /app/data is a mounted data volume in production
+# (-v ~/rare-books-data:/app/data), which would shadow anything COPY'd here, and
+# data/ is excluded from the deploy rsync. The model therefore lives in the data
+# volume alongside the DB: ship it to ~/rare-books-data/models/e5-small-onnx so
+# the resolver's path data/models/e5-small-onnx resolves through the mount.
+# onnxruntime + tokenizers come from the main deps installed above.
 
 # Copy frontend build from stage 1
 COPY --from=frontend-builder /build/frontend/dist frontend/dist/
