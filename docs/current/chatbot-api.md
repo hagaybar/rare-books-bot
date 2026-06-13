@@ -375,14 +375,21 @@ No new scope keyword was introduced. Scoping reuses the pre-existing reserved ke
 
 ### Lifecycle (deterministic)
 
-`build_subgroup_update(plan, candidate_set, query_text)` decides replace-vs-unchanged from the resulting step shape:
-- A turn **redefines** the held set iff it has a `retrieve` step **and** produced a non-empty `CandidateSet` (new search or refine-in-set).
+`build_subgroup_update(plan, execution_result, query_text)` decides replace-vs-unchanged from the resulting step shape:
+- A turn **redefines** the held set iff it has a `retrieve` step **and** produced a non-empty result (new search or refine-in-set).
 - `aggregate`/`find_connections`-only turns (explore-in-set), empty results, and clarification turns leave the held set unchanged.
+
+The held set's `record_ids` are the **full** match set — the deduped union of every `retrieve` step's `mms_ids` (its length equals `total_record_count`), sourced via `held_record_ids(execution_result)`. It is **not** the displayed/truncated subset (the display grounding is capped at 30). This fixes the defect where a counting follow-up over a 74-record search explored only the 30 shown records and answered circularly ("9 of 9").
+
+**Explore vs refine** — the distinction governs both the count and the held set:
+- **Explore-in-set** (a counting/facet question like "how many are in Hebrew?") emits a single `aggregate` scoped to `$previous_results`. It aggregates over the **full** held set and leaves it **unchanged** — never a preceding `retrieve` that narrows first (that would count within the narrowed subset and wrongly replace the set).
+- **Refine-in-set** ("only the Hebrew ones") emits a `retrieve` scoped to `$previous_results`. It **replaces** the held set with the narrowed match set (progressive drilling).
 
 ### Surfacing in the response
 
 - **`ChatResponse.metadata.active_subgroup`** carries a compact summary `{ "defining_query": str, "count": int }` when a set is held, or `null` when none is. Built by `subgroup_summary(...)`; present on both narrative and clarification responses, on REST and WebSocket paths. Drives the frontend "held set" chip.
 - **`phase = corpus_exploration`** when the turn was scoped to the held set (`was_scoped_to_held_set(plan)` true). Otherwise the phase stays `query_definition`.
+- **Disclosure phrasing** — when the turn is scoped to a held set, the narrator (both `build_lean_narrator_prompt` and `_build_narrator_prompt`) discloses the held-set size and the answer count as **distinct** numbers, phrasing a count/facet as "Of the N you're exploring, X are …". This prevents conflating the two into one figure (the "among the 9, all 9 are Hebrew" circular answer).
 
 ### DELETE /sessions/{session_id}/subgroup
 

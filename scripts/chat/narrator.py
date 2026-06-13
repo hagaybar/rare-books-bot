@@ -653,6 +653,28 @@ def _format_lean_agent(agent: AgentSummary) -> str:
     return "\n".join(parts)
 
 
+def _held_set_disclosure(result: ExecutionResult) -> list[str]:
+    """Build the held-set disclosure section lines (empty if unscoped).
+
+    Shared by both narrator builders (issue #60; tightened B3; full-builder
+    parity #61). Names the held-set size as a number DISTINCT from the answer
+    count so the narrator never reuses one number for both.
+    """
+    if not (result.session_context and result.session_context.previous_record_ids):
+        return []
+    held_n = len(result.session_context.previous_record_ids)
+    return [
+        (
+            f"HELD RESULT SET: the user is exploring a held set of {held_n} records. "
+            "This turn is scoped to that set. If the answer is a count or facet over "
+            f"the set, phrase it as 'X of those {held_n}' (e.g. \"Of the {held_n} "
+            "you're exploring, X are in Hebrew\") -- state the held-set size and the "
+            "answer as DISTINCT numbers; never reuse one number for both."
+        ),
+        "",
+    ]
+
+
 def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
     """Assemble a token-optimized user prompt with verified data.
 
@@ -831,16 +853,8 @@ def build_lean_narrator_prompt(query: str, result: ExecutionResult) -> str:
             sections.append(f"  {msg.role.upper()}: {msg.content[:200]}")
         sections.append("")
 
-    # --- Held-set disclosure (issue #60 part 2) ---
-    if result.session_context and result.session_context.previous_record_ids:
-        held_n = len(result.session_context.previous_record_ids)
-        sections.append(
-            f"HELD RESULT SET: this turn is scoped to {held_n} records the user "
-            "is exploring. If the answer is about that subset, disclose the scope "
-            f"naturally (e.g. \"Among the {held_n} you're exploring, ...\") so the "
-            "user knows the count is within their held set, not the whole collection."
-        )
-        sections.append("")
+    # --- Held-set disclosure (issue #60; tightened B3; full-builder parity #61) ---
+    sections.extend(_held_set_disclosure(result))
 
     # (FOLLOW-UP HINT DATA removed 2026-06-11, issue #12: follow-up
     # suggestions are no longer a product feature — the hint section and
@@ -1045,6 +1059,9 @@ def _build_narrator_prompt(query: str, result: ExecutionResult) -> str:
         for msg in result.session_context.previous_messages[-5:]:
             sections.append(f"  {msg.role.upper()}: {msg.content[:200]}")
         sections.append("")
+
+    # --- Held-set disclosure (issue #60; tightened B3; full-builder parity #61) ---
+    sections.extend(_held_set_disclosure(result))
 
     # (FOLLOW-UP HINT DATA removed 2026-06-11, issue #12 — see lean builder.)
     sections.append(

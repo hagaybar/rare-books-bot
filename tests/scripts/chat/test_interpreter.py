@@ -1124,3 +1124,21 @@ class TestPromptThreeIntentHeldSet:
         user_prompt = _build_user_prompt("how many are in Hebrew?", session_context=ctx)
         assert "73" in user_prompt
         assert "$previous_results" in user_prompt
+
+    def test_system_prompt_steers_counting_questions_to_aggregate(self):
+        """Counting/'how many' questions over the held set must aggregate over
+        $previous_results, not retrieve-then-narrow (B2)."""
+        from scripts.chat.interpreter import INTERPRETER_SYSTEM_PROMPT
+
+        prompt = INTERPRETER_SYSTEM_PROMPT
+        # Isolate the dedicated EXPLORE vs REFINE rule so the assertions
+        # discriminate the new guidance rather than incidental prompt wording.
+        assert "EXPLORE vs REFINE" in prompt
+        block = prompt.split("EXPLORE vs REFINE", 1)[1].split("# ", 1)[0]
+        low = block.lower()
+        assert "how many" in low
+        assert "aggregate" in low
+        # The rule must explicitly tie counting questions to scope
+        # $previous_results without a narrowing retrieve.
+        assert "$previous_results" in block
+        assert ("do not" in low) or ("don't" in low) or ("never" in low)

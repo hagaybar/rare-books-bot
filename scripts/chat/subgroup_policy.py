@@ -1,8 +1,8 @@
 """Deterministic held-set ("active_subgroup") lifecycle policy.
 
 Pure, LLM-free helpers that decide — from a completed turn's interpretation
-plan and its CandidateSet — whether the held result set is redefined, and that
-build the surfacing summary. The interpreter decides *scoping* (whether to
+plan and its ExecutionResult — whether the held result set is redefined, and
+that build the surfacing summary. The interpreter decides *scoping* (whether to
 scope steps to "$previous_results"); these helpers decide the *lifecycle*
 (replace vs. leave unchanged) from the resulting step shape.
 
@@ -15,8 +15,12 @@ Three-intent model (issue #60 part 2):
 from typing import Optional
 
 from scripts.chat.models import ActiveSubgroup
-from scripts.chat.plan_models import InterpretationPlan, StepAction
-from scripts.schemas import CandidateSet
+from scripts.chat.plan_models import (
+    ExecutionResult,
+    InterpretationPlan,
+    RecordSet,
+    StepAction,
+)
 
 # The scope keyword that names the held set (already wired in executor +
 # interpreter). Reused here rather than introducing a new "active_subgroup"
@@ -58,32 +62,51 @@ def summarize_filters(plan: InterpretationPlan) -> str:
     return "; ".join(parts)
 
 
+def held_record_ids(execution_result: ExecutionResult) -> list[str]:
+    """The full held-set ids: order-preserving deduped union of every retrieve
+    step's RecordSet.mms_ids. Its length equals total_record_count — this is the
+    UNtruncated set, unlike the display grounding (capped at 30)."""
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for step in execution_result.steps_completed:
+        data = getattr(step, "data", None)
+        if isinstance(data, RecordSet):
+            for mms in data.mms_ids:
+                if mms not in seen:
+                    seen.add(mms)
+                    ordered.append(mms)
+    return ordered
+
+
 def build_subgroup_update(
     plan: InterpretationPlan,
-    candidate_set: Optional[CandidateSet],
+    execution_result: ExecutionResult,
     query_text: str,
 ) -> Optional[ActiveSubgroup]:
     """Decide the held-set update for a completed turn.
 
-    Returns an ActiveSubgroup to write/replace the held set, or None to leave
-    the held set unchanged.
-
-    A turn redefines the held set iff it has a retrieve step AND produced a
-    non-empty CandidateSet (new search or refine-in-set). Aggregate/connections
-    -only turns (explore-in-set) and empty/clarification turns return None.
+    Returns an ActiveSubgroup to replace the held set, or None to leave it
+    unchanged. A turn redefines the held set iff it produced a non-empty retrieve
+    result (new search or refine-in-set). The held set's record_ids are the FULL
+    match set (held_record_ids), NOT the truncated display set — fixes the
+    74-vs-30 defect. Aggregate-only (explore) and empty/clarification turns return
+    None.
     """
-    if candidate_set is None or candidate_set.total_count == 0:
-        return None
-
-    has_retrieve = any(step.action == StepAction.RETRIEVE for step in plan.execution_steps)
+    has_retrieve = any(
+        step.action == StepAction.RETRIEVE for step in plan.execution_steps
+    )
     if not has_retrieve:
         return None
 
+    record_ids = held_record_ids(execution_result)
+    if not record_ids:
+        return None
+
     return ActiveSubgroup(
-        candidate_set=candidate_set,
+        candidate_set=None,
         defining_query=query_text,
         filter_summary=summarize_filters(plan),
-        record_ids=[c.record_id for c in candidate_set.candidates],
+        record_ids=record_ids,
     )
 
 

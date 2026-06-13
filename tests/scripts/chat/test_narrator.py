@@ -211,6 +211,41 @@ def test_narrator_prompt_omits_held_set_when_unscoped():
     assert "HELD RESULT SET" not in prompt
 
 
+def test_lean_builder_discloses_held_set_size_distinctly():
+    """B3: the lean builder names the held-set size as a number DISTINCT from
+    the answer count ('Of the N you're exploring, X are ...')."""
+    from scripts.chat.narrator import build_lean_narrator_prompt
+
+    result = _make_execution_result(
+        session_context=SessionContext(
+            session_id="s",
+            previous_record_ids=[str(i) for i in range(74)],
+        ),
+    )
+    prompt = build_lean_narrator_prompt("how many are in Hebrew?", result)
+    low = prompt.lower()
+    assert "74" in prompt
+    assert "held set" in low or "exploring" in low
+    # instruction to not reuse one number for both
+    assert "of those" in low or "never reusing" in low or "distinct" in low
+
+
+def test_full_builder_also_discloses_held_set():
+    """#61: the non-lean builder must disclose the held set too."""
+    from scripts.chat.narrator import _build_narrator_prompt
+
+    result = _make_execution_result(
+        session_context=SessionContext(
+            session_id="s",
+            previous_record_ids=[str(i) for i in range(74)],
+        ),
+    )
+    prompt = _build_narrator_prompt("how many are in Hebrew?", result)
+    low = prompt.lower()
+    assert "74" in prompt
+    assert "held set" in low or "exploring" in low
+
+
 def test_narrate_fallback_on_llm_failure():
     """When LLM fails, narrator returns a structured summary."""
     from scripts.chat.narrator import narrate
