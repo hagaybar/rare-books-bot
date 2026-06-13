@@ -863,6 +863,158 @@ const SECTIONS: Section[] = [
     ),
   },
   {
+    id: 'hebrew',
+    title: '15. Asking in Hebrew',
+    body: (
+      <>
+        <p>
+          You don't have to ask in English. <strong>You can pose your question in Hebrew, and the
+          system searches natively</strong> — it isn't translating your words into English first.
+        </p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            <strong>Subjects are bilingual.</strong> Thousands of subject headings carry a Hebrew
+            form alongside the English, so a Hebrew topic word matches directly.
+          </li>
+          <li>
+            <strong>Titles search in Hebrew.</strong> A Hebrew title phrase is matched against the
+            titles as the catalog recorded them.
+          </li>
+          <li>
+            <strong>Names and places bridge scripts.</strong> Thanks to the lookup lists and the
+            who's-who, <bdi>ויניציאה</bdi> finds Venice and <bdi>משה בן מימון</bdi> finds the same
+            person as "Maimonides".
+          </li>
+        </ul>
+        <p className="mt-3">
+          <strong>One honest limit:</strong> the bilingual subject coverage isn't total (roughly
+          four-fifths of headings have a Hebrew form). For the rest, a Hebrew topic word may miss a
+          record that only carries the English heading — so if a Hebrew topic search comes up short,
+          trying the English term, or searching by author or title, can surface more.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'using',
+    title: '16. Using it: following up, what you can ask, getting the book',
+    body: (
+      <>
+        <p>
+          A few practical things that make the difference between one-shot lookups and real
+          research:
+        </p>
+        <p className="mt-3">
+          <strong>You can follow up.</strong> The conversation remembers what you just asked, so you
+          can refine instead of starting over: "books printed in Venice in the 1500s" → "only the
+          Hebrew ones" → "and who printed them?" Each follow-up narrows the previous result rather
+          than asking from scratch.
+        </p>
+        <p className="mt-3">
+          <strong>What you can ask about.</strong> Beyond place, year, language, subject, title,
+          printer and person, the collection knows some things rare-book scholars especially care
+          about — the <strong>physical form</strong> of a book: whether it has maps, plates,
+          engravings, or illustrations. So "18th-century books with maps" is a question it can
+          actually answer.
+        </p>
+        <p className="mt-3">
+          <strong>Getting the actual book.</strong> Every result links back to the library's
+          catalog, so a find here is one click from the real record — and from requesting or
+          locating the physical copy. The system is a finding aid that hands you back to the library,
+          not a closed box.
+        </p>
+        <p className="mt-3">
+          <strong>And it counts honestly.</strong> When a search matches more books than it shows,
+          it tells you the true total ("showing 10 of 103") — the handful on screen never pretends
+          to be the whole set.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'map',
+    title: '17. Another way to explore: the map & networks',
+    body: (
+      <>
+        <p>
+          Asking questions isn't the only way in. There's a second, more visual surface, built from
+          the same prepared data — useful when you want to <em>browse and notice</em> rather than
+          ask something specific.
+        </p>
+        <ul className="mt-2 list-disc space-y-2 pl-5">
+          <li>
+            <strong>A places-first map.</strong> The collection's printing cities sit on a map.
+            Click a city and you see what came out of it — across which decades, by which printers,
+            on which subjects, involving which people. It treats <em>where things were printed</em>{' '}
+            as the main axis of discovery, which suits a rare-books collection.
+          </li>
+          <li>
+            <strong>People networks.</strong> A connected-graph view shows how people relate —
+            sharing books, places, or periods — so you can trace a circle of printers, authors, and
+            collaborators rather than looking each up alone.
+          </li>
+          <li>
+            <strong>A time control</strong> lets you watch printing spread across the centuries.
+          </li>
+        </ul>
+        <p className="mt-3">
+          <strong>An honesty note carries over here too:</strong> some connections come from your
+          catalog, and some are drawn from outside knowledge (the enrichment of the previous
+          section). The view keeps that distinction — a relationship the library recorded is not
+          presented the same as one inferred from Wikipedia.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'trust',
+    title: '18. What to trust — the known limits',
+    body: (
+      <>
+        <p>
+          The earlier sections were honest about <em>how</em> each piece is made. This closing one is
+          honest about <strong>how much to trust it</strong> — because coverage and accuracy genuinely
+          vary by field, and a good scholar should know where the soft spots are. None of this is
+          hidden; the project measures it.
+        </p>
+        <ul className="mt-3 list-disc space-y-2 pl-5">
+          <li>
+            <strong>Dates: about 1 in 9 may be off</strong> (~11%), and the errors cluster in{' '}
+            <strong>Hebrew-calendar conversions</strong> — a gematria year can land a few years from
+            the truth. A bracketed or "circa" date is approximate by nature. Treat a single exact-
+            looking year with mild caution, especially for Hebrew imprints.
+          </li>
+          <li>
+            <strong>People: about 15% aren't linked to a catalog identity.</strong> For those, a
+            search on a bare name may miss them, or — if the name can't be pinned down — the system
+            deliberately returns nothing rather than flooding you with look-alikes. Cross-script
+            unification (Hebrew ↔ Latin) is reliable only where the catalog did the linking.
+          </li>
+          <li>
+            <strong>Subjects: about 1 in 8 records (≈349) have no subject heading at all</strong> —
+            mostly Hebrew liturgical works and modern reprints. A subject-only search structurally
+            cannot find these; reaching them needs a title or author search instead.
+          </li>
+          <li>
+            <strong>Publishers: most are lightly researched.</strong> A press's tidy name and its
+            grouping are sound, but the surrounding detail (exact dates, biography) is often thin.
+          </li>
+          <li>
+            <strong>Places, by contrast, are quite reliable</strong> — well over 99% normalize
+            correctly.
+          </li>
+        </ul>
+        <p className="mt-3">
+          The reassurance underneath all this: the system <strong>tells you when it broadened a
+          search or found nothing, and cites the record behind every claim.</strong> So treat it as a
+          powerful, transparent finding aid — not an infallible census. And when something still
+          looks wrong, the <strong>Report button</strong> on any answer sends it, with its full
+          evidence, straight to the people who can fix it.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'glossary',
     title: 'In plain words — a mini glossary',
     body: (
