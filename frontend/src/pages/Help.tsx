@@ -436,6 +436,66 @@ const SECTIONS: Section[] = [
     ),
   },
   {
+    id: 'authorities',
+    title: "8. The who's-who, up close: how it's built and used",
+    body: (
+      <>
+        <p>
+          The who's-who (the "authority" lists for people and presses) is worth a closer look,
+          because it's what makes a search for one name find a book that spelled that name a
+          completely different way. It is <strong>assembled by a program</strong> from the records,
+          in layers.
+        </p>
+        <p className="mt-3 font-semibold text-gray-900">How it's built</p>
+        <ol className="mt-1 list-decimal space-y-2 pl-5">
+          <li>
+            <strong>Gather by the catalog's identity number.</strong> All of a person's records are
+            grouped by the identity number the cataloger assigned{' '}
+            <span className="text-gray-400">(the authority link in the record)</span>. Each group
+            becomes one who's-who entry, holding the real identity: the agreed name, whether it's a
+            person or an organization, and links out to reference sources like Wikidata.
+          </li>
+          <li>
+            <strong>Attach every spelling as an "also-known-as".</strong> Four kinds: the tidy names
+            from the records themselves; alternative spellings; the <strong>other-script form</strong>{' '}
+            (e.g. the Hebrew version of a Latin name); and an auto-generated "First Last" from
+            "Last, First".
+          </li>
+          <li>
+            <strong>Fill in from outside.</strong> A separate look-up to reference sources (mainly
+            Wikidata) supplies many of those alternative and cross-script spellings, plus dates and
+            occupations. This is how the system can bridge scripts even when the catalog itself
+            didn't link them.
+          </li>
+          <li>
+            <strong>Bare entries for the unlinked.</strong> The ~15% of people with no catalog
+            identity number still get a minimal entry — just their one name, no extra spellings, no
+            cross-script bridge. These thin entries are where searches most often miss.
+          </li>
+        </ol>
+        <p className="mt-3 font-semibold text-gray-900">How it's used</p>
+        <p className="mt-1">
+          At search time it does one job: <strong>expand your term into every form of that
+          identity.</strong> Ask "books by Maimonides" and the system finds the one who's-who entry,
+          collects <em>all</em> its name-forms — <bdi>maimonides, moses</bdi>,{' '}
+          <bdi>משה בן מימון</bdi>, reorderings, variants — and searches for them together. That's why
+          a Hebrew-printed book surfaces for an English query: not translation, just "these are all
+          the same person." Presses work the same way through their list of spellings.
+        </p>
+        <p className="mt-3">
+          <strong>How much of this is reproducible?</strong> The backbone — grouping by the
+          catalog's identity numbers — comes straight from the records, so it rebuilds the same way
+          every time. But the cross-script and variant spellings depend on that <em>outside</em>{' '}
+          Wikidata look-up (not reproducible from the card alone), and the whole who's-who is a{' '}
+          <strong>rebuilt, derived list</strong> — which means it can drift or break. Most of this
+          project's recent fixes lived right here: names accidentally split on commas, one person
+          split into two entries, or an over-eager guess when a name <em>isn't</em> found. That
+          fragility is exactly why the system now has automatic checks guarding these lists.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'glossary',
     title: 'In plain words — a mini glossary',
     body: (
