@@ -1070,7 +1070,13 @@ async def websocket_chat(websocket: WebSocket):
                 session_id=session_id,
                 phase=ConversationPhase.QUERY_DEFINITION,
                 confidence=plan.confidence,
-                metadata={"intents": plan.intents, "reasoning": plan.reasoning},
+                metadata={
+                    "intents": plan.intents,
+                    "reasoning": plan.reasoning,
+                    "active_subgroup": subgroup_summary(
+                        getattr(session, "active_subgroup", None)
+                    ),
+                },
             )
             msg_db_id = store.add_message(
                 session_id,
@@ -1164,6 +1170,23 @@ async def websocket_chat(websocket: WebSocket):
             )
         except Exception:
             logger.exception("Failed to save assistant message to session store")
+
+        # ---- Held-set lifecycle (issue #60 part 2) ----
+        new_subgroup = build_subgroup_update(
+            plan, response.candidate_set, message
+        )
+        if new_subgroup is not None:
+            try:
+                store.set_active_subgroup(session_id, new_subgroup)
+            except Exception:
+                logger.exception("Failed to persist active subgroup")
+            held = new_subgroup
+        else:
+            held = getattr(session, "active_subgroup", None)
+
+        if was_scoped_to_held_set(plan):
+            response.phase = ConversationPhase.CORPUS_EXPLORATION
+        response.metadata["active_subgroup"] = subgroup_summary(held)
 
         await websocket.send_json({
             "type": "complete",
