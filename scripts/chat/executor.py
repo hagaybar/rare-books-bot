@@ -721,6 +721,45 @@ def _is_topical_contains(f: Filter) -> bool:
     return f.field in _TOPICAL_CONTAINS_FIELDS and f.op == FilterOp.CONTAINS and not f.negate
 
 
+def _ascii_stem_variants(term: str) -> List[str]:
+    """Issue #48: conservative singular<->plural variants of a topical term.
+
+    FTS5's default tokenizer has no stemmer, so a singular probe
+    ('limited edition') misses the plural heading ('Limited editions') and
+    vice versa. Toggle a trailing ASCII 's' (and a trailing 'es') on the
+    last whitespace-delimited token to bridge the gap in the relaxation
+    ladder — never an index rebuild.
+
+    ASCII-only by design: a term containing any non-ASCII letter is Hebrew
+    (or otherwise non-Latin) where trailing-'s' morphology is meaningless,
+    so it yields no variants. Variants are de-duplicated and never include
+    the original term.
+    """
+    if not term:
+        return []
+    if any(not ch.isascii() and ch.isalpha() for ch in term):
+        return []
+    head, sep, last = term.rpartition(" ")
+    if not last or not last[-1].isalpha():
+        return []
+    variants: List[str] = []
+
+    def _add(new_last: str) -> None:
+        candidate = f"{head}{sep}{new_last}"
+        if candidate != term and candidate not in variants:
+            variants.append(candidate)
+
+    low = last.casefold()
+    if low.endswith("s") and len(last) > 1:
+        _add(last[:-1])  # plural -> singular ('editions' -> 'edition')
+        if low.endswith("es") and len(last) > 2:
+            _add(last[:-2])  # 'boxes' -> 'box'
+    else:
+        _add(last + "s")  # singular -> plural ('edition' -> 'editions')
+        _add(last + "es")  # 'box' -> 'boxes'
+    return variants
+
+
 _FALLBACK_CONTAINS_FIELDS = {
     FilterField.AGENT_NORM, FilterField.PUBLISHER, FilterField.IMPRINT_PLACE,
     FilterField.TITLE, FilterField.SUBJECT,
@@ -733,6 +772,33 @@ _TWIN_FIELD = {
     FilterField.PUBLISHER: FilterField.AGENT_NORM,
     FilterField.AGENT_NORM: FilterField.PUBLISHER,
 }
+
+
+# Issue #45: selectivity ceiling for the unresolved-entity probe union. A
+# probe whose CONTAINS hit-count EXCEEDS the ceiling is non-selective (e.g. a
+# common given name 'Jacob' matches every Jacob in the collection) and must NOT
+# be unioned into the recovery set. The ceiling is derived from collection size
+# (~1% of records, floored at a small constant). Tests force a low ceiling via
+# the override below; production always derives it from COUNT(*).
+_SELECTIVITY_CEILING_MIN = 20
+_SELECTIVITY_CEILING_FRACTION = 0.01
+# Test-only injection point. None => derive from collection size. Never set in
+# production code paths.
+_SELECTIVITY_CEILING_OVERRIDE: Optional[int] = None
+
+
+def _selectivity_ceiling(conn: sqlite3.Connection) -> int:
+    """Max probe hit-count that still counts as selective for the
+    unresolved-entity probe union (issue #45).
+
+    Derived once from collection size: max(MIN, round(FRACTION * total)).
+    A module-level override (None in production) lets tests force a low,
+    deterministic ceiling without seeding thousands of rows.
+    """
+    if _SELECTIVITY_CEILING_OVERRIDE is not None:
+        return _SELECTIVITY_CEILING_OVERRIDE
+    total = conn.execute("SELECT COUNT(*) FROM records").fetchone()[0]
+    return max(_SELECTIVITY_CEILING_MIN, round(_SELECTIVITY_CEILING_FRACTION * total))
 
 
 # Trade words that appear in countless printer/publisher names — probing them
@@ -994,6 +1060,21 @@ def _relax_and_retry(
                     f"'{exp.value}' ({len(exp_hits)} records)"
                 )
                 topic_hits |= set(exp_hits)
+        # Issue #48: morphological fallback. If the term recovered nothing on
+        # its own (no concept-map entry / no plural form catalogued), try a
+        # conservative ASCII singular<->plural toggle on the SAME field before
+        # honest-empty. Composes with concept expansion above; never fires when
+        # the term already matched.
+        if not topic_hits:
+            for variant in _ascii_stem_variants(str(tf.value)):
+                probe = tf.model_copy(update={"value": variant})
+                var_hits = _run_probe(others + [probe])
+                if var_hits:
+                    notes.append(
+                        f"no match for {tf.field.value} '{tf.value}'; matched "
+                        f"variant '{variant}' ({len(var_hits)} records)"
+                    )
+                    topic_hits |= set(var_hits)
         union |= topic_hits
 
     if not union:
@@ -1113,7 +1194,18 @@ def _handle_retrieve(
                 normalized = _normalize_multivalue_filters(list(filters), probe_mv)
                 return _run_filter_query(conn, normalized, scope_ids, probe_mv or None)
 
-            union: set = set(mms_ids)
+            # Issue #45: a non-selective token (a common given name) matches
+            # most of the collection and would flood the recovery set. Reject
+            # any probe whose hit-count exceeds the selectivity ceiling derived
+            # from collection size; only selective probes are unioned.
+            #
+            # The strict pass above ran the fallback probe's FIRST token as a
+            # hard filter, so its (possibly flooded) result is in mms_ids. That
+            # token was never ceiling-checked, so do NOT seed the union with it:
+            # rebuild from the genuinely-hard `remaining` filters only, then let
+            # every fallback token (including the first) face the ceiling below.
+            ceiling = _selectivity_ceiling(conn)
+            union: set = set(_try(remaining)) if remaining else set()
             for idx in sorted(fallback_indices):
                 base = resolved_filters[idx]
                 ref = fallback_refs.get(idx, "$step_?")
@@ -1124,18 +1216,23 @@ def _handle_retrieve(
                     fields.append(twin)
                 for fld in fields:
                     for token in tokens:
-                        if fld == base.field and token == base.value:
-                            continue  # already counted by the strict pass
                         probe = base.model_copy(update={"field": fld, "value": token})
                         ids = _try(remaining + [probe])
-                        if ids:
+                        if not ids:
+                            continue
+                        if len(ids) > ceiling:
                             relaxations.append(
-                                f"{ref} recovered {len(ids)} records via "
-                                f"{fld.value} CONTAINS '{token}'"
+                                f"probe {fld.value} CONTAINS '{token}' matched "
+                                f"{len(ids)} records (> ceiling {ceiling}); "
+                                f"rejected as non-selective"
                             )
-                            union |= set(ids)
-            if union:
-                mms_ids = sorted(union)
+                            continue
+                        relaxations.append(
+                            f"{ref} recovered {len(ids)} records via "
+                            f"{fld.value} CONTAINS '{token}'"
+                        )
+                        union |= set(ids)
+            mms_ids = sorted(union)
 
             # Last resort: nothing recovered — drop the probes entirely.
             if not mms_ids and remaining:
