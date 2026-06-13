@@ -124,6 +124,15 @@ def execute_plan(
         except Exception:
             pass  # Auto-connections are best-effort
 
+    # Issue #47: surface interpreter-level concept fan-out. When the plan ran
+    # MORE THAN ONE topical retrieve on DIFFERENT terms, the result set was
+    # broadened beyond the literal query, yet each step strict-matched so its
+    # per-RecordSet relaxations stayed empty. Record a transparency note naming
+    # the explored terms on the surface the narrator reads.
+    fanout_note = _concept_fanout_note(plan.execution_steps)
+    if fanout_note:
+        grounding.broadening_notes.append(fanout_note)
+
     # Build ordered list of step results
     steps_completed = [step_results[i] for i in execution_order]
 
@@ -770,6 +779,45 @@ def _is_topical_contains(f: Filter) -> bool:
     These are recall constraints; everything else (year, place, language,
     agent…) is a hard constraint that relaxation must never loosen."""
     return f.field in _TOPICAL_CONTAINS_FIELDS and f.op == FilterOp.CONTAINS and not f.negate
+
+
+def _concept_fanout_note(steps: List[ExecutionStep]) -> Optional[str]:
+    """Build a transparency note when the plan fans one concept across several
+    topical retrieve steps on DIFFERENT terms (issue #47).
+
+    The Interpreter may expand a single user concept ('cartography') into
+    several topical retrieve steps (subject 'geography', physical_desc 'maps',
+    title 'atlas'). Each step strict-matches, so its per-RecordSet relaxations
+    stay empty and the broadening is invisible. We detect 2+ retrieve steps
+    each carrying exactly one topical CONTAINS filter, on >=2 DISTINCT terms,
+    and return a note naming the explored terms. Returns None otherwise so
+    single-topic (and repeated-same-term) queries are unchanged.
+    """
+    terms: List[str] = []
+    seen: set = set()
+    for step in steps:
+        if step.action != StepAction.RETRIEVE:
+            continue
+        params = step.params
+        topical = [f for f in getattr(params, "filters", []) if _is_topical_contains(f)]
+        # A single dedicated topical retrieve per concept; a multi-filter
+        # retrieve is an AND constraint handled by the relaxation ladder, not
+        # interpreter fan-out.
+        if len(topical) != 1:
+            continue
+        value = topical[0].value
+        if not isinstance(value, str):
+            continue
+        term = value.strip()
+        key = term.casefold()
+        if not term or key in seen:
+            continue
+        seen.add(key)
+        terms.append(term)
+
+    if len(terms) < 2:
+        return None
+    return "explored related topics: " + ", ".join(terms)
 
 
 def _ascii_stem_variants(term: str) -> List[str]:

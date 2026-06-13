@@ -1823,3 +1823,70 @@ class TestUnresolvedProbeSelectivityCeiling:
             params, test_db, self._failed_resolve("Jacob ibn Habib"), None)
         assert rs.mms_ids == []
         assert rs.relaxations, "the rejection / resolution failure must be explained"
+
+
+class TestConceptFanoutTransparency:
+    """Issue #47: when the INTERPRETER expands one concept into several
+    topical retrieve steps (e.g. 'cartography' -> subject 'geography',
+    physical_desc 'maps', title 'atlas'), the results are broadened but each
+    RecordSet.relaxations is empty -- the broadening is silent. The executor
+    must record a transparency note naming the explored terms on the surface
+    the narrator consumes (grounding.broadening_notes)."""
+
+    def _topical_step(self, field, value, label):
+        return ExecutionStep(
+            action=StepAction.RETRIEVE,
+            params=RetrieveParams(
+                filters=[Filter(field=field, op=FilterOp.CONTAINS, value=value)]
+            ),
+            label=label,
+        )
+
+    def _plan(self, steps):
+        return InterpretationPlan(
+            intents=["retrieval"],
+            reasoning="t",
+            confidence=0.9,
+            execution_steps=steps,
+            directives=[],
+        )
+
+    def test_multi_topic_fanout_records_broadening_note(self, test_db):
+        # 'cartography' fanned out into three topical retrieves on different
+        # terms across different fields. Each strict-matches (relaxations stay
+        # empty), so the broadening would be invisible without a note.
+        plan = self._plan([
+            self._topical_step(FilterField.SUBJECT, "geography", "subject"),
+            self._topical_step(FilterField.PHYSICAL_DESC, "maps", "phys"),
+            self._topical_step(FilterField.TITLE, "Palaestina", "title"),
+        ])
+        result = execute_plan(plan, test_db)
+
+        # Per-step relaxations stay empty: each step strict-matched.
+        for step in result.steps_completed:
+            assert step.data.relaxations == []
+
+        notes = result.grounding.broadening_notes
+        assert notes, "interpreter-level fan-out must be recorded as a note"
+        joined = " ".join(notes).lower()
+        # The note names the explored terms so the narrator can surface them.
+        assert "geography" in joined
+        assert "maps" in joined
+        assert "palaestina" in joined
+
+    def test_single_topic_plan_has_no_broadening_note(self, test_db):
+        plan = self._plan([
+            self._topical_step(FilterField.SUBJECT, "geography", "subject"),
+        ])
+        result = execute_plan(plan, test_db)
+        assert result.grounding.broadening_notes == []
+
+    def test_repeated_same_term_is_not_fanout(self, test_db):
+        # Two topical retrieves on the SAME term are not a concept fan-out --
+        # no explored-terms note (single-topic queries stay unchanged).
+        plan = self._plan([
+            self._topical_step(FilterField.SUBJECT, "geography", "a"),
+            self._topical_step(FilterField.SUBJECT, "geography", "b"),
+        ])
+        result = execute_plan(plan, test_db)
+        assert result.grounding.broadening_notes == []
