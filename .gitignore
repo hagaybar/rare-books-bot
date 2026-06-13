@@ -133,6 +133,12 @@ data/
 !data/normalization/publisher_aliases/publisher_alias_map.json
 !data/normalization/publisher_research.json
 
+# Semantic subject-search ONNX model (~465 MB). NEVER commit it: it ships into
+# the Docker image via the build context (COPY in Dockerfile), and is exported
+# offline by scripts/index/export_embed_model.py. Explicit guard against any
+# future un-ignore of data/.
+data/models/
+
 outputs/
 archived/
 

@@ -67,20 +67,50 @@ _STEP_REF_RE = re.compile(r"^\$step_(\d+)$")
 # The ``resolve_subject_concept`` handler obtains its resolver through this
 # module-level seam rather than constructing one directly. Tests monkeypatch
 # ``get_subject_resolver`` to inject a FAKE resolver (no model / onnxruntime /
-# DB vectors). The REAL factory — building a ``SubjectConceptResolver`` from the
-# ``subject_embeddings`` table + an ``OnnxEmbedder`` — is wired in Task 7; until
-# then this returns ``None`` (the handler then reports an honest empty result).
+# DB vectors). The REAL factory — ``load_subject_resolver`` builds a
+# ``SubjectConceptResolver`` from the ``subject_embeddings`` table + an
+# ``OnnxEmbedder`` — is cached here as a lazy singleton: the ONNX model + the
+# heading vectors are loaded once on first use (NOT at import time) and reused
+# across turns; we rebuild only when ``db_path`` changes. On a missing model
+# dir or empty ``subject_embeddings`` the factory fails loud and returns
+# ``None`` (the handler then reports an honest empty result).
+
+# Lazy singleton: (db_path, resolver) — ``None`` resolver is a valid (cached)
+# "unavailable" state so we don't re-attempt a failing load every turn.
+_SUBJECT_RESOLVER_CACHE: Dict[str, Any] = {"db_path": None, "resolver": None, "loaded": False}
 
 
 def get_subject_resolver(db_path: Path):
-    """Return the subject-concept resolver, or ``None`` if unavailable.
+    """Return the subject-concept resolver (lazy singleton), or ``None``.
 
-    Injection seam: the real model-backed factory is wired in Task 7. Tests
-    replace this with a fake resolver so no model is loaded. A resolver must
-    expose ``resolve(concept) -> list[HeadingMatch]`` where each match carries
-    ``heading_value`` and ``score``.
+    Injection seam: builds the real model-backed resolver via
+    ``load_subject_resolver`` on first call, caches the instance, and rebuilds
+    only when ``db_path`` changes. Returns ``None`` (failing loud via the
+    factory's logging) when the model dir is missing or ``subject_embeddings``
+    is empty. Tests replace this whole function with a fake resolver so no model
+    is loaded. A resolver must expose ``resolve(concept) -> list[HeadingMatch]``
+    where each match carries ``heading_value`` and ``score``.
     """
-    return None
+    key = str(db_path)
+    if _SUBJECT_RESOLVER_CACHE["loaded"] and _SUBJECT_RESOLVER_CACHE["db_path"] == key:
+        return _SUBJECT_RESOLVER_CACHE["resolver"]
+
+    # Lazy import keeps onnxruntime/tokenizers off the import path.
+    from scripts.chat.subject_concept_resolver import load_subject_resolver
+
+    try:
+        resolver = load_subject_resolver(db_path)
+    except Exception as exc:  # noqa: BLE001 - never let a load failure break a turn
+        logger.error(
+            "get_subject_resolver: failed to load resolver for %s (%s); "
+            "concept resolution unavailable this session",
+            db_path,
+            exc,
+        )
+        resolver = None
+
+    _SUBJECT_RESOLVER_CACHE.update({"db_path": key, "resolver": resolver, "loaded": True})
+    return resolver
 
 
 # =============================================================================

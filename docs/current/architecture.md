@@ -27,9 +27,11 @@ scripts/                      # Core library organized by function
     models.py                 # ChatSession, Message, ChatResponse
     session_store.py          # SQLite session persistence
     interpreter.py            # NL query → InterpretationPlan (via litellm)
-    executor.py               # InterpretationPlan → ExecutionResult (SQL)
+    executor.py               # InterpretationPlan → ExecutionResult (SQL); get_subject_resolver() lazy singleton
     narrator.py               # ExecutionResult → narrative response (via litellm)
     plan_models.py            # Execution pipeline models (28 models)
+    onnx_embedder.py          # OnnxEmbedder: onnxruntime encode (mean-pool + L2-norm + e5 prefixes); loaded lazily at runtime
+    subject_concept_resolver.py  # SubjectConceptResolver + load_subject_resolver(db, model_dir): concept → real headings (cosine ≥ 0.84)
   query/                      # Query compilation and execution
     llm_compiler.py           # NL -> QueryPlan via litellm (legacy; see chat/interpreter.py)
     compile.py                # Query compilation entry point
@@ -289,10 +291,16 @@ The evaluation framework (`scripts/eval/`) supports batch comparison of models a
 This is **not** a general RAG platform. Key differences:
 
 - Source of truth is **MARC XML**, not arbitrary documents
-- No embedding-based retrieval -- use SQLite fielded queries first
+- No embedding-based retrieval -- use SQLite fielded queries first. **One sanctioned exception** (semantic subject search, Phase 1): embeddings expand a *concept* into the collection's real `subjects.value` headings; record matching then stays exact and evidential. See "Semantic subject search" below and `CLAUDE.md`.
 - Answers require **deterministic evidence** from MARC fields
 - Normalization must be **reversible** and **confident**
 - Query execution must produce **CandidateSet before narrative**
+
+### Semantic subject search (the one embedding exception)
+
+- **Offline (build step):** `scripts/index/export_embed_model.py` exports `intfloat/multilingual-e5-small` → ONNX at `data/models/e5-small-onnx/` (~465 MB, NOT in git — shipped via the Docker build context, see `Dockerfile`/`.gitignore`). `scripts/index/embed_subjects.py` then embeds every distinct heading and writes the `subject_embeddings(heading_value, lang, dim, model_id, vector BLOB)` table into `bibliographic.db` (vectors are float32 bytes; ~6,190 rows for the current collection).
+- **Runtime:** `scripts/chat/onnx_embedder.py` (`OnnxEmbedder`) runs the *identical* encode path (mean-pool + L2-norm + e5 `query:`/`passage:` prefixes) via `onnxruntime` — the consistency anchor between offline and runtime. `scripts/chat/subject_concept_resolver.py` (`SubjectConceptResolver`) scores a concept query against the precomputed heading vectors (cosine ≥ 0.84, top-K 40) and returns the matched real headings, with a JSON-file cache at `data/normalization/concept_maps/semantic_subject_cache.json`.
+- **Wiring:** `load_subject_resolver(db_path, model_dir)` builds the resolver from `subject_embeddings` + `OnnxEmbedder`; `executor.get_subject_resolver(db_path)` is a **lazy singleton** (model + vectors loaded once on first use, NOT at import; rebuilt only when `db_path` changes). On a missing model dir or empty `subject_embeddings` it **fails loud** (logs an error) and returns `None`, so `resolve_subject_concept` reports an honest empty result rather than mis-counting.
 
 ### Data Model Rules
 
