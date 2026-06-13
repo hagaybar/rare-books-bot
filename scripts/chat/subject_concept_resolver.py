@@ -51,8 +51,37 @@ class SubjectConceptResolver:
         self.top_k = top_k
         self.cache = cache  # optional dict-like {key: [headings]}
 
-    def resolve(self, concept: str) -> list[HeadingMatch]:
-        key = f"{concept.casefold()}|{self.embedder.model_id}|{self.threshold}"
+    def resolve(
+        self, concept: str, scope_headings: Optional[set[str]] = None
+    ) -> list[HeadingMatch]:
+        """Resolve ``concept`` to ranked real headings (cosine >= threshold,
+        capped at ``top_k``).
+
+        When ``scope_headings`` is given, ranking is restricted to *those*
+        headings only (the held-set's own vocabulary). This prevents the global
+        top-K from being spent on headings that score high globally but are
+        absent from the set the user is exploring — so a held-set count recovers
+        the in-set matches instead of truncating them. Scoped resolves are
+        per-set and bypass the cross-run cache.
+        """
+        if scope_headings is not None:
+            idx = [i for i, h in enumerate(self.headings) if h in scope_headings]
+            if not idx:
+                return []
+            q = self.embedder.encode_query(concept)
+            sims = self.vectors[idx] @ q
+            order = np.argsort(-sims)[: self.top_k]
+            return [
+                HeadingMatch(self.headings[idx[j]], float(sims[j]))
+                for j in order
+                if sims[j] >= self.threshold
+            ]
+
+        # Global resolve (cache key includes top_k so a re-tune invalidates).
+        key = (
+            f"{concept.casefold()}|{self.embedder.model_id}"
+            f"|{self.threshold}|{self.top_k}"
+        )
         if self.cache is not None and key in self.cache:
             cached = set(self.cache[key])
             return [HeadingMatch(h, 1.0) for h in self.headings if h in cached]
