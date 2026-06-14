@@ -1,6 +1,6 @@
 # QA Framework
-> Last verified: 2026-06-10
-> Source of truth for: Quality assurance infrastructure -- query debugger, diagnostics API, candidate labeling, gold set management, regression testing, and external-citation verification
+> Last verified: 2026-06-14
+> Source of truth for: Quality assurance infrastructure -- query debugger, diagnostics API, candidate labeling, gold set management, regression testing, external-citation verification, and narrator gold-standard (model-vs-cost) evaluation
 
 ## Overview
 
@@ -93,6 +93,41 @@ Separate SQLite database, isolated from the production `bibliographic.db`.
 - 2026-06-10 state: judge avg 4.0/5; 16 retrieval-intent queries return zero
   records (see `data/eval/runs/2026-06-10-postfix/comparison.md`) — the
   primary target for the next quality iteration.
+
+### Narrator Gold-Standard Evaluation (`scripts/eval/run_narrator_gold_eval.py`)
+
+> Added 2026-06-14. Measures narrator-stage **quality-per-dollar**: candidate
+> models are scored against an Opus-4.8-authored gold standard on **frozen
+> grounding**, so only the narration step varies. Design/plan:
+> `docs/superpowers/specs/2026-06-14-narrator-gold-eval-design.md`,
+> `docs/superpowers/plans/2026-06-14-narrator-gold-eval.md`.
+
+- **Why separate from `run_eval.py`**: that harness re-runs interpret+execute per
+  model; this one freezes the `ExecutionResult` and feeds every candidate the
+  *identical* grounding via `narrate()`, so the gold comparison is apples-to-apples.
+- **Gold set** (`data/eval/narrator_gold/<case_id>/{query.txt, grounding.json, gold.md}`):
+  authored in-session by Opus 4.8 at **$0** — `scripts/eval/author_gold_grounding.py`
+  validates a hand-authored `InterpretationPlan` and runs the **pure-DB** executor
+  (no LLM, no network) to freeze grounding; the gold narrative is written by hand.
+- **Scoring**: reference-anchored rubric (`NarratorGoldJudgment`/`GoldScore` in
+  `scripts/eval/judge.py`) — five 0-3 dimensions (grounding .40, coverage .20,
+  evidence_fidelity .15, scholarly_quality .15, scope_handling .10) with a hard
+  **fabrication cap**. Candidates are not penalized for valid-but-different prose.
+- **Execution**: everything runs through the **OpenAI Batch API** (`scripts/eval/batch_client.py`,
+  −50%); `scripts/eval/narrator_gold.py` builds byte-identical production narration
+  prompts (`NARRATOR_SYSTEM_PROMPT` + `build_lean_narrator_prompt` + `NarratorResponseLLM`).
+- **Cost safety**: `max_completion_tokens` caps bound hidden reasoning tokens,
+  `reasoning_effort: low`, and a **cost-ceiling guard** (`assert_within_ceiling`,
+  default $2.00) projects worst-case spend and **aborts before any submit**. Always
+  dry-run first:
+  ```bash
+  poetry run python -m scripts.eval.run_narrator_gold_eval \
+    --models gpt-4.1,gpt-5.4-mini,gpt-5-mini,gpt-4.1-mini --judge-model gpt-5.4 \
+    --cost-ceiling 2.00 --output-dir data/eval/runs/<date>-narrator-gold --dry-run
+  ```
+  Drop `--dry-run` for the real (batched) run; output is `results.json` + ranked `REPORT.md`.
+- **Status (2026-06-14)**: Phase-1 harness landed and unit-tested (`tests/scripts/eval/`,
+  no live LLM). Gold-set authoring and the paid run are gated on user approval.
 
 ## FTS Parity Gate
 
