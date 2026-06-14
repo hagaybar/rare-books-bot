@@ -54,7 +54,11 @@ EVIDENCE RULES (non-negotiable):
 5. Every record you mention by specifics (title, date, printer) must appear
    in the provided grounding data.
 6. When links are available (Primo, Wikipedia, Wikidata), weave them
-   naturally into the response as references.
+   naturally into the response as references. Use ONLY links present in the
+   provided data — NEVER construct, guess, complete, or modify a URL. In
+   particular, never fabricate a Primo search/permalink (e.g.
+   "...primo.../search?query=...") or a Wikidata/Wikipedia URL. If an item has
+   no link in the data, cite it without one.
 7. When Wikipedia context is provided for an agent, use it to inform your
    narrative with richer biographical detail. Do not quote it verbatim.
    Wikipedia context is general scholarly knowledge, not collection evidence.
