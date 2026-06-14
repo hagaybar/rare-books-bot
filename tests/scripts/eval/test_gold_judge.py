@@ -1,4 +1,4 @@
-from scripts.eval.judge import NarratorGoldJudgment, GoldScore, parse_gold_judgment
+from scripts.eval.judge import NarratorGoldJudgment, GoldScore, parse_gold_judgment, build_gold_judge_prompt
 
 
 def _judgment(**over):
@@ -37,3 +37,18 @@ def test_parse_gold_judgment_from_json():
     raw = _judgment(coverage=2).model_dump_json()
     s = parse_gold_judgment(raw)
     assert s.coverage == 2 and not s.fabrication_detected
+
+
+def test_judge_prompt_includes_all_parts():
+    system, user = build_gold_judge_prompt(
+        query="books in Venice",
+        bounded_grounding="TOTAL_RECORDS: 3",
+        gold_text="GOLD NARRATIVE",
+        candidate_text="CANDIDATE NARRATIVE",
+    )
+    assert "books in Venice" in user
+    assert "TOTAL_RECORDS: 3" in user
+    assert "GOLD NARRATIVE" in user
+    assert "CANDIDATE NARRATIVE" in user
+    assert "fabricat" in system.lower()
+    assert "0" in system and "3" in system  # 0-3 scale described

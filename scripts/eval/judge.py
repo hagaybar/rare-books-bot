@@ -299,3 +299,39 @@ class GoldScore:
 def parse_gold_judgment(raw_json: str) -> GoldScore:
     """Validate raw judge JSON into a GoldScore."""
     return GoldScore.from_judgment(NarratorGoldJudgment.model_validate_json(raw_json))
+
+
+GOLD_JUDGE_SYSTEM = """\
+You are an exacting evaluator of scholarly bibliographic narratives for a rare
+books discovery system. You score a CANDIDATE narrative against a GOLD reference,
+using only the provided GROUNDING data as ground truth.
+
+Score each dimension 0-3 (0 = broken, 1 = poor, 2 = good with issues, 3 = excellent):
+- grounding: every specific claim (count, title, date, printer, place, link) appears
+  in the GROUNDING. Invented specifics are fabrication.
+- coverage: covers the holdings/facts the GOLD covers.
+- evidence_fidelity: exact counts, titles, and links are correct.
+- scholarly_quality: clarity, structure, scholarly framing; general knowledge clearly
+  labeled as not-from-collection.
+- scope_handling: empty-set honesty, clarification when ambiguous, no overreach.
+
+Set fabrication_detected=true and list fabricated_claims if ANY specific claim is not
+supported by the GROUNDING. Do NOT penalize valid prose that differs in wording or
+structure from the GOLD — only missing or wrong substance.
+Return ONLY the structured fields."""
+
+
+def build_gold_judge_prompt(
+    query: str,
+    bounded_grounding: str,
+    gold_text: str,
+    candidate_text: str,
+) -> tuple[str, str]:
+    """Build (system, user) messages for the reference-anchored judge."""
+    user = (
+        f"QUERY:\n{query}\n\n"
+        f"GROUNDING (ground truth — bounded):\n{bounded_grounding}\n\n"
+        f"GOLD REFERENCE NARRATIVE:\n{gold_text}\n\n"
+        f"CANDIDATE NARRATIVE (score this):\n{candidate_text}\n"
+    )
+    return GOLD_JUDGE_SYSTEM, user
