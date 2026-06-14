@@ -1,0 +1,54 @@
+{
+  "steps_completed": [
+    {
+      "step_index": 0,
+      "action": "retrieve",
+      "label": "Latin books printed in Livorno",
+      "status": "empty",
+      "data": {
+        "mms_ids": [],
+        "total_count": 0,
+        "filters_applied": [
+          {
+            "field": "imprint_place",
+            "op": "EQUALS",
+            "value": "livorno",
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          },
+          {
+            "field": "language",
+            "op": "EQUALS",
+            "value": "lat",
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          }
+        ],
+        "relaxations": []
+      },
+      "record_count": 0,
+      "error_message": null
+    }
+  ],
+  "directives": [],
+  "grounding": {
+    "records": [],
+    "agents": [],
+    "aggregations": {},
+    "aggregation_meta": {},
+    "links": [],
+    "publishers": [],
+    "connections": [],
+    "broadening_notes": []
+  },
+  "original_query": "Latin books printed in Livorno",
+  "session_context": null,
+  "truncated": false,
+  "total_record_count": 0
+}

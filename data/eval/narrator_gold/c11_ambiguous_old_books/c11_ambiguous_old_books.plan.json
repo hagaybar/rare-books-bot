@@ -1,0 +1,16 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "'Really old books' is ambiguous about period. Default to the earliest printing era held — incunabula through the mid-16th century (1450-1550) — and the narrator should state this assumption and invite the user to narrow by century, region, or language.",
+  "execution_steps": [
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "year", "op": "RANGE", "start": 1450, "end": 1550}], "scope": "full_collection"},
+      "label": "Books printed 1450-1550 (default reading of 'really old')",
+      "depends_on": []
+    }
+  ],
+  "directives": [{"directive": "interpret", "params": {"aspect": "'old' is ambiguous; state the assumed 1450-1550 window and invite the user to narrow by century, region, or language"}, "label": "Acknowledge ambiguity"}],
+  "confidence": 0.6,
+  "clarification": null,
+  "dropped_steps": []
+}

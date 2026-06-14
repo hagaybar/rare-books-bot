@@ -1,0 +1,22 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "The user asks for books illustrated by Ludwig Schwerin. Resolve the agent, then retrieve records where he appears in the illustrator role (agent_norm = resolved AND agent_role = illustrator).",
+  "execution_steps": [
+    {
+      "action": "resolve_agent",
+      "params": {"name": "Ludwig Schwerin", "variants": ["Schwerin, Ludwig", "schwerin, ludwig"]},
+      "label": "Resolve Ludwig Schwerin",
+      "depends_on": []
+    },
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "agent_norm", "op": "EQUALS", "value": "$step_0"}, {"field": "agent_role", "op": "EQUALS", "value": "illustrator"}], "scope": "full_collection"},
+      "label": "Books illustrated by Ludwig Schwerin",
+      "depends_on": [0]
+    }
+  ],
+  "directives": [],
+  "confidence": 0.9,
+  "clarification": null,
+  "dropped_steps": []
+}

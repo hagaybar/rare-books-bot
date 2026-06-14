@@ -1,0 +1,22 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "The user asks about a concept (Jewish philosophy). Expand the concept into the collection's real subject headings via semantic resolution, then retrieve records whose subjects match those headings exactly. The matched headings are surfaced as evidence.",
+  "execution_steps": [
+    {
+      "action": "resolve_subject_concept",
+      "params": {"concept": "Jewish philosophy", "top_k": 40},
+      "label": "Resolve the concept 'Jewish philosophy' to the collection's real subject headings",
+      "depends_on": []
+    },
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "subject", "op": "IN", "value": "$step_0"}], "scope": "full_collection"},
+      "label": "Books about Jewish philosophy",
+      "depends_on": [0]
+    }
+  ],
+  "directives": [],
+  "confidence": 0.88,
+  "clarification": null,
+  "dropped_steps": []
+}

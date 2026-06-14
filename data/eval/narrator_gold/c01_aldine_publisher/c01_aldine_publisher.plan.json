@@ -1,0 +1,22 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "The user asks for books from the Aldine Press, the famous Venetian humanist press of Aldus Manutius. Resolve the publisher entity (with variants), then retrieve records on the resolved publisher_norm.",
+  "execution_steps": [
+    {
+      "action": "resolve_publisher",
+      "params": {"name": "Aldine Press", "variants": ["Aldine", "Aldus Manutius", "Manutius", "aldine press, venice"]},
+      "label": "Resolve the Aldine Press publisher entity",
+      "depends_on": []
+    },
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "publisher", "op": "EQUALS", "value": "$step_0"}], "scope": "full_collection"},
+      "label": "Books from the Aldine Press",
+      "depends_on": [0]
+    }
+  ],
+  "directives": [],
+  "confidence": 0.95,
+  "clarification": null,
+  "dropped_steps": []
+}

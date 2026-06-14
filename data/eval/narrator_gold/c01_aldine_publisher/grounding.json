@@ -1,0 +1,2775 @@
+{
+  "steps_completed": [
+    {
+      "step_index": 0,
+      "action": "resolve_publisher",
+      "label": "Resolve the Aldine Press publisher entity",
+      "status": "ok",
+      "data": {
+        "query_name": "Aldine Press",
+        "matched_values": [
+          "aldine press, venice",
+          "apud aldi filios",
+          "apud aldum",
+          "apud paulum manutium, aldi filium",
+          "in aedibus aldi",
+          "in aedibus aldi et andreae soceri",
+          "in aedibus aldi, et andreae asulani soceri",
+          "in aedibus haeredum aldi manutii romani & andreae asulani soceri",
+          "in casa de' figlivoli di aldo"
+        ],
+        "match_method": "variant_exact",
+        "confidence": 0.95,
+        "query_variants": [
+          "Aldine",
+          "Aldus Manutius",
+          "Manutius",
+          "aldine press, venice"
+        ]
+      },
+      "record_count": null,
+      "error_message": null
+    },
+    {
+      "step_index": 1,
+      "action": "retrieve",
+      "label": "Books from the Aldine Press",
+      "status": "ok",
+      "data": {
+        "mms_ids": [
+          "990010534760204146",
+          "990010536790204146",
+          "990010540640204146",
+          "990010678390204146",
+          "990010690460204146",
+          "990011121490204146",
+          "990011218760204146",
+          "990011285970204146",
+          "990011878340204146",
+          "990011951620204146",
+          "990011960750204146",
+          "990011962100204146",
+          "990011967800204146",
+          "990011988700204146",
+          "990012158420204146"
+        ],
+        "total_count": 15,
+        "filters_applied": [
+          {
+            "field": "publisher",
+            "op": "EQUALS",
+            "value": "aldine press, venice",
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          }
+        ],
+        "relaxations": []
+      },
+      "record_count": 15,
+      "error_message": null
+    }
+  ],
+  "directives": [],
+  "grounding": {
+    "records": [
+      {
+        "mms_id": "990010534760204146",
+        "title": "Le Epistole famigliari di Cicero / tradotte di nuovo, e quasi in Infiniti luoghi Corrette da Aldo Manutio",
+        "date_display": "1559",
+        "place": "Vinegia",
+        "publisher": "Aldus",
+        "language": "ita",
+        "agents": [
+          "cicero, marcus tullius",
+          "manuzio, aldo"
+        ],
+        "subjects": [
+          "Latin literature -- Translations into Italian",
+          "Letters -- Rome"
+        ],
+        "physical_description": "379 leaves",
+        "notes": [
+          "Printer's device on T.-P.",
+          "On spine: Cicerone: Epistole famigliari"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010534760204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[Epistulae. Ad familiares. Italian. Manuzio]",
+          "Cicerone: Epistole famigliari"
+        ],
+        "notes_structured": {
+          "500": [
+            "Printer's device on T.-P.",
+            "On spine: Cicerone: Epistole famigliari"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "ספרות לטינית תרגומים לאיטלקית",
+          "רומא"
+        ]
+      },
+      {
+        "mms_id": "990010536790204146",
+        "title": "Iuvenalis, Persius",
+        "date_display": "1501",
+        "place": "Venetiis",
+        "publisher": "In aedibus Aldi",
+        "language": "lat",
+        "agents": [
+          "juvenal",
+          "persius"
+        ],
+        "subjects": [
+          "Satire, Latin",
+          "Classical literature"
+        ],
+        "physical_description": "[78] leaves",
+        "notes": [
+          "Unpaged, signed A-Hb",
+          "On verso T.-P.: I. Iuvenalis et A. Persii Satyras ...\"",
+          "The first of two editions, dated 1501, with Colophon printed in Italics (Venetiis in aedibus Aldi, mense Augusto MCI), and without printer's device on T.-P."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010536790204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "I. Iuvenalis et A. Persii Satyras"
+        ],
+        "notes_structured": {
+          "500": [
+            "Unpaged, signed A-Hb",
+            "On verso T.-P.: I. Iuvenalis et A. Persii Satyras ...\"",
+            "The first of two editions, dated 1501, with Colophon printed in Italics (Venetiis in aedibus Aldi, mense Augusto MCI), and without printer's device on T.-P."
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "סטירה לטינית",
+          "ספרות קלאסית"
+        ]
+      },
+      {
+        "mms_id": "990010540640204146",
+        "title": "... C. Suetonii Tranquilli XII Caesares, Sexti Aurelii Victoris A D. Caesare Augusto usque ad Theodosium excerpta, Eutropii De gestis romanorum. Lib.X, Pauli Diaconi libri VIII ad Eutropii Historiam additi / [edidit cum indice Ioannes Baptista Egnatius]",
+        "date_display": "1516",
+        "place": "Venetiis",
+        "publisher": "In aedibus Aldi et Andreae",
+        "language": "lat",
+        "agents": [
+          "suetonius",
+          "egnazio, giovanni battista, cipelli",
+          "eutropius",
+          "paul",
+          "victor, sextus aurelius"
+        ],
+        "subjects": [
+          "Emperors -- Rome",
+          "Classical biography",
+          "Rome -- History -- Empire, 30 B.C.-476 A.D.",
+          "Rome -- Biography"
+        ],
+        "physical_description": "[31], 320 leaves",
+        "notes": [
+          "Includes a dedicatory letter from Giovanni Baptista Egnazio to Jean Grolier",
+          "Imprint data from Colophon: Venetiis in aedibus Aldi, et Andreae Soceri mense Augusto Mdxvi",
+          "Aldus' device (The anchor) on t.-p. and on verso of last leaf"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010540640204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[De vita Caesarum. 1516]",
+          "C. Suetonii Tranquilli XII Caesares",
+          "Sexti Aurelii Victoris A. D. Caesare Augusto usque ad Theodosium excerpta",
+          "Eutropii De gestis romanorum. Lib. X",
+          "Pauli Diaconi libri VIII ad Eutropii Historiam additi",
+          "[Epitome de Caesaribus. 1516]",
+          "[Breviarium ab urbe condita. 1516]",
+          "[Historia romana. 1516]"
+        ],
+        "notes_structured": {
+          "500": [
+            "Includes a dedicatory letter from Giovanni Baptista Egnazio to Jean Grolier",
+            "Imprint data from Colophon: Venetiis in aedibus Aldi, et Andreae Soceri mense Augusto Mdxvi",
+            "Aldus' device (The anchor) on t.-p. and on verso of last leaf"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "קיסרים רומא",
+          "ביוגרפיה קלאסית",
+          "רומא היסטוריה תולדות",
+          "רומא ביוגרפיה"
+        ]
+      },
+      {
+        "mms_id": "990010678390204146",
+        "title": "Ioannis Grammatici in Posteriora resolutoria Aristotelis, commentarium; incerti authoris in eadem; Eustratii in eadem",
+        "date_display": "1534",
+        "place": "Venetiis",
+        "publisher": "In aedibus Haeredum Aldi Manutii Romani & Andreae Asulani Soceri",
+        "language": "gre",
+        "agents": [
+          "philoponus, john",
+          "aristotle",
+          "eustratius"
+        ],
+        "subjects": [
+          "Aristotle. -- Posterior analytics.",
+          "Aristotle. -- Posterior analytics -- Criticism, Textual",
+          "Aristotle."
+        ],
+        "physical_description": "123, 67 p.",
+        "notes": [
+          "Parallel title in Greek",
+          "Device of the Aldine press on T.-P.; repeated on verso of last leaf",
+          "Imprint data from Colophon"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010678390204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[In Aristotelis Analytica posteriora commentaria. 1534]",
+          "[In Aristotelis Analyticorum posteriorum librum secundum commentarium. 1534]"
+        ],
+        "notes_structured": {
+          "500": [
+            "Parallel title in Greek",
+            "Device of the Aldine press on T.-P.; repeated on verso of last leaf",
+            "Imprint data from Colophon",
+            "Reprint of Edition 1504.--cf.Note in Bibliotheque nationale, T.186 and NUC v.281",
+            "Includes text of the Analytica posteriora"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "אריסטו",
+          "אריסטו ביקורת טקסטואלית",
+          "אריסטו"
+        ]
+      },
+      {
+        "mms_id": "990010690460204146",
+        "title": "C. Plinii Secundi Novocomensis Epistolarum libri X, eiusdem Panegyricus Traiano principi dictus, eiusdem De viris illustrib[us] in re militari, & in administranda rep[ublica] : Suetonii Tranquilli de claris Grammatici, & rhetoribus : Iulii Obsequentis Prodigiorum liber",
+        "date_display": "1518",
+        "place": "Venetiis",
+        "publisher": "In Aedibus Aldi, et Andreae Asulani Soceri",
+        "language": "lat",
+        "agents": [
+          "pliny",
+          "suetonius",
+          "obsequens, julius",
+          "manuzio, aldo"
+        ],
+        "subjects": [
+          "Suetonius, -- approximately 69-approximately 122",
+          "Obsequens, Julius",
+          "Classical biography",
+          "Rome -- Biography"
+        ],
+        "physical_description": "[52], 535, [3] p.",
+        "notes": [
+          "\"Indices duo quorum altero nomina referuntur eorum, ad quos Plinius Scribit, altero quicquid Memoratu Dignum toto opere continetur. Latina interpretatio dictionum, & sententiarum, quibus Plinius Utitu",
+          "Includes a letter of Aldus Pius Manutius Refering to the authorship of Pliny's the younger <de viris Illustribus>",
+          "Printer's device (Aldus') on T.-P. and on last page"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010690460204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[Epistularum libri decem. 1518]",
+          "[De grammaticis et rhetoribus. 1518]",
+          "Suetonii Tranquilli de claris Grammatici, & rhetoribus",
+          "Iulii Obsequentis Prodigiorum liber",
+          "Prodigiorum liber",
+          "Plinii Secundi Novocomensis Epistolarum libri X, eiusdem Panegyricus Traiano principi dictus, eiusdem De viris illustrib[us] in re militari, & in administranda rep[ublica]"
+        ],
+        "notes_structured": {
+          "500": [
+            "\"Indices duo quorum altero nomina referuntur eorum, ad quos Plinius Scribit, altero quicquid Memoratu Dignum toto opere continetur. Latina interpretatio dictionum, & sententiarum, quibus Plinius Utitu",
+            "Includes a letter of Aldus Pius Manutius Refering to the authorship of Pliny's the younger <de viris Illustribus>",
+            "Printer's device (Aldus') on T.-P. and on last page",
+            "Imprint data from Colophon: \"Venetiis in Aedib. Aldi, et Andreae Asulani Soceri mense Iunio. M. D. XVIII.\""
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "ביוגרפיה קלאסית",
+          "רומא ביוגרפיה"
+        ]
+      },
+      {
+        "mms_id": "990011121490204146",
+        "title": "... Nervae & Traiani atque Adriani caesarum vitae ex Dione, Georgio Merula interprete ...",
+        "date_display": "1519",
+        "place": "Venetiis",
+        "publisher": "In aedibus Aldi et Andreae",
+        "language": "lat",
+        "agents": [
+          "cassius dio cocceianus",
+          "aristides, aelius",
+          "egnazio, giovanni battista, cipelli",
+          "merula, giorgio"
+        ],
+        "subjects": [
+          "Scriptores historiae Augustae",
+          "Emperors -- Rome",
+          "Rome -- History -- Sources",
+          "Rome -- Historiography"
+        ],
+        "physical_description": "[13], 422, [4] p.",
+        "notes": [
+          "Includes:",
+          "-- Aelius Spartianus, Iulius Capitolinus, Lampridius, Flavius Vopiscus, Trebellius Pollio, Vulcatus Gallicanus ab Ioanne Baptista Egnatio ... diligentissime castigati ...",
+          "-- Heliogabali pri[n]cipis ad meretrices elega[n]tissima oratio ..."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011121490204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "Nervae & Traiani atque: Adriani caesarum vitae",
+          "Aelius Spartianus, Iulius Capitolinus, Lampridius, Flavius Vopiscus, Trebellius Pollio, Vulcatus Gallicanus",
+          "Heliogabali principis ad meretrices elegantissima oratio",
+          "De Caesaribus libri tre",
+          "In Spartani Lampridij vitas",
+          "Aristidis Smyrnae Oratio de laudibus urbis Romae",
+          "Oratio de laudibus urbis Romae",
+          "Conflagratio Vescui Montis ex Dione"
+        ],
+        "notes_structured": {
+          "500": [
+            "Includes:",
+            "-- Aelius Spartianus, Iulius Capitolinus, Lampridius, Flavius Vopiscus, Trebellius Pollio, Vulcatus Gallicanus ab Ioanne Baptista Egnatio ... diligentissime castigati ...",
+            "-- Heliogabali pri[n]cipis ad meretrices elega[n]tissima oratio ...",
+            "-- Eiusdem Io. Baptistae Egnatij de Caesaribus libri tre a dictatore Caesare ad Co[n]stantinum Palaeologus, hinc a Carolo Magno, ad Maximilianu[m] Caesare[m] ...",
+            "-- Eiusdem in Spartani, Lampridij vitas, & reliquorum annotationis ...",
+            "-- Aristidis Smyrnaei Oratio de laudibus urbis Romae a Scipione Cateromacho in Latinum versa ...",
+            "-- ... Addita Co[n]flagratio Vescui Montis ex Dione Giorgio Merula interprete",
+            "With a dedicatory letter from Giovanni Battista Egnazio, called Cipelli to Giacobo Minuzio (Jacobus Minutius)",
+            "Imprint data from Colophon: \"Venetiis in aedibus Aldi et Andreae Soceri, mense Augusto, M.D.XIX.\"",
+            "Aldus' device (the anchor) on t.-p. and on verso of last leaf"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "קיסרים רומא",
+          "רומא היסטוריה תולדות מקורות",
+          "רומא היסטוריוגרפיה"
+        ]
+      },
+      {
+        "mms_id": "990011218760204146",
+        "title": "In epistolas M. Tullii Ciceronis quae familiares vocantur Paulli Manutij commentarius",
+        "date_display": "1592",
+        "place": "Venetiis",
+        "publisher": "Apud Aldum",
+        "language": "lat",
+        "agents": [
+          "manuzio, paolo"
+        ],
+        "subjects": [
+          "Cicero, Marcus Tullius. -- Epistolae ad familiares.",
+          "Cicero, Marcus Tullius. -- Epistolae ad familiares -- Criticism, Textual",
+          "Cicero, Marcus Tullius. -- Correspondence."
+        ],
+        "physical_description": "[66], 614 p. : ill.",
+        "notes": [
+          "Text in Latin",
+          "In Folio. Printer's device on t.-p. Frontispices and engraved initials",
+          "On spine: P. Manutii commentarius in epistolas familiares Ciceronis"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011218760204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "P. Manutii commentarius in epistolas familiares Ciceronis",
+          "Commentarius in epistolas familiares Ciceronis"
+        ],
+        "notes_structured": {
+          "500": [
+            "Text in Latin",
+            "In Folio. Printer's device on t.-p. Frontispices and engraved initials",
+            "On spine: P. Manutii commentarius in epistolas familiares Ciceronis",
+            "At end, a list of available books at Aldus: Libri di stampa D'Aldo, che si trovano al presente",
+            "Edition not found in the catalogs of Bibliotheque nationale, British Museum and Library of Congress"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "קיקרו",
+          "קיקרו ביקורת טקסטואלית",
+          "קיקרו התכתבות מכתבים"
+        ]
+      },
+      {
+        "mms_id": "990011285970204146",
+        "title": "Arcadia del Sannazaro",
+        "date_display": "1534",
+        "place": "Vinegia",
+        "publisher": "Aldus",
+        "language": "ita",
+        "agents": [
+          "sannazaro, jacopo"
+        ],
+        "subjects": [
+          "Italian poetry -- 16th century",
+          "Pastoral poetry, Italian"
+        ],
+        "physical_description": "91 p.",
+        "notes": [
+          "Includes: Sonneti e canzoni del Sannazaro",
+          "\"La meilleure edition des poesies italiennes de Sannazar, donne par les Aldes ...\".--Cf.Brunet, J.-Ch. : Manuel du libraire ... 1921., T.5, p.129",
+          "Printer's Mark (the anchor) on T.-P. and verso of last leaf"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011285970204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "Sonneti e canzoni del Sannazaro"
+        ],
+        "notes_structured": {
+          "500": [
+            "Includes: Sonneti e canzoni del Sannazaro",
+            "\"La meilleure edition des poesies italiennes de Sannazar, donne par les Aldes ...\".--Cf.Brunet, J.-Ch. : Manuel du libraire ... 1921., T.5, p.129",
+            "Printer's Mark (the anchor) on T.-P. and verso of last leaf",
+            "Colophon: \"impresso in Vinegia nelle case delli Heredi D'aldo romano, et Andrea Socero, nel' anno M.D.Xxxiiii.\""
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "שירה איטלקית המאה ה-16"
+        ]
+      },
+      {
+        "mms_id": "990011878340204146",
+        "title": "Oribasii Sardiani Synopseos ad Eusthatium Filium libri novem quibus tota medicina in compendium redacta continentur / Ioanne Baptista Rosario Novariensi Medico interprete",
+        "date_display": "1554",
+        "place": "Venetiis",
+        "publisher": "Apud Paulum Manutium, Aldi filium",
+        "language": "lat",
+        "agents": [
+          "oribasius",
+          "rasario, giovanni battista"
+        ],
+        "subjects": [
+          "Oribasius. -- Synopsis ad eusthatium filium",
+          "Medicine, Greek and Roman -- Sources"
+        ],
+        "physical_description": "216 p.",
+        "notes": [
+          "With printer's Mark on T.-P. (the anchor)",
+          "Imprint from Colophon",
+          "Mentioned by: Manuel du libraire / par Jacques-Charles Brunet ; T.4"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011878340204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[Synopsis ad Eusthatium Filium. Latin. Rosario]"
+        ],
+        "notes_structured": {
+          "500": [
+            "With printer's Mark on T.-P. (the anchor)",
+            "Imprint from Colophon",
+            "Mentioned by: Manuel du libraire / par Jacques-Charles Brunet ; T.4"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "מקורות"
+        ]
+      },
+      {
+        "mms_id": "990011951620204146",
+        "title": "M. Tullii Ciceronis De philosophia, prima pars ... / cum scholiis, & coniecturis Pauli Manutij ; corrigente Paulo Manutio Aldi filio",
+        "date_display": "1546",
+        "place": "Venetiis",
+        "publisher": "Apud Aldi filios",
+        "language": "lat",
+        "agents": [
+          "cicero, marcus tullius",
+          "manuzio, paolo",
+          "manuzio, aldo"
+        ],
+        "subjects": [
+          "Cicero, Marcus Tullius. -- Academica.",
+          "Cicero, Marcus Tullius. -- De finibus bonorum et malorum.",
+          "Cicero, Marcus Tullius. -- Tusculanae disputationes",
+          "Cicero, Marcus Tullius -- Philosophy",
+          "Cicero, Marcus Tullius -- Ethics"
+        ],
+        "physical_description": "iiii leaves, 251, [10] p.",
+        "notes": [
+          "Imprint from Colophon: Apud Aldi Filios. Venetiis, M.D.XlVI",
+          "\"Tusculanarum quaestionum Ciceronis ad M. Brutum libri V\", has separate t.-p.",
+          "With printer's device (the anchor) on t.-p., on separate t.-p., and at the end"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011951620204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "Academica",
+          "Ciceronis De philosophia, prima pars ..."
+        ],
+        "notes_structured": {
+          "500": [
+            "Imprint from Colophon: Apud Aldi Filios. Venetiis, M.D.XlVI",
+            "\"Tusculanarum quaestionum Ciceronis ad M. Brutum libri V\", has separate t.-p.",
+            "With printer's device (the anchor) on t.-p., on separate t.-p., and at the end",
+            "\"Les oeuvres philosophiques de Ciceron, edition par Paul Manuce 1541, 2 vol. ... ont ete reproduites par les presses Aldines en 1546 ... egalement en 2 vol. ...\".--Cf.Manuel du libraire / J.-C. Brunet"
+          ],
+          "505": [
+            "Academicarum quaestionum editionis primae liber secundus, editionis secundae liber primus -- De finibus bonorum & malorum libri V -- Tusculanarum quaestionum libri V"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "קיקרו",
+          "קיקרו",
+          "קיקרו",
+          "קיקרו פילוסופיה",
+          "קיקרו אתיקה"
+        ]
+      },
+      {
+        "mms_id": "990011960750204146",
+        "title": "Rhetoricorum ad C. Herrennium Lib.Iiii, M. T. Ciceronis de inventione ...",
+        "date_display": "1521",
+        "place": "Venetiis",
+        "publisher": "In aedibus Aldi et Andreae soceri",
+        "language": "lat",
+        "agents": [
+          "cicero, marcus tullius",
+          "manuzio, aldo"
+        ],
+        "subjects": [
+          "Rhetoric, Ancient",
+          "Classical literature"
+        ],
+        "physical_description": "[32], 245 p.",
+        "notes": [
+          "With printer's device (the anchor) on T.-P. and on last verso",
+          "Characters \"en Italique\"",
+          "Reprint of 1514 Ed.--Cf.Note NUC v.109/Manuel du libraire par J.-C. Brunet, T.2"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011960750204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[Orationes. 1521]"
+        ],
+        "notes_structured": {
+          "500": [
+            "With printer's device (the anchor) on T.-P. and on last verso",
+            "Characters \"en Italique\"",
+            "Reprint of 1514 Ed.--Cf.Note NUC v.109/Manuel du libraire par J.-C. Brunet, T.2",
+            "Imprint from Colophon: Venetiis in aedibus Aldi, et Andreae Soceri mense Octobri M. D. XXI"
+          ],
+          "505": [
+            "Contents:",
+            "-- Rhetoricorum ad C. Herrennium Lib.Iiii",
+            "-- M. T. Ciceronis de inventione Lib.Ii",
+            "-- eiusdem de oratore ad quintum fratrem Lib.Iii",
+            "-- eiusdem de claris oratoribus qui dicitur Brutus Lib.I",
+            "-- eiusdem orator ad Brutum Lib.I",
+            "-- eiusdem topica ad Trebatium Lib.I",
+            "-- eiusdem Oratoriae partitiones Lib.I",
+            "-- eiusdem de optimo genere Oratorum Praefatio quaedam",
+            "-- index rerum notabilium, quae toto opere continentur, per ordinum alphabeti"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "רטוריקה עתיקה",
+          "ספרות קלאסית"
+        ]
+      },
+      {
+        "mms_id": "990011962100204146",
+        "title": "Ex libris XXIII commentariorum in Vetera Imperorum Romanorum numismata aeneae vici liber primus [de Jul. Caesaris Nummis]",
+        "date_display": "1562",
+        "place": "Venetiis",
+        "publisher": "Aldus",
+        "language": "lat",
+        "agents": [
+          "vico, enea"
+        ],
+        "subjects": [
+          "Caesar, Julius.",
+          "Coins, Roman",
+          "Emperors -- Rome",
+          "Propaganda, Roman"
+        ],
+        "physical_description": "130, [12] p., [6] leaves of plates : ill., port.",
+        "notes": [
+          "Prefaced by the author",
+          "Engraved T.-P., a portrait of Julius Caesar. Initials. With printer's device (the anchor) at end of text",
+          "The plates are present in two forms; as whole plates (Pp.[17-24], quire c), and as cuts of individual coins cut out and Pasted in the blank spaces provides to Them. Plate not included in pagination, n"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011962100204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[Numismata. 1562]"
+        ],
+        "notes_structured": {
+          "500": [
+            "Prefaced by the author",
+            "Engraved T.-P., a portrait of Julius Caesar. Initials. With printer's device (the anchor) at end of text",
+            "The plates are present in two forms; as whole plates (Pp.[17-24], quire c), and as cuts of individual coins cut out and Pasted in the blank spaces provides to Them. Plate not included in pagination, n",
+            "Covers the coins of Julius Caesar only",
+            "Ancient seal on p.[3]. Handwritten marginalia"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "קיסרים רומא"
+        ]
+      },
+      {
+        "mms_id": "990011967800204146",
+        "title": "Trogi Pompei Externae historiae in compendium ab Iustino redactae / externorum imperatorum vitae authore Aemylio Probo",
+        "date_display": "1522",
+        "place": "Venetiis",
+        "publisher": "Aldus",
+        "language": "lat",
+        "agents": [
+          "justinus, marcus junianus",
+          "trogus, pompeius",
+          "nepos, cornelius"
+        ],
+        "subjects": [
+          "Alexander, -- the Great, -- 356 B.C.-323 B.C.",
+          "Greece -- History -- Macedonian Expansion, 359-323 B.C. -- Sources."
+        ],
+        "physical_description": "204 leaves",
+        "notes": [
+          "Leaf 136 Misnumbered 236",
+          "Printer's device (the anchor) on t.-p. and on verso of leaf 204",
+          "Colophon: Venetiis in aedibus Aldi et Andreae Asulani Soceri, mense Ian. M.D.XXII"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011967800204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[Historiae Philippicae. 1522]"
+        ],
+        "notes_structured": {
+          "500": [
+            "Leaf 136 Misnumbered 236",
+            "Printer's device (the anchor) on t.-p. and on verso of leaf 204",
+            "Colophon: Venetiis in aedibus Aldi et Andreae Asulani Soceri, mense Ian. M.D.XXII",
+            "\"Edition rare ... plus correcte que les precedentes.\"--cf.Manuel du libraire / J.-C. Brunet ; T.3"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "יוון היסטוריה תולדות מקורות"
+        ]
+      },
+      {
+        "mms_id": "990011988700204146",
+        "title": "M. Tullii Ciceronis orationum pars I / Corrigente Paulo Manutio, Aldi filio",
+        "date_display": "1546",
+        "place": "Venetiis",
+        "publisher": "Aldus",
+        "language": "lat",
+        "agents": [
+          "cicero, marcus tullius",
+          "manuzio, paolo"
+        ],
+        "subjects": [
+          "Speeches, addresses, etc., Latin",
+          "Classical literature"
+        ],
+        "physical_description": "[3], 303 leaves",
+        "notes": [
+          "Pars i of 3",
+          "With printer's device (the anchor) on T.-P.",
+          "Colophon: Venetiis : apud Aldi Filios M. D. XXXXVI"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011988700204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [
+          "[Orationes. 1546]",
+          "Ciceronis Orationum pars I"
+        ],
+        "notes_structured": {
+          "500": [
+            "Pars i of 3",
+            "With printer's device (the anchor) on T.-P.",
+            "Colophon: Venetiis : apud Aldi Filios M. D. XXXXVI",
+            "Considered as An excellent specimen of An Aldine large paper Copy. Contemporary, and probably original leather Bounding--Cf.Manuel du libraire / J.-.C. Brunet",
+            "Pink marginalia notes"
+          ],
+          "590": [
+            "AF"
+          ]
+        },
+        "subjects_he": [
+          "ספרות קלאסית"
+        ]
+      },
+      {
+        "mms_id": "990012158420204146",
+        "title": "Dialoghi di amore / Composti per Leone, Medico hebreo",
+        "date_display": "1549",
+        "place": "Venegia",
+        "publisher": "In Casa De' Figlivoli di Aldo",
+        "language": "lat",
+        "agents": [
+          "león"
+        ],
+        "subjects": [
+          "Jewish philosophy -- Middle Ages, 500-1500.",
+          "Jewish philosophy -- 16th century"
+        ],
+        "physical_description": "228 leaves",
+        "notes": [
+          "Engraved printer's device on T.-P.",
+          "Colophon reads: In Venegia, nell'anno M.D.XLIX in Casa De'figlivoli di Aldo"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012158420204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Engraved printer's device on T.-P.",
+            "Colophon reads: In Venegia, nell'anno M.D.XLIX in Casa De'figlivoli di Aldo"
+          ],
+          "590": [
+            "JA"
+          ]
+        },
+        "subjects_he": [
+          "פילוסופיה יהודית מחשבת ישראל ימי הביניים",
+          "פילוסופיה יהודית מחשבת ישראל המאה ה-16"
+        ]
+      }
+    ],
+    "agents": [
+      {
+        "canonical_name": "Cicero",
+        "variants": [],
+        "birth_year": -106,
+        "death_year": -42,
+        "occupations": [
+          "politician",
+          "poet",
+          "jurist",
+          "philosopher",
+          "political theorist"
+        ],
+        "description": "Roman statesman, lawyer, orator, and philosopher (106–43 BC)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Cicero",
+            "label": "Wikipedia: Cicero",
+            "url": "https://en.wikipedia.org/wiki/Cicero",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cicero",
+            "label": "Wikidata: Q1541",
+            "url": "https://www.wikidata.org/wiki/Q1541",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cicero",
+            "label": "VIAF: 78769600",
+            "url": "https://viaf.org/en/viaf/78769600",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cicero",
+            "label": "NLI: 987007259614705171",
+            "url": "https://www.nli.org.il/en/authorities/987007259614705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Bust%20of%20Cicero%20%281st-cent.%20BC%29%20-%20Palazzo%20Nuovo%20-%20Musei%20Capitolini%20-%20Rome%202016.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007259614705171.jsonld",
+        "hebrew_aliases": [
+          "מרקוס טוליוס קיקרו"
+        ]
+      },
+      {
+        "canonical_name": "manuzio",
+        "variants": [],
+        "birth_year": null,
+        "death_year": null,
+        "occupations": [
+          "type designer",
+          "editor",
+          "publisher",
+          "typographer",
+          "tutor",
+          "printer"
+        ],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "manuzio",
+            "label": "Wikipedia: manuzio",
+            "url": "https://en.wikipedia.org/wiki/Aldus_Manutius",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "manuzio",
+            "label": "Wikidata: Q213220",
+            "url": "https://www.wikidata.org/wiki/Q213220",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "manuzio",
+            "label": "NLI: 987007265074805171",
+            "url": "https://www.nli.org.il/en/authorities/987007265074805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265074805171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Juvenal",
+        "variants": [],
+        "birth_year": 55,
+        "death_year": 200,
+        "occupations": [
+          "poet",
+          "writer",
+          "historian",
+          "satirist"
+        ],
+        "description": "early 2nd century Roman poet",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Juvenal",
+            "label": "Wikipedia: Juvenal",
+            "url": "https://en.wikipedia.org/wiki/Juvenal",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Juvenal",
+            "label": "Wikidata: Q193800",
+            "url": "https://www.wikidata.org/wiki/Q193800",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Juvenal",
+            "label": "VIAF: 83985148",
+            "url": "https://viaf.org/en/viaf/83985148",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Juvenal",
+            "label": "NLI: 987007263495005171",
+            "url": "https://www.nli.org.il/en/authorities/987007263495005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Juvenal%20portrait.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007263495005171.jsonld",
+        "hebrew_aliases": [
+          "יובנאליס"
+        ]
+      },
+      {
+        "canonical_name": "Persius",
+        "variants": [],
+        "birth_year": 34,
+        "death_year": 62,
+        "occupations": [
+          "poet",
+          "writer",
+          "philosopher"
+        ],
+        "description": "Roman poet and satirist (AD 34-62)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Persius",
+            "label": "Wikipedia: Persius",
+            "url": "https://en.wikipedia.org/wiki/Persius",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Persius",
+            "label": "Wikidata: Q332785",
+            "url": "https://www.wikidata.org/wiki/Q332785",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Persius",
+            "label": "VIAF: 261158790510038850193",
+            "url": "https://viaf.org/en/viaf/261158790510038850193",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Persius",
+            "label": "NLI: 987007366042205171",
+            "url": "https://www.nli.org.il/en/authorities/987007366042205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Aulus%20Persius%20Flaccus.jpeg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007366042205171.jsonld",
+        "hebrew_aliases": [
+          "פרסיוס"
+        ]
+      },
+      {
+        "canonical_name": "Suetonius",
+        "variants": [],
+        "birth_year": 69,
+        "death_year": 126,
+        "occupations": [
+          "biographer"
+        ],
+        "description": "late 1st/early 2nd-century Roman historian",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Suetonius",
+            "label": "Wikipedia: Suetonius",
+            "url": "https://en.wikipedia.org/wiki/Suetonius",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Suetonius",
+            "label": "Wikidata: Q10133",
+            "url": "https://www.wikidata.org/wiki/Q10133",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Suetonius",
+            "label": "VIAF: 100218597",
+            "url": "https://viaf.org/en/viaf/100218597",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Suetonius",
+            "label": "NLI: 987007268630505171",
+            "url": "https://www.nli.org.il/en/authorities/987007268630505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Suetonius%20etching%20%28cropped%29.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007268630505171.jsonld",
+        "hebrew_aliases": [
+          "סווטוניוס",
+          "סוטוניוס טרנקוילוס, גיוס"
+        ]
+      },
+      {
+        "canonical_name": "Eutropius",
+        "variants": [],
+        "birth_year": null,
+        "death_year": 400,
+        "occupations": [
+          "writer",
+          "politician",
+          "historian"
+        ],
+        "description": "4th century Roman historian and official",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Eutropius",
+            "label": "Wikipedia: Eutropius",
+            "url": "https://en.wikipedia.org/wiki/Eutropius_(historian)",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eutropius",
+            "label": "Wikidata: Q314694",
+            "url": "https://www.wikidata.org/wiki/Q314694",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eutropius",
+            "label": "VIAF: 403144647708591364339",
+            "url": "https://viaf.org/en/viaf/403144647708591364339",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eutropius",
+            "label": "NLI: 987007260951405171",
+            "url": "https://www.nli.org.il/en/authorities/987007260951405171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Eutropius%20portrait%2C%20Plut.%2065.35.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007260951405171.jsonld",
+        "hebrew_aliases": [
+          "אוטרופיוס"
+        ]
+      },
+      {
+        "canonical_name": "Paul the Deacon",
+        "variants": [],
+        "birth_year": 720,
+        "death_year": 799,
+        "occupations": [
+          "poet",
+          "writer",
+          "historian",
+          "Christian monk"
+        ],
+        "description": "8th century Benedictine monk, scribe and historian",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Paul the Deacon",
+            "label": "Wikipedia: Paul the Deacon",
+            "url": "https://en.wikipedia.org/wiki/Paul_the_Deacon",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Paul the Deacon",
+            "label": "Wikidata: Q160424",
+            "url": "https://www.wikidata.org/wiki/Q160424",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Paul the Deacon",
+            "label": "VIAF: 40174477",
+            "url": "https://viaf.org/en/viaf/40174477",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Paul the Deacon",
+            "label": "NLI: 987007266330305171",
+            "url": "https://www.nli.org.il/en/authorities/987007266330305171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/PaulusDiaconus%20Plut.65.35.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007266330305171.jsonld",
+        "hebrew_aliases": [
+          "פאולוס הדיאקון"
+        ]
+      },
+      {
+        "canonical_name": "Aurelius Victor",
+        "variants": [],
+        "birth_year": 320,
+        "death_year": 390,
+        "occupations": [
+          "historian",
+          "poet"
+        ],
+        "description": "4th century Roman historian and politician",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Aurelius Victor",
+            "label": "Wikipedia: Aurelius Victor",
+            "url": "https://en.wikipedia.org/wiki/Aurelius_Victor",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aurelius Victor",
+            "label": "Wikidata: Q275606",
+            "url": "https://www.wikidata.org/wiki/Q275606",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aurelius Victor",
+            "label": "VIAF: 64001057",
+            "url": "https://viaf.org/en/viaf/64001057",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aurelius Victor",
+            "label": "NLI: 987007269594505171",
+            "url": "https://www.nli.org.il/en/authorities/987007269594505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007269594505171.jsonld",
+        "hebrew_aliases": [
+          "אורליוס ויקטור"
+        ]
+      },
+      {
+        "canonical_name": "John Philoponus",
+        "variants": [],
+        "birth_year": 490,
+        "death_year": 570,
+        "occupations": [
+          "grammarian",
+          "philosopher",
+          "astronomer",
+          "writer",
+          "theologian"
+        ],
+        "description": "Byzantine philologist and philosopher (c. 490–c. 570)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "John Philoponus",
+            "label": "Wikipedia: John Philoponus",
+            "url": "https://en.wikipedia.org/wiki/John_Philoponus",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "John Philoponus",
+            "label": "Wikidata: Q317632",
+            "url": "https://www.wikidata.org/wiki/Q317632",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "John Philoponus",
+            "label": "VIAF: 73160307492257742254",
+            "url": "https://viaf.org/en/viaf/73160307492257742254",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "John Philoponus",
+            "label": "NLI: 987007331530905171",
+            "url": "https://www.nli.org.il/en/authorities/987007331530905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007331530905171.jsonld",
+        "hebrew_aliases": [
+          "יואנס פילופונוס"
+        ]
+      },
+      {
+        "canonical_name": "Aristotle",
+        "variants": [],
+        "birth_year": -383,
+        "death_year": -321,
+        "occupations": [
+          "philosopher"
+        ],
+        "description": "4th-century BCE Classical Greek philosopher and polymath",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Aristotle",
+            "label": "Wikipedia: Aristotle",
+            "url": "https://en.wikipedia.org/wiki/Aristotle",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aristotle",
+            "label": "Wikidata: Q868",
+            "url": "https://www.wikidata.org/wiki/Q868",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aristotle",
+            "label": "VIAF: 7524651",
+            "url": "https://viaf.org/en/viaf/7524651",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aristotle",
+            "label": "NLI: 987007257964005171",
+            "url": "https://www.nli.org.il/en/authorities/987007257964005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Aristotle%20Altemps%20Inv8575.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007257964005171.jsonld",
+        "hebrew_aliases": [
+          "אריסטו"
+        ]
+      },
+      {
+        "canonical_name": "Eustratius of Nicaea",
+        "variants": [],
+        "birth_year": 1050,
+        "death_year": 1120,
+        "occupations": [
+          "theologian",
+          "philosopher",
+          "Eastern Orthodox priest"
+        ],
+        "description": "Byzantine philosopher and theologian",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Eustratius of Nicaea",
+            "label": "Wikipedia: Eustratius of Nicaea",
+            "url": "https://en.wikipedia.org/wiki/Eustratius_of_Nicaea",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eustratius of Nicaea",
+            "label": "Wikidata: Q3561265",
+            "url": "https://www.wikidata.org/wiki/Q3561265",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eustratius of Nicaea",
+            "label": "VIAF: 250237510",
+            "url": "https://viaf.org/en/viaf/250237510",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eustratius of Nicaea",
+            "label": "NLI: 987007260952905171",
+            "url": "https://www.nli.org.il/en/authorities/987007260952905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007260952905171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Pliny the Younger",
+        "variants": [],
+        "birth_year": 61,
+        "death_year": 113,
+        "occupations": [
+          "politician",
+          "poet",
+          "jurist",
+          "historian",
+          "civil servant"
+        ],
+        "description": "Roman lawyer, author and magistrate (61 – c.113)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Pliny the Younger",
+            "label": "Wikipedia: Pliny the Younger",
+            "url": "https://en.wikipedia.org/wiki/Pliny_the_Younger",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pliny the Younger",
+            "label": "Wikidata: Q168707",
+            "url": "https://www.wikidata.org/wiki/Q168707",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pliny the Younger",
+            "label": "VIAF: 1456149544570800490008",
+            "url": "https://viaf.org/en/viaf/1456149544570800490008",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pliny the Younger",
+            "label": "NLI: 987007266520605171",
+            "url": "https://www.nli.org.il/en/authorities/987007266520605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Plinio%20il%20Giovane.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007266520605171.jsonld",
+        "hebrew_aliases": [
+          "פליניוס הצעיר"
+        ]
+      },
+      {
+        "canonical_name": "Julius Obsequens",
+        "variants": [],
+        "birth_year": 400,
+        "death_year": 301,
+        "occupations": [
+          "poet",
+          "writer",
+          "historian"
+        ],
+        "description": "Roman historian and writer",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Julius Obsequens",
+            "label": "Wikipedia: Julius Obsequens",
+            "url": "https://en.wikipedia.org/wiki/Julius_Obsequens",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Julius Obsequens",
+            "label": "Wikidata: Q682860",
+            "url": "https://www.wikidata.org/wiki/Q682860",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Julius Obsequens",
+            "label": "VIAF: 100202247",
+            "url": "https://viaf.org/en/viaf/100202247",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Julius Obsequens",
+            "label": "NLI: 987007329534705171",
+            "url": "https://www.nli.org.il/en/authorities/987007329534705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007329534705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Cassius Dio",
+        "variants": [],
+        "birth_year": 150,
+        "death_year": 235,
+        "occupations": [
+          "politician",
+          "historian",
+          "military personnel"
+        ],
+        "description": "Greco-Roman statesman and historian (c. 155–c. 235)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Cassius Dio",
+            "label": "Wikipedia: Cassius Dio",
+            "url": "https://en.wikipedia.org/wiki/Cassius_Dio",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cassius Dio",
+            "label": "Wikidata: Q185223",
+            "url": "https://www.wikidata.org/wiki/Q185223",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cassius Dio",
+            "label": "VIAF: 134144814914021288142",
+            "url": "https://viaf.org/en/viaf/134144814914021288142",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cassius Dio",
+            "label": "NLI: 987007259440005171",
+            "url": "https://www.nli.org.il/en/authorities/987007259440005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Dio%20Cassius.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007259440005171.jsonld",
+        "hebrew_aliases": [
+          "דיו קסיוס"
+        ]
+      },
+      {
+        "canonical_name": "Aelius Aristides",
+        "variants": [],
+        "birth_year": 117,
+        "death_year": 185,
+        "occupations": [
+          "writer",
+          "philosopher"
+        ],
+        "description": "2nd century Greek rhetorician and author",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Aelius Aristides",
+            "label": "Wikipedia: Aelius Aristides",
+            "url": "https://en.wikipedia.org/wiki/Aelius_Aristides",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aelius Aristides",
+            "label": "Wikidata: Q354431",
+            "url": "https://www.wikidata.org/wiki/Q354431",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aelius Aristides",
+            "label": "VIAF: 89043754",
+            "url": "https://viaf.org/en/viaf/89043754",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aelius Aristides",
+            "label": "NLI: 987007257966005171",
+            "url": "https://www.nli.org.il/en/authorities/987007257966005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Filosofo%20elio%20aristide%2C%20200%20ac.%20ca..JPG",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007257966005171.jsonld",
+        "hebrew_aliases": [
+          "אייליוס אריסטידס"
+        ]
+      },
+      {
+        "canonical_name": "Georgius Merula",
+        "variants": [],
+        "birth_year": 1430,
+        "death_year": 1494,
+        "occupations": [
+          "classical scholar",
+          "philologist",
+          "historian",
+          "translator",
+          "university teacher"
+        ],
+        "description": "Italian scholar",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Georgius Merula",
+            "label": "Wikipedia: Georgius Merula",
+            "url": "https://en.wikipedia.org/wiki/Georgius_Merula",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Georgius Merula",
+            "label": "Wikidata: Q604460",
+            "url": "https://www.wikidata.org/wiki/Q604460",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Georgius Merula",
+            "label": "VIAF: 76466284",
+            "url": "https://viaf.org/en/viaf/76466284",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Georgius Merula",
+            "label": "NLI: 987007271429105171",
+            "url": "https://www.nli.org.il/en/authorities/987007271429105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007271429105171.jsonld",
+        "hebrew_aliases": [
+          "גאורגיוס מרולה"
+        ]
+      },
+      {
+        "canonical_name": "Paulus Manutius",
+        "variants": [],
+        "birth_year": 1512,
+        "death_year": 1574,
+        "occupations": [
+          "printer",
+          "publisher",
+          "writer",
+          "Renaissance humanist",
+          "typographer"
+        ],
+        "description": "Italian printer (1512-1574)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Paulus Manutius",
+            "label": "Wikipedia: Paulus Manutius",
+            "url": "https://en.wikipedia.org/wiki/Paulus_Manutius",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Paulus Manutius",
+            "label": "Wikidata: Q941151",
+            "url": "https://www.wikidata.org/wiki/Q941151",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Paulus Manutius",
+            "label": "VIAF: 120694653",
+            "url": "https://viaf.org/en/viaf/120694653",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Paulus Manutius",
+            "label": "NLI: 987007265074605171",
+            "url": "https://www.nli.org.il/en/authorities/987007265074605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Portret%20van%20Paolo%20Manuzio%20Pavlvs%20Manvtivs%2C%20Ald.%20F.%20%28titel%20op%20object%29%20Portretten%20van%20beroemde%20geleerden%20%28serietitel%29%20Imagines%20L.%20Doctorum%20Virorum%20%28serietitel%29%2C%20RP-P-1909-1070.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265074605171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Jacopo Sannazaro",
+        "variants": [],
+        "birth_year": 1457,
+        "death_year": 1530,
+        "occupations": [
+          "writer",
+          "poet"
+        ],
+        "description": "Italian writer (1457–1530)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacopo Sannazaro",
+            "label": "Wikipedia: Jacopo Sannazaro",
+            "url": "https://en.wikipedia.org/wiki/Jacopo_Sannazaro",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacopo Sannazaro",
+            "label": "Wikidata: Q510621",
+            "url": "https://www.wikidata.org/wiki/Q510621",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacopo Sannazaro",
+            "label": "VIAF: 87990970",
+            "url": "https://viaf.org/en/viaf/87990970",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacopo Sannazaro",
+            "label": "NLI: 987007267671605171",
+            "url": "https://www.nli.org.il/en/authorities/987007267671605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/TITIAN%3B%20Portrait%20of%20Jacopo%20Sannazaro%20%281514-18%29.JPG",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007267671605171.jsonld",
+        "hebrew_aliases": [
+          "ג'קופו סנזארו"
+        ]
+      },
+      {
+        "canonical_name": "Oribasius",
+        "variants": [],
+        "birth_year": 325,
+        "death_year": 403,
+        "occupations": [
+          "physician",
+          "writer"
+        ],
+        "description": "ancient Greek physician",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Oribasius",
+            "label": "Wikipedia: Oribasius",
+            "url": "https://en.wikipedia.org/wiki/Oribasius",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Oribasius",
+            "label": "Wikidata: Q953784",
+            "url": "https://www.wikidata.org/wiki/Q953784",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Oribasius",
+            "label": "VIAF: 7440344",
+            "url": "https://viaf.org/en/viaf/7440344",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Oribasius",
+            "label": "NLI: 987007272768505171",
+            "url": "https://www.nli.org.il/en/authorities/987007272768505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007272768505171.jsonld",
+        "hebrew_aliases": [
+          "אוריבאסיוס"
+        ]
+      },
+      {
+        "canonical_name": "Giovanni Battista Rasario",
+        "variants": [],
+        "birth_year": 1517,
+        "death_year": 1578,
+        "occupations": [
+          "physician",
+          "philosopher",
+          "literary scholar"
+        ],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Giovanni Battista Rasario",
+            "label": "Wikipedia: Giovanni Battista Rasario",
+            "url": "https://www.wikidata.org/wiki/Q21545214",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Giovanni Battista Rasario",
+            "label": "Wikidata: Q21545214",
+            "url": "https://www.wikidata.org/wiki/Q21545214",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Giovanni Battista Rasario",
+            "label": "VIAF: 22252411",
+            "url": "https://viaf.org/en/viaf/22252411",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Giovanni Battista Rasario",
+            "label": "NLI: 987007275204205171",
+            "url": "https://www.nli.org.il/en/authorities/987007275204205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007275204205171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Justin",
+        "variants": [],
+        "birth_year": 101,
+        "death_year": null,
+        "occupations": [
+          "historian"
+        ],
+        "description": "Roman historian, 2nd century",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Justin",
+            "label": "Wikipedia: Justin",
+            "url": "https://en.wikipedia.org/wiki/Justin_(historian)",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Justin",
+            "label": "Wikidata: Q210853",
+            "url": "https://www.wikidata.org/wiki/Q210853",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Justin",
+            "label": "VIAF: 24616821",
+            "url": "https://viaf.org/en/viaf/24616821",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Justin",
+            "label": "NLI: 987007263499005171",
+            "url": "https://www.nli.org.il/en/authorities/987007263499005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007263499005171.jsonld",
+        "hebrew_aliases": [
+          "יוסטינוס"
+        ]
+      },
+      {
+        "canonical_name": "trogus",
+        "variants": [],
+        "birth_year": null,
+        "death_year": null,
+        "occupations": [
+          "writer",
+          "historian",
+          "politician"
+        ],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "trogus",
+            "label": "Wikidata: Q316119",
+            "url": "https://www.wikidata.org/wiki/Q316119",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "trogus",
+            "label": "NLI: 987007269026805171",
+            "url": "https://www.nli.org.il/en/authorities/987007269026805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007269026805171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Cornelius Nepos",
+        "variants": [],
+        "birth_year": -99,
+        "death_year": -24,
+        "occupations": [
+          "writer",
+          "poet",
+          "biographer",
+          "historian"
+        ],
+        "description": "Roman historian and biographer (c.110 BC–c.25 BC)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Cornelius Nepos",
+            "label": "Wikipedia: Cornelius Nepos",
+            "url": "https://en.wikipedia.org/wiki/Cornelius_Nepos",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cornelius Nepos",
+            "label": "Wikidata: Q109594",
+            "url": "https://www.wikidata.org/wiki/Q109594",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cornelius Nepos",
+            "label": "VIAF: 1018158188256520260005",
+            "url": "https://viaf.org/en/viaf/1018158188256520260005",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Cornelius Nepos",
+            "label": "NLI: 987007265957405171",
+            "url": "https://www.nli.org.il/en/authorities/987007265957405171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Cornelio%20Nepote.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265957405171.jsonld",
+        "hebrew_aliases": [
+          "קורנליוס נפוס"
+        ]
+      },
+      {
+        "canonical_name": "Judah Leon Abravanel",
+        "variants": [],
+        "birth_year": 1460,
+        "death_year": 1521,
+        "occupations": [
+          "physician",
+          "humanist",
+          "poet",
+          "philosopher",
+          "writer"
+        ],
+        "description": "Portuguese Jewish philosopher, physician and poet",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Abravanel",
+            "label": "Wikipedia: Judah Leon Abravanel",
+            "url": "https://en.wikipedia.org/wiki/Judah_Leon_Abravanel",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Abravanel",
+            "label": "Wikidata: Q467062",
+            "url": "https://www.wikidata.org/wiki/Q467062",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Abravanel",
+            "label": "VIAF: 100176804",
+            "url": "https://viaf.org/en/viaf/100176804",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Abravanel",
+            "label": "NLI: 987007264412505171",
+            "url": "https://www.nli.org.il/en/authorities/987007264412505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Dialoghi%20d%27amore%20%28cropped%29.tif",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264412505171.jsonld",
+        "hebrew_aliases": [
+          "יהודה אברבנאל"
+        ]
+      }
+    ],
+    "aggregations": {},
+    "aggregation_meta": {},
+    "links": [
+      {
+        "entity_type": "record",
+        "entity_id": "990010534760204146",
+        "label": "Primo: Le Epistole famigliari di Cicero / tradotte di nuo",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010534760204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010536790204146",
+        "label": "Primo: Iuvenalis, Persius",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010536790204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010540640204146",
+        "label": "Primo: ... C. Suetonii Tranquilli XII Caesares, Sexti Aur",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010540640204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010678390204146",
+        "label": "Primo: Ioannis Grammatici in Posteriora resolutoria Arist",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010678390204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010690460204146",
+        "label": "Primo: C. Plinii Secundi Novocomensis Epistolarum libri X",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010690460204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011121490204146",
+        "label": "Primo: ... Nervae & Traiani atque Adriani caesarum vitae ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011121490204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011218760204146",
+        "label": "Primo: In epistolas M. Tullii Ciceronis quae familiares v",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011218760204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011285970204146",
+        "label": "Primo: Arcadia del Sannazaro",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011285970204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011878340204146",
+        "label": "Primo: Oribasii Sardiani Synopseos ad Eusthatium Filium l",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011878340204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011951620204146",
+        "label": "Primo: M. Tullii Ciceronis De philosophia, prima pars ...",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011951620204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011960750204146",
+        "label": "Primo: Rhetoricorum ad C. Herrennium Lib.Iiii, M. T. Cice",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011960750204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011962100204146",
+        "label": "Primo: Ex libris XXIII commentariorum in Vetera Imperorum",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011962100204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011967800204146",
+        "label": "Primo: Trogi Pompei Externae historiae in compendium ab I",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011967800204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011988700204146",
+        "label": "Primo: M. Tullii Ciceronis orationum pars I / Corrigente ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011988700204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012158420204146",
+        "label": "Primo: Dialoghi di amore / Composti per Leone, Medico heb",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012158420204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cicero",
+        "label": "Wikipedia: Cicero",
+        "url": "https://en.wikipedia.org/wiki/Cicero",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cicero",
+        "label": "Wikidata: Q1541",
+        "url": "https://www.wikidata.org/wiki/Q1541",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cicero",
+        "label": "VIAF: 78769600",
+        "url": "https://viaf.org/en/viaf/78769600",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cicero",
+        "label": "NLI: 987007259614705171",
+        "url": "https://www.nli.org.il/en/authorities/987007259614705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "manuzio",
+        "label": "Wikipedia: manuzio",
+        "url": "https://en.wikipedia.org/wiki/Aldus_Manutius",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "manuzio",
+        "label": "Wikidata: Q213220",
+        "url": "https://www.wikidata.org/wiki/Q213220",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "manuzio",
+        "label": "NLI: 987007265074805171",
+        "url": "https://www.nli.org.il/en/authorities/987007265074805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Juvenal",
+        "label": "Wikipedia: Juvenal",
+        "url": "https://en.wikipedia.org/wiki/Juvenal",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Juvenal",
+        "label": "Wikidata: Q193800",
+        "url": "https://www.wikidata.org/wiki/Q193800",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Juvenal",
+        "label": "VIAF: 83985148",
+        "url": "https://viaf.org/en/viaf/83985148",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Juvenal",
+        "label": "NLI: 987007263495005171",
+        "url": "https://www.nli.org.il/en/authorities/987007263495005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Persius",
+        "label": "Wikipedia: Persius",
+        "url": "https://en.wikipedia.org/wiki/Persius",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Persius",
+        "label": "Wikidata: Q332785",
+        "url": "https://www.wikidata.org/wiki/Q332785",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Persius",
+        "label": "VIAF: 261158790510038850193",
+        "url": "https://viaf.org/en/viaf/261158790510038850193",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Persius",
+        "label": "NLI: 987007366042205171",
+        "url": "https://www.nli.org.il/en/authorities/987007366042205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Suetonius",
+        "label": "Wikipedia: Suetonius",
+        "url": "https://en.wikipedia.org/wiki/Suetonius",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Suetonius",
+        "label": "Wikidata: Q10133",
+        "url": "https://www.wikidata.org/wiki/Q10133",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Suetonius",
+        "label": "VIAF: 100218597",
+        "url": "https://viaf.org/en/viaf/100218597",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Suetonius",
+        "label": "NLI: 987007268630505171",
+        "url": "https://www.nli.org.il/en/authorities/987007268630505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eutropius",
+        "label": "Wikipedia: Eutropius",
+        "url": "https://en.wikipedia.org/wiki/Eutropius_(historian)",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eutropius",
+        "label": "Wikidata: Q314694",
+        "url": "https://www.wikidata.org/wiki/Q314694",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eutropius",
+        "label": "VIAF: 403144647708591364339",
+        "url": "https://viaf.org/en/viaf/403144647708591364339",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eutropius",
+        "label": "NLI: 987007260951405171",
+        "url": "https://www.nli.org.il/en/authorities/987007260951405171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Paul the Deacon",
+        "label": "Wikipedia: Paul the Deacon",
+        "url": "https://en.wikipedia.org/wiki/Paul_the_Deacon",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Paul the Deacon",
+        "label": "Wikidata: Q160424",
+        "url": "https://www.wikidata.org/wiki/Q160424",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Paul the Deacon",
+        "label": "VIAF: 40174477",
+        "url": "https://viaf.org/en/viaf/40174477",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Paul the Deacon",
+        "label": "NLI: 987007266330305171",
+        "url": "https://www.nli.org.il/en/authorities/987007266330305171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aurelius Victor",
+        "label": "Wikipedia: Aurelius Victor",
+        "url": "https://en.wikipedia.org/wiki/Aurelius_Victor",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aurelius Victor",
+        "label": "Wikidata: Q275606",
+        "url": "https://www.wikidata.org/wiki/Q275606",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aurelius Victor",
+        "label": "VIAF: 64001057",
+        "url": "https://viaf.org/en/viaf/64001057",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aurelius Victor",
+        "label": "NLI: 987007269594505171",
+        "url": "https://www.nli.org.il/en/authorities/987007269594505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "John Philoponus",
+        "label": "Wikipedia: John Philoponus",
+        "url": "https://en.wikipedia.org/wiki/John_Philoponus",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "John Philoponus",
+        "label": "Wikidata: Q317632",
+        "url": "https://www.wikidata.org/wiki/Q317632",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "John Philoponus",
+        "label": "VIAF: 73160307492257742254",
+        "url": "https://viaf.org/en/viaf/73160307492257742254",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "John Philoponus",
+        "label": "NLI: 987007331530905171",
+        "url": "https://www.nli.org.il/en/authorities/987007331530905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aristotle",
+        "label": "Wikipedia: Aristotle",
+        "url": "https://en.wikipedia.org/wiki/Aristotle",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aristotle",
+        "label": "Wikidata: Q868",
+        "url": "https://www.wikidata.org/wiki/Q868",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aristotle",
+        "label": "VIAF: 7524651",
+        "url": "https://viaf.org/en/viaf/7524651",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aristotle",
+        "label": "NLI: 987007257964005171",
+        "url": "https://www.nli.org.il/en/authorities/987007257964005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eustratius of Nicaea",
+        "label": "Wikipedia: Eustratius of Nicaea",
+        "url": "https://en.wikipedia.org/wiki/Eustratius_of_Nicaea",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eustratius of Nicaea",
+        "label": "Wikidata: Q3561265",
+        "url": "https://www.wikidata.org/wiki/Q3561265",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eustratius of Nicaea",
+        "label": "VIAF: 250237510",
+        "url": "https://viaf.org/en/viaf/250237510",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eustratius of Nicaea",
+        "label": "NLI: 987007260952905171",
+        "url": "https://www.nli.org.il/en/authorities/987007260952905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pliny the Younger",
+        "label": "Wikipedia: Pliny the Younger",
+        "url": "https://en.wikipedia.org/wiki/Pliny_the_Younger",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pliny the Younger",
+        "label": "Wikidata: Q168707",
+        "url": "https://www.wikidata.org/wiki/Q168707",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pliny the Younger",
+        "label": "VIAF: 1456149544570800490008",
+        "url": "https://viaf.org/en/viaf/1456149544570800490008",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pliny the Younger",
+        "label": "NLI: 987007266520605171",
+        "url": "https://www.nli.org.il/en/authorities/987007266520605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Julius Obsequens",
+        "label": "Wikipedia: Julius Obsequens",
+        "url": "https://en.wikipedia.org/wiki/Julius_Obsequens",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Julius Obsequens",
+        "label": "Wikidata: Q682860",
+        "url": "https://www.wikidata.org/wiki/Q682860",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Julius Obsequens",
+        "label": "VIAF: 100202247",
+        "url": "https://viaf.org/en/viaf/100202247",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Julius Obsequens",
+        "label": "NLI: 987007329534705171",
+        "url": "https://www.nli.org.il/en/authorities/987007329534705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cassius Dio",
+        "label": "Wikipedia: Cassius Dio",
+        "url": "https://en.wikipedia.org/wiki/Cassius_Dio",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cassius Dio",
+        "label": "Wikidata: Q185223",
+        "url": "https://www.wikidata.org/wiki/Q185223",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cassius Dio",
+        "label": "VIAF: 134144814914021288142",
+        "url": "https://viaf.org/en/viaf/134144814914021288142",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cassius Dio",
+        "label": "NLI: 987007259440005171",
+        "url": "https://www.nli.org.il/en/authorities/987007259440005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aelius Aristides",
+        "label": "Wikipedia: Aelius Aristides",
+        "url": "https://en.wikipedia.org/wiki/Aelius_Aristides",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aelius Aristides",
+        "label": "Wikidata: Q354431",
+        "url": "https://www.wikidata.org/wiki/Q354431",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aelius Aristides",
+        "label": "VIAF: 89043754",
+        "url": "https://viaf.org/en/viaf/89043754",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aelius Aristides",
+        "label": "NLI: 987007257966005171",
+        "url": "https://www.nli.org.il/en/authorities/987007257966005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Georgius Merula",
+        "label": "Wikipedia: Georgius Merula",
+        "url": "https://en.wikipedia.org/wiki/Georgius_Merula",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Georgius Merula",
+        "label": "Wikidata: Q604460",
+        "url": "https://www.wikidata.org/wiki/Q604460",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Georgius Merula",
+        "label": "VIAF: 76466284",
+        "url": "https://viaf.org/en/viaf/76466284",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Georgius Merula",
+        "label": "NLI: 987007271429105171",
+        "url": "https://www.nli.org.il/en/authorities/987007271429105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Paulus Manutius",
+        "label": "Wikipedia: Paulus Manutius",
+        "url": "https://en.wikipedia.org/wiki/Paulus_Manutius",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Paulus Manutius",
+        "label": "Wikidata: Q941151",
+        "url": "https://www.wikidata.org/wiki/Q941151",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Paulus Manutius",
+        "label": "VIAF: 120694653",
+        "url": "https://viaf.org/en/viaf/120694653",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Paulus Manutius",
+        "label": "NLI: 987007265074605171",
+        "url": "https://www.nli.org.il/en/authorities/987007265074605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacopo Sannazaro",
+        "label": "Wikipedia: Jacopo Sannazaro",
+        "url": "https://en.wikipedia.org/wiki/Jacopo_Sannazaro",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacopo Sannazaro",
+        "label": "Wikidata: Q510621",
+        "url": "https://www.wikidata.org/wiki/Q510621",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacopo Sannazaro",
+        "label": "VIAF: 87990970",
+        "url": "https://viaf.org/en/viaf/87990970",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacopo Sannazaro",
+        "label": "NLI: 987007267671605171",
+        "url": "https://www.nli.org.il/en/authorities/987007267671605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Oribasius",
+        "label": "Wikipedia: Oribasius",
+        "url": "https://en.wikipedia.org/wiki/Oribasius",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Oribasius",
+        "label": "Wikidata: Q953784",
+        "url": "https://www.wikidata.org/wiki/Q953784",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Oribasius",
+        "label": "VIAF: 7440344",
+        "url": "https://viaf.org/en/viaf/7440344",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Oribasius",
+        "label": "NLI: 987007272768505171",
+        "url": "https://www.nli.org.il/en/authorities/987007272768505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Giovanni Battista Rasario",
+        "label": "Wikipedia: Giovanni Battista Rasario",
+        "url": "https://www.wikidata.org/wiki/Q21545214",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Giovanni Battista Rasario",
+        "label": "Wikidata: Q21545214",
+        "url": "https://www.wikidata.org/wiki/Q21545214",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Giovanni Battista Rasario",
+        "label": "VIAF: 22252411",
+        "url": "https://viaf.org/en/viaf/22252411",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Giovanni Battista Rasario",
+        "label": "NLI: 987007275204205171",
+        "url": "https://www.nli.org.il/en/authorities/987007275204205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Justin",
+        "label": "Wikipedia: Justin",
+        "url": "https://en.wikipedia.org/wiki/Justin_(historian)",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Justin",
+        "label": "Wikidata: Q210853",
+        "url": "https://www.wikidata.org/wiki/Q210853",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Justin",
+        "label": "VIAF: 24616821",
+        "url": "https://viaf.org/en/viaf/24616821",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Justin",
+        "label": "NLI: 987007263499005171",
+        "url": "https://www.nli.org.il/en/authorities/987007263499005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "trogus",
+        "label": "Wikidata: Q316119",
+        "url": "https://www.wikidata.org/wiki/Q316119",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "trogus",
+        "label": "NLI: 987007269026805171",
+        "url": "https://www.nli.org.il/en/authorities/987007269026805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cornelius Nepos",
+        "label": "Wikipedia: Cornelius Nepos",
+        "url": "https://en.wikipedia.org/wiki/Cornelius_Nepos",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cornelius Nepos",
+        "label": "Wikidata: Q109594",
+        "url": "https://www.wikidata.org/wiki/Q109594",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cornelius Nepos",
+        "label": "VIAF: 1018158188256520260005",
+        "url": "https://viaf.org/en/viaf/1018158188256520260005",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Cornelius Nepos",
+        "label": "NLI: 987007265957405171",
+        "url": "https://www.nli.org.il/en/authorities/987007265957405171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Abravanel",
+        "label": "Wikipedia: Judah Leon Abravanel",
+        "url": "https://en.wikipedia.org/wiki/Judah_Leon_Abravanel",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Abravanel",
+        "label": "Wikidata: Q467062",
+        "url": "https://www.wikidata.org/wiki/Q467062",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Abravanel",
+        "label": "VIAF: 100176804",
+        "url": "https://viaf.org/en/viaf/100176804",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Abravanel",
+        "label": "NLI: 987007264412505171",
+        "url": "https://www.nli.org.il/en/authorities/987007264412505171",
+        "source": "nli"
+      }
+    ],
+    "publishers": [
+      {
+        "canonical_name": "Aldine Press, Venice",
+        "type": "printing_house",
+        "dates_active": "1494-1597",
+        "location": "Venice, Italy",
+        "wikidata_id": null,
+        "cerl_id": null
+      }
+    ],
+    "connections": [],
+    "broadening_notes": []
+  },
+  "original_query": "Books published by the Aldine Press",
+  "session_context": null,
+  "truncated": false,
+  "total_record_count": 15
+}

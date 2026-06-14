@@ -1,0 +1,3233 @@
+{
+  "steps_completed": [
+    {
+      "step_index": 0,
+      "action": "retrieve",
+      "label": "Hebrew books printed in Amsterdam, 1600-1700",
+      "status": "ok",
+      "data": {
+        "mms_ids": [
+          "990010054840204146",
+          "990011897880204146",
+          "990011960320204146",
+          "990011978630204146",
+          "990011985880204146",
+          "990011987940204146",
+          "990011992090204146",
+          "990012006880204146",
+          "990012009930204146",
+          "990012028800204146",
+          "990012031240204146",
+          "990012041330204146",
+          "990012042750204146",
+          "990012042840204146",
+          "990012045020204146",
+          "990012061940204146",
+          "990012064520204146",
+          "990012064640204146",
+          "990012081180204146",
+          "990012096110204146",
+          "990012098670204146",
+          "990012100210204146",
+          "990012131820204146",
+          "990012132530204146",
+          "990012136170204146",
+          "990012139060204146",
+          "990012140290204146",
+          "990012140420204146",
+          "990012146780204146",
+          "990012146800204146",
+          "990012146810204146",
+          "990012191080204146",
+          "990012192020204146",
+          "990012920550204146",
+          "990012926850204146",
+          "990012984430204146",
+          "990013115860204146",
+          "990013190040204146",
+          "990013409540204146",
+          "990013756670204146",
+          "990014902150204146",
+          "990015593060204146",
+          "990021033260204146",
+          "9933514619804146",
+          "9933678807304146",
+          "9933685000604146",
+          "9933685000904146"
+        ],
+        "total_count": 47,
+        "filters_applied": [
+          {
+            "field": "language",
+            "op": "EQUALS",
+            "value": "heb",
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          },
+          {
+            "field": "imprint_place",
+            "op": "EQUALS",
+            "value": "amsterdam",
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          },
+          {
+            "field": "year",
+            "op": "RANGE",
+            "value": null,
+            "start": 1600,
+            "end": 1700,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          }
+        ],
+        "relaxations": []
+      },
+      "record_count": 47,
+      "error_message": null
+    }
+  ],
+  "directives": [],
+  "grounding": {
+    "records": [
+      {
+        "mms_id": "990010054840204146",
+        "title": "ספר שפתי ישינים : לפני נערים וזקנים / ... יגע ואסף .. שבתי משורר בס מפראג ...",
+        "date_display": "1680",
+        "place": "אמשטירדאם",
+        "publisher": "בדפוס ... דוד תארתאס ובביתו",
+        "language": "heb",
+        "agents": [
+          "בס, שבתי בן יוסף"
+        ],
+        "subjects": [
+          "Judaism -- Bibliography"
+        ],
+        "physical_description": "כ ד', צב ע', (צג-קח) ד' [=40, 92, 30 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010054840204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהדות ביבליוגרפיה"
+        ]
+      },
+      {
+        "mms_id": "990011897880204146",
+        "title": "אילם : ... שאלות ... שאל זרח בר נתן ... מהרב ... יוסף שלמה דילמידגו ... איש קנדיאה. ועוד נתוספו כתבי שאלות ותשובות ... מהרב יש\"ר הנ\"ל ותלמידיו ... [ספר מעין גנים ... כולל תשובות ... על שאלות ספר אילם ... הגיונות למודיות טבעיות ... (סוד היסוד, חקות שמים, גבורות יי, מעין חתום)]",
+        "date_display": "1628",
+        "place": "אמשטרדם",
+        "publisher": "בבית מנשה בן ישראל",
+        "language": "heb",
+        "agents": [
+          "דלמדיגו, יוסף שלמה בן אליהו",
+          "טרוקי, זרח בן נתן",
+          "משה בן מאיר"
+        ],
+        "subjects": [
+          "Jewish Science",
+          "Jewish astronomy"
+        ],
+        "physical_description": "פג, קצ, פ ע'",
+        "notes": [
+          "העותק בספריה פגום. חסר עמוד השער. קוטלג ע\"פ NYPL",
+          "לספר מעין גנים שער נפרד",
+          "הפרט בשער: ומלאה הארץ [=שעח], ההסכמות משנת שפ\"ט. בקולופון בסוף ספר אילם: \"ובכן זכינו להשלים לשלום ספר אילם בשנת הש\"פט לחודש א'ני ל'דודי ו'דודי ל'י"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011897880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "מדע יהודי",
+          "אסטרונומיה יהודית תכונה"
+        ]
+      },
+      {
+        "mms_id": "990011960320204146",
+        "title": "ספר רוממות אל : והוא פירוש נפלא ... על ספר תהלים / שחבר ... משה אלשיך ... ; נדפס [וקוצר] ע\"י אליעזר במ\"ה חנינא מק\"ק טרניגראד",
+        "date_display": "1695",
+        "place": "אמשטירדם",
+        "publisher": "בבית דוד תרטאס",
+        "language": "heb",
+        "agents": [
+          "אליעזר בן חנינא"
+        ],
+        "subjects": [
+          "Bible. -- Psalms -- Commentaries."
+        ],
+        "physical_description": "צג ד', [1] ע' [=186, 1 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011960320204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תהילים פירושים"
+        ]
+      },
+      {
+        "mms_id": "990011978630204146",
+        "title": "פירוש על נביאים אחרונים : ... נדפס פעם אחד ... ראינו להדפיסו מחדש ... הכל מוגה בדקדוק ... / שחבר ... דון יצחק אברבנאל",
+        "date_display": "1641",
+        "place": "אמסטרדם",
+        "publisher": "חמו\"ל",
+        "language": "heb",
+        "agents": [
+          "אברבנאל, יצחק בן יהודה",
+          "אברבנאל, יהודה בן יצחק"
+        ],
+        "subjects": [
+          "Bible. -- Later prophets -- Commentaries."
+        ],
+        "physical_description": "שה ד' [=610 ע']",
+        "notes": [
+          "מעבר לשער: \"שיר מאת יהודה בן הגאון המפרש לפאר פירושי אביו ...\""
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011978630204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש נביאים אחרונים פירושים"
+        ]
+      },
+      {
+        "mms_id": "990011985880204146",
+        "title": "ספר מעיני הישועה : פרוש על ספר דניאל / שחבר ... דון יצחק אברבנאל",
+        "date_display": "1647",
+        "place": "אמשטירדאם",
+        "publisher": "על ידי הפועל במלאכת הקודש דוד בר אברהם די קאשטרו תרתש",
+        "language": "heb",
+        "agents": [
+          "אברבנאל, יצחק בן יהודה"
+        ],
+        "subjects": [
+          "Bible. -- Daniel -- Commentaries."
+        ],
+        "physical_description": "צב, [2] ד' [=184, 4 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011985880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש דניאל פירושים"
+        ]
+      },
+      {
+        "mms_id": "990011987940204146",
+        "title": "ספר מכלול יופי : פירוש ... על קהלת בנגלה ובנסתר ... / אליה אשכנזי",
+        "date_display": "1695",
+        "place": "אמשטרדם",
+        "publisher": "בדפוס חיים בהר\"ר יהודא ליב",
+        "language": "heb",
+        "agents": [
+          "לואנץ, אליהו בן משה"
+        ],
+        "subjects": [
+          "Bible. -- Ecclesiastes -- Commentaries."
+        ],
+        "physical_description": "לג ד' [=66 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011987940204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש קהלת פירושים"
+        ]
+      },
+      {
+        "mms_id": "990011992090204146",
+        "title": "נביאים ראשונים : יהושע, שופטים, שמואל, מלכים / עם פירוש ... רש\"י ; מוגה ... ובעיון נמרץ ... ; המוציא והמביא דוד נוניש טוריס",
+        "date_display": "1700",
+        "place": "אמשטרדם",
+        "publisher": "בבית עמנו-אל בן ... יוסף עטיאש",
+        "language": "heb",
+        "agents": [
+          "שלמה בן יצחק"
+        ],
+        "subjects": [
+          "Bible. -- Former Prophets -- Commentaries."
+        ],
+        "physical_description": "רה ד' [=410 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011992090204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש פירושים"
+        ]
+      },
+      {
+        "mms_id": "990012006880204146",
+        "title": "ספר נשמת חיים : כולל דרושים ... על ענין הנשמה ... עם חקירות ... מענין הרוחות ועיבור וגלגול הנשמות ... / מנשה בן ישראל",
+        "date_display": "1652",
+        "place": "אמשטרדם",
+        "publisher": "בדפוס בן המחבר שמואל אברבנאל סואירו",
+        "language": "heb",
+        "agents": [
+          "מנשה בן ישראל"
+        ],
+        "subjects": [
+          "Jewish philosophy -- 17th century",
+          "Soul -- Judaism",
+          "Jews -- Psychology"
+        ],
+        "physical_description": "[8], קעד, [2] ד' [=16, 348, 4 ע']",
+        "notes": [
+          "עותק מס' 4 פגום. חסר דף השער. נכתב בכתב-יד"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012006880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופיה יהודית מחשבת ישראל המאה ה-17",
+          "נשמה נפש יהדות",
+          "יהודים פסיכולוגיה"
+        ]
+      },
+      {
+        "mms_id": "990012009930204146",
+        "title": "אור תורה : והוא האצבע הראשון מספר שתי ידות : ובו תמצא בשלימות תיקון הגהת התורה מפי סופרים ומפי ספרים פתוחות וסתומות, חסרים ויתרים ... / אשר חבר מנחם די לונזאנו",
+        "date_display": "1659",
+        "place": "אמשטרדם",
+        "publisher": "בבית אורי בן אהרן הלוי",
+        "language": "heb",
+        "agents": [
+          "לונזנו, מנחם בן יהודה די"
+        ],
+        "subjects": [
+          "Masorah."
+        ],
+        "physical_description": "כז ד' [=54 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012009930204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "מסורה"
+        ]
+      },
+      {
+        "mms_id": "990012028800204146",
+        "title": "ספר מנורת המאור / חברו ... יצחק אבוהב הספרדי ... ; עם פירוש ... נפש יהודה ... ; הובא לדפוס על ידי ... שמעון בהר\"ר יהודה יוסף, וגיסו כמר אברהם בר משה נתן...",
+        "date_display": "1700",
+        "place": "אמשטרדם",
+        "publisher": "במצות השותפים ובבית אשר אנשיל בן אליעזר חזן ויששכר בער בן אליעזר",
+        "language": "heb",
+        "agents": [
+          "אבוהב, יצחק",
+          "פרנקפורט, משה בן שמעון"
+        ],
+        "subjects": [
+          "Jewish ethics -- 14th century"
+        ],
+        "physical_description": "יב, של ד' [=22, 660 ע']",
+        "notes": [
+          "עותק מס' 1 פגום. חסר הציור בראש, וכן עמוד יב של ההקדמה",
+          "עותק מס' 2 פגום. חסר הציור בראש, וכן הדף האחרון - של",
+          "בקולופון: ותשלם המלאכה ... יום ג' בטו\"ב כסליו ... אתכם [תס\"א]"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012028800204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "מוסר יהודי המאה ה-14"
+        ]
+      },
+      {
+        "mms_id": "990012031240204146",
+        "title": "שאלות ותשובות צמח צדק / חברו ... מנחם מענדל ... בק\"ק ניקולשפורג ...",
+        "date_display": "1675",
+        "place": "אמשטירדאם?",
+        "publisher": "בבית דוד די קאסטרו תארטס?",
+        "language": "heb",
+        "agents": [
+          "קרוכמל, מנחם מנדל"
+        ],
+        "subjects": [
+          "Responsa -- 17th century"
+        ],
+        "physical_description": "קצו ד' [=392 ע']",
+        "notes": [
+          "העותקים בספריה פגומים: בעותק מס' 1 חסר דף השער וכן מדף קצג ואילך. דף השער מצולם. בעותק מס' 2 חסר דף השער ודפים א-ד. דף השער מצולם"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012031240204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.85,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "שו\"ת שאלות ותשובות תשובות המאה ה-17"
+        ]
+      },
+      {
+        "mms_id": "990012041330204146",
+        "title": "שלחן ערוך / חברו ... יוסף קארו ; עם חדושי דינים שהשמיט הגאון והמציאם ... משה איסרלש ... מחבורו הגדול דרכי משה ... ; וסביב לשלחן ... ביאור ... חברו ... משה רבקש וקראו באר הגולה ; הוגה ... על ידי ... שלמה יהודה ליאון, דוד נוניש טוריס י\"ץ ...",
+        "date_display": "1697",
+        "place": "אמשטרדאם",
+        "publisher": "בדפוס עמנואל בן יוסף עטיאש",
+        "language": "heb",
+        "agents": [
+          "קארו, יוסף בן אפרים",
+          "איסרלש, משה בן ישראל (רמ\"א)",
+          "רבקש, משה בן נפתלי הירש",
+          "ליאון, שלמה יהודה",
+          "נוניס טוריס, דוד בן משה חזקיה"
+        ],
+        "subjects": [
+          "Caro, Yosef ben Efrayim, -- 1488-1575. -- Shulhan arukh."
+        ],
+        "physical_description": "-- כר'",
+        "notes": [
+          "התוכן: כר' [א]. אורח חיים -- כר' [ב]. יורה דעה -- כר' [ד]. אבן העזר"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012041330204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "קארו יוסף בן אפרים שולחן ערוך"
+        ]
+      },
+      {
+        "mms_id": "990012042750204146",
+        "title": "שלחן ערוך / חברו ... יוסף קארו ; עם חדושי דינים ... שהשמיט הגאון והמציאם ... משה איסרלש ... מחבורו הגדול דרכי משה ...",
+        "date_display": "1641",
+        "place": "אמשטירדם",
+        "publisher": "בבית עמנואל בנבנישתי",
+        "language": "heb",
+        "agents": [
+          "קארו, יוסף בן אפרים",
+          "איסרלש, משה בן ישראל (רמ\"א)"
+        ],
+        "subjects": [
+          "Caro, Yosef ben Efrayim, -- 1488-1575. -- Shulhan arukh."
+        ],
+        "physical_description": "-- כר'",
+        "notes": [
+          "התוכן: כר' [א]. אורח חיים",
+          "בתחילת כר' א, לפני דף השער, לב דפי תפלה (בעיקר לשבת) של המקובלים?"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012042750204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "קארו יוסף בן אפרים שולחן ערוך"
+        ]
+      },
+      {
+        "mms_id": "990012042840204146",
+        "title": "שלחן ערוך / חברו ... יוסף קארו ; עם חדושי דינים שהשמיט הגאון והמציאם ... משה איסרלש ... מחבורו הגדול דרכי משה ... ; וסביב לשלחן ... ביאור ... חברו ... משה רבקש וקראו באר הגולה",
+        "date_display": "1662",
+        "place": "אמשטרדאם",
+        "publisher": "בדפוס ... יוסף עטיאש",
+        "language": "heb",
+        "agents": [
+          "קארו, יוסף בן אפרים",
+          "איסרלש, משה בן ישראל (רמ\"א)",
+          "רבקש, משה בן נפתלי הירש"
+        ],
+        "subjects": [
+          "Caro, Yosef ben Efrayim, -- 1488-1575. -- Shulhan arukh."
+        ],
+        "physical_description": "-- כר'",
+        "notes": [
+          "הפרט הראשון נלקח מכר' ב",
+          "התוכן: כר' [ב]. יורה דעה -- כר' [ג]. חושן משפט -- כר' [ד]. אבן העזר"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012042840204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "קארו יוסף בן אפרים שולחן ערוך"
+        ]
+      },
+      {
+        "mms_id": "990012045020204146",
+        "title": "ספר נחלת שבעה : כולל דברי הטור א\"ע ושלחן ערוך בעניני גטין וקדושין ... גם יסוד מוסד על כל תיקוני שטרות ... / הכינו וגם חקרו ... שמואל בכמ\"ר דוד הלוי",
+        "date_display": "1667",
+        "place": "אמשטילרדם",
+        "publisher": "בבית אורי וייבש בלא\"א אהרן הלוי",
+        "language": "heb",
+        "agents": [
+          "שמואל בן דוד משה"
+        ],
+        "subjects": [
+          "Marriage (Jewish law)",
+          "Divorce (Jewish law)"
+        ],
+        "physical_description": "קסב ד' [=324 ע']",
+        "notes": [
+          "בקולופון: ונגמר כל הענין ביום ... כ\"ה שבט ... ת'שכ'ח' [תכ\"ח]"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012045020204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": []
+      },
+      {
+        "mms_id": "990012061940204146",
+        "title": "ספר חכמת שלמה : מהרשל : הועתק מהגהת שיתא סידרי של ... שלמה לוריא",
+        "date_display": "1691",
+        "place": "אמשטרדם",
+        "publisher": "בדפוס ... יוסף עטיאש",
+        "language": "heb",
+        "agents": [
+          "לוריא, שלמה בן יחיאל"
+        ],
+        "subjects": [
+          "Talmud Bavli.",
+          "Hiddushim (Jewish law)"
+        ],
+        "physical_description": "[2], קלו ד' [=4, 272 ע']",
+        "notes": [
+          "הספר נבזז על ידי הנאצים בשואה והגיע לספרייה המרכזית באוניברסיטת תל-אביב בעזרת מפעל ‘אוצרות הגולה’"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012061940204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תלמוד בבלי",
+          "חידושים"
+        ]
+      },
+      {
+        "mms_id": "990012064520204146",
+        "title": "ברכת הזבח : [על גמרא פירש תוספות מסדר קדשים] / [אשר אזן ... הגאון אהרן שמואל [ב\"ר ישראל קאידנובר. חידושים על הרמב\"ם]",
+        "date_display": "1669",
+        "place": "אמשטירדם",
+        "publisher": "בדפוס די קאסטרו טרטאס",
+        "language": "heb",
+        "agents": [
+          "קידנובר, אהרן שמואל בן ישראל"
+        ],
+        "subjects": [
+          "Talmud Bavli. -- Kiddushin",
+          "Hiddushim (Jewish law)"
+        ],
+        "physical_description": "קפ, לה ד' [=360, 70 ע']",
+        "notes": [
+          "העותק בספריה פגום. חסר דף השער, וכן דפים א, ד. דפים ב, ג - קרועים",
+          "קוטלג על פי: DIC. CATALOG OF THE KLAU LIB./HUC",
+          "חלק מהעותקים נבזזו על ידי הנאצים בשואה והגיעו לספרייה המרכזית באוניברסיטת תל-אביב בעזרת מפעל ‘אוצרות הגולה’"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012064520204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תלמוד בבלי",
+          "חידושים"
+        ]
+      },
+      {
+        "mms_id": "990012064640204146",
+        "title": "ספר פרי חדש : ... והוא ביאור על חלק יורה דעה ... / חברו ... חזקיה די סילוה",
+        "date_display": "1692",
+        "place": "אמשטרדם",
+        "publisher": "בבית ... דוד תארטאס",
+        "language": "heb",
+        "agents": [
+          "סילבה, חזקיה בן דוד די"
+        ],
+        "subjects": [
+          "Caro, Yosef ben Efrayim, -- 1488-1575. -- Shulhan arukh. Yore dea",
+          "Talmud Bavli.",
+          "Hiddushim (Jewish law)"
+        ],
+        "physical_description": "קל ד' [=260 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012064640204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "קארו יוסף בן אפרים מרן",
+          "תלמוד בבלי",
+          "חידושים"
+        ]
+      },
+      {
+        "mms_id": "990012081180204146",
+        "title": "חמשים דרושים יקרים / אשר נלקטו מן הפרדס הגדול אשר נטע ... שאול לוי מורטירא, ויקרא את שמו גבעת שאול",
+        "date_display": "1645",
+        "place": "אמשטרדם",
+        "publisher": "בבית עמנואל בנבנשתי",
+        "language": "heb",
+        "agents": [
+          "מורטרה, שאול"
+        ],
+        "subjects": [
+          "Bible. -- Pentateuch -- Sermons -- 17th century"
+        ],
+        "physical_description": "קיו [צ\"ל קטז] ד' [=232 ע']",
+        "notes": [
+          "ערכו והקדימו הקדמה: משה בכ\"ר יעקב בילמונטי ובנימן בכ\"ר יעקב דיאש פאטו",
+          "בסוף הספר שיר מאת אברהם הכהן פימנטיל ואינדקס ושני שירים מאת: יאשיהו בכמוהר\"ר דוד פארדו ושמואל בן דניאל דו קאסריש",
+          "עותק שני עם חתימת יאשיהו פארדו על השער"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012081180204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש חומש תורה דרשות המאה ה-17"
+        ]
+      },
+      {
+        "mms_id": "990012096110204146",
+        "title": "ספר מכלול יופי : הופיע אור התורה להבנת המקרא בכלל ... ויוצא פרח בכל דקדוקי הדקדוק על המלות הזרות ויצץ ציץ ... על הענינים הקשים ... / אשר חבר ... שלמה ן' מלך ... ; עם תוספת לקט שכחה אשר הוסיף ... יעקב אבנדאנה ... ; הובא לבית הדפוס על ידי יעקב פידאנקי",
+        "date_display": "1684",
+        "place": "אמשטירדאם",
+        "publisher": "נדפס בדפוס ... ובבית ... דוד תרתאס",
+        "language": "heb",
+        "agents": [
+          "שלמה בן מלך",
+          "אבן דנה, יעקב בן יוסף"
+        ],
+        "subjects": [
+          "Bible -- Commentaries."
+        ],
+        "physical_description": "[4], קכ [צ\"ל רכ] ד' [=8, 240 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012096110204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך פירושים"
+        ]
+      },
+      {
+        "mms_id": "990012098670204146",
+        "title": "ספר תבנית היכל : ... על הבית אשר עשה המלך שלמה לה' בכל חוקותיו ובכל צורותיו ... / חברו ... יעקב יהודה ארי שבחבורה ...",
+        "date_display": "1650",
+        "place": "אמשטרדם",
+        "publisher": "בבית השותפים יהודה בן מרדכי, שמואל בר משה הלוי",
+        "language": "heb",
+        "agents": [
+          "לאון-טימפלו, יעקב יהודה"
+        ],
+        "subjects": [
+          "Temple of Jerusalem (Jerusalem, Israel)"
+        ],
+        "physical_description": "לח ד' [=76 ע']",
+        "notes": [
+          "שער נוסף ברומית"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012098670204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": []
+      },
+      {
+        "mms_id": "990012100210204146",
+        "title": "חמשה חומשי תורה : עם חמש מגלות והפטרות מכל השנה כמנהג כל קהלות הקודש ...",
+        "date_display": "1680",
+        "place": "אמשטרדאם",
+        "publisher": "בבית אורי וייבש בלא\"א אהרן הלוי",
+        "language": "heb",
+        "agents": [],
+        "subjects": [
+          "Bible. -- Pentateuch -- Hebrew -- Texts",
+          "Bible -- Texts"
+        ],
+        "physical_description": "שסב ד' [=724 ע']",
+        "notes": [
+          "שער נפרד לחמש מגלות ולהפטרות"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012100210204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש חומש תורה עברית טקסטים נוסחים",
+          "תנ\"ך נוסחים טקסטים"
+        ]
+      },
+      {
+        "mms_id": "990012131820204146",
+        "title": "ספר תולדת אהרן : מראה מקום מכל הפסוקים שבתורה ונביאים וכתובים הנמצאים בשיתא סדרי / חברו ... אהרן מפיסארו ; נדפס הפעם השלישית עם תוספת תולדת יעקב, מראה מקום מהפסוקים מכל המקרא הנדרשים בתלמוד ירושלמי/מעשה ידי ... יעקב ששפורטש",
+        "date_display": "1652",
+        "place": "אמשטירדם",
+        "publisher": "בדפוס שמואל בן ישראל סואיירו",
+        "language": "heb",
+        "agents": [
+          "אהרן",
+          "ששפורטש, יעקב"
+        ],
+        "subjects": [
+          "Bible -- Indexes"
+        ],
+        "physical_description": "2 כר' ב-1",
+        "notes": [
+          "לספר תולדת יעקב שער נפרד",
+          "התוכן: כר' [א]. ספר תולדת אהרן -- כר' [ב]. ספר תולדת יעקב"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012131820204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש מפתחות"
+        ]
+      },
+      {
+        "mms_id": "990012132530204146",
+        "title": "ספר תולדת אהרן : מראה מקום מכל הפסוקים שבתורה ונביאים וכתובים הנמצאים בשיתא סדרי / חברו ... אהרן מפיסארו ; נדפס הפעם השלישית עם תוספת תולדת יעקב, מראה מקום מהפסוקים מכל המקרא הנדרשים בתלמוד ירושלמי/מעשה ידי ... יעקב ששפורטש",
+        "date_display": "1652",
+        "place": "אמשטירדם",
+        "publisher": "בדפוס שמואל בן ישראל סואיירו",
+        "language": "heb",
+        "agents": [
+          "אהרן",
+          "ששפורטש, יעקב"
+        ],
+        "subjects": [
+          "Bible -- Indexes"
+        ],
+        "physical_description": "2 כר' ב-1",
+        "notes": [
+          "לספר תולדת יעקב שער נפרד",
+          "מכורך בצורה משובשת, לפי הסדר הבא: ספר תולדת יעקב. ספר תולדת אהרן ח\"ב על נביאים וכתובים. ספר תולדת אהרן ח\"א (עם השער) על תורה וחמש מגלות"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012132530204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש מפתחות"
+        ]
+      },
+      {
+        "mms_id": "990012136170204146",
+        "title": "[תלמוד בבלי] / עם פירוש רש\"י ותוספות ופסקי תוספות ורבינו אשר ופסקי הר\"אש ופירוש המשניות מהרמב\"ם, כפי אשר נדפס בויניציאה ... בדפוס יוסטיאנה ...",
+        "date_display": "1644",
+        "place": "אמשטרדם",
+        "publisher": "בבית עמנואל בנבנשתי",
+        "language": "heb",
+        "agents": [],
+        "subjects": [
+          "Talmud Bavli -- Commentaries."
+        ],
+        "physical_description": "14 כר'",
+        "notes": [
+          "בקולופון בסוף הכרך האחרון: \"ותשלם המלאכה ... ושמרו לעשות את כל דברי התורה הזא\"ת\" [ת\"ח]"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012136170204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תלמוד בבלי פירושים"
+        ]
+      },
+      {
+        "mms_id": "990012139060204146",
+        "title": "כתנות אור : אור כולל ומוסיף על ספר עין ישראל : ספר מאסף לכל האמונות ואגדות ומדרשים המפוזרים בכל ששה סדרים ... / פרש\"י ז\"ל ותוספות ... וחדושי הרמב\"ן והריטב\"א והר\"ן ... כל אלה פעולת ... יעקב בר שלמה ן' חביב ... ; ואחריו ... חדושי אגדות ... אשר איזן חקר ותיקן ... שמואל זלה\"ה ר\"מ ואב\"ד ק\"ק אוסטרא ... ; והוסיף .... מאור עינים ... למהר\"ר יאשיהו פינטו ... כל אלה חוברו ... על ידי .. יצחק מאיר פרנקיל ...",
+        "date_display": "1684",
+        "place": "אמשטירדאם",
+        "publisher": "בדפוס ... יוסף עטיאס",
+        "language": "heb",
+        "agents": [
+          "חביב, יעקב אבן-",
+          "פרנקל, יצחק מאיר",
+          "פינטו, יאשיהו בן יוסף"
+        ],
+        "subjects": [
+          "Aggada -- To 1500."
+        ],
+        "physical_description": "2 כר' ב-1",
+        "notes": [
+          "כר' ב. בדפוס ... דוד תארתאס"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012139060204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "אגדה עד 1500"
+        ]
+      },
+      {
+        "mms_id": "990012140290204146",
+        "title": "ספר ילקוט ראובני : על התורה : מאמרים ומדרשים ... / חברו ... ראובן בן האשקי כ\"ץ ... ; ואלה מוסיף על הראשונים ספר שכחת לקט וקצת מליקוטי יוסף ... ; הובא לבית הדפוס פעם שנית ... על יד הירש בן אברהם מווראנק שי\"ץ ...",
+        "date_display": "1700",
+        "place": "אמשטרדם",
+        "publisher": "בבית עמנו-אל בן יוסף עטיאש",
+        "language": "heb",
+        "agents": [
+          "כץ, ראובן בן השקי",
+          "צבי הירש בן אברהם"
+        ],
+        "subjects": [
+          "Aggada -- 1500-.",
+          "Cabala -- History -- 17th century."
+        ],
+        "physical_description": "קפד ד' [=368 ע']",
+        "notes": [
+          "עם: ספר מרגליות טובה. אמשטרדם : בדפוס יצחק דיקורדיוה, תפ\"ב (1214037)",
+          "בקולופון: \"סליק חמשה חומשי תורה, בעזרת האל הגדול הגבור והנורא, היום יום חמישי כ\"ח לחודש תמוז דהאי שתא קדו\"שים לפ\"ק\"",
+          "העותק בספריה פגום. אינו כולל את ספר שכחת לקט וליקוטי יוסף"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012140290204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "אגדה",
+          "קבלה היסטוריה תולדות המאה ה-17"
+        ]
+      },
+      {
+        "mms_id": "990012140420204146",
+        "title": "ספר ילקוט ראובני : על התורה : מאמרים ומדרשים ... / חברו ... ראובן בן האשקי כ\"ץ ... ; ואלה מוסיף על הראשונים ספר שכחת לקט וקצת מליקוטי יוסף ... ; הובא לבית הדפוס פעם שנית ... על יד הירש בן אברהם מווראנק שי\"ץ ...",
+        "date_display": "1700",
+        "place": "אמשטרדם",
+        "publisher": "בבית עמנו-אל בן יוסף עטיאש",
+        "language": "heb",
+        "agents": [
+          "כץ, ראובן בן השקי",
+          "צבי הירש בן אברהם",
+          "בון, נתן בן יצחק יעקב"
+        ],
+        "subjects": [
+          "Aggada -- 1500-.",
+          "Cabala -- History -- 17th century."
+        ],
+        "physical_description": "קפד, ט ד' [=368, 18 ע']",
+        "notes": [
+          "ספר שכחת לקט, עם שער ומספור עמודים בנפרד",
+          "בקולופון: \"סליק חמשה חומשי תורה, בעזרת האל הגדול הגבור והנורא, היום יום חמישי כ\"ח לחודש תמוז דהאי שתא קדו\"שים לפ\"ק\"",
+          "העותק בספריה פגום. חסר דף השער. קוטלג על פי עותק אחר בספריה"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012140420204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "אגדה",
+          "קבלה היסטוריה תולדות המאה ה-17"
+        ]
+      },
+      {
+        "mms_id": "990012146780204146",
+        "title": "זית רענן : יפה פרי תואר, ושם טוב משמן זך להאיר על ארשת שפתים לדבר צחות / [שלמה די אוליוירה]. אילן שענפיו מרובין, מבין עפאים יתנו קול, ויצא חוטר מגזע הלעז, להבין ולהשכיל את כל מובניו בלשון הקדש/[שלמה די אוליוירה]",
+        "date_display": "1683",
+        "place": "אמשטרדם",
+        "publisher": "בבית דוד תארטאס, ומתוקן ביד שמואל טישיירה",
+        "language": "heb",
+        "agents": [
+          "אוליורה, שלמה בן דוד די"
+        ],
+        "subjects": [
+          "Hebrew language -- Dictionaries -- Portuguese.",
+          "Portuguese language -- Dictionaries -- Hebrew"
+        ],
+        "physical_description": "מד; [3], 53 ע'",
+        "notes": [
+          "\"זית רענן\" הוא מילון עברי-פורטוגזי. \"אילן שענפיו מרובין\" הוא מילון פורטוגזי-עברי",
+          "זהוי המחבר ומקום ההוצאה על-פי שטינשנידר: (CAT. LIB. HEB. IN BIBLIOTHECA BODLEINA), מספר 6964",
+          "בסוף ספר זית רענן מופיע פרט נוסף: בשנת ונפשי ת'ג'י'ל' ביי תשיש בישועתו [תמ\"ג]"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012146780204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "עברית השפה העברית מילונים פורטוגזית",
+          "מילונים עברית"
+        ]
+      },
+      {
+        "mms_id": "990012146800204146",
+        "title": "ספר שרשת גבלת : יצב גבולות חרוזי השרשים, מקבילים איש אל אחיו ... עם משפט המדה במשקל ומשורת השירים על תולדותם ... / שלמה די אוליוירה",
+        "date_display": "1665",
+        "place": "אמשטרדם",
+        "publisher": "בבית דוד די קאשטרו תארטס",
+        "language": "heb",
+        "agents": [
+          "אוליורה, שלמה בן דוד די"
+        ],
+        "subjects": [
+          "Hebrew language -- Rhyme -- Dictionaries"
+        ],
+        "physical_description": "ע, [2] ד' [=140, 4 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012146800204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          0
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "עברית השפה העברית מילונים"
+        ]
+      }
+    ],
+    "agents": [
+      {
+        "canonical_name": "Shabbethai Bass",
+        "variants": [],
+        "birth_year": 1641,
+        "death_year": 1718,
+        "occupations": [
+          "hazzan",
+          "author",
+          "writer",
+          "bibliographer",
+          "printer"
+        ],
+        "description": "Polish rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Shabbethai Bass",
+            "label": "Wikipedia: Shabbethai Bass",
+            "url": "https://en.wikipedia.org/wiki/Shabbethai_Bass",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Shabbethai Bass",
+            "label": "Wikidata: Q911755",
+            "url": "https://www.wikidata.org/wiki/Q911755",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Shabbethai Bass",
+            "label": "VIAF: 75581594",
+            "url": "https://viaf.org/en/viaf/75581594",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Shabbethai Bass",
+            "label": "NLI: 987007305633805171",
+            "url": "https://www.nli.org.il/en/authorities/987007305633805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007305633805171.jsonld",
+        "hebrew_aliases": [
+          "שבתי בס",
+          "בס, שבתי בן יוסף"
+        ]
+      },
+      {
+        "canonical_name": "Joseph Solomon Delmedigo",
+        "variants": [],
+        "birth_year": 1591,
+        "death_year": 1655,
+        "occupations": [
+          "astronomer",
+          "writer",
+          "physician",
+          "music theorist",
+          "philosopher"
+        ],
+        "description": "Greek rabbi (*1591 – †1655)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Joseph Solomon Delmedigo",
+            "label": "Wikipedia: Joseph Solomon Delmedigo",
+            "url": "https://en.wikipedia.org/wiki/Joseph_Solomon_Delmedigo",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Joseph Solomon Delmedigo",
+            "label": "Wikidata: Q969675",
+            "url": "https://www.wikidata.org/wiki/Q969675",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Joseph Solomon Delmedigo",
+            "label": "VIAF: 66524426",
+            "url": "https://viaf.org/en/viaf/66524426",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Joseph Solomon Delmedigo",
+            "label": "NLI: 987007260320905171",
+            "url": "https://www.nli.org.il/en/authorities/987007260320905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Delmedigo.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007260320905171.jsonld",
+        "hebrew_aliases": [
+          "יוסף שלמה דלמדיגו",
+          "דלמדיגו, יוסף שלמה בן אליהו"
+        ]
+      },
+      {
+        "canonical_name": "Isaac Abrabanel",
+        "variants": [],
+        "birth_year": 1437,
+        "death_year": 1508,
+        "occupations": [
+          "politician",
+          "banker",
+          "poet",
+          "philosopher",
+          "businessperson"
+        ],
+        "description": "Portuguese-Spanish Jewish businessman, exegete and philosopher (1437-1508)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Abrabanel",
+            "label": "Wikipedia: Isaac Abrabanel",
+            "url": "https://en.wikipedia.org/wiki/Isaac_Abarbanel",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Abrabanel",
+            "label": "Wikidata: Q319902",
+            "url": "https://www.wikidata.org/wiki/Q319902",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Abrabanel",
+            "label": "VIAF: 36986982",
+            "url": "https://viaf.org/en/viaf/36986982",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Abrabanel",
+            "label": "NLI: 987007257306605171",
+            "url": "https://www.nli.org.il/en/authorities/987007257306605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Brockhaus%20and%20Efron%20Jewish%20Encyclopedia%20e1%20134-0.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007257306605171.jsonld",
+        "hebrew_aliases": [
+          "יצחק אברבנאל"
+        ]
+      },
+      {
+        "canonical_name": "Judah Leon Abravanel",
+        "variants": [],
+        "birth_year": 1460,
+        "death_year": 1521,
+        "occupations": [
+          "physician",
+          "humanist",
+          "poet",
+          "philosopher",
+          "writer"
+        ],
+        "description": "Portuguese Jewish philosopher, physician and poet",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Abravanel",
+            "label": "Wikipedia: Judah Leon Abravanel",
+            "url": "https://en.wikipedia.org/wiki/Judah_Leon_Abravanel",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Abravanel",
+            "label": "Wikidata: Q467062",
+            "url": "https://www.wikidata.org/wiki/Q467062",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Abravanel",
+            "label": "VIAF: 100176804",
+            "url": "https://viaf.org/en/viaf/100176804",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Abravanel",
+            "label": "NLI: 987007264412505171",
+            "url": "https://www.nli.org.il/en/authorities/987007264412505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Dialoghi%20d%27amore%20%28cropped%29.tif",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264412505171.jsonld",
+        "hebrew_aliases": [
+          "יהודה אברבנאל"
+        ]
+      },
+      {
+        "canonical_name": "Elijah Loans",
+        "variants": [],
+        "birth_year": 1555,
+        "death_year": 1636,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "German rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Elijah Loans",
+            "label": "Wikipedia: Elijah Loans",
+            "url": "https://en.wikipedia.org/wiki/Elijah_Loans",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Elijah Loans",
+            "label": "Wikidata: Q5360950",
+            "url": "https://www.wikidata.org/wiki/Q5360950",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Elijah Loans",
+            "label": "VIAF: 22028697",
+            "url": "https://viaf.org/en/viaf/22028697",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Elijah Loans",
+            "label": "NLI: 987007264768005171",
+            "url": "https://www.nli.org.il/en/authorities/987007264768005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264768005171.jsonld",
+        "hebrew_aliases": [
+          "אליהו לואנץ",
+          "לואנץ, אליהו בן משה"
+        ]
+      },
+      {
+        "canonical_name": "Rashi",
+        "variants": [],
+        "birth_year": 1040,
+        "death_year": 1105,
+        "occupations": [
+          "rabbi",
+          "religious studies scholar"
+        ],
+        "description": "French rabbi and commentator (1040–1105)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Rashi",
+            "label": "Wikipedia: Rashi",
+            "url": "https://en.wikipedia.org/wiki/Rashi",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Rashi",
+            "label": "Wikidata: Q26456",
+            "url": "https://www.wikidata.org/wiki/Q26456",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Rashi",
+            "label": "VIAF: 19684048",
+            "url": "https://viaf.org/en/viaf/19684048",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Rashi",
+            "label": "NLI: 987007266790705171",
+            "url": "https://www.nli.org.il/en/authorities/987007266790705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Rashi%20woodcut.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007266790705171.jsonld",
+        "hebrew_aliases": [
+          "שלמה בן יצחק",
+          "רש\"י"
+        ]
+      },
+      {
+        "canonical_name": "Menasseh Ben Israel",
+        "variants": [],
+        "birth_year": 1604,
+        "death_year": 1657,
+        "occupations": [
+          "printer",
+          "diplomat",
+          "philosopher",
+          "publisher",
+          "writer"
+        ],
+        "description": "Portuguese rabbi, kabbalist, writer, diplomat, printer and publisher",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Menasseh Ben Israel",
+            "label": "Wikipedia: Menasseh Ben Israel",
+            "url": "https://en.wikipedia.org/wiki/Menasseh_Ben_Israel",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menasseh Ben Israel",
+            "label": "Wikidata: Q733629",
+            "url": "https://www.wikidata.org/wiki/Q733629",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menasseh Ben Israel",
+            "label": "VIAF: 64807689",
+            "url": "https://viaf.org/en/viaf/64807689",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menasseh Ben Israel",
+            "label": "NLI: 987007265377405171",
+            "url": "https://www.nli.org.il/en/authorities/987007265377405171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Menasseh%20ben%20Israel%201642.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265377405171.jsonld",
+        "hebrew_aliases": [
+          "מנשה בן ישראל"
+        ]
+      },
+      {
+        "canonical_name": "Menahem Lonzano",
+        "variants": [],
+        "birth_year": 1550,
+        "death_year": 1626,
+        "occupations": [
+          "rabbi",
+          "poet"
+        ],
+        "description": "rabbi, Masoretic scholar, lexicographer and poet",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Menahem Lonzano",
+            "label": "Wikipedia: Menahem Lonzano",
+            "url": "https://en.wikipedia.org/wiki/Menahem_Lonzano",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menahem Lonzano",
+            "label": "Wikidata: Q2899427",
+            "url": "https://www.wikidata.org/wiki/Q2899427",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menahem Lonzano",
+            "label": "VIAF: 75522371",
+            "url": "https://viaf.org/en/viaf/75522371",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menahem Lonzano",
+            "label": "NLI: 987007264618505171",
+            "url": "https://www.nli.org.il/en/authorities/987007264618505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264618505171.jsonld",
+        "hebrew_aliases": [
+          "מנחם די לונזאנו",
+          "לונזנו, מנחם בן יהודה די"
+        ]
+      },
+      {
+        "canonical_name": "Isaac Aboab I",
+        "variants": [],
+        "birth_year": 1350,
+        "death_year": 1400,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "14th century Spanish Talmudic scholar",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Aboab I",
+            "label": "Wikipedia: Isaac Aboab I",
+            "url": "https://en.wikipedia.org/wiki/Isaac_Aboab_I",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Aboab I",
+            "label": "Wikidata: Q1673399",
+            "url": "https://www.wikidata.org/wiki/Q1673399",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Aboab I",
+            "label": "VIAF: 100165925",
+            "url": "https://viaf.org/en/viaf/100165925",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Aboab I",
+            "label": "NLI: 987007257201405171",
+            "url": "https://www.nli.org.il/en/authorities/987007257201405171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007257201405171.jsonld",
+        "hebrew_aliases": [
+          "יצחק אבוהב"
+        ]
+      },
+      {
+        "canonical_name": "Moses Frankfurter",
+        "variants": [],
+        "birth_year": 1672,
+        "death_year": 1762,
+        "occupations": [
+          "writer",
+          "Dayan",
+          "printer"
+        ],
+        "description": "Author, dayan and printer in Amsterdam (1672–1762)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Frankfurter",
+            "label": "Wikipedia: Moses Frankfurter",
+            "url": "https://www.wikidata.org/wiki/Q94128405",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Frankfurter",
+            "label": "Wikidata: Q94128405",
+            "url": "https://www.wikidata.org/wiki/Q94128405",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Frankfurter",
+            "label": "VIAF: 64437334",
+            "url": "https://viaf.org/en/viaf/64437334",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Frankfurter",
+            "label": "NLI: 987007296678505171",
+            "url": "https://www.nli.org.il/en/authorities/987007296678505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007296678505171.jsonld",
+        "hebrew_aliases": [
+          "משה פרנקפורט",
+          "פרנקפורט, משה בן שמעון"
+        ]
+      },
+      {
+        "canonical_name": "קארו",
+        "variants": [],
+        "birth_year": null,
+        "death_year": null,
+        "occupations": [
+          "writer",
+          "philosopher",
+          "rabbi",
+          "Posek"
+        ],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "קארו",
+            "label": "Wikipedia: קארו",
+            "url": "https://en.wikipedia.org/wiki/Joseph_Karo",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "קארו",
+            "label": "Wikidata: Q467148",
+            "url": "https://www.wikidata.org/wiki/Q467148",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "קארו",
+            "label": "NLI: 987007259568405171",
+            "url": "https://www.nli.org.il/en/authorities/987007259568405171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007259568405171.jsonld",
+        "hebrew_aliases": [
+          "קארו, יוסף בן אפרים"
+        ]
+      },
+      {
+        "canonical_name": "Moses Isserles",
+        "variants": [],
+        "birth_year": 1520,
+        "death_year": 1572,
+        "occupations": [
+          "Posek",
+          "philosopher",
+          "rabbi",
+          "theologian"
+        ],
+        "description": "Polish rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Isserles",
+            "label": "Wikipedia: Moses Isserles",
+            "url": "https://en.wikipedia.org/wiki/Moses_Isserles",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Isserles",
+            "label": "Wikidata: Q1949189",
+            "url": "https://www.wikidata.org/wiki/Q1949189",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Isserles",
+            "label": "VIAF: 45134090",
+            "url": "https://viaf.org/en/viaf/45134090",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Isserles",
+            "label": "NLI: 987007263276105171",
+            "url": "https://www.nli.org.il/en/authorities/987007263276105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Postcard%20portrait%20of%20Moses%20Isserles%20by%20Meir%20Kunstadt%2C%20early%201900s.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007263276105171.jsonld",
+        "hebrew_aliases": [
+          "רמ\"א",
+          "איסרלש, משה בן ישראל (רמ\"א)"
+        ]
+      },
+      {
+        "canonical_name": "Moses Rivkes",
+        "variants": [],
+        "birth_year": 1600,
+        "death_year": 1671,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "רב מזרח אירופאי, מפרש על השולחן ערוך",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Rivkes",
+            "label": "Wikipedia: Moses Rivkes",
+            "url": "https://www.wikidata.org/wiki/Q7050873",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Rivkes",
+            "label": "Wikidata: Q7050873",
+            "url": "https://www.wikidata.org/wiki/Q7050873",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Rivkes",
+            "label": "VIAF: 145011632",
+            "url": "https://viaf.org/en/viaf/145011632",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Rivkes",
+            "label": "NLI: 987007296573305171",
+            "url": "https://www.nli.org.il/en/authorities/987007296573305171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007296573305171.jsonld",
+        "hebrew_aliases": [
+          "משה רבקש",
+          "רבקש, משה בן נפתלי הירש"
+        ]
+      },
+      {
+        "canonical_name": "David Nuñez Torres",
+        "variants": [],
+        "birth_year": null,
+        "death_year": 1728,
+        "occupations": [],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "David Nuñez Torres",
+            "label": "Wikipedia: David Nuñez Torres",
+            "url": "https://www.wikidata.org/wiki/Q55876257",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Nuñez Torres",
+            "label": "Wikidata: Q55876257",
+            "url": "https://www.wikidata.org/wiki/Q55876257",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Nuñez Torres",
+            "label": "VIAF: 297340538",
+            "url": "https://viaf.org/en/viaf/297340538",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Nuñez Torres",
+            "label": "NLI: 987007266179805171",
+            "url": "https://www.nli.org.il/en/authorities/987007266179805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007266179805171.jsonld",
+        "hebrew_aliases": [
+          "נוניס טוריס, דוד בן משה חזקיה"
+        ]
+      },
+      {
+        "canonical_name": "Samuel ben David Moses ha-Levi",
+        "variants": [],
+        "birth_year": 1625,
+        "death_year": 1681,
+        "occupations": [],
+        "description": "approximately 1625-1681",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Samuel ben David Moses ha-Levi",
+            "label": "Wikipedia: Samuel ben David Moses ha-Levi",
+            "url": "https://www.wikidata.org/wiki/Q118928053",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Samuel ben David Moses ha-Levi",
+            "label": "Wikidata: Q118928053",
+            "url": "https://www.wikidata.org/wiki/Q118928053",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Samuel ben David Moses ha-Levi",
+            "label": "VIAF: 35660932",
+            "url": "https://viaf.org/en/viaf/35660932",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Samuel ben David Moses ha-Levi",
+            "label": "NLI: 987007308281005171",
+            "url": "https://www.nli.org.il/en/authorities/987007308281005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007308281005171.jsonld",
+        "hebrew_aliases": [
+          "שמואל בן דוד משה",
+          "שמואל בן דוד משה הלוי"
+        ]
+      },
+      {
+        "canonical_name": "Solomon Luria",
+        "variants": [],
+        "birth_year": 1510,
+        "death_year": 1573,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "Polish rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon Luria",
+            "label": "Wikipedia: Solomon Luria",
+            "url": "https://en.wikipedia.org/wiki/Solomon_Luria",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon Luria",
+            "label": "Wikidata: Q83960",
+            "url": "https://www.wikidata.org/wiki/Q83960",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon Luria",
+            "label": "VIAF: 100224138",
+            "url": "https://viaf.org/en/viaf/100224138",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon Luria",
+            "label": "NLI: 987007280265505171",
+            "url": "https://www.nli.org.il/en/authorities/987007280265505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Solomon%20Luria.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007280265505171.jsonld",
+        "hebrew_aliases": [
+          "שלמה לוריא",
+          "לוריא, שלמה בן יחיאל"
+        ]
+      },
+      {
+        "canonical_name": "Aaron Samuel Kaidanover",
+        "variants": [],
+        "birth_year": 1614,
+        "death_year": 1676,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "Lithuanian rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Aaron Samuel Kaidanover",
+            "label": "Wikipedia: Aaron Samuel Kaidanover",
+            "url": "https://en.wikipedia.org/wiki/Aaron_Samuel_Kaidanover",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aaron Samuel Kaidanover",
+            "label": "Wikidata: Q2576570",
+            "url": "https://www.wikidata.org/wiki/Q2576570",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aaron Samuel Kaidanover",
+            "label": "VIAF: 60224045",
+            "url": "https://viaf.org/en/viaf/60224045",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aaron Samuel Kaidanover",
+            "label": "NLI: 987007313243105171",
+            "url": "https://www.nli.org.il/en/authorities/987007313243105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007313243105171.jsonld",
+        "hebrew_aliases": [
+          "שמואל קאיידנובר",
+          "קידנובר, אהרן שמואל בן ישראל"
+        ]
+      },
+      {
+        "canonical_name": "Hezekiah da Silva",
+        "variants": [],
+        "birth_year": 1659,
+        "death_year": 1698,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "Italian rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Hezekiah da Silva",
+            "label": "Wikipedia: Hezekiah da Silva",
+            "url": "https://en.wikipedia.org/wiki/Hezekiah_da_Silva",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hezekiah da Silva",
+            "label": "Wikidata: Q5750050",
+            "url": "https://www.wikidata.org/wiki/Q5750050",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hezekiah da Silva",
+            "label": "VIAF: 267144992",
+            "url": "https://viaf.org/en/viaf/267144992",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hezekiah da Silva",
+            "label": "NLI: 987007301498905171",
+            "url": "https://www.nli.org.il/en/authorities/987007301498905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Hizkiah%20Da%20Silva%20close%20up.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007301498905171.jsonld",
+        "hebrew_aliases": [
+          "חזקיה די סילוה",
+          "סילבה, חזקיה בן דוד די"
+        ]
+      },
+      {
+        "canonical_name": "Saúl Levi Morteira",
+        "variants": [],
+        "birth_year": 1596,
+        "death_year": 1660,
+        "occupations": [
+          "rabbi",
+          "philosopher"
+        ],
+        "description": "Dutch rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Saúl Levi Morteira",
+            "label": "Wikipedia: Saúl Levi Morteira",
+            "url": "https://en.wikipedia.org/wiki/Saul_Levi_Morteira",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Saúl Levi Morteira",
+            "label": "Wikidata: Q6122291",
+            "url": "https://www.wikidata.org/wiki/Q6122291",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Saúl Levi Morteira",
+            "label": "VIAF: 12376948",
+            "url": "https://viaf.org/en/viaf/12376948",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Saúl Levi Morteira",
+            "label": "NLI: 987007523170105171",
+            "url": "https://www.nli.org.il/en/authorities/987007523170105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Saul%20Levi%20Morteira.GIF",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007523170105171.jsonld",
+        "hebrew_aliases": [
+          "שאול מורטירה",
+          "מורטרה, שאול"
+        ]
+      },
+      {
+        "canonical_name": "Judah Leon Templo",
+        "variants": [],
+        "birth_year": 1602,
+        "death_year": 1675,
+        "occupations": [
+          "rabbi",
+          "theologian"
+        ],
+        "description": "German rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Templo",
+            "label": "Wikipedia: Judah Leon Templo",
+            "url": "https://en.wikipedia.org/wiki/Judah_Leon_Templo",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Templo",
+            "label": "Wikidata: Q1677539",
+            "url": "https://www.wikidata.org/wiki/Q1677539",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Templo",
+            "label": "VIAF: 87186864",
+            "url": "https://viaf.org/en/viaf/87186864",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Leon Templo",
+            "label": "NLI: 987007264457905171",
+            "url": "https://www.nli.org.il/en/authorities/987007264457905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Italia%20Jacob%20Judah%20Leon.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264457905171.jsonld",
+        "hebrew_aliases": [
+          "יהודה לאון טמפלו"
+        ]
+      },
+      {
+        "canonical_name": "אהרן",
+        "variants": [],
+        "birth_year": null,
+        "death_year": null,
+        "occupations": [],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "אהרן",
+            "label": "Wikipedia: אהרן",
+            "url": "https://en.wikipedia.org/wiki/Aaron_of_Pesaro",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "אהרן",
+            "label": "Wikidata: Q4662609",
+            "url": "https://www.wikidata.org/wiki/Q4662609",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "אהרן",
+            "label": "NLI: 987007286690505171",
+            "url": "https://www.nli.org.il/en/authorities/987007286690505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007286690505171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Jacob ben Aaron Sasportas",
+        "variants": [],
+        "birth_year": 1610,
+        "death_year": 1698,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "rabbi, cabalist, and anti-Shabbethaian",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacob ben Aaron Sasportas",
+            "label": "Wikipedia: Jacob ben Aaron Sasportas",
+            "url": "https://en.wikipedia.org/wiki/Jacob_ben_Aaron_Sasportas",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacob ben Aaron Sasportas",
+            "label": "Wikidata: Q1679327",
+            "url": "https://www.wikidata.org/wiki/Q1679327",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacob ben Aaron Sasportas",
+            "label": "VIAF: 62480551",
+            "url": "https://viaf.org/en/viaf/62480551",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacob ben Aaron Sasportas",
+            "label": "NLI: 987007298660005171",
+            "url": "https://www.nli.org.il/en/authorities/987007298660005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Jacob%20Sasportas.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007298660005171.jsonld",
+        "hebrew_aliases": [
+          "יעקב ששפורטש",
+          "ששפורטש, יעקב"
+        ]
+      },
+      {
+        "canonical_name": "Josiah ben Joseph Pinto",
+        "variants": [],
+        "birth_year": 1565,
+        "death_year": 1648,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "Ottoman Rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Josiah ben Joseph Pinto",
+            "label": "Wikipedia: Josiah ben Joseph Pinto",
+            "url": "https://en.wikipedia.org/wiki/Josiah_ben_Joseph_Pinto",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Josiah ben Joseph Pinto",
+            "label": "Wikidata: Q16165186",
+            "url": "https://www.wikidata.org/wiki/Q16165186",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Josiah ben Joseph Pinto",
+            "label": "VIAF: 73749153",
+            "url": "https://viaf.org/en/viaf/73749153",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Josiah ben Joseph Pinto",
+            "label": "NLI: 987007304881805171",
+            "url": "https://www.nli.org.il/en/authorities/987007304881805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007304881805171.jsonld",
+        "hebrew_aliases": [
+          "יאשיהו בן יוסף פינטו",
+          "פינטו, יאשיהו בן יוסף"
+        ]
+      },
+      {
+        "canonical_name": "Reuben ben Hoshke",
+        "variants": [],
+        "birth_year": 1650,
+        "death_year": 1673,
+        "occupations": [
+          "writer"
+        ],
+        "description": "17th century Bohemian rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Reuben ben Hoshke",
+            "label": "Wikipedia: Reuben ben Hoshke",
+            "url": "https://en.wikipedia.org/wiki/Reuben_ben_Hoshke",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Reuben ben Hoshke",
+            "label": "Wikidata: Q390227",
+            "url": "https://www.wikidata.org/wiki/Q390227",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Reuben ben Hoshke",
+            "label": "VIAF: 79472323",
+            "url": "https://viaf.org/en/viaf/79472323",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Reuben ben Hoshke",
+            "label": "NLI: 987007306693005171",
+            "url": "https://www.nli.org.il/en/authorities/987007306693005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007306693005171.jsonld",
+        "hebrew_aliases": [
+          "אברהם ראובן הכהן סופר",
+          "כץ, ראובן בן השקי"
+        ]
+      },
+      {
+        "canonical_name": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+        "variants": [],
+        "birth_year": 1600,
+        "death_year": null,
+        "occupations": [],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+            "label": "Wikipedia: Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+            "url": "https://www.wikidata.org/wiki/Q118926125",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+            "label": "Wikidata: Q118926125",
+            "url": "https://www.wikidata.org/wiki/Q118926125",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+            "label": "VIAF: 313040902",
+            "url": "https://viaf.org/en/viaf/313040902",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+            "label": "NLI: 987007311402105171",
+            "url": "https://www.nli.org.il/en/authorities/987007311402105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007311402105171.jsonld",
+        "hebrew_aliases": [
+          "בון, נתן בן יצחק יעקב"
+        ]
+      },
+      {
+        "canonical_name": "Solomon de Oliveyra",
+        "variants": [],
+        "birth_year": 1635,
+        "death_year": 1708,
+        "occupations": [
+          "lexicographer",
+          "writer",
+          "translator",
+          "rabbi",
+          "poet"
+        ],
+        "description": "Dutch rabbi, poet, and philologist",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon de Oliveyra",
+            "label": "Wikipedia: Solomon de Oliveyra",
+            "url": "https://en.wikipedia.org/wiki/Solomon_de_Oliveyra",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon de Oliveyra",
+            "label": "Wikidata: Q6827064",
+            "url": "https://www.wikidata.org/wiki/Q6827064",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon de Oliveyra",
+            "label": "VIAF: 160750839",
+            "url": "https://viaf.org/en/viaf/160750839",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon de Oliveyra",
+            "label": "NLI: 987007266144205171",
+            "url": "https://www.nli.org.il/en/authorities/987007266144205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007266144205171.jsonld",
+        "hebrew_aliases": [
+          "שלמה די אוליוירה",
+          "אוליורה, שלמה בן דוד די"
+        ]
+      }
+    ],
+    "aggregations": {},
+    "aggregation_meta": {},
+    "links": [
+      {
+        "entity_type": "record",
+        "entity_id": "990010054840204146",
+        "label": "Primo: ספר שפתי ישינים : לפני נערים וזקנים / ... יגע ואסף",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010054840204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011897880204146",
+        "label": "Primo: אילם : ... שאלות ... שאל זרח בר נתן ... מהרב ... י",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011897880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011960320204146",
+        "label": "Primo: ספר רוממות אל : והוא פירוש נפלא ... על ספר תהלים /",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011960320204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011978630204146",
+        "label": "Primo: פירוש על נביאים אחרונים : ... נדפס פעם אחד ... ראי",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011978630204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011985880204146",
+        "label": "Primo: ספר מעיני הישועה : פרוש על ספר דניאל / שחבר ... דו",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011985880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011987940204146",
+        "label": "Primo: ספר מכלול יופי : פירוש ... על קהלת בנגלה ובנסתר ..",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011987940204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011992090204146",
+        "label": "Primo: נביאים ראשונים : יהושע, שופטים, שמואל, מלכים / עם ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011992090204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012006880204146",
+        "label": "Primo: ספר נשמת חיים : כולל דרושים ... על ענין הנשמה ... ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012006880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012009930204146",
+        "label": "Primo: אור תורה : והוא האצבע הראשון מספר שתי ידות : ובו ת",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012009930204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012028800204146",
+        "label": "Primo: ספר מנורת המאור / חברו ... יצחק אבוהב הספרדי ... ;",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012028800204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012031240204146",
+        "label": "Primo: שאלות ותשובות צמח צדק / חברו ... מנחם מענדל ... בק",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012031240204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012041330204146",
+        "label": "Primo: שלחן ערוך / חברו ... יוסף קארו ; עם חדושי דינים שה",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012041330204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012042750204146",
+        "label": "Primo: שלחן ערוך / חברו ... יוסף קארו ; עם חדושי דינים ..",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012042750204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012042840204146",
+        "label": "Primo: שלחן ערוך / חברו ... יוסף קארו ; עם חדושי דינים שה",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012042840204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012045020204146",
+        "label": "Primo: ספר נחלת שבעה : כולל דברי הטור א\"ע ושלחן ערוך בעני",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012045020204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012061940204146",
+        "label": "Primo: ספר חכמת שלמה : מהרשל : הועתק מהגהת שיתא סידרי של ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012061940204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012064520204146",
+        "label": "Primo: ברכת הזבח : [על גמרא פירש תוספות מסדר קדשים] / [אש",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012064520204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012064640204146",
+        "label": "Primo: ספר פרי חדש : ... והוא ביאור על חלק יורה דעה ... /",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012064640204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012081180204146",
+        "label": "Primo: חמשים דרושים יקרים / אשר נלקטו מן הפרדס הגדול אשר ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012081180204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012096110204146",
+        "label": "Primo: ספר מכלול יופי : הופיע אור התורה להבנת המקרא בכלל ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012096110204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012098670204146",
+        "label": "Primo: ספר תבנית היכל : ... על הבית אשר עשה המלך שלמה לה'",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012098670204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012100210204146",
+        "label": "Primo: חמשה חומשי תורה : עם חמש מגלות והפטרות מכל השנה כמ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012100210204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012131820204146",
+        "label": "Primo: ספר תולדת אהרן : מראה מקום מכל הפסוקים שבתורה ונבי",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012131820204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012132530204146",
+        "label": "Primo: ספר תולדת אהרן : מראה מקום מכל הפסוקים שבתורה ונבי",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012132530204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012136170204146",
+        "label": "Primo: [תלמוד בבלי] / עם פירוש רש\"י ותוספות ופסקי תוספות ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012136170204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012139060204146",
+        "label": "Primo: כתנות אור : אור כולל ומוסיף על ספר עין ישראל : ספר",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012139060204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012140290204146",
+        "label": "Primo: ספר ילקוט ראובני : על התורה : מאמרים ומדרשים ... /",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012140290204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012140420204146",
+        "label": "Primo: ספר ילקוט ראובני : על התורה : מאמרים ומדרשים ... /",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012140420204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012146780204146",
+        "label": "Primo: זית רענן : יפה פרי תואר, ושם טוב משמן זך להאיר על ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012146780204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012146800204146",
+        "label": "Primo: ספר שרשת גבלת : יצב גבולות חרוזי השרשים, מקבילים א",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012146800204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Shabbethai Bass",
+        "label": "Wikipedia: Shabbethai Bass",
+        "url": "https://en.wikipedia.org/wiki/Shabbethai_Bass",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Shabbethai Bass",
+        "label": "Wikidata: Q911755",
+        "url": "https://www.wikidata.org/wiki/Q911755",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Shabbethai Bass",
+        "label": "VIAF: 75581594",
+        "url": "https://viaf.org/en/viaf/75581594",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Shabbethai Bass",
+        "label": "NLI: 987007305633805171",
+        "url": "https://www.nli.org.il/en/authorities/987007305633805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Joseph Solomon Delmedigo",
+        "label": "Wikipedia: Joseph Solomon Delmedigo",
+        "url": "https://en.wikipedia.org/wiki/Joseph_Solomon_Delmedigo",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Joseph Solomon Delmedigo",
+        "label": "Wikidata: Q969675",
+        "url": "https://www.wikidata.org/wiki/Q969675",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Joseph Solomon Delmedigo",
+        "label": "VIAF: 66524426",
+        "url": "https://viaf.org/en/viaf/66524426",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Joseph Solomon Delmedigo",
+        "label": "NLI: 987007260320905171",
+        "url": "https://www.nli.org.il/en/authorities/987007260320905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Abrabanel",
+        "label": "Wikipedia: Isaac Abrabanel",
+        "url": "https://en.wikipedia.org/wiki/Isaac_Abarbanel",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Abrabanel",
+        "label": "Wikidata: Q319902",
+        "url": "https://www.wikidata.org/wiki/Q319902",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Abrabanel",
+        "label": "VIAF: 36986982",
+        "url": "https://viaf.org/en/viaf/36986982",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Abrabanel",
+        "label": "NLI: 987007257306605171",
+        "url": "https://www.nli.org.il/en/authorities/987007257306605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Abravanel",
+        "label": "Wikipedia: Judah Leon Abravanel",
+        "url": "https://en.wikipedia.org/wiki/Judah_Leon_Abravanel",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Abravanel",
+        "label": "Wikidata: Q467062",
+        "url": "https://www.wikidata.org/wiki/Q467062",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Abravanel",
+        "label": "VIAF: 100176804",
+        "url": "https://viaf.org/en/viaf/100176804",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Abravanel",
+        "label": "NLI: 987007264412505171",
+        "url": "https://www.nli.org.il/en/authorities/987007264412505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Elijah Loans",
+        "label": "Wikipedia: Elijah Loans",
+        "url": "https://en.wikipedia.org/wiki/Elijah_Loans",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Elijah Loans",
+        "label": "Wikidata: Q5360950",
+        "url": "https://www.wikidata.org/wiki/Q5360950",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Elijah Loans",
+        "label": "VIAF: 22028697",
+        "url": "https://viaf.org/en/viaf/22028697",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Elijah Loans",
+        "label": "NLI: 987007264768005171",
+        "url": "https://www.nli.org.il/en/authorities/987007264768005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Rashi",
+        "label": "Wikipedia: Rashi",
+        "url": "https://en.wikipedia.org/wiki/Rashi",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Rashi",
+        "label": "Wikidata: Q26456",
+        "url": "https://www.wikidata.org/wiki/Q26456",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Rashi",
+        "label": "VIAF: 19684048",
+        "url": "https://viaf.org/en/viaf/19684048",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Rashi",
+        "label": "NLI: 987007266790705171",
+        "url": "https://www.nli.org.il/en/authorities/987007266790705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menasseh Ben Israel",
+        "label": "Wikipedia: Menasseh Ben Israel",
+        "url": "https://en.wikipedia.org/wiki/Menasseh_Ben_Israel",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menasseh Ben Israel",
+        "label": "Wikidata: Q733629",
+        "url": "https://www.wikidata.org/wiki/Q733629",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menasseh Ben Israel",
+        "label": "VIAF: 64807689",
+        "url": "https://viaf.org/en/viaf/64807689",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menasseh Ben Israel",
+        "label": "NLI: 987007265377405171",
+        "url": "https://www.nli.org.il/en/authorities/987007265377405171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menahem Lonzano",
+        "label": "Wikipedia: Menahem Lonzano",
+        "url": "https://en.wikipedia.org/wiki/Menahem_Lonzano",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menahem Lonzano",
+        "label": "Wikidata: Q2899427",
+        "url": "https://www.wikidata.org/wiki/Q2899427",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menahem Lonzano",
+        "label": "VIAF: 75522371",
+        "url": "https://viaf.org/en/viaf/75522371",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menahem Lonzano",
+        "label": "NLI: 987007264618505171",
+        "url": "https://www.nli.org.il/en/authorities/987007264618505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Aboab I",
+        "label": "Wikipedia: Isaac Aboab I",
+        "url": "https://en.wikipedia.org/wiki/Isaac_Aboab_I",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Aboab I",
+        "label": "Wikidata: Q1673399",
+        "url": "https://www.wikidata.org/wiki/Q1673399",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Aboab I",
+        "label": "VIAF: 100165925",
+        "url": "https://viaf.org/en/viaf/100165925",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Aboab I",
+        "label": "NLI: 987007257201405171",
+        "url": "https://www.nli.org.il/en/authorities/987007257201405171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Frankfurter",
+        "label": "Wikipedia: Moses Frankfurter",
+        "url": "https://www.wikidata.org/wiki/Q94128405",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Frankfurter",
+        "label": "Wikidata: Q94128405",
+        "url": "https://www.wikidata.org/wiki/Q94128405",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Frankfurter",
+        "label": "VIAF: 64437334",
+        "url": "https://viaf.org/en/viaf/64437334",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Frankfurter",
+        "label": "NLI: 987007296678505171",
+        "url": "https://www.nli.org.il/en/authorities/987007296678505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "קארו",
+        "label": "Wikipedia: קארו",
+        "url": "https://en.wikipedia.org/wiki/Joseph_Karo",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "קארו",
+        "label": "Wikidata: Q467148",
+        "url": "https://www.wikidata.org/wiki/Q467148",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "קארו",
+        "label": "NLI: 987007259568405171",
+        "url": "https://www.nli.org.il/en/authorities/987007259568405171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Isserles",
+        "label": "Wikipedia: Moses Isserles",
+        "url": "https://en.wikipedia.org/wiki/Moses_Isserles",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Isserles",
+        "label": "Wikidata: Q1949189",
+        "url": "https://www.wikidata.org/wiki/Q1949189",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Isserles",
+        "label": "VIAF: 45134090",
+        "url": "https://viaf.org/en/viaf/45134090",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Isserles",
+        "label": "NLI: 987007263276105171",
+        "url": "https://www.nli.org.il/en/authorities/987007263276105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Rivkes",
+        "label": "Wikipedia: Moses Rivkes",
+        "url": "https://www.wikidata.org/wiki/Q7050873",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Rivkes",
+        "label": "Wikidata: Q7050873",
+        "url": "https://www.wikidata.org/wiki/Q7050873",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Rivkes",
+        "label": "VIAF: 145011632",
+        "url": "https://viaf.org/en/viaf/145011632",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Rivkes",
+        "label": "NLI: 987007296573305171",
+        "url": "https://www.nli.org.il/en/authorities/987007296573305171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Nuñez Torres",
+        "label": "Wikipedia: David Nuñez Torres",
+        "url": "https://www.wikidata.org/wiki/Q55876257",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Nuñez Torres",
+        "label": "Wikidata: Q55876257",
+        "url": "https://www.wikidata.org/wiki/Q55876257",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Nuñez Torres",
+        "label": "VIAF: 297340538",
+        "url": "https://viaf.org/en/viaf/297340538",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Nuñez Torres",
+        "label": "NLI: 987007266179805171",
+        "url": "https://www.nli.org.il/en/authorities/987007266179805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Samuel ben David Moses ha-Levi",
+        "label": "Wikipedia: Samuel ben David Moses ha-Levi",
+        "url": "https://www.wikidata.org/wiki/Q118928053",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Samuel ben David Moses ha-Levi",
+        "label": "Wikidata: Q118928053",
+        "url": "https://www.wikidata.org/wiki/Q118928053",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Samuel ben David Moses ha-Levi",
+        "label": "VIAF: 35660932",
+        "url": "https://viaf.org/en/viaf/35660932",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Samuel ben David Moses ha-Levi",
+        "label": "NLI: 987007308281005171",
+        "url": "https://www.nli.org.il/en/authorities/987007308281005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon Luria",
+        "label": "Wikipedia: Solomon Luria",
+        "url": "https://en.wikipedia.org/wiki/Solomon_Luria",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon Luria",
+        "label": "Wikidata: Q83960",
+        "url": "https://www.wikidata.org/wiki/Q83960",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon Luria",
+        "label": "VIAF: 100224138",
+        "url": "https://viaf.org/en/viaf/100224138",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon Luria",
+        "label": "NLI: 987007280265505171",
+        "url": "https://www.nli.org.il/en/authorities/987007280265505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aaron Samuel Kaidanover",
+        "label": "Wikipedia: Aaron Samuel Kaidanover",
+        "url": "https://en.wikipedia.org/wiki/Aaron_Samuel_Kaidanover",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aaron Samuel Kaidanover",
+        "label": "Wikidata: Q2576570",
+        "url": "https://www.wikidata.org/wiki/Q2576570",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aaron Samuel Kaidanover",
+        "label": "VIAF: 60224045",
+        "url": "https://viaf.org/en/viaf/60224045",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aaron Samuel Kaidanover",
+        "label": "NLI: 987007313243105171",
+        "url": "https://www.nli.org.il/en/authorities/987007313243105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hezekiah da Silva",
+        "label": "Wikipedia: Hezekiah da Silva",
+        "url": "https://en.wikipedia.org/wiki/Hezekiah_da_Silva",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hezekiah da Silva",
+        "label": "Wikidata: Q5750050",
+        "url": "https://www.wikidata.org/wiki/Q5750050",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hezekiah da Silva",
+        "label": "VIAF: 267144992",
+        "url": "https://viaf.org/en/viaf/267144992",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hezekiah da Silva",
+        "label": "NLI: 987007301498905171",
+        "url": "https://www.nli.org.il/en/authorities/987007301498905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Saúl Levi Morteira",
+        "label": "Wikipedia: Saúl Levi Morteira",
+        "url": "https://en.wikipedia.org/wiki/Saul_Levi_Morteira",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Saúl Levi Morteira",
+        "label": "Wikidata: Q6122291",
+        "url": "https://www.wikidata.org/wiki/Q6122291",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Saúl Levi Morteira",
+        "label": "VIAF: 12376948",
+        "url": "https://viaf.org/en/viaf/12376948",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Saúl Levi Morteira",
+        "label": "NLI: 987007523170105171",
+        "url": "https://www.nli.org.il/en/authorities/987007523170105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Templo",
+        "label": "Wikipedia: Judah Leon Templo",
+        "url": "https://en.wikipedia.org/wiki/Judah_Leon_Templo",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Templo",
+        "label": "Wikidata: Q1677539",
+        "url": "https://www.wikidata.org/wiki/Q1677539",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Templo",
+        "label": "VIAF: 87186864",
+        "url": "https://viaf.org/en/viaf/87186864",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Leon Templo",
+        "label": "NLI: 987007264457905171",
+        "url": "https://www.nli.org.il/en/authorities/987007264457905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "אהרן",
+        "label": "Wikipedia: אהרן",
+        "url": "https://en.wikipedia.org/wiki/Aaron_of_Pesaro",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "אהרן",
+        "label": "Wikidata: Q4662609",
+        "url": "https://www.wikidata.org/wiki/Q4662609",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "אהרן",
+        "label": "NLI: 987007286690505171",
+        "url": "https://www.nli.org.il/en/authorities/987007286690505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacob ben Aaron Sasportas",
+        "label": "Wikipedia: Jacob ben Aaron Sasportas",
+        "url": "https://en.wikipedia.org/wiki/Jacob_ben_Aaron_Sasportas",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacob ben Aaron Sasportas",
+        "label": "Wikidata: Q1679327",
+        "url": "https://www.wikidata.org/wiki/Q1679327",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacob ben Aaron Sasportas",
+        "label": "VIAF: 62480551",
+        "url": "https://viaf.org/en/viaf/62480551",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacob ben Aaron Sasportas",
+        "label": "NLI: 987007298660005171",
+        "url": "https://www.nli.org.il/en/authorities/987007298660005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Josiah ben Joseph Pinto",
+        "label": "Wikipedia: Josiah ben Joseph Pinto",
+        "url": "https://en.wikipedia.org/wiki/Josiah_ben_Joseph_Pinto",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Josiah ben Joseph Pinto",
+        "label": "Wikidata: Q16165186",
+        "url": "https://www.wikidata.org/wiki/Q16165186",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Josiah ben Joseph Pinto",
+        "label": "VIAF: 73749153",
+        "url": "https://viaf.org/en/viaf/73749153",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Josiah ben Joseph Pinto",
+        "label": "NLI: 987007304881805171",
+        "url": "https://www.nli.org.il/en/authorities/987007304881805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Reuben ben Hoshke",
+        "label": "Wikipedia: Reuben ben Hoshke",
+        "url": "https://en.wikipedia.org/wiki/Reuben_ben_Hoshke",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Reuben ben Hoshke",
+        "label": "Wikidata: Q390227",
+        "url": "https://www.wikidata.org/wiki/Q390227",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Reuben ben Hoshke",
+        "label": "VIAF: 79472323",
+        "url": "https://viaf.org/en/viaf/79472323",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Reuben ben Hoshke",
+        "label": "NLI: 987007306693005171",
+        "url": "https://www.nli.org.il/en/authorities/987007306693005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+        "label": "Wikipedia: Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+        "url": "https://www.wikidata.org/wiki/Q118926125",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+        "label": "Wikidata: Q118926125",
+        "url": "https://www.wikidata.org/wiki/Q118926125",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+        "label": "VIAF: 313040902",
+        "url": "https://viaf.org/en/viaf/313040902",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Bon, Natan ben Yitsḥaḳ Yaʻaḳov, active 17th century",
+        "label": "NLI: 987007311402105171",
+        "url": "https://www.nli.org.il/en/authorities/987007311402105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon de Oliveyra",
+        "label": "Wikipedia: Solomon de Oliveyra",
+        "url": "https://en.wikipedia.org/wiki/Solomon_de_Oliveyra",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon de Oliveyra",
+        "label": "Wikidata: Q6827064",
+        "url": "https://www.wikidata.org/wiki/Q6827064",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon de Oliveyra",
+        "label": "VIAF: 160750839",
+        "url": "https://viaf.org/en/viaf/160750839",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon de Oliveyra",
+        "label": "NLI: 987007266144205171",
+        "url": "https://www.nli.org.il/en/authorities/987007266144205171",
+        "source": "nli"
+      }
+    ],
+    "publishers": [
+      {
+        "canonical_name": "[publisher unknown]",
+        "type": "unknown_marker",
+        "dates_active": null,
+        "location": null,
+        "wikidata_id": null,
+        "cerl_id": null
+      }
+    ],
+    "connections": [],
+    "broadening_notes": []
+  },
+  "original_query": "ספרים עבריים שנדפסו באמשטרדם בין השנים 1600 ל-1700",
+  "session_context": null,
+  "truncated": true,
+  "total_record_count": 47
+}

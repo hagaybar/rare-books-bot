@@ -1,0 +1,3958 @@
+{
+  "steps_completed": [
+    {
+      "step_index": 0,
+      "action": "resolve_subject_concept",
+      "label": "Resolve the concept 'Jewish philosophy' to the collection's real subject headings",
+      "status": "ok",
+      "data": {
+        "headings": [
+          "Jewish philosophy",
+          "Jewish philosophy.",
+          "Jewish philosophy -- Middle Ages, 500-1500.",
+          "Jewish philosophers -- Germany -- History -- 18th century.",
+          "Jewish Science",
+          "Jewish Enlightenment",
+          "Jewish ethics",
+          "Mendelssohn, Moses, -- 1729-1786 -- Philosophy.",
+          "Mathematics, Jewish",
+          "Judaism -- Relations -- Christianity.",
+          "Semitic philology",
+          "Jews -- Psychology",
+          "Judaism.",
+          "Jewish philosophers -- Netherlands -- 17th century",
+          "Jewish ethics.",
+          "Philosophy, Arab",
+          "Jewish question",
+          "Judaism",
+          "Jewish magic",
+          "Jewish sociology",
+          "Jewish philosophy -- 17th century",
+          "Judaism -- Germany -- History -- 18th century.",
+          "Judaism -- Apologetic works -- History and criticism -- 18th century.",
+          "Jewish mysticism",
+          "Judaism -- Relations -- Christianity",
+          "Voltaire, -- 1694-1778 -- Views on Judaism.",
+          "Jewish chronology",
+          "Judaism -- History -- Sources.",
+          "Jewish philosophy -- 16th century",
+          "Jews -- Music -- History and criticism.",
+          "Philosophy, French",
+          "Jews -- Germany -- History -- Sources.",
+          "Jews -- Israel -- Yafo -- History -- Sources.",
+          "Religion -- Philosophy",
+          "Reform Judaism -- Germany -- 19th century -- Sources.",
+          "Jews -- France -- Biography.",
+          "Judaism -- Apologetic works -- History and criticism.",
+          "Judaism -- Germany -- Worms -- Customs and practices.",
+          "Jewish philosophy -- 19th century",
+          "Judaism -- History -- 10-425, Talmudic period."
+        ],
+        "matches": [
+          {
+            "heading": "Jewish philosophy",
+            "score": 0.9319,
+            "record_count": 2
+          },
+          {
+            "heading": "Jewish philosophy.",
+            "score": 0.9266,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish philosophy -- Middle Ages, 500-1500.",
+            "score": 0.9061,
+            "record_count": 14
+          },
+          {
+            "heading": "Jewish philosophers -- Germany -- History -- 18th century.",
+            "score": 0.8965,
+            "record_count": 4
+          },
+          {
+            "heading": "Jewish Science",
+            "score": 0.8871,
+            "record_count": 6
+          },
+          {
+            "heading": "Jewish Enlightenment",
+            "score": 0.887,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish ethics",
+            "score": 0.8861,
+            "record_count": 5
+          },
+          {
+            "heading": "Mendelssohn, Moses, -- 1729-1786 -- Philosophy.",
+            "score": 0.8832,
+            "record_count": 1
+          },
+          {
+            "heading": "Mathematics, Jewish",
+            "score": 0.8822,
+            "record_count": 1
+          },
+          {
+            "heading": "Judaism -- Relations -- Christianity.",
+            "score": 0.8797,
+            "record_count": 1
+          },
+          {
+            "heading": "Semitic philology",
+            "score": 0.8796,
+            "record_count": 1
+          },
+          {
+            "heading": "Jews -- Psychology",
+            "score": 0.8783,
+            "record_count": 1
+          },
+          {
+            "heading": "Judaism.",
+            "score": 0.8779,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish philosophers -- Netherlands -- 17th century",
+            "score": 0.8778,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish ethics.",
+            "score": 0.8776,
+            "record_count": 1
+          },
+          {
+            "heading": "Philosophy, Arab",
+            "score": 0.8775,
+            "record_count": 2
+          },
+          {
+            "heading": "Jewish question",
+            "score": 0.8767,
+            "record_count": 4
+          },
+          {
+            "heading": "Judaism",
+            "score": 0.8761,
+            "record_count": 11
+          },
+          {
+            "heading": "Jewish magic",
+            "score": 0.8758,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish sociology",
+            "score": 0.8754,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish philosophy -- 17th century",
+            "score": 0.8752,
+            "record_count": 2
+          },
+          {
+            "heading": "Judaism -- Germany -- History -- 18th century.",
+            "score": 0.8744,
+            "record_count": 1
+          },
+          {
+            "heading": "Judaism -- Apologetic works -- History and criticism -- 18th century.",
+            "score": 0.8741,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish mysticism",
+            "score": 0.8738,
+            "record_count": 2
+          },
+          {
+            "heading": "Judaism -- Relations -- Christianity",
+            "score": 0.8731,
+            "record_count": 6
+          },
+          {
+            "heading": "Voltaire, -- 1694-1778 -- Views on Judaism.",
+            "score": 0.8721,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish chronology",
+            "score": 0.8713,
+            "record_count": 2
+          },
+          {
+            "heading": "Judaism -- History -- Sources.",
+            "score": 0.8712,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish philosophy -- 16th century",
+            "score": 0.871,
+            "record_count": 4
+          },
+          {
+            "heading": "Jews -- Music -- History and criticism.",
+            "score": 0.871,
+            "record_count": 1
+          },
+          {
+            "heading": "Philosophy, French",
+            "score": 0.8709,
+            "record_count": 1
+          },
+          {
+            "heading": "Jews -- Germany -- History -- Sources.",
+            "score": 0.8704,
+            "record_count": 1
+          },
+          {
+            "heading": "Jews -- Israel -- Yafo -- History -- Sources.",
+            "score": 0.8703,
+            "record_count": 1
+          },
+          {
+            "heading": "Religion -- Philosophy",
+            "score": 0.8701,
+            "record_count": 2
+          },
+          {
+            "heading": "Reform Judaism -- Germany -- 19th century -- Sources.",
+            "score": 0.8701,
+            "record_count": 1
+          },
+          {
+            "heading": "Jews -- France -- Biography.",
+            "score": 0.87,
+            "record_count": 1
+          },
+          {
+            "heading": "Judaism -- Apologetic works -- History and criticism.",
+            "score": 0.87,
+            "record_count": 3
+          },
+          {
+            "heading": "Judaism -- Germany -- Worms -- Customs and practices.",
+            "score": 0.8698,
+            "record_count": 1
+          },
+          {
+            "heading": "Jewish philosophy -- 19th century",
+            "score": 0.8698,
+            "record_count": 1
+          },
+          {
+            "heading": "Judaism -- History -- 10-425, Talmudic period.",
+            "score": 0.8693,
+            "record_count": 1
+          }
+        ]
+      },
+      "record_count": null,
+      "error_message": null
+    },
+    {
+      "step_index": 1,
+      "action": "retrieve",
+      "label": "Books about Jewish philosophy",
+      "status": "ok",
+      "data": {
+        "mms_ids": [
+          "990009507110204146",
+          "990010050410204146",
+          "990010059240204146",
+          "990010593000204146",
+          "990010699550204146",
+          "990010699620204146",
+          "990011128280204146",
+          "990011348820204146",
+          "990011525470204146",
+          "990011897880204146",
+          "990011906330204146",
+          "990011906890204146",
+          "990011909070204146",
+          "990011928190204146",
+          "990011939860204146",
+          "990011940200204146",
+          "990012006140204146",
+          "990012006880204146",
+          "990012006910204146",
+          "990012007000204146",
+          "990012009960204146",
+          "990012009970204146",
+          "990012018630204146",
+          "990012018870204146",
+          "990012018910204146",
+          "990012023150204146",
+          "990012033430204146",
+          "990012036270204146",
+          "990012036390204146",
+          "990012036630204146",
+          "990012036690204146",
+          "990012038240204146",
+          "990012041390204146",
+          "990012044620204146",
+          "990012069880204146",
+          "990012072550204146",
+          "990012100090204146",
+          "990012126500204146",
+          "990012137030204146",
+          "990012148080204146",
+          "990012158420204146",
+          "990012158430204146",
+          "990012164560204146",
+          "990012174880204146",
+          "990012496650204146",
+          "990012518840204146",
+          "990012656090204146",
+          "990012772870204146",
+          "990012859540204146",
+          "990012899560204146",
+          "990012901100204146",
+          "990012949060204146",
+          "990012955010204146",
+          "990012982500204146",
+          "990012984430204146",
+          "990013035390204146",
+          "990013169970204146",
+          "990013179260204146",
+          "990013182810204146",
+          "990013193940204146",
+          "990013215710204146",
+          "990013266000204146",
+          "990013631680204146",
+          "990013984320204146",
+          "990014261870204146",
+          "990014270610204146",
+          "990014432770204146",
+          "990014524160204146",
+          "990015182530204146",
+          "990020593790204146",
+          "990021288640204146",
+          "990021769320204146",
+          "990022017720204146",
+          "990032645690204146",
+          "9933315967604146",
+          "9933315967804146",
+          "9933417007004146",
+          "9933474816204146",
+          "9933482214804146",
+          "9933508419904146",
+          "9933511809904146",
+          "9933514619804146",
+          "9933678807304146",
+          "9933685000204146",
+          "9933767254504146",
+          "9933796849204146"
+        ],
+        "total_count": 86,
+        "filters_applied": [
+          {
+            "field": "subject",
+            "op": "IN",
+            "value": [
+              "Jewish philosophy",
+              "Jewish philosophy.",
+              "Jewish philosophy -- Middle Ages, 500-1500.",
+              "Jewish philosophers -- Germany -- History -- 18th century.",
+              "Jewish Science",
+              "Jewish Enlightenment",
+              "Jewish ethics",
+              "Mendelssohn, Moses, -- 1729-1786 -- Philosophy.",
+              "Mathematics, Jewish",
+              "Judaism -- Relations -- Christianity.",
+              "Semitic philology",
+              "Jews -- Psychology",
+              "Judaism.",
+              "Jewish philosophers -- Netherlands -- 17th century",
+              "Jewish ethics.",
+              "Philosophy, Arab",
+              "Jewish question",
+              "Judaism",
+              "Jewish magic",
+              "Jewish sociology",
+              "Jewish philosophy -- 17th century",
+              "Judaism -- Germany -- History -- 18th century.",
+              "Judaism -- Apologetic works -- History and criticism -- 18th century.",
+              "Jewish mysticism",
+              "Judaism -- Relations -- Christianity",
+              "Voltaire, -- 1694-1778 -- Views on Judaism.",
+              "Jewish chronology",
+              "Judaism -- History -- Sources.",
+              "Jewish philosophy -- 16th century",
+              "Jews -- Music -- History and criticism.",
+              "Philosophy, French",
+              "Jews -- Germany -- History -- Sources.",
+              "Jews -- Israel -- Yafo -- History -- Sources.",
+              "Religion -- Philosophy",
+              "Reform Judaism -- Germany -- 19th century -- Sources.",
+              "Jews -- France -- Biography.",
+              "Judaism -- Apologetic works -- History and criticism.",
+              "Judaism -- Germany -- Worms -- Customs and practices.",
+              "Jewish philosophy -- 19th century",
+              "Judaism -- History -- 10-425, Talmudic period."
+            ],
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          }
+        ],
+        "relaxations": [
+          "counted via matched subject heading(s): Jewish philosophy (2), Jewish philosophy. (1), Jewish philosophy -- Middle Ages, 500-1500. (14), Jewish philosophers -- Germany -- History -- 18th century. (4), Jewish Science (6), Jewish Enlightenment (1), Jewish ethics (5), Mendelssohn, Moses, -- 1729-1786 -- Philosophy. (1), Mathematics, Jewish (1), Judaism -- Relations -- Christianity. (1), Semitic philology (1), Jews -- Psychology (1), Judaism. (1), Jewish philosophers -- Netherlands -- 17th century (1), Jewish ethics. (1), Philosophy, Arab (2), Jewish question (4), Judaism (11), Jewish magic (1), Jewish sociology (1), Jewish philosophy -- 17th century (2), Judaism -- Germany -- History -- 18th century. (1), Judaism -- Apologetic works -- History and criticism -- 18th century. (1), Jewish mysticism (2), Judaism -- Relations -- Christianity (6), Voltaire, -- 1694-1778 -- Views on Judaism. (1), Jewish chronology (2), Judaism -- History -- Sources. (1), Jewish philosophy -- 16th century (4), Jews -- Music -- History and criticism. (1), Philosophy, French (1), Jews -- Germany -- History -- Sources. (1), Jews -- Israel -- Yafo -- History -- Sources. (1), Religion -- Philosophy (2), Reform Judaism -- Germany -- 19th century -- Sources. (1), Jews -- France -- Biography. (1), Judaism -- Apologetic works -- History and criticism. (3), Judaism -- Germany -- Worms -- Customs and practices. (1), Jewish philosophy -- 19th century (1), Judaism -- History -- 10-425, Talmudic period. (1)"
+        ]
+      },
+      "record_count": 86,
+      "error_message": null
+    }
+  ],
+  "directives": [],
+  "grounding": {
+    "records": [
+      {
+        "mms_id": "990009507110204146",
+        "title": "Phadon, oder, uber die Unsterblichkeit der Seele, in Drey Gesprachen / von Moses Mendelssohn",
+        "date_display": "1785",
+        "place": "Frankfurt",
+        "publisher": "s.n.",
+        "language": "ger",
+        "agents": [
+          "mendelssohn, moses"
+        ],
+        "subjects": [
+          "Plato.",
+          "Jewish philosophers -- Germany -- History -- 18th century."
+        ],
+        "physical_description": "246 p.",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990009507110204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופים יהודים גרמניה היסטוריה תולדות המאה ה-18"
+        ]
+      },
+      {
+        "mms_id": "990010050410204146",
+        "title": "Theodor Herzls Tagebucher, 1895-1904",
+        "date_display": "1922-1923",
+        "place": "Berlin",
+        "publisher": "Judischer Verlag",
+        "language": "ger",
+        "agents": [
+          "herzl, theodor"
+        ],
+        "subjects": [
+          "Herzl, Theodor, -- 1860-1904 -- Diaries",
+          "Jewish question",
+          "Zionism"
+        ],
+        "physical_description": "3 v. : ports.",
+        "notes": [
+          "\"Diese Ausgabe wurde in 150 Numerierten Exemplaren hergestellt\". Library's copy 1: Bds. I-III is no. 7; copy 2, Bd. II: is no. 43 ; c,2,3 Bds. I-II is no. 82"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010050410204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תיאודור הרצל יומנים",
+          "השאלה היהודית",
+          "ציונות"
+        ]
+      },
+      {
+        "mms_id": "990010059240204146",
+        "title": "Un bibliophile d'autrefois : le Baron James-Edouard de Rothschild, 1844-1881 / Henri de Rothschild",
+        "date_display": "1934",
+        "place": "Paris",
+        "publisher": "E. Droz",
+        "language": "fre",
+        "agents": [
+          "rothschild, henri de"
+        ],
+        "subjects": [
+          "Rothschild, James, -- baron de, -- 1844-1881",
+          "Jews -- France -- History -- 19th century.",
+          "Jews -- France -- Biography."
+        ],
+        "physical_description": "xi, 218 p., [17] leaves of plates : ill., ports., facsims.",
+        "notes": [
+          "\"Tirage limite a 250 exemplaires Numerotes. no. 29\""
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010059240204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים צרפת היסטוריה תולדות המאה ה-19",
+          "יהודים צרפת ביוגרפיה"
+        ]
+      },
+      {
+        "mms_id": "990010593000204146",
+        "title": "גורן נכון, תקון מדות הנפש : עם ספר מוסרי הפלוסופים וספר התפוח לאריסטוטליס / ר' שלמה בן יודא גבירול",
+        "date_display": "1562",
+        "place": "ריווא דטרינטו",
+        "publisher": "יוסף בן יעקב אשכנזי מפדואה",
+        "language": "heb",
+        "agents": [
+          "אבן גבירול, שלמה בן יהודה",
+          "אריסטו"
+        ],
+        "subjects": [
+          "Jewish ethics -- 11th century",
+          "Jewish philosophy -- Middle Ages, 500-1500.",
+          "Philosophy, Medieval"
+        ],
+        "physical_description": "יז, כח [צ\"ל ל] ד' [=34, 60 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010593000204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "מוסר אתיקה יהודית המאה ה-11",
+          "פילוסופיה יהודית מחשבת ישראל ימי הביניים"
+        ]
+      },
+      {
+        "mms_id": "990010699550204146",
+        "title": "Phadon, oder, uber die Unsterblichkeit der Seele, in Drey Gesprachen / von Moses Mendelssohn",
+        "date_display": "1769",
+        "place": "Berlin",
+        "publisher": "F. Nicolai",
+        "language": "ger",
+        "agents": [
+          "mendelssohn, moses"
+        ],
+        "subjects": [
+          "Plato.",
+          "Jewish philosophers -- Germany -- History -- 18th century."
+        ],
+        "physical_description": "[8], 52, 224 p.",
+        "notes": [
+          "\"Leben und Charakter des Sokrates\": P. [3]-52 (2nd Group)",
+          "\"Phadon\": P. [3]-194 (3rd Group)"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010699550204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופים יהודים גרמניה היסטוריה תולדות המאה ה-18"
+        ]
+      },
+      {
+        "mms_id": "990010699620204146",
+        "title": "Phadon, oder, uber die Unsterblichkeit der Seele, in Drey Gesprachen / von Moses Mendelssohn",
+        "date_display": "1769",
+        "place": "Carlsruhe",
+        "publisher": "In der Schmiederischen Buchhandlung",
+        "language": "ger",
+        "agents": [
+          "mendelssohn, moses"
+        ],
+        "subjects": [
+          "Plato.",
+          "Jewish philosophers -- Germany -- History -- 18th century."
+        ],
+        "physical_description": "[8], 52, 224 p.",
+        "notes": [
+          "\"Leben und Charakter des Sokrates\": P. [3]-52 (2nd Group)",
+          "\"Phadon\": P. [3]-194 (3rd Group)"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010699620204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופים יהודים גרמניה היסטוריה תולדות המאה ה-18"
+        ]
+      },
+      {
+        "mms_id": "990011128280204146",
+        "title": "Renati des cartes principiorum philosophiae, pars i & II / More geometrico demonstrate per Benedictum de Spinoza Amstelodamensem",
+        "date_display": "1663",
+        "place": "Amstelodami",
+        "publisher": "Apud J. Riewerts",
+        "language": "lat",
+        "agents": [
+          "spinoza, benedictus de"
+        ],
+        "subjects": [
+          "Descartes, René, -- 1596-1650.",
+          "Spinoza, Benedictus de, -- 1632-1677.",
+          "Jewish philosophers -- Netherlands -- 17th century"
+        ],
+        "physical_description": "[14], 140 p. : ill.",
+        "notes": [
+          "\"Accesserunt eiusdem Cogitata Metaphysica, in quibus difficiliores, Quaetam in parte metaphysices generali, quam speciali occurunt, quaestiones breviter Explicantur.\"--On T.-P.",
+          "Rare first editions. Not found in the catalogs of the Library of Congress and Bibliotheque nationale"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011128280204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "שפינוזה ברוך",
+          "פילוסופים יהודים הולנד המאה ה-17"
+        ]
+      },
+      {
+        "mms_id": "990011348820204146",
+        "title": "Theologiae, sive potius [Malaiologias] judaicae atqve Mohammedicae seu Turcico-Persicae principia Sublesta et fructus Pestilentes, hoc est: exercitationes de Judaeorum libris -- / autore Augusto Pfeiffero",
+        "date_display": "1687",
+        "place": "Lipsiae",
+        "publisher": "Sumtibus J. F. Gleditsch",
+        "language": "lat",
+        "agents": [
+          "pfeiffer, august"
+        ],
+        "subjects": [
+          "Qurʼan -- Criticism, interpretation, etc.",
+          "Judaism -- History -- 10-425, Talmudic period.",
+          "Judaism -- Relations -- Christianity.",
+          "Christianity and other religions -- Judaism -- History -- Early church, ca. 30-600.",
+          "Judaism -- Relations -- Islam",
+          "Islam -- Relations -- Judaism"
+        ],
+        "physical_description": "458 p.",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011348820204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "קוראן ביקורת ופרשנות",
+          "יהדות היסטוריה תולדות",
+          "יהדות יחסים נצרות",
+          "נצרות ודתות אחרות יהדות היסטוריה תולדות הכנסייה הקדומה",
+          "יהדות יחסים אסלאם",
+          "אסלאם יחסים יהדות"
+        ]
+      },
+      {
+        "mms_id": "990011525470204146",
+        "title": "Guide for the perplexed : a 15th century Spanish translation by Pedro de Toledo (Ms. 10289, B.N. Madrid) / Maimonides ; edited by Moshe Lazar ; Technical editor: Robert Dilligan",
+        "date_display": "c. 1989",
+        "place": "Culver City, Calif.",
+        "publisher": "Labyrinthos",
+        "language": "spa",
+        "agents": [
+          "maimonides, moses",
+          "toledo, pedro de",
+          "lazar, moshe",
+          "biblioteca nacional (spain)"
+        ],
+        "subjects": [
+          "Jewish philosophy -- Middle Ages, 500-1500."
+        ],
+        "physical_description": "xviii, 370 p. : 1 facsim.",
+        "notes": [
+          "Title in Spanish on half t.p.: Mostrador E Ensenador de los Turbados",
+          "\"Unnumbered ed. Limited to 300 copies\"",
+          "Originally written by Maimonides in Judeo-Arabic"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011525470204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופיה יהודית מחשבת ישראל ימי הביניים"
+        ]
+      },
+      {
+        "mms_id": "990011897880204146",
+        "title": "אילם : ... שאלות ... שאל זרח בר נתן ... מהרב ... יוסף שלמה דילמידגו ... איש קנדיאה. ועוד נתוספו כתבי שאלות ותשובות ... מהרב יש\"ר הנ\"ל ותלמידיו ... [ספר מעין גנים ... כולל תשובות ... על שאלות ספר אילם ... הגיונות למודיות טבעיות ... (סוד היסוד, חקות שמים, גבורות יי, מעין חתום)]",
+        "date_display": "1628",
+        "place": "אמשטרדם",
+        "publisher": "בבית מנשה בן ישראל",
+        "language": "heb",
+        "agents": [
+          "דלמדיגו, יוסף שלמה בן אליהו",
+          "טרוקי, זרח בן נתן",
+          "משה בן מאיר"
+        ],
+        "subjects": [
+          "Jewish Science",
+          "Jewish astronomy"
+        ],
+        "physical_description": "פג, קצ, פ ע'",
+        "notes": [
+          "העותק בספריה פגום. חסר עמוד השער. קוטלג ע\"פ NYPL",
+          "לספר מעין גנים שער נפרד",
+          "הפרט בשער: ומלאה הארץ [=שעח], ההסכמות משנת שפ\"ט. בקולופון בסוף ספר אילם: \"ובכן זכינו להשלים לשלום ספר אילם בשנת הש\"פט לחודש א'ני ל'דודי ו'דודי ל'י"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011897880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "מדע יהודי",
+          "אסטרונומיה יהודית תכונה"
+        ]
+      },
+      {
+        "mms_id": "990011906330204146",
+        "title": "Die Psalmen / uebersetzt von Moses Mendelssohn",
+        "date_display": "1783",
+        "place": "Berlin",
+        "publisher": "F. Maurer",
+        "language": "ger",
+        "agents": [
+          "mendelssohn, moses"
+        ],
+        "subjects": [
+          "Bible. -- Psalms -- German -- Texts",
+          "Jewish Enlightenment"
+        ],
+        "physical_description": "xii, 354 p.",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011906330204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש תהילים גרמנית טקסטים נוסחים"
+        ]
+      },
+      {
+        "mms_id": "990011906890204146",
+        "title": "[ספר הנצחון] / [אשר חבר ר' ליפמן לנצח צדוקים ונוצרים מהרהרים ומלגלגים לנצח]",
+        "date_display": "1644",
+        "place": "אלטדורף",
+        "publisher": "נדפס פה בישיבת אלטדורף",
+        "language": "heb",
+        "agents": [
+          "יום טוב ליפמן",
+          "קמחי, דוד בן יוסף"
+        ],
+        "subjects": [
+          "Bible. -- Psalms -- Commentaries.",
+          "Judaism -- Apologetic works -- History and criticism."
+        ],
+        "physical_description": "[8], 214 ע'",
+        "notes": [
+          "חסר השער העברי",
+          "כולל השער הלטיני בלבד, ללא המאמר של THEODORICUS HACKSPAN על ספרי חז\"ל. כולל מפתחות: ראשון ושני",
+          "ע' 196-200. תוספת: \"אלו הן התשובות והקשיו' שעשה ר\"דק לנוצרי' על קצת המזמורים\""
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011906890204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תהילים פירושים",
+          "יהדות כתבים אפולוגטיים היסטוריה וביקורת"
+        ]
+      },
+      {
+        "mms_id": "990011909070204146",
+        "title": "ספר עמודי בית יהודה : העומדים לתורה ועבודה ... במאמרי חז\"ל ... בי\"ג עיקרים ... וכוונות הרמב\"ם ... / יהודא ... איש הורוויץ אסי' דק\"ק ווילנא",
+        "date_display": "1766",
+        "place": "אמשטרדם",
+        "publisher": "בדפוס ... ליב זוסמנש",
+        "language": "heb",
+        "agents": [
+          "הורביץ, יהודה בן מרדכי"
+        ],
+        "subjects": [
+          "Jewish philosophy -- 19th century",
+          "Judaism -- Doctrines"
+        ],
+        "physical_description": "[12], ק ד' [=24, 200 ע']",
+        "notes": [
+          "בחתימת המדפיס והמחבר מעבר לעמוד השער",
+          "ד' עט: גן עדן המאמין, אשר נטעתי מעץ פרי הרב רבינו משה בר מיימין, עם שער נפרד"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011909070204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופיה יהודית מחשבת ישראל המאה ה-19",
+          "יהדות דוקטרינות תורות"
+        ]
+      },
+      {
+        "mms_id": "990011928190204146",
+        "title": "ספר נצחון / אשר חבר ר' ליפמן לנצח צדוקים ונוצרים מהרהרים ומלגלגים לנצח",
+        "date_display": "1644",
+        "place": "אלטדורף",
+        "publisher": "נדפס פה בישיבת אלטדורף",
+        "language": "heb",
+        "agents": [
+          "יום טוב ליפמן",
+          "קמחי, דוד בן יוסף"
+        ],
+        "subjects": [
+          "Bible. -- Psalms -- Commentaries.",
+          "Judaism -- Apologetic works -- History and criticism."
+        ],
+        "physical_description": "[8], 206 ע'",
+        "notes": [
+          "נוספו: שער בלטינית, וכן מאמרו של THEODORICUS HACKSPAN על ספרי חז\"ל. כולל מפתחות: ראשון בלבד",
+          "ע' 196-200. תוספת: \"אלו הן התשובות והקשיו' שעשה ר\"דק לנוצרי' על קצת המזמורים\""
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011928190204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תהילים פירושים",
+          "יהדות כתבים אפולוגטיים היסטוריה וביקורת"
+        ]
+      },
+      {
+        "mms_id": "990011939860204146",
+        "title": "ספר הכוזרי / יסדו ... יצחק הסנגורי ... ; חברו בלשון ערבי ... ר' יהודה הלוי הספרדי : והעתיק אותו ... ר' יהודה ן' תבון ; ... יהודה מוסקאטו, אשר ביאר את דבריהם ... [קול יהודה]",
+        "date_display": "1594",
+        "place": "ויניציאה",
+        "publisher": "זואן דגארה",
+        "language": "heb",
+        "agents": [
+          "יהודה",
+          "אבן תבון, יהודה בן שאול",
+          "מוסקטו, יהודה בן יוסף",
+          "חסדאי אבן שפרוט"
+        ],
+        "subjects": [
+          "Jewish philosophy -- Middle Ages, 500-1500.",
+          "Khazars"
+        ],
+        "physical_description": "רצט ד' [=598 ע']",
+        "notes": [
+          "עותק ראשון: לפני עמוד השער [1 ד'], וכן בסוף הספר [4 ד'], בכתב יד: מכתב רב חסדאי בן יצחק ... למלך אלכזרי",
+          "עותק ראשון פגום: חסרים דפים: קלה, קצה,קצו, רפו-רצט. דפים רפו-שח [!] נכתבו בכתב יד"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011939860204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופיה יהודית מחשבת ישראל ימי הביניים"
+        ]
+      },
+      {
+        "mms_id": "990011940200204146",
+        "title": "מחזור וורמייזא : כ\"י בית הספרים הלאומי והאוניברסיטאי 1/781 4 HEB",
+        "date_display": "1985",
+        "place": "ירושלים",
+        "publisher": "CYELAR ESTABLISHMENT, ואדוז, בשיתוף עם בית הספרים הלאומי והאוניברסיטאי, ירושלים",
+        "language": "heb",
+        "agents": [
+          "בית אריה, מלאכי",
+          "beit-ari\\00e9, malachi",
+          "בית הספרים הלאמי והאוניברסיטאי"
+        ],
+        "subjects": [
+          "Jewish illumination of books and manuscripts -- History -- 13th century.",
+          "Judaism -- Germany -- Worms -- Customs and practices.",
+          "Manuscripts, Hebrew -- Facsimiles"
+        ],
+        "physical_description": "3 כר' : איורים (צבעוניים)",
+        "notes": [
+          "התוכן: כר' א. כרך המבואות בעריכת מלאכי בית אריה. עברית ואנגלית -- כר' ב. פקסימיל כר' א של \"מחזור וורמייזא\". כולל תפילות ופיוטים לשבתות מיוחדות, פורים, פסח, שבועות ותשעה באב -- כר' ג. עוקדן ובו 2 דפים ",
+          "כר ג.: עוקדן ובו 2 דפים מצוירים, פקסימיל מתוך כר' ב של המחזור: שושנת העמקים - אילוסטרציה לפיוט \"שושן עמק איומה\", שערי הרחמים",
+          "נדפס ב-300 עותקים רגילים ועוד 30 עותקים מיוחדים שאינם למכירה. בספריה עותק מס' 248"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011940200204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "הארת ספרים וכתבי יד יהודים היסטוריה תולדות המאה ה-13",
+          "יהדות גרמניה מנהגים",
+          "כתבי יד עבריים פקסימיליות העתקים"
+        ]
+      },
+      {
+        "mms_id": "990012006140204146",
+        "title": "הסגלה : מוקדש להעתקת כתבי-יד עתיקים שלא נדפסו מעולם / המעתיק... המעיר והמצייר מנחם זאב בוטשן-חסידה",
+        "date_display": "1934",
+        "place": "ירושלם",
+        "publisher": "מ. ז. בוטשן-חסידה",
+        "language": "heb",
+        "agents": [
+          "חסידה, מנחם זאב"
+        ],
+        "subjects": [
+          "Judaism -- History -- Sources."
+        ],
+        "physical_description": "7 כר'",
+        "notes": [
+          "\"יופיע רק במאה אכזמפלרים למאה חותמים קבועים\"",
+          "יקר מציאות - הערת מהלמן"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012006140204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהדות היסטוריה תולדות מקורות"
+        ]
+      },
+      {
+        "mms_id": "990012006880204146",
+        "title": "ספר נשמת חיים : כולל דרושים ... על ענין הנשמה ... עם חקירות ... מענין הרוחות ועיבור וגלגול הנשמות ... / מנשה בן ישראל",
+        "date_display": "1652",
+        "place": "אמשטרדם",
+        "publisher": "בדפוס בן המחבר שמואל אברבנאל סואירו",
+        "language": "heb",
+        "agents": [
+          "מנשה בן ישראל"
+        ],
+        "subjects": [
+          "Jewish philosophy -- 17th century",
+          "Soul -- Judaism",
+          "Jews -- Psychology"
+        ],
+        "physical_description": "[8], קעד, [2] ד' [=16, 348, 4 ע']",
+        "notes": [
+          "עותק מס' 4 פגום. חסר דף השער. נכתב בכתב-יד"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012006880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופיה יהודית מחשבת ישראל המאה ה-17",
+          "נשמה נפש יהדות",
+          "יהודים פסיכולוגיה"
+        ]
+      },
+      {
+        "mms_id": "990012006910204146",
+        "title": "שבלים בודדות : אספת מאמרים אשר אספתי מדפים בודדים, כ\"י ונדפסים, דאקומענטים, תעודות, שטרות, שירים, קינות וכדומה, שנאבדו במשך דורות ולא נשאר להם זכר בספרותנו / מאת אפרים דיינארד",
+        "date_display": "1915",
+        "place": "ירושלם",
+        "publisher": "בדפוס א.מ. לונץ",
+        "language": "heb",
+        "agents": [
+          "דינרד, אפרים"
+        ],
+        "subjects": [
+          "Judaism"
+        ],
+        "physical_description": "182 ע'",
+        "notes": [
+          "\"נדפס מאה עקזעמפלארים\"",
+          "עותק ראשון בהקדשת המחבר לפרופ' בנימין וילים סמית [בלועזית]"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012006910204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהדות"
+        ]
+      },
+      {
+        "mms_id": "990012007000204146",
+        "title": "עקידת יצחק / יצחק בן עראמה",
+        "date_display": "1547",
+        "place": "ויניציאה",
+        "publisher": "בבית דניאל בומבירגי",
+        "language": "heb",
+        "agents": [
+          "עראמה, יצחק בן משה"
+        ],
+        "subjects": [
+          "Bible. -- Pentateuch -- Commentaries",
+          "Jewish philosophy -- Middle Ages, 500-1500."
+        ],
+        "physical_description": "שט ד' [=618 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012007000204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "חומש תורה פירושים",
+          "פילוסופיה יהודית מחשבת ישראל ימי הביניים"
+        ]
+      },
+      {
+        "mms_id": "990012009960204146",
+        "title": "שתי ידות : [והוא נחלק ... לשני חלקים, הראשון הנקרא יד עני ... והשני נקרא יד המלך ... וכל יד נחלק לה' אצבעות ... ואלה שמות אצבעות יד עני: אור תורה ... מעריך ... עבודת מקדש ... דרך חיים ... טובה תוכחת ... : ואלה שמות אצבעות יד המלך: אגדתא דבראשית ...] / [מנחם די לונזאנו]",
+        "date_display": "1618",
+        "place": "ויניציאה",
+        "publisher": "בבית ייואני קאיון",
+        "language": "heb",
+        "agents": [
+          "לונזנו, מנחם בן יהודה די"
+        ],
+        "subjects": [
+          "Nathan ben Jehiel, -- of Rome, -- 1035-approximately 1110. -- Arukh.",
+          "Judaism"
+        ],
+        "physical_description": "ד' כז-קעו [=298 ע']",
+        "notes": [
+          "העותק בספריה פגום. חסר דף השער וכן החלק הראשון בשם: ספר אור תורה, עד ד' כו",
+          "קוטלג על פי: DIC. CATALOG OF THE JEWISH COLLECTION/NYPL, כר' 13 ע' 11344 ולפי: אוצר הספרים / בן-יעקב, יצחק איזיק, ש' 1318"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012009960204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהדות"
+        ]
+      },
+      {
+        "mms_id": "990012009970204146",
+        "title": "ספר מנחות יעקב סלת : היא מנחה בלולה במקרא ובגמרא ובמדרש ... / כל אלה פעל ... יעקב א\"א בהר\"ר משה כ\"ץ מק\"ק יאנוב ...",
+        "date_display": "1731",
+        "place": "ווילמרשדארף",
+        "publisher": "ע\"י הירש בן חיים מפיורדא",
+        "language": "heb",
+        "agents": [
+          "יעקב בן משה כ\"ץ"
+        ],
+        "subjects": [
+          "Judaism"
+        ],
+        "physical_description": "נא ד' [=102 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012009970204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהדות"
+        ]
+      },
+      {
+        "mms_id": "990012018630204146",
+        "title": "עטרת זקנים / חברו ... דון יצחק אבראבינאל ; [ונלוה בסופו ספר] צורות היסודות",
+        "date_display": "1739",
+        "place": "אמשטרדם",
+        "publisher": "בדפוס ובבית יתמי שלמה כ\"ץ פרופס",
+        "language": "heb",
+        "agents": [
+          "אברבנאל, יצחק בן יהודה"
+        ],
+        "subjects": [
+          "Bible. -- Exodus -- XXXIII, 20 -- Commentaries.",
+          "Jewish philosophy -- Middle Ages, 500-1500."
+        ],
+        "physical_description": "[3], נז ד' [=6, 114 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012018630204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש שמות פירושים",
+          "פילוסופיה יהודית מחשבת ישראל ימי הביניים"
+        ]
+      },
+      {
+        "mms_id": "990012018870204146",
+        "title": "ספר חזות קשה / יצחק בן ערמאה ... והוספנו בו מראה מקום מהתלמוד ומדרשים ...",
+        "date_display": "1552",
+        "place": "סביוניטה",
+        "publisher": "בבית טוביה פואה ע\"י השותפי' יזי\"יא",
+        "language": "heb",
+        "agents": [
+          "עראמה, יצחק בן משה"
+        ],
+        "subjects": [
+          "Jewish philosophy -- Middle Ages, 500-1500."
+        ],
+        "physical_description": "לח ד' [76 ע']",
+        "notes": [
+          "עותק מס' 1 פגום. חסרים דפים ל-לח"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012018870204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופיה יהודית מחשבת ישראל ימי הביניים"
+        ]
+      },
+      {
+        "mms_id": "990012018910204146",
+        "title": "יהודה ועוד לקרא : לקוטים מתוך כתבי ידות / הובאו לבית הדפוס על ידי משה סאנדרס",
+        "date_display": "1955",
+        "place": "לונדון",
+        "publisher": "חמו\"ל",
+        "language": "heb",
+        "agents": [
+          "סנדרס, משה"
+        ],
+        "subjects": [
+          "Judaism"
+        ],
+        "physical_description": "24 ע'",
+        "notes": [
+          "נוסף שער באנגלית",
+          "נדפס במאה טופסים. מספרו של טופס זה 26",
+          "בהקדשת העורך להרב י.ק. גולדבלום"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012018910204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהדות"
+        ]
+      },
+      {
+        "mms_id": "990012023150204146",
+        "title": "אור עמים / [חברו ... עובדיה ... מספורנו]",
+        "date_display": "1537",
+        "place": "בולוני\"יא",
+        "publisher": "נדפס על ידי הצעירים השותפים י\"צו גם יחד עושים מלאכת המשי",
+        "language": "heb",
+        "agents": [
+          "ספורנו, עובדיה בן יעקב"
+        ],
+        "subjects": [
+          "Judaism -- Apologetic works -- History and criticism.",
+          "Jewish philosophy -- 16th century"
+        ],
+        "physical_description": "סד ד' [=128 ע']",
+        "notes": [
+          "הקולופון: \"ותשלם כל המלאכה ... שנת עזר\"ך [רצ\"ז]\"",
+          "העותק בספריה פגום. חסר דף השער",
+          "קוטלג על פי: DIC. CATALOG OF THE JEWISH COLLECTION/NYPL"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012023150204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהדות כתבים אפולוגטיים היסטוריה וביקורת",
+          "פילוסופיה יהודית מחשבת ישראל המאה ה-16"
+        ]
+      },
+      {
+        "mms_id": "990012033430204146",
+        "title": "ספר כסאות לבית דוד / אשר יסד, אזן וחבר ... יהודה עשהאל בר ... אליעזר דוד מהטוב ...",
+        "date_display": "1646",
+        "place": "וירונה",
+        "publisher": "Per Il Rossi",
+        "language": "heb",
+        "agents": [
+          "מה טוב, יהודה עשהאל בן אליעזר דוד"
+        ],
+        "subjects": [
+          "Jewish philosophy -- 17th century"
+        ],
+        "physical_description": "[ד], ה-צה, [3] ד' [=8, 180, 6 ע']",
+        "notes": [
+          "ב-DIC. CATALOG OF THE JEWISH COLLECTION/NYPL וב-DIC. CATALOG OF THE KLAU LIB./HUC, מספור העמודים הוא: L 3, F 95-5, 7"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012033430204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "פילוסופיה יהודית מחשבת ישראל המאה ה-17"
+        ]
+      },
+      {
+        "mms_id": "990012036270204146",
+        "title": "קצורי אבן רשד על שמע טבעי לאריסטוטלס",
+        "date_display": "1560",
+        "place": "ריווא דטרינט",
+        "publisher": "יעקב בן דוד מרקריאה",
+        "language": "heb",
+        "agents": [
+          "אבן רשד, מחמד",
+          "אבן תבון, משה בן שמואל"
+        ],
+        "subjects": [
+          "Aristotle. -- Physics.",
+          "Philosophy, Arab"
+        ],
+        "physical_description": "מז ד' [=94 ע']",
+        "notes": [
+          "העותק בספריה פגום. חלק מדף השער קרוע",
+          "תורגם בידי משה אבן תבון",
+          "בקולופון: ונשלם ת\"ל חנוכה שנת ש\"כ לפ\"ק פה ריווא דטר\"ינט"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012036270204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "אריסטו"
+        ]
+      },
+      {
+        "mms_id": "990012036390204146",
+        "title": "ספר שער השמים : פיהו פתח בחכמה וידבר על העוף ועל הבהמה ועל כל הרמש הרומש על האדמה ... ועל ההרים והעבים והשמים, ועל הארץ ורוח ואש ומים ... ואותו העיר הבחור מ\"איר במשפחתו הצעיר",
+        "date_display": "1547",
+        "place": "וינייציא",
+        "publisher": "מאיר בן יעקב ממשפחת הפרענצני",
+        "language": "heb",
+        "agents": [
+          "גרשום בן שלמה"
+        ],
+        "subjects": [
+          "Jewish Science",
+          "Science",
+          "Philosophy",
+          "Medicine"
+        ],
+        "physical_description": "סד ד' [=128 ע']",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012036390204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "מדע יהודי",
+          "מדע",
+          "פילוסופיה",
+          "רפואה"
+        ]
+      },
+      {
+        "mms_id": "990012036630204146",
+        "title": "מעשה טוביה : כולל הארבעה עולמות, ונחלק לחמשה חלקים: החלק הראשון מדבר בעול' העליון שהוא העולם הרוחני, השני בעולם האמצעי, שהוא עולם הגלגלים, השלישי בעולם השפל, שהוא עולם שלנו, הרביעי בעולם הקטן, שהוא האדם, החמישי ביסודי העולם ... / חקרם ... טוביה מק\"ק מיץ",
+        "date_display": "1721",
+        "place": "יעסניץ",
+        "publisher": "במצות ישראל בר אברהם",
+        "language": "heb",
+        "agents": [
+          "כץ, טוביה בן משה"
+        ],
+        "subjects": [
+          "Science",
+          "Medicine",
+          "Philosophy",
+          "Jewish Science"
+        ],
+        "physical_description": "3 כר' ב-1 (קכב ד' [=244 ע']) : איורים",
+        "notes": [
+          "הכותר המלא: חלק ראשון מספר העולמות, או, מעשה טוביה"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012036630204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "מדע",
+          "רפואה",
+          "פילוסופיה",
+          "מדע יהודי"
+        ]
+      }
+    ],
+    "agents": [
+      {
+        "canonical_name": "Moses Mendelssohn",
+        "variants": [],
+        "birth_year": 1729,
+        "death_year": 1786,
+        "occupations": [
+          "Bible translator",
+          "writer",
+          "philosopher",
+          "translator"
+        ],
+        "description": "German-Jewish philosopher and theologian (1729–1786)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Mendelssohn",
+            "label": "Wikipedia: Moses Mendelssohn",
+            "url": "https://en.wikipedia.org/wiki/Moses_Mendelssohn",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Mendelssohn",
+            "label": "Wikidata: Q76997",
+            "url": "https://www.wikidata.org/wiki/Q76997",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Mendelssohn",
+            "label": "VIAF: 19681378",
+            "url": "https://viaf.org/en/viaf/19681378",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses Mendelssohn",
+            "label": "NLI: 987007265215505171",
+            "url": "https://www.nli.org.il/en/authorities/987007265215505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Moses%20Mendelson%20P7160073.JPG",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265215505171.jsonld",
+        "hebrew_aliases": [
+          "משה מנדלסון"
+        ]
+      },
+      {
+        "canonical_name": "Theodor Herzl",
+        "variants": [],
+        "birth_year": 1860,
+        "death_year": 1904,
+        "occupations": [
+          "politician",
+          "literary critic",
+          "writer",
+          "journalist",
+          "lawyer"
+        ],
+        "description": "father of modern political Zionism (1860–1904)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Theodor Herzl",
+            "label": "Wikipedia: Theodor Herzl",
+            "url": "https://en.wikipedia.org/wiki/Theodor_Herzl",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Theodor Herzl",
+            "label": "Wikidata: Q44003",
+            "url": "https://www.wikidata.org/wiki/Q44003",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Theodor Herzl",
+            "label": "VIAF: 76317061",
+            "url": "https://viaf.org/en/viaf/76317061",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Theodor Herzl",
+            "label": "NLI: 987007262783105171",
+            "url": "https://www.nli.org.il/en/authorities/987007262783105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Theodor%20Herzl.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007262783105171.jsonld",
+        "hebrew_aliases": [
+          "בנימין זאב הרצל"
+        ]
+      },
+      {
+        "canonical_name": "Henri de Rothschild",
+        "variants": [],
+        "birth_year": 1872,
+        "death_year": 1947,
+        "occupations": [
+          "physician",
+          "racing automobile driver",
+          "winegrower",
+          "entrepreneur",
+          "philanthropist"
+        ],
+        "description": "French dramatist and playwright (1872-1947)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Henri de Rothschild",
+            "label": "Wikipedia: Henri de Rothschild",
+            "url": "https://en.wikipedia.org/wiki/Henri_de_Rothschild",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Henri de Rothschild",
+            "label": "Wikidata: Q3132362",
+            "url": "https://www.wikidata.org/wiki/Q3132362",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Henri de Rothschild",
+            "label": "VIAF: 51728562",
+            "url": "https://viaf.org/en/viaf/51728562",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Henri de Rothschild",
+            "label": "NLI: 987007267191705171",
+            "url": "https://www.nli.org.il/en/authorities/987007267191705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Henri%20de%20Rothschild%20%281872-1946%29.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007267191705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Solomon ibn Gabirol",
+        "variants": [],
+        "birth_year": 1020,
+        "death_year": 1070,
+        "occupations": [
+          "poet",
+          "writer",
+          "rabbi",
+          "philosopher"
+        ],
+        "description": "11th-century Andalusian poet and Jewish philosopher",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon ibn Gabirol",
+            "label": "Wikipedia: Solomon ibn Gabirol",
+            "url": "https://en.wikipedia.org/wiki/Solomon_ibn_Gabirol",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon ibn Gabirol",
+            "label": "Wikidata: Q239355",
+            "url": "https://www.wikidata.org/wiki/Q239355",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon ibn Gabirol",
+            "label": "VIAF: 100186412",
+            "url": "https://viaf.org/en/viaf/100186412",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Solomon ibn Gabirol",
+            "label": "NLI: 987007299258505171",
+            "url": "https://www.nli.org.il/en/authorities/987007299258505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Ibn%20Gabirol%2C%20Caesarea.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007299258505171.jsonld",
+        "hebrew_aliases": [
+          "שלמה אבן גבירול"
+        ]
+      },
+      {
+        "canonical_name": "Aristotle",
+        "variants": [],
+        "birth_year": -383,
+        "death_year": -321,
+        "occupations": [
+          "philosopher"
+        ],
+        "description": "4th-century BCE Classical Greek philosopher and polymath",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Aristotle",
+            "label": "Wikipedia: Aristotle",
+            "url": "https://en.wikipedia.org/wiki/Aristotle",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aristotle",
+            "label": "Wikidata: Q868",
+            "url": "https://www.wikidata.org/wiki/Q868",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aristotle",
+            "label": "VIAF: 7524651",
+            "url": "https://viaf.org/en/viaf/7524651",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Aristotle",
+            "label": "NLI: 987007257964005171",
+            "url": "https://www.nli.org.il/en/authorities/987007257964005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Aristotle%20Altemps%20Inv8575.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007257964005171.jsonld",
+        "hebrew_aliases": [
+          "אריסטו"
+        ]
+      },
+      {
+        "canonical_name": "Benedictus de Spinoza",
+        "variants": [],
+        "birth_year": 1632,
+        "death_year": 1677,
+        "occupations": [
+          "Bible translator",
+          "grammarian",
+          "grinder of lenses",
+          "philosopher",
+          "political scientist"
+        ],
+        "description": "Dutch philosopher (1632–1677)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Benedictus de Spinoza",
+            "label": "Wikipedia: Benedictus de Spinoza",
+            "url": "https://en.wikipedia.org/wiki/Baruch_Spinoza",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Benedictus de Spinoza",
+            "label": "Wikidata: Q35802",
+            "url": "https://www.wikidata.org/wiki/Q35802",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Benedictus de Spinoza",
+            "label": "VIAF: 22149024",
+            "url": "https://viaf.org/en/viaf/22149024",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Benedictus de Spinoza",
+            "label": "NLI: 987007268444205171",
+            "url": "https://www.nli.org.il/en/authorities/987007268444205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Spinoza.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007268444205171.jsonld",
+        "hebrew_aliases": [
+          "ברוך שפינוזה"
+        ]
+      },
+      {
+        "canonical_name": "August Pfeiffer",
+        "variants": [],
+        "birth_year": 1640,
+        "death_year": 1698,
+        "occupations": [
+          "theologian",
+          "university teacher"
+        ],
+        "description": "German theologian",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "August Pfeiffer",
+            "label": "Wikipedia: August Pfeiffer",
+            "url": "https://www.wikidata.org/wiki/Q125119",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "August Pfeiffer",
+            "label": "Wikidata: Q125119",
+            "url": "https://www.wikidata.org/wiki/Q125119",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "August Pfeiffer",
+            "label": "VIAF: 56953744",
+            "url": "https://viaf.org/en/viaf/56953744",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "August Pfeiffer",
+            "label": "NLI: 987007266576205171",
+            "url": "https://www.nli.org.il/en/authorities/987007266576205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/PfeifferAB3939.JPG",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007266576205171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Moshe ben Maimon",
+        "variants": [],
+        "birth_year": 1135,
+        "death_year": 1204,
+        "occupations": [
+          "physician",
+          "physician writer",
+          "philosopher",
+          "writer",
+          "astronomer"
+        ],
+        "description": "Medieval Jewish philosopher from Spain (1135–1204)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Moshe ben Maimon",
+            "label": "Wikipedia: Moshe ben Maimon",
+            "url": "https://en.wikipedia.org/wiki/Maimonides",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moshe ben Maimon",
+            "label": "Wikidata: Q127398",
+            "url": "https://www.wikidata.org/wiki/Q127398",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moshe ben Maimon",
+            "label": "VIAF: 100185495",
+            "url": "https://viaf.org/en/viaf/100185495",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moshe ben Maimon",
+            "label": "NLI: 987007265654005171",
+            "url": "https://www.nli.org.il/en/authorities/987007265654005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Maim%C3%B2nides.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265654005171.jsonld",
+        "hebrew_aliases": [
+          "משה בן מימון",
+          "רמב\"ם"
+        ]
+      },
+      {
+        "canonical_name": "toledo, pedro de",
+        "variants": [],
+        "birth_year": null,
+        "death_year": null,
+        "occupations": [
+          "statesperson",
+          "military personnel",
+          "politician"
+        ],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "toledo, pedro de",
+            "label": "Wikidata: Q1544242",
+            "url": "https://www.wikidata.org/wiki/Q1544242",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "toledo, pedro de",
+            "label": "NLI: 987007275092605171",
+            "url": "https://www.nli.org.il/en/authorities/987007275092605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007275092605171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Moshe Lazar",
+        "variants": [],
+        "birth_year": 1928,
+        "death_year": 2012,
+        "occupations": [
+          "literary theorist"
+        ],
+        "description": "American academic (1928–2012)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Moshe Lazar",
+            "label": "Wikipedia: Moshe Lazar",
+            "url": "https://en.wikipedia.org/wiki/Moshe_Lazar",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moshe Lazar",
+            "label": "Wikidata: Q1189889",
+            "url": "https://www.wikidata.org/wiki/Q1189889",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moshe Lazar",
+            "label": "VIAF: 111357115",
+            "url": "https://viaf.org/en/viaf/111357115",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moshe Lazar",
+            "label": "NLI: 987007264224105171",
+            "url": "https://www.nli.org.il/en/authorities/987007264224105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/The%20Shrine%20of%20the%20Book%20in%20the%20Israel%20Museum%2C%20in%20which%20the%20findings%20of%20the%20Dead%20Sea%20Scrolls%20are%20kept%20%28FL45775603%29.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264224105171.jsonld",
+        "hebrew_aliases": [
+          "משה לזר"
+        ]
+      },
+      {
+        "canonical_name": "Joseph Solomon Delmedigo",
+        "variants": [],
+        "birth_year": 1591,
+        "death_year": 1655,
+        "occupations": [
+          "astronomer",
+          "writer",
+          "physician",
+          "music theorist",
+          "philosopher"
+        ],
+        "description": "Greek rabbi (*1591 – †1655)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Joseph Solomon Delmedigo",
+            "label": "Wikipedia: Joseph Solomon Delmedigo",
+            "url": "https://en.wikipedia.org/wiki/Joseph_Solomon_Delmedigo",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Joseph Solomon Delmedigo",
+            "label": "Wikidata: Q969675",
+            "url": "https://www.wikidata.org/wiki/Q969675",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Joseph Solomon Delmedigo",
+            "label": "VIAF: 66524426",
+            "url": "https://viaf.org/en/viaf/66524426",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Joseph Solomon Delmedigo",
+            "label": "NLI: 987007260320905171",
+            "url": "https://www.nli.org.il/en/authorities/987007260320905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Delmedigo.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007260320905171.jsonld",
+        "hebrew_aliases": [
+          "יוסף שלמה דלמדיגו",
+          "דלמדיגו, יוסף שלמה בן אליהו"
+        ]
+      },
+      {
+        "canonical_name": "Yom-Tov Lipmann-Muhlhausen",
+        "variants": [],
+        "birth_year": 1400,
+        "death_year": 1500,
+        "occupations": [
+          "kabbalist",
+          "rabbi",
+          "philosopher"
+        ],
+        "description": "rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Yom-Tov Lipmann-Muhlhausen",
+            "label": "Wikipedia: Yom-Tov Lipmann-Muhlhausen",
+            "url": "https://en.wikipedia.org/wiki/Yom-Tov_Lipmann-Muhlhausen",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Yom-Tov Lipmann-Muhlhausen",
+            "label": "Wikidata: Q1702719",
+            "url": "https://www.wikidata.org/wiki/Q1702719",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Yom-Tov Lipmann-Muhlhausen",
+            "label": "VIAF: 289365363",
+            "url": "https://viaf.org/en/viaf/289365363",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Yom-Tov Lipmann-Muhlhausen",
+            "label": "NLI: 987007265883005171",
+            "url": "https://www.nli.org.il/en/authorities/987007265883005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265883005171.jsonld",
+        "hebrew_aliases": [
+          "יום טוב ליפמן",
+          "יום טוב ליפמן מילהויזן"
+        ]
+      },
+      {
+        "canonical_name": "David Kimhi",
+        "variants": [],
+        "birth_year": 1160,
+        "death_year": 1232,
+        "occupations": [
+          "writer",
+          "lexicographer",
+          "rabbi",
+          "philosopher"
+        ],
+        "description": "rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "David Kimhi",
+            "label": "Wikipedia: David Kimhi",
+            "url": "https://en.wikipedia.org/wiki/David_Kimhi",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Kimhi",
+            "label": "Wikidata: Q733619",
+            "url": "https://www.wikidata.org/wiki/Q733619",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Kimhi",
+            "label": "VIAF: 100213323",
+            "url": "https://viaf.org/en/viaf/100213323",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Kimhi",
+            "label": "NLI: 987007263691805171",
+            "url": "https://www.nli.org.il/en/authorities/987007263691805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007263691805171.jsonld",
+        "hebrew_aliases": [
+          "רד\"ק",
+          "קמחי, דוד בן יוסף"
+        ]
+      },
+      {
+        "canonical_name": "Judah Hurwitz",
+        "variants": [],
+        "birth_year": 1734,
+        "death_year": 1797,
+        "occupations": [
+          "writer"
+        ],
+        "description": "Dutch physician",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Hurwitz",
+            "label": "Wikipedia: Judah Hurwitz",
+            "url": "https://en.wikipedia.org/wiki/Judah_Hurwitz",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Hurwitz",
+            "label": "Wikidata: Q6302090",
+            "url": "https://www.wikidata.org/wiki/Q6302090",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Hurwitz",
+            "label": "VIAF: 57781945",
+            "url": "https://viaf.org/en/viaf/57781945",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Hurwitz",
+            "label": "NLI: 987007511780205171",
+            "url": "https://www.nli.org.il/en/authorities/987007511780205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007511780205171.jsonld",
+        "hebrew_aliases": [
+          "יהודה בן מרדכי הורביץ",
+          "הורביץ, יהודה בן מרדכי"
+        ]
+      },
+      {
+        "canonical_name": "Judah Halevi",
+        "variants": [],
+        "birth_year": 1075,
+        "death_year": 1141,
+        "occupations": [
+          "physician",
+          "poet",
+          "philosopher",
+          "writer",
+          "theologian"
+        ],
+        "description": "Spanish-Jewish philosopher, poet and physician (c.1075–1141)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Halevi",
+            "label": "Wikipedia: Judah Halevi",
+            "url": "https://en.wikipedia.org/wiki/Judah_Halevi",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Halevi",
+            "label": "Wikidata: Q299200",
+            "url": "https://www.wikidata.org/wiki/Q299200",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Halevi",
+            "label": "VIAF: 56620997",
+            "url": "https://viaf.org/en/viaf/56620997",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Halevi",
+            "label": "NLI: 987007270274205171",
+            "url": "https://www.nli.org.il/en/authorities/987007270274205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/%D7%A8%D7%99%D7%94%D7%9C%20%D7%A8%D7%90%D7%9C%D7%99%20%28cropped%29.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007270274205171.jsonld",
+        "hebrew_aliases": [
+          "יהודה הלוי",
+          "יהודה"
+        ]
+      },
+      {
+        "canonical_name": "Judah ben Saul ibn Tibbon",
+        "variants": [],
+        "birth_year": 1120,
+        "death_year": 1190,
+        "occupations": [
+          "writer",
+          "physician",
+          "translator",
+          "rabbi",
+          "poet"
+        ],
+        "description": "Spanish translator and rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah ben Saul ibn Tibbon",
+            "label": "Wikipedia: Judah ben Saul ibn Tibbon",
+            "url": "https://en.wikipedia.org/wiki/Judah_ben_Saul_ibn_Tibbon",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah ben Saul ibn Tibbon",
+            "label": "Wikidata: Q745336",
+            "url": "https://www.wikidata.org/wiki/Q745336",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah ben Saul ibn Tibbon",
+            "label": "VIAF: 49379706",
+            "url": "https://viaf.org/en/viaf/49379706",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah ben Saul ibn Tibbon",
+            "label": "NLI: 987007262871205171",
+            "url": "https://www.nli.org.il/en/authorities/987007262871205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Yehuda%20ibn%20Tibon%20-%20DSC%202488.JPG",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007262871205171.jsonld",
+        "hebrew_aliases": [
+          "יהודה אבן תיבון"
+        ]
+      },
+      {
+        "canonical_name": "Judah Moscato",
+        "variants": [],
+        "birth_year": 1530,
+        "death_year": 1593,
+        "occupations": [
+          "philosopher",
+          "rabbi",
+          "poet"
+        ],
+        "description": "Italian rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Moscato",
+            "label": "Wikipedia: Judah Moscato",
+            "url": "https://en.wikipedia.org/wiki/Judah_Moscato",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Moscato",
+            "label": "Wikidata: Q6302105",
+            "url": "https://www.wikidata.org/wiki/Q6302105",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Moscato",
+            "label": "VIAF: 28713524",
+            "url": "https://viaf.org/en/viaf/28713524",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Moscato",
+            "label": "NLI: 987007301903105171",
+            "url": "https://www.nli.org.il/en/authorities/987007301903105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007301903105171.jsonld",
+        "hebrew_aliases": [
+          "יהודה מוסקאטו",
+          "מוסקטו, יהודה בן יוסף"
+        ]
+      },
+      {
+        "canonical_name": "Hasdai ibn Shaprut",
+        "variants": [],
+        "birth_year": 915,
+        "death_year": 975,
+        "occupations": [
+          "physician",
+          "translator",
+          "rabbi",
+          "diplomat"
+        ],
+        "description": "9th century Andalusian Jewish scholar, physician and official",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Hasdai ibn Shaprut",
+            "label": "Wikipedia: Hasdai ibn Shaprut",
+            "url": "https://en.wikipedia.org/wiki/Hasdai_ibn_Shaprut",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hasdai ibn Shaprut",
+            "label": "Wikidata: Q182498",
+            "url": "https://www.wikidata.org/wiki/Q182498",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hasdai ibn Shaprut",
+            "label": "VIAF: 97222460",
+            "url": "https://viaf.org/en/viaf/97222460",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hasdai ibn Shaprut",
+            "label": "NLI: 987007262470705171",
+            "url": "https://www.nli.org.il/en/authorities/987007262470705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Ja%C3%A9n%20-%20Monumento%20a%20Hasday%20ibn%20Shaprut%20K01.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007262470705171.jsonld",
+        "hebrew_aliases": [
+          "חסדאי אבן שפרוט"
+        ]
+      },
+      {
+        "canonical_name": "Malachi Beit-Arié",
+        "variants": [],
+        "birth_year": 1937,
+        "death_year": 2023,
+        "occupations": [
+          "codicologist",
+          "palaeographer",
+          "poet"
+        ],
+        "description": "Israeli poet",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Malachi Beit-Arié",
+            "label": "Wikipedia: Malachi Beit-Arié",
+            "url": "https://www.wikidata.org/wiki/Q6845532",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Malachi Beit-Arié",
+            "label": "Wikidata: Q6845532",
+            "url": "https://www.wikidata.org/wiki/Q6845532",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Malachi Beit-Arié",
+            "label": "VIAF: 44295189",
+            "url": "https://viaf.org/en/viaf/44295189",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Malachi Beit-Arié",
+            "label": "NLI: 987007258301305171",
+            "url": "https://www.nli.org.il/en/authorities/987007258301305171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007258301305171.jsonld",
+        "hebrew_aliases": [
+          "מלאכי בית־אריה",
+          "בית אריה, מלאכי"
+        ]
+      },
+      {
+        "canonical_name": "Menasseh Ben Israel",
+        "variants": [],
+        "birth_year": 1604,
+        "death_year": 1657,
+        "occupations": [
+          "printer",
+          "diplomat",
+          "philosopher",
+          "publisher",
+          "writer"
+        ],
+        "description": "Portuguese rabbi, kabbalist, writer, diplomat, printer and publisher",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Menasseh Ben Israel",
+            "label": "Wikipedia: Menasseh Ben Israel",
+            "url": "https://en.wikipedia.org/wiki/Menasseh_Ben_Israel",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menasseh Ben Israel",
+            "label": "Wikidata: Q733629",
+            "url": "https://www.wikidata.org/wiki/Q733629",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menasseh Ben Israel",
+            "label": "VIAF: 64807689",
+            "url": "https://viaf.org/en/viaf/64807689",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menasseh Ben Israel",
+            "label": "NLI: 987007265377405171",
+            "url": "https://www.nli.org.il/en/authorities/987007265377405171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Menasseh%20ben%20Israel%201642.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265377405171.jsonld",
+        "hebrew_aliases": [
+          "מנשה בן ישראל"
+        ]
+      },
+      {
+        "canonical_name": "Ephraim Deinard",
+        "variants": [],
+        "birth_year": 1846,
+        "death_year": 1930,
+        "occupations": [
+          "writer",
+          "bibliographer",
+          "bookseller"
+        ],
+        "description": "Hebrew bookman",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Ephraim Deinard",
+            "label": "Wikipedia: Ephraim Deinard",
+            "url": "https://en.wikipedia.org/wiki/Ephraim_Deinard",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ephraim Deinard",
+            "label": "Wikidata: Q5382261",
+            "url": "https://www.wikidata.org/wiki/Q5382261",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ephraim Deinard",
+            "label": "VIAF: 55302034",
+            "url": "https://viaf.org/en/viaf/55302034",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ephraim Deinard",
+            "label": "NLI: 987007306189605171",
+            "url": "https://www.nli.org.il/en/authorities/987007306189605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Ephraim%20Deinard.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007306189605171.jsonld",
+        "hebrew_aliases": [
+          "אפרים דיינרד"
+        ]
+      },
+      {
+        "canonical_name": "Isaac ben Moses Arama",
+        "variants": [],
+        "birth_year": 1420,
+        "death_year": 1494,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "rabbi, philosopher and preacher",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac ben Moses Arama",
+            "label": "Wikipedia: Isaac ben Moses Arama",
+            "url": "https://en.wikipedia.org/wiki/Isaac_ben_Moses_Arama",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac ben Moses Arama",
+            "label": "Wikidata: Q1689684",
+            "url": "https://www.wikidata.org/wiki/Q1689684",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac ben Moses Arama",
+            "label": "VIAF: 47119498",
+            "url": "https://viaf.org/en/viaf/47119498",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac ben Moses Arama",
+            "label": "NLI: 987007280288905171",
+            "url": "https://www.nli.org.il/en/authorities/987007280288905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007280288905171.jsonld",
+        "hebrew_aliases": [
+          "יצחק עראמה",
+          "עראמה, יצחק בן משה"
+        ]
+      },
+      {
+        "canonical_name": "Menahem Lonzano",
+        "variants": [],
+        "birth_year": 1550,
+        "death_year": 1626,
+        "occupations": [
+          "rabbi",
+          "poet"
+        ],
+        "description": "rabbi, Masoretic scholar, lexicographer and poet",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Menahem Lonzano",
+            "label": "Wikipedia: Menahem Lonzano",
+            "url": "https://en.wikipedia.org/wiki/Menahem_Lonzano",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menahem Lonzano",
+            "label": "Wikidata: Q2899427",
+            "url": "https://www.wikidata.org/wiki/Q2899427",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menahem Lonzano",
+            "label": "VIAF: 75522371",
+            "url": "https://viaf.org/en/viaf/75522371",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Menahem Lonzano",
+            "label": "NLI: 987007264618505171",
+            "url": "https://www.nli.org.il/en/authorities/987007264618505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264618505171.jsonld",
+        "hebrew_aliases": [
+          "מנחם די לונזאנו",
+          "לונזנו, מנחם בן יהודה די"
+        ]
+      },
+      {
+        "canonical_name": "Isaac Abrabanel",
+        "variants": [],
+        "birth_year": 1437,
+        "death_year": 1508,
+        "occupations": [
+          "politician",
+          "banker",
+          "poet",
+          "philosopher",
+          "businessperson"
+        ],
+        "description": "Portuguese-Spanish Jewish businessman, exegete and philosopher (1437-1508)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Abrabanel",
+            "label": "Wikipedia: Isaac Abrabanel",
+            "url": "https://en.wikipedia.org/wiki/Isaac_Abarbanel",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Abrabanel",
+            "label": "Wikidata: Q319902",
+            "url": "https://www.wikidata.org/wiki/Q319902",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Abrabanel",
+            "label": "VIAF: 36986982",
+            "url": "https://viaf.org/en/viaf/36986982",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Isaac Abrabanel",
+            "label": "NLI: 987007257306605171",
+            "url": "https://www.nli.org.il/en/authorities/987007257306605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Brockhaus%20and%20Efron%20Jewish%20Encyclopedia%20e1%20134-0.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007257306605171.jsonld",
+        "hebrew_aliases": [
+          "יצחק אברבנאל"
+        ]
+      },
+      {
+        "canonical_name": "Obadiah ben Jacob Sforno",
+        "variants": [],
+        "birth_year": 1470,
+        "death_year": 1550,
+        "occupations": [
+          "physician",
+          "biblical scholar",
+          "rabbi"
+        ],
+        "description": "Italian philosopher and rabbi",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Obadiah ben Jacob Sforno",
+            "label": "Wikipedia: Obadiah ben Jacob Sforno",
+            "url": "https://en.wikipedia.org/wiki/Obadiah_ben_Jacob_Sforno",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Obadiah ben Jacob Sforno",
+            "label": "Wikidata: Q1195977",
+            "url": "https://www.wikidata.org/wiki/Q1195977",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Obadiah ben Jacob Sforno",
+            "label": "VIAF: 29887312",
+            "url": "https://viaf.org/en/viaf/29887312",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Obadiah ben Jacob Sforno",
+            "label": "NLI: 987007268075105171",
+            "url": "https://www.nli.org.il/en/authorities/987007268075105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007268075105171.jsonld",
+        "hebrew_aliases": [
+          "עובדיה ספורנו",
+          "ספורנו, עובדיה בן יעקב"
+        ]
+      },
+      {
+        "canonical_name": "Judah Ashael ben David Eliezer Del Bene",
+        "variants": [],
+        "birth_year": 1618,
+        "death_year": 1678,
+        "occupations": [
+          "rabbi"
+        ],
+        "description": "Italian rabbi (1618 ca.-1678)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Ashael ben David Eliezer Del Bene",
+            "label": "Wikipedia: Judah Ashael ben David Eliezer Del Bene",
+            "url": "https://www.wikidata.org/wiki/Q106832423",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Ashael ben David Eliezer Del Bene",
+            "label": "Wikidata: Q106832423",
+            "url": "https://www.wikidata.org/wiki/Q106832423",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Ashael ben David Eliezer Del Bene",
+            "label": "VIAF: 351159474198727662112",
+            "url": "https://viaf.org/en/viaf/351159474198727662112",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Judah Ashael ben David Eliezer Del Bene",
+            "label": "NLI: 987007310166805171",
+            "url": "https://www.nli.org.il/en/authorities/987007310166805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007310166805171.jsonld",
+        "hebrew_aliases": [
+          "מה טוב, יהודה עשהאל בן אליעזר דוד"
+        ]
+      },
+      {
+        "canonical_name": "Averroes",
+        "variants": [],
+        "birth_year": 1126,
+        "death_year": 1198,
+        "occupations": [
+          "astronomer",
+          "writer",
+          "physician",
+          "philosopher",
+          "teacher"
+        ],
+        "description": "Arab Andalusian Muslim writer and philosopher (1126–1198)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Averroes",
+            "label": "Wikipedia: Averroes",
+            "url": "https://en.wikipedia.org/wiki/Averroes",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Averroes",
+            "label": "Wikidata: Q39837",
+            "url": "https://www.wikidata.org/wiki/Q39837",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Averroes",
+            "label": "VIAF: 19688718",
+            "url": "https://viaf.org/en/viaf/19688718",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Averroes",
+            "label": "NLI: 987007258070905171",
+            "url": "https://www.nli.org.il/en/authorities/987007258070905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Statue%20of%20Averroes%20in%20C%C3%B3rdoba%2C%20Spain.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007258070905171.jsonld",
+        "hebrew_aliases": [
+          "אבן רושד",
+          "אבן רשד, מחמד"
+        ]
+      },
+      {
+        "canonical_name": "Moses ibn Tibbon",
+        "variants": [],
+        "birth_year": 1195,
+        "death_year": 1274,
+        "occupations": [
+          "writer",
+          "translator",
+          "physician",
+          "rabbi"
+        ],
+        "description": "Jewish translator and writer",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses ibn Tibbon",
+            "label": "Wikipedia: Moses ibn Tibbon",
+            "url": "https://en.wikipedia.org/wiki/Moses_ibn_Tibbon",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses ibn Tibbon",
+            "label": "Wikidata: Q181498",
+            "url": "https://www.wikidata.org/wiki/Q181498",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses ibn Tibbon",
+            "label": "VIAF: 64172358",
+            "url": "https://viaf.org/en/viaf/64172358",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moses ibn Tibbon",
+            "label": "NLI: 987007262875105171",
+            "url": "https://www.nli.org.il/en/authorities/987007262875105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007262875105171.jsonld",
+        "hebrew_aliases": [
+          "משה אבן תיבון",
+          "אבן תבון, משה בן שמואל"
+        ]
+      },
+      {
+        "canonical_name": "Gerson ben Solomon Catalan",
+        "variants": [],
+        "birth_year": 1300,
+        "death_year": 1300,
+        "occupations": [
+          "encyclopedist",
+          "astronomer",
+          "writer",
+          "rabbi",
+          "Jewish theologian"
+        ],
+        "description": "French theologian and writer",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Gerson ben Solomon Catalan",
+            "label": "Wikipedia: Gerson ben Solomon Catalan",
+            "url": "https://en.wikipedia.org/wiki/Gerson_ben_Solomon_Catalan",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Gerson ben Solomon Catalan",
+            "label": "Wikidata: Q3761313",
+            "url": "https://www.wikidata.org/wiki/Q3761313",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Gerson ben Solomon Catalan",
+            "label": "VIAF: 22294645",
+            "url": "https://viaf.org/en/viaf/22294645",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Gerson ben Solomon Catalan",
+            "label": "NLI: 987007296661805171",
+            "url": "https://www.nli.org.il/en/authorities/987007296661805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007296661805171.jsonld",
+        "hebrew_aliases": [
+          "גרשום בן שלמה",
+          "גרשון בן שלמה"
+        ]
+      },
+      {
+        "canonical_name": "Tobias Cohn",
+        "variants": [],
+        "birth_year": 1652,
+        "death_year": 1729,
+        "occupations": [
+          "physician",
+          "physician writer"
+        ],
+        "description": "Polish physician",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Tobias Cohn",
+            "label": "Wikipedia: Tobias Cohn",
+            "url": "https://en.wikipedia.org/wiki/Tobias_Cohn",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Tobias Cohn",
+            "label": "Wikidata: Q75280",
+            "url": "https://www.wikidata.org/wiki/Q75280",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Tobias Cohn",
+            "label": "VIAF: 30151776817318012267",
+            "url": "https://viaf.org/en/viaf/30151776817318012267",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Tobias Cohn",
+            "label": "NLI: 987007306697005171",
+            "url": "https://www.nli.org.il/en/authorities/987007306697005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/TobiasCohn.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007306697005171.jsonld",
+        "hebrew_aliases": [
+          "טוביה כהן",
+          "כץ, טוביה בן משה"
+        ]
+      }
+    ],
+    "aggregations": {},
+    "aggregation_meta": {},
+    "links": [
+      {
+        "entity_type": "record",
+        "entity_id": "990009507110204146",
+        "label": "Primo: Phadon, oder, uber die Unsterblichkeit der Seele, ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990009507110204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010050410204146",
+        "label": "Primo: Theodor Herzls Tagebucher, 1895-1904",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010050410204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010059240204146",
+        "label": "Primo: Un bibliophile d'autrefois : le Baron James-Edouar",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010059240204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010593000204146",
+        "label": "Primo: גורן נכון, תקון מדות הנפש : עם ספר מוסרי הפלוסופים",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010593000204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010699550204146",
+        "label": "Primo: Phadon, oder, uber die Unsterblichkeit der Seele, ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010699550204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010699620204146",
+        "label": "Primo: Phadon, oder, uber die Unsterblichkeit der Seele, ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010699620204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011128280204146",
+        "label": "Primo: Renati des cartes principiorum philosophiae, pars ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011128280204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011348820204146",
+        "label": "Primo: Theologiae, sive potius [Malaiologias] judaicae at",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011348820204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011525470204146",
+        "label": "Primo: Guide for the perplexed : a 15th century Spanish t",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011525470204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011897880204146",
+        "label": "Primo: אילם : ... שאלות ... שאל זרח בר נתן ... מהרב ... י",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011897880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011906330204146",
+        "label": "Primo: Die Psalmen / uebersetzt von Moses Mendelssohn",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011906330204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011906890204146",
+        "label": "Primo: [ספר הנצחון] / [אשר חבר ר' ליפמן לנצח צדוקים ונוצר",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011906890204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011909070204146",
+        "label": "Primo: ספר עמודי בית יהודה : העומדים לתורה ועבודה ... במא",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011909070204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011928190204146",
+        "label": "Primo: ספר נצחון / אשר חבר ר' ליפמן לנצח צדוקים ונוצרים מ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011928190204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011939860204146",
+        "label": "Primo: ספר הכוזרי / יסדו ... יצחק הסנגורי ... ; חברו בלשו",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011939860204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011940200204146",
+        "label": "Primo: מחזור וורמייזא : כ\"י בית הספרים הלאומי והאוניברסיט",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011940200204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012006140204146",
+        "label": "Primo: הסגלה : מוקדש להעתקת כתבי-יד עתיקים שלא נדפסו מעול",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012006140204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012006880204146",
+        "label": "Primo: ספר נשמת חיים : כולל דרושים ... על ענין הנשמה ... ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012006880204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012006910204146",
+        "label": "Primo: שבלים בודדות : אספת מאמרים אשר אספתי מדפים בודדים,",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012006910204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012007000204146",
+        "label": "Primo: עקידת יצחק / יצחק בן עראמה",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012007000204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012009960204146",
+        "label": "Primo: שתי ידות : [והוא נחלק ... לשני חלקים, הראשון הנקרא",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012009960204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012009970204146",
+        "label": "Primo: ספר מנחות יעקב סלת : היא מנחה בלולה במקרא ובגמרא ו",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012009970204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012018630204146",
+        "label": "Primo: עטרת זקנים / חברו ... דון יצחק אבראבינאל ; [ונלוה ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012018630204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012018870204146",
+        "label": "Primo: ספר חזות קשה / יצחק בן ערמאה ... והוספנו בו מראה מ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012018870204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012018910204146",
+        "label": "Primo: יהודה ועוד לקרא : לקוטים מתוך כתבי ידות / הובאו לב",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012018910204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012023150204146",
+        "label": "Primo: אור עמים / [חברו ... עובדיה ... מספורנו]",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012023150204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012033430204146",
+        "label": "Primo: ספר כסאות לבית דוד / אשר יסד, אזן וחבר ... יהודה ע",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012033430204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012036270204146",
+        "label": "Primo: קצורי אבן רשד על שמע טבעי לאריסטוטלס",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012036270204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012036390204146",
+        "label": "Primo: ספר שער השמים : פיהו פתח בחכמה וידבר על העוף ועל ה",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012036390204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012036630204146",
+        "label": "Primo: מעשה טוביה : כולל הארבעה עולמות, ונחלק לחמשה חלקים",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012036630204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Mendelssohn",
+        "label": "Wikipedia: Moses Mendelssohn",
+        "url": "https://en.wikipedia.org/wiki/Moses_Mendelssohn",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Mendelssohn",
+        "label": "Wikidata: Q76997",
+        "url": "https://www.wikidata.org/wiki/Q76997",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Mendelssohn",
+        "label": "VIAF: 19681378",
+        "url": "https://viaf.org/en/viaf/19681378",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses Mendelssohn",
+        "label": "NLI: 987007265215505171",
+        "url": "https://www.nli.org.il/en/authorities/987007265215505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Theodor Herzl",
+        "label": "Wikipedia: Theodor Herzl",
+        "url": "https://en.wikipedia.org/wiki/Theodor_Herzl",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Theodor Herzl",
+        "label": "Wikidata: Q44003",
+        "url": "https://www.wikidata.org/wiki/Q44003",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Theodor Herzl",
+        "label": "VIAF: 76317061",
+        "url": "https://viaf.org/en/viaf/76317061",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Theodor Herzl",
+        "label": "NLI: 987007262783105171",
+        "url": "https://www.nli.org.il/en/authorities/987007262783105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Henri de Rothschild",
+        "label": "Wikipedia: Henri de Rothschild",
+        "url": "https://en.wikipedia.org/wiki/Henri_de_Rothschild",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Henri de Rothschild",
+        "label": "Wikidata: Q3132362",
+        "url": "https://www.wikidata.org/wiki/Q3132362",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Henri de Rothschild",
+        "label": "VIAF: 51728562",
+        "url": "https://viaf.org/en/viaf/51728562",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Henri de Rothschild",
+        "label": "NLI: 987007267191705171",
+        "url": "https://www.nli.org.il/en/authorities/987007267191705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon ibn Gabirol",
+        "label": "Wikipedia: Solomon ibn Gabirol",
+        "url": "https://en.wikipedia.org/wiki/Solomon_ibn_Gabirol",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon ibn Gabirol",
+        "label": "Wikidata: Q239355",
+        "url": "https://www.wikidata.org/wiki/Q239355",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon ibn Gabirol",
+        "label": "VIAF: 100186412",
+        "url": "https://viaf.org/en/viaf/100186412",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Solomon ibn Gabirol",
+        "label": "NLI: 987007299258505171",
+        "url": "https://www.nli.org.il/en/authorities/987007299258505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aristotle",
+        "label": "Wikipedia: Aristotle",
+        "url": "https://en.wikipedia.org/wiki/Aristotle",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aristotle",
+        "label": "Wikidata: Q868",
+        "url": "https://www.wikidata.org/wiki/Q868",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aristotle",
+        "label": "VIAF: 7524651",
+        "url": "https://viaf.org/en/viaf/7524651",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Aristotle",
+        "label": "NLI: 987007257964005171",
+        "url": "https://www.nli.org.il/en/authorities/987007257964005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Benedictus de Spinoza",
+        "label": "Wikipedia: Benedictus de Spinoza",
+        "url": "https://en.wikipedia.org/wiki/Baruch_Spinoza",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Benedictus de Spinoza",
+        "label": "Wikidata: Q35802",
+        "url": "https://www.wikidata.org/wiki/Q35802",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Benedictus de Spinoza",
+        "label": "VIAF: 22149024",
+        "url": "https://viaf.org/en/viaf/22149024",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Benedictus de Spinoza",
+        "label": "NLI: 987007268444205171",
+        "url": "https://www.nli.org.il/en/authorities/987007268444205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "August Pfeiffer",
+        "label": "Wikipedia: August Pfeiffer",
+        "url": "https://www.wikidata.org/wiki/Q125119",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "August Pfeiffer",
+        "label": "Wikidata: Q125119",
+        "url": "https://www.wikidata.org/wiki/Q125119",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "August Pfeiffer",
+        "label": "VIAF: 56953744",
+        "url": "https://viaf.org/en/viaf/56953744",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "August Pfeiffer",
+        "label": "NLI: 987007266576205171",
+        "url": "https://www.nli.org.il/en/authorities/987007266576205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moshe ben Maimon",
+        "label": "Wikipedia: Moshe ben Maimon",
+        "url": "https://en.wikipedia.org/wiki/Maimonides",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moshe ben Maimon",
+        "label": "Wikidata: Q127398",
+        "url": "https://www.wikidata.org/wiki/Q127398",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moshe ben Maimon",
+        "label": "VIAF: 100185495",
+        "url": "https://viaf.org/en/viaf/100185495",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moshe ben Maimon",
+        "label": "NLI: 987007265654005171",
+        "url": "https://www.nli.org.il/en/authorities/987007265654005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "toledo, pedro de",
+        "label": "Wikidata: Q1544242",
+        "url": "https://www.wikidata.org/wiki/Q1544242",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "toledo, pedro de",
+        "label": "NLI: 987007275092605171",
+        "url": "https://www.nli.org.il/en/authorities/987007275092605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moshe Lazar",
+        "label": "Wikipedia: Moshe Lazar",
+        "url": "https://en.wikipedia.org/wiki/Moshe_Lazar",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moshe Lazar",
+        "label": "Wikidata: Q1189889",
+        "url": "https://www.wikidata.org/wiki/Q1189889",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moshe Lazar",
+        "label": "VIAF: 111357115",
+        "url": "https://viaf.org/en/viaf/111357115",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moshe Lazar",
+        "label": "NLI: 987007264224105171",
+        "url": "https://www.nli.org.il/en/authorities/987007264224105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Joseph Solomon Delmedigo",
+        "label": "Wikipedia: Joseph Solomon Delmedigo",
+        "url": "https://en.wikipedia.org/wiki/Joseph_Solomon_Delmedigo",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Joseph Solomon Delmedigo",
+        "label": "Wikidata: Q969675",
+        "url": "https://www.wikidata.org/wiki/Q969675",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Joseph Solomon Delmedigo",
+        "label": "VIAF: 66524426",
+        "url": "https://viaf.org/en/viaf/66524426",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Joseph Solomon Delmedigo",
+        "label": "NLI: 987007260320905171",
+        "url": "https://www.nli.org.il/en/authorities/987007260320905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Yom-Tov Lipmann-Muhlhausen",
+        "label": "Wikipedia: Yom-Tov Lipmann-Muhlhausen",
+        "url": "https://en.wikipedia.org/wiki/Yom-Tov_Lipmann-Muhlhausen",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Yom-Tov Lipmann-Muhlhausen",
+        "label": "Wikidata: Q1702719",
+        "url": "https://www.wikidata.org/wiki/Q1702719",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Yom-Tov Lipmann-Muhlhausen",
+        "label": "VIAF: 289365363",
+        "url": "https://viaf.org/en/viaf/289365363",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Yom-Tov Lipmann-Muhlhausen",
+        "label": "NLI: 987007265883005171",
+        "url": "https://www.nli.org.il/en/authorities/987007265883005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Kimhi",
+        "label": "Wikipedia: David Kimhi",
+        "url": "https://en.wikipedia.org/wiki/David_Kimhi",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Kimhi",
+        "label": "Wikidata: Q733619",
+        "url": "https://www.wikidata.org/wiki/Q733619",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Kimhi",
+        "label": "VIAF: 100213323",
+        "url": "https://viaf.org/en/viaf/100213323",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Kimhi",
+        "label": "NLI: 987007263691805171",
+        "url": "https://www.nli.org.il/en/authorities/987007263691805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Hurwitz",
+        "label": "Wikipedia: Judah Hurwitz",
+        "url": "https://en.wikipedia.org/wiki/Judah_Hurwitz",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Hurwitz",
+        "label": "Wikidata: Q6302090",
+        "url": "https://www.wikidata.org/wiki/Q6302090",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Hurwitz",
+        "label": "VIAF: 57781945",
+        "url": "https://viaf.org/en/viaf/57781945",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Hurwitz",
+        "label": "NLI: 987007511780205171",
+        "url": "https://www.nli.org.il/en/authorities/987007511780205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Halevi",
+        "label": "Wikipedia: Judah Halevi",
+        "url": "https://en.wikipedia.org/wiki/Judah_Halevi",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Halevi",
+        "label": "Wikidata: Q299200",
+        "url": "https://www.wikidata.org/wiki/Q299200",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Halevi",
+        "label": "VIAF: 56620997",
+        "url": "https://viaf.org/en/viaf/56620997",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Halevi",
+        "label": "NLI: 987007270274205171",
+        "url": "https://www.nli.org.il/en/authorities/987007270274205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah ben Saul ibn Tibbon",
+        "label": "Wikipedia: Judah ben Saul ibn Tibbon",
+        "url": "https://en.wikipedia.org/wiki/Judah_ben_Saul_ibn_Tibbon",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah ben Saul ibn Tibbon",
+        "label": "Wikidata: Q745336",
+        "url": "https://www.wikidata.org/wiki/Q745336",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah ben Saul ibn Tibbon",
+        "label": "VIAF: 49379706",
+        "url": "https://viaf.org/en/viaf/49379706",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah ben Saul ibn Tibbon",
+        "label": "NLI: 987007262871205171",
+        "url": "https://www.nli.org.il/en/authorities/987007262871205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Moscato",
+        "label": "Wikipedia: Judah Moscato",
+        "url": "https://en.wikipedia.org/wiki/Judah_Moscato",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Moscato",
+        "label": "Wikidata: Q6302105",
+        "url": "https://www.wikidata.org/wiki/Q6302105",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Moscato",
+        "label": "VIAF: 28713524",
+        "url": "https://viaf.org/en/viaf/28713524",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Moscato",
+        "label": "NLI: 987007301903105171",
+        "url": "https://www.nli.org.il/en/authorities/987007301903105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hasdai ibn Shaprut",
+        "label": "Wikipedia: Hasdai ibn Shaprut",
+        "url": "https://en.wikipedia.org/wiki/Hasdai_ibn_Shaprut",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hasdai ibn Shaprut",
+        "label": "Wikidata: Q182498",
+        "url": "https://www.wikidata.org/wiki/Q182498",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hasdai ibn Shaprut",
+        "label": "VIAF: 97222460",
+        "url": "https://viaf.org/en/viaf/97222460",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hasdai ibn Shaprut",
+        "label": "NLI: 987007262470705171",
+        "url": "https://www.nli.org.il/en/authorities/987007262470705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Malachi Beit-Arié",
+        "label": "Wikipedia: Malachi Beit-Arié",
+        "url": "https://www.wikidata.org/wiki/Q6845532",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Malachi Beit-Arié",
+        "label": "Wikidata: Q6845532",
+        "url": "https://www.wikidata.org/wiki/Q6845532",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Malachi Beit-Arié",
+        "label": "VIAF: 44295189",
+        "url": "https://viaf.org/en/viaf/44295189",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Malachi Beit-Arié",
+        "label": "NLI: 987007258301305171",
+        "url": "https://www.nli.org.il/en/authorities/987007258301305171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menasseh Ben Israel",
+        "label": "Wikipedia: Menasseh Ben Israel",
+        "url": "https://en.wikipedia.org/wiki/Menasseh_Ben_Israel",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menasseh Ben Israel",
+        "label": "Wikidata: Q733629",
+        "url": "https://www.wikidata.org/wiki/Q733629",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menasseh Ben Israel",
+        "label": "VIAF: 64807689",
+        "url": "https://viaf.org/en/viaf/64807689",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menasseh Ben Israel",
+        "label": "NLI: 987007265377405171",
+        "url": "https://www.nli.org.il/en/authorities/987007265377405171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ephraim Deinard",
+        "label": "Wikipedia: Ephraim Deinard",
+        "url": "https://en.wikipedia.org/wiki/Ephraim_Deinard",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ephraim Deinard",
+        "label": "Wikidata: Q5382261",
+        "url": "https://www.wikidata.org/wiki/Q5382261",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ephraim Deinard",
+        "label": "VIAF: 55302034",
+        "url": "https://viaf.org/en/viaf/55302034",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ephraim Deinard",
+        "label": "NLI: 987007306189605171",
+        "url": "https://www.nli.org.il/en/authorities/987007306189605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac ben Moses Arama",
+        "label": "Wikipedia: Isaac ben Moses Arama",
+        "url": "https://en.wikipedia.org/wiki/Isaac_ben_Moses_Arama",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac ben Moses Arama",
+        "label": "Wikidata: Q1689684",
+        "url": "https://www.wikidata.org/wiki/Q1689684",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac ben Moses Arama",
+        "label": "VIAF: 47119498",
+        "url": "https://viaf.org/en/viaf/47119498",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac ben Moses Arama",
+        "label": "NLI: 987007280288905171",
+        "url": "https://www.nli.org.il/en/authorities/987007280288905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menahem Lonzano",
+        "label": "Wikipedia: Menahem Lonzano",
+        "url": "https://en.wikipedia.org/wiki/Menahem_Lonzano",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menahem Lonzano",
+        "label": "Wikidata: Q2899427",
+        "url": "https://www.wikidata.org/wiki/Q2899427",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menahem Lonzano",
+        "label": "VIAF: 75522371",
+        "url": "https://viaf.org/en/viaf/75522371",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Menahem Lonzano",
+        "label": "NLI: 987007264618505171",
+        "url": "https://www.nli.org.il/en/authorities/987007264618505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Abrabanel",
+        "label": "Wikipedia: Isaac Abrabanel",
+        "url": "https://en.wikipedia.org/wiki/Isaac_Abarbanel",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Abrabanel",
+        "label": "Wikidata: Q319902",
+        "url": "https://www.wikidata.org/wiki/Q319902",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Abrabanel",
+        "label": "VIAF: 36986982",
+        "url": "https://viaf.org/en/viaf/36986982",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Isaac Abrabanel",
+        "label": "NLI: 987007257306605171",
+        "url": "https://www.nli.org.il/en/authorities/987007257306605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Obadiah ben Jacob Sforno",
+        "label": "Wikipedia: Obadiah ben Jacob Sforno",
+        "url": "https://en.wikipedia.org/wiki/Obadiah_ben_Jacob_Sforno",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Obadiah ben Jacob Sforno",
+        "label": "Wikidata: Q1195977",
+        "url": "https://www.wikidata.org/wiki/Q1195977",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Obadiah ben Jacob Sforno",
+        "label": "VIAF: 29887312",
+        "url": "https://viaf.org/en/viaf/29887312",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Obadiah ben Jacob Sforno",
+        "label": "NLI: 987007268075105171",
+        "url": "https://www.nli.org.il/en/authorities/987007268075105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Ashael ben David Eliezer Del Bene",
+        "label": "Wikipedia: Judah Ashael ben David Eliezer Del Bene",
+        "url": "https://www.wikidata.org/wiki/Q106832423",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Ashael ben David Eliezer Del Bene",
+        "label": "Wikidata: Q106832423",
+        "url": "https://www.wikidata.org/wiki/Q106832423",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Ashael ben David Eliezer Del Bene",
+        "label": "VIAF: 351159474198727662112",
+        "url": "https://viaf.org/en/viaf/351159474198727662112",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Judah Ashael ben David Eliezer Del Bene",
+        "label": "NLI: 987007310166805171",
+        "url": "https://www.nli.org.il/en/authorities/987007310166805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Averroes",
+        "label": "Wikipedia: Averroes",
+        "url": "https://en.wikipedia.org/wiki/Averroes",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Averroes",
+        "label": "Wikidata: Q39837",
+        "url": "https://www.wikidata.org/wiki/Q39837",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Averroes",
+        "label": "VIAF: 19688718",
+        "url": "https://viaf.org/en/viaf/19688718",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Averroes",
+        "label": "NLI: 987007258070905171",
+        "url": "https://www.nli.org.il/en/authorities/987007258070905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses ibn Tibbon",
+        "label": "Wikipedia: Moses ibn Tibbon",
+        "url": "https://en.wikipedia.org/wiki/Moses_ibn_Tibbon",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses ibn Tibbon",
+        "label": "Wikidata: Q181498",
+        "url": "https://www.wikidata.org/wiki/Q181498",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses ibn Tibbon",
+        "label": "VIAF: 64172358",
+        "url": "https://viaf.org/en/viaf/64172358",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moses ibn Tibbon",
+        "label": "NLI: 987007262875105171",
+        "url": "https://www.nli.org.il/en/authorities/987007262875105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Gerson ben Solomon Catalan",
+        "label": "Wikipedia: Gerson ben Solomon Catalan",
+        "url": "https://en.wikipedia.org/wiki/Gerson_ben_Solomon_Catalan",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Gerson ben Solomon Catalan",
+        "label": "Wikidata: Q3761313",
+        "url": "https://www.wikidata.org/wiki/Q3761313",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Gerson ben Solomon Catalan",
+        "label": "VIAF: 22294645",
+        "url": "https://viaf.org/en/viaf/22294645",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Gerson ben Solomon Catalan",
+        "label": "NLI: 987007296661805171",
+        "url": "https://www.nli.org.il/en/authorities/987007296661805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Tobias Cohn",
+        "label": "Wikipedia: Tobias Cohn",
+        "url": "https://en.wikipedia.org/wiki/Tobias_Cohn",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Tobias Cohn",
+        "label": "Wikidata: Q75280",
+        "url": "https://www.wikidata.org/wiki/Q75280",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Tobias Cohn",
+        "label": "VIAF: 30151776817318012267",
+        "url": "https://viaf.org/en/viaf/30151776817318012267",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Tobias Cohn",
+        "label": "NLI: 987007306697005171",
+        "url": "https://www.nli.org.il/en/authorities/987007306697005171",
+        "source": "nli"
+      }
+    ],
+    "publishers": [
+      {
+        "canonical_name": "[publisher unknown]",
+        "type": "unknown_marker",
+        "dates_active": null,
+        "location": null,
+        "wikidata_id": null,
+        "cerl_id": null
+      },
+      {
+        "canonical_name": "Daniel Bomberg, Venice",
+        "type": "printing_house",
+        "dates_active": "1516-1549",
+        "location": "Venice, Italy",
+        "wikidata_id": null,
+        "cerl_id": null
+      },
+      {
+        "canonical_name": "Proops Press, Amsterdam",
+        "type": "printing_house",
+        "dates_active": "ca. 1704-1849",
+        "location": "Amsterdam",
+        "wikidata_id": null,
+        "cerl_id": null
+      }
+    ],
+    "connections": [],
+    "broadening_notes": [
+      "'Jewish philosophy' counted via matched subject heading(s): Jewish philosophy (2), Jewish philosophy. (1), Jewish philosophy -- Middle Ages, 500-1500. (14), Jewish philosophers -- Germany -- History -- 18th century. (4), Jewish Science (6), Jewish Enlightenment (1), Jewish ethics (5), Mendelssohn, Moses, -- 1729-1786 -- Philosophy. (1), Mathematics, Jewish (1), Judaism -- Relations -- Christianity. (1), Semitic philology (1), Jews -- Psychology (1), Judaism. (1), Jewish philosophers -- Netherlands -- 17th century (1), Jewish ethics. (1), Philosophy, Arab (2), Jewish question (4), Judaism (11), Jewish magic (1), Jewish sociology (1), Jewish philosophy -- 17th century (2), Judaism -- Germany -- History -- 18th century. (1), Judaism -- Apologetic works -- History and criticism -- 18th century. (1), Jewish mysticism (2), Judaism -- Relations -- Christianity (6), Voltaire, -- 1694-1778 -- Views on Judaism. (1), Jewish chronology (2), Judaism -- History -- Sources. (1), Jewish philosophy -- 16th century (4), Jews -- Music -- History and criticism. (1), Philosophy, French (1), Jews -- Germany -- History -- Sources. (1), Jews -- Israel -- Yafo -- History -- Sources. (1), Religion -- Philosophy (2), Reform Judaism -- Germany -- 19th century -- Sources. (1), Jews -- France -- Biography. (1), Judaism -- Apologetic works -- History and criticism. (3), Judaism -- Germany -- Worms -- Customs and practices. (1), Jewish philosophy -- 19th century (1), Judaism -- History -- 10-425, Talmudic period. (1)"
+    ]
+  },
+  "original_query": "Books about Jewish philosophy",
+  "session_context": null,
+  "truncated": true,
+  "total_record_count": 86
+}

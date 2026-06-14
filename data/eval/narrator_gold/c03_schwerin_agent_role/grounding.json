@@ -1,0 +1,1427 @@
+{
+  "steps_completed": [
+    {
+      "step_index": 0,
+      "action": "resolve_agent",
+      "label": "Resolve Ludwig Schwerin",
+      "status": "ok",
+      "data": {
+        "query_name": "Ludwig Schwerin",
+        "matched_values": [
+          "Ludwig Schwerin",
+          "schwerin, ludwig"
+        ],
+        "match_method": "alias_exact",
+        "confidence": 0.95,
+        "query_variants": [
+          "Schwerin, Ludwig",
+          "schwerin, ludwig"
+        ]
+      },
+      "record_count": null,
+      "error_message": null
+    },
+    {
+      "step_index": 1,
+      "action": "retrieve",
+      "label": "Books illustrated by Ludwig Schwerin",
+      "status": "ok",
+      "data": {
+        "mms_ids": [
+          "990009683760204146",
+          "990010144430204146",
+          "990010144470204146",
+          "990010282930204146",
+          "990011573210204146",
+          "990011632100204146",
+          "990011632180204146",
+          "990011632240204146",
+          "990011632410204146",
+          "990011632650204146"
+        ],
+        "total_count": 10,
+        "filters_applied": [
+          {
+            "field": "agent_norm",
+            "op": "EQUALS",
+            "value": "Ludwig Schwerin",
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          },
+          {
+            "field": "agent_role",
+            "op": "EQUALS",
+            "value": "illustrator",
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          }
+        ],
+        "relaxations": []
+      },
+      "record_count": 10,
+      "error_message": null
+    }
+  ],
+  "directives": [],
+  "grounding": {
+    "records": [
+      {
+        "mms_id": "990009683760204146",
+        "title": "Impressionismus und Expressionismus : eine Einfuhrung in das Wesen der neuen Kunst / von Franz Landsberger",
+        "date_display": "1920",
+        "place": "Leipzig",
+        "publisher": "Klinkhardt & Biermann",
+        "language": "ger",
+        "agents": [
+          "landsberger, franz",
+          "schwerin, ludwig"
+        ],
+        "subjects": [
+          "Impressionism (Art)",
+          "Expressionism (Art)",
+          "Art, Modern -- 20th century"
+        ],
+        "physical_description": "47 p., 24 leaves of plates",
+        "notes": [
+          "Copy originally belonged to Ludwig Schwerin, who has made a pencil drawing on last blank page"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990009683760204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Copy originally belonged to Ludwig Schwerin, who has made a pencil drawing on last blank page"
+          ],
+          "590": [
+            "EL/AF"
+          ]
+        },
+        "subjects_he": [
+          "המאה ה-20"
+        ]
+      },
+      {
+        "mms_id": "990010144430204146",
+        "title": "Briefe an eine junge Frau / Rainer Maria Rilke",
+        "date_display": "19xx",
+        "place": "Leipzig",
+        "publisher": "Insel",
+        "language": "ger",
+        "agents": [
+          "rilke, rainer maria",
+          "schwerin, ludwig"
+        ],
+        "subjects": [
+          "Rilke, Rainer Maria, -- 1875-1926 -- Correspondence",
+          "Rilke, Rainer Maria, -- 1875-1926",
+          "Poets, German -- 20th century -- Correspondence"
+        ],
+        "physical_description": "60 p.",
+        "notes": [
+          "Letters written to Lisa Heise between 1919-1924--Nuc",
+          "\"Nachwort\" signed: Carl Sieber",
+          "\"Druck des 21.-50. Tausends\"--Colophon"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010144430204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.8,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Letters written to Lisa Heise between 1919-1924--Nuc",
+            "\"Nachwort\" signed: Carl Sieber",
+            "\"Druck des 21.-50. Tausends\"--Colophon"
+          ],
+          "590": [
+            "EL/AH",
+            "AB/ES"
+          ]
+        },
+        "subjects_he": [
+          "התכתבות מכתבים",
+          "המאה ה-20 התכתבות מכתבים"
+        ]
+      },
+      {
+        "mms_id": "990010144470204146",
+        "title": "Es war einmal / ein Bilderbuch von Ludwig Richter",
+        "date_display": "[1923]",
+        "place": "Leipzig",
+        "publisher": "Insel",
+        "language": "ger",
+        "agents": [
+          "richter, ludwig",
+          "schwerin, ludwig"
+        ],
+        "subjects": [
+          "Fairy tales -- Germany"
+        ],
+        "physical_description": "71 p. : ill.",
+        "notes": [
+          "Library's copy includes An added drawing made April 1934 by Ludwig Schwerin, the donor",
+          "\"11.-15. Tausend\"--Colophon"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010144470204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.95,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Library's copy includes An added drawing made April 1934 by Ludwig Schwerin, the donor",
+            "\"11.-15. Tausend\"--Colophon"
+          ],
+          "590": [
+            "EL/AH"
+          ]
+        },
+        "subjects_he": [
+          "אגדות סיפורי פיות גרמניה"
+        ]
+      },
+      {
+        "mms_id": "990010282930204146",
+        "title": "Alte und neue Lieder : mit Weisen und mit Bildern / von Ludwig Richter",
+        "date_display": "193x",
+        "place": "Leipzig",
+        "publisher": "Insel",
+        "language": "ger",
+        "agents": [
+          "richter, ludwig",
+          "schwerin, ludwig",
+          "preussische volkslied-kommission",
+          "deutsche gesellschaft für volkskunde"
+        ],
+        "subjects": [
+          "Songs, German",
+          "Folk songs, German"
+        ],
+        "physical_description": "62 p. : ill.",
+        "notes": [
+          "\"Die Sammlung wurde im Auftrage des Verbandes deutscher Vereine für Volkstunde und der preussischen Volkslied-Kommission herausgegeben\" -- verso t.p.",
+          "Library's copy includes An added drawing made in January 1935, by Ludwig Schwerin, the donor"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010282930204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.85,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "\"Die Sammlung wurde im Auftrage des Verbandes deutscher Vereine für Volkstunde und der preussischen Volkslied-Kommission herausgegeben\" -- verso t.p.",
+            "Library's copy includes An added drawing made in January 1935, by Ludwig Schwerin, the donor"
+          ],
+          "590": [
+            "ANB/ANB"
+          ]
+        },
+        "subjects_he": []
+      },
+      {
+        "mms_id": "990011573210204146",
+        "title": "Der Fuchs / D. H. Lawrence ; ubertragen von E. Jaffe-Richthofen",
+        "date_display": "[1926]",
+        "place": "Leipzig",
+        "publisher": "Insel",
+        "language": "ger",
+        "agents": [
+          "lawrence, d. h",
+          "schwerin, ludwig",
+          "jaffe-richthofen, e"
+        ],
+        "subjects": [
+          "English fiction -- Translations into German"
+        ],
+        "physical_description": "85 p. : [3] plates of ill.",
+        "notes": [
+          "Translation of: The Fox",
+          "Three original drawings by Ludwig Schwerin added"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011573210204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.95,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Translation of: The Fox",
+            "Three original drawings by Ludwig Schwerin added"
+          ],
+          "590": [
+            "EL/RK"
+          ]
+        },
+        "subjects_he": [
+          "סיפורת אנגלית תרגומים לגרמנית"
+        ]
+      },
+      {
+        "mms_id": "990011632100204146",
+        "title": "Die Augen des ewigen Bruders : eine Legende / Stefan Zweig",
+        "date_display": "[1933]",
+        "place": "Leipzig",
+        "publisher": "Insel",
+        "language": "ger",
+        "agents": [
+          "zweig, stefan",
+          "schwerin, ludwig"
+        ],
+        "subjects": [
+          "German fiction -- 20th century"
+        ],
+        "physical_description": "63 p.",
+        "notes": [
+          "Original drawings and autograph added by Ludwig Schwerin"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632100204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.95,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Original drawings and autograph added by Ludwig Schwerin"
+          ],
+          "590": [
+            "EL/RK"
+          ]
+        },
+        "subjects_he": [
+          "סיפורת גרמנית המאה ה-20"
+        ]
+      },
+      {
+        "mms_id": "990011632180204146",
+        "title": "Die Weise von Liebe und Tod des Cornets Christoph Rilke / von Rainer Maria Rilke",
+        "date_display": "1899",
+        "place": "Leipzig",
+        "publisher": "Insel",
+        "language": "ger",
+        "agents": [
+          "rilke, rainer maria",
+          "schwerin, ludwig"
+        ],
+        "subjects": [
+          "Prose poems, German -- 20th century."
+        ],
+        "physical_description": "33 p.",
+        "notes": [
+          "Original etchings added by Ludwig Schwerin"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632180204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Original etchings added by Ludwig Schwerin"
+          ],
+          "590": [
+            "AB/ES"
+          ]
+        },
+        "subjects_he": [
+          "המאה ה-20"
+        ]
+      },
+      {
+        "mms_id": "990011632240204146",
+        "title": "Bekentnisse des Hochstaplers Felix Krull. Buch der Kindheit / Thomas Mann",
+        "date_display": "[1926]",
+        "place": "Stuttgart",
+        "publisher": "Deutsche Verlags-Anstalt",
+        "language": "ger",
+        "agents": [
+          "mann, thomas",
+          "schwerin, ludwig"
+        ],
+        "subjects": [
+          "German fiction -- 20th century",
+          "Picaresque literature -- Germany"
+        ],
+        "physical_description": "96 p.",
+        "notes": [
+          "Three original drawings by Ludwig Schwerin, inserted"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632240204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.95,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Three original drawings by Ludwig Schwerin, inserted"
+          ],
+          "590": [
+            "EL/RK"
+          ]
+        },
+        "subjects_he": [
+          "סיפורת גרמנית המאה ה-20",
+          "ספרות פיקרסקית גרמניה"
+        ]
+      },
+      {
+        "mms_id": "990011632410204146",
+        "title": "Li-tai-pe / Nachdichtungen von Klabund",
+        "date_display": "1915",
+        "place": "Leipzig",
+        "publisher": "Insel",
+        "language": "ger",
+        "agents": [
+          "klabund",
+          "schwerin, ludwig",
+          "li, bai"
+        ],
+        "subjects": [
+          "Chinese poetry -- Adaptations -- German",
+          "German poetry -- 20th century"
+        ],
+        "physical_description": "47 p.",
+        "notes": [
+          "Original etchings added by Ludwig Schwerin"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632410204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "Original etchings added by Ludwig Schwerin"
+          ],
+          "590": [
+            "EL/RK"
+          ]
+        },
+        "subjects_he": [
+          "עיבודים גרמנית",
+          "שירה גרמנית המאה ה-20"
+        ]
+      },
+      {
+        "mms_id": "990011632650204146",
+        "title": "Ruth",
+        "date_display": "[1914]",
+        "place": "Leipzig",
+        "publisher": "Insel",
+        "language": "ger",
+        "agents": [
+          "schwerin, ludwig",
+          "luther, martin"
+        ],
+        "subjects": [
+          "Bible. -- Ruth. -- German"
+        ],
+        "physical_description": "21 p.",
+        "notes": [
+          "\"... in der Ubertragung Martin Luthers nach der letzten von ihm selbst Durchgesehenden Ausgabe der deutschen Bibel, Wittenberg 1545 ... Gedruckt\"--Colophon",
+          "Woodcut illustration on t.p. ; Original drawings added by Ludwig Schwerin",
+          "Series statement and year of publication from NUC"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632650204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.95,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {
+          "500": [
+            "\"... in der Ubertragung Martin Luthers nach der letzten von ihm selbst Durchgesehenden Ausgabe der deutschen Bibel, Wittenberg 1545 ... Gedruckt\"--Colophon",
+            "Woodcut illustration on t.p. ; Original drawings added by Ludwig Schwerin",
+            "Series statement and year of publication from NUC"
+          ],
+          "590": [
+            "EL/JA"
+          ]
+        },
+        "subjects_he": [
+          "תנ\"ך מקרא כתבי הקודש רות גרמנית"
+        ]
+      }
+    ],
+    "agents": [
+      {
+        "canonical_name": "Franz Landsberger",
+        "variants": [],
+        "birth_year": 1883,
+        "death_year": 1964,
+        "occupations": [
+          "art historian",
+          "university teacher",
+          "director"
+        ],
+        "description": "German art historian (1883–1964)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Franz Landsberger",
+            "label": "Wikipedia: Franz Landsberger",
+            "url": "https://en.wikipedia.org/wiki/Franz_Landsberger",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Franz Landsberger",
+            "label": "Wikidata: Q121898",
+            "url": "https://www.wikidata.org/wiki/Q121898",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Franz Landsberger",
+            "label": "VIAF: 59216108",
+            "url": "https://viaf.org/en/viaf/59216108",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Franz Landsberger",
+            "label": "NLI: 987007297384305171",
+            "url": "https://www.nli.org.il/en/authorities/987007297384305171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007297384305171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Ludwig Schwerin",
+        "variants": [],
+        "birth_year": 1897,
+        "death_year": 1983,
+        "occupations": [
+          "printmaker",
+          "painter",
+          "illustrator"
+        ],
+        "description": "German-Israeli painter (1897-1983)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Ludwig Schwerin",
+            "label": "Wikipedia: Ludwig Schwerin",
+            "url": "https://www.wikidata.org/wiki/Q1875003",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ludwig Schwerin",
+            "label": "Wikidata: Q1875003",
+            "url": "https://www.wikidata.org/wiki/Q1875003",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ludwig Schwerin",
+            "label": "VIAF: 40175727",
+            "url": "https://viaf.org/en/viaf/40175727",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ludwig Schwerin",
+            "label": "NLI: 987007267842605171",
+            "url": "https://www.nli.org.il/en/authorities/987007267842605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Ludvig%20Schwerin.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007267842605171.jsonld",
+        "hebrew_aliases": [
+          "לודוויג שוורין"
+        ]
+      },
+      {
+        "canonical_name": "Rainer Maria Rilke",
+        "variants": [],
+        "birth_year": 1875,
+        "death_year": 1926,
+        "occupations": [
+          "poet",
+          "translator",
+          "writer",
+          "novelist",
+          "playwright"
+        ],
+        "description": "Austrian poet and writer (1875–1926)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Rainer Maria Rilke",
+            "label": "Wikipedia: Rainer Maria Rilke",
+            "url": "https://en.wikipedia.org/wiki/Rainer_Maria_Rilke",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Rainer Maria Rilke",
+            "label": "Wikidata: Q76483",
+            "url": "https://www.wikidata.org/wiki/Q76483",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Rainer Maria Rilke",
+            "label": "VIAF: 46897170",
+            "url": "https://viaf.org/en/viaf/46897170",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Rainer Maria Rilke",
+            "label": "NLI: 987007267187805171",
+            "url": "https://www.nli.org.il/en/authorities/987007267187805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Rainer%20Maria%20Rilke%201900.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007267187805171.jsonld",
+        "hebrew_aliases": [
+          "ריינר מריה רילקה"
+        ]
+      },
+      {
+        "canonical_name": "Ludwig Richter",
+        "variants": [],
+        "birth_year": 1803,
+        "death_year": 1884,
+        "occupations": [
+          "autobiographer",
+          "graphic artist",
+          "exlibrist",
+          "draftsperson",
+          "painter"
+        ],
+        "description": "German painter and engraver (1803-1884)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Ludwig Richter",
+            "label": "Wikipedia: Ludwig Richter",
+            "url": "https://en.wikipedia.org/wiki/Ludwig_Richter",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ludwig Richter",
+            "label": "Wikidata: Q551896",
+            "url": "https://www.wikidata.org/wiki/Q551896",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ludwig Richter",
+            "label": "VIAF: 100213038",
+            "url": "https://viaf.org/en/viaf/100213038",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Ludwig Richter",
+            "label": "NLI: 987007266896005171",
+            "url": "https://www.nli.org.il/en/authorities/987007266896005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Wilhelm%20von%20K%C3%BCgelgen%20-%20Bildnis%20Ludwig%20Richter%2C%201836.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007266896005171.jsonld",
+        "hebrew_aliases": [
+          "לודוויג ריכטר"
+        ]
+      },
+      {
+        "canonical_name": "Q1203019",
+        "variants": [],
+        "birth_year": null,
+        "death_year": null,
+        "occupations": [],
+        "description": "scientific society that acts as an umbrella organization for folklore institutions in the German-speaking world and as an association of folklorists in the Federal Republic of Germany",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Q1203019",
+            "label": "Wikipedia: Q1203019",
+            "url": "https://www.wikidata.org/wiki/Q1203019",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Q1203019",
+            "label": "Wikidata: Q1203019",
+            "url": "https://www.wikidata.org/wiki/Q1203019",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Q1203019",
+            "label": "VIAF: 148341909",
+            "url": "https://viaf.org/en/viaf/148341909",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Q1203019",
+            "label": "NLI: 987009348977205171",
+            "url": "https://www.nli.org.il/en/authorities/987009348977205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987009348977205171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "D. H. Lawrence",
+        "variants": [],
+        "birth_year": 1885,
+        "death_year": 1930,
+        "occupations": [
+          "poet",
+          "literary critic",
+          "screenwriter",
+          "translator",
+          "painter"
+        ],
+        "description": "English writer and poet (1885–1930)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "D. H. Lawrence",
+            "label": "Wikipedia: D. H. Lawrence",
+            "url": "https://en.wikipedia.org/wiki/D._H._Lawrence",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "D. H. Lawrence",
+            "label": "Wikidata: Q34970",
+            "url": "https://www.wikidata.org/wiki/Q34970",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "D. H. Lawrence",
+            "label": "VIAF: 95150359",
+            "url": "https://viaf.org/en/viaf/95150359",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "D. H. Lawrence",
+            "label": "NLI: 987007294196205171",
+            "url": "https://www.nli.org.il/en/authorities/987007294196205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/D%20H%20Lawrence%20passport%20photograph.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007294196205171.jsonld",
+        "hebrew_aliases": [
+          "דייוויד הרברט לורנס"
+        ]
+      },
+      {
+        "canonical_name": "Stefan Zweig",
+        "variants": [],
+        "birth_year": 1881,
+        "death_year": 1942,
+        "occupations": [
+          "journalist",
+          "essayist",
+          "prose writer",
+          "literary critic",
+          "novelist"
+        ],
+        "description": "Austrian writer (1881–1942)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Stefan Zweig",
+            "label": "Wikipedia: Stefan Zweig",
+            "url": "https://en.wikipedia.org/wiki/Stefan_Zweig",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Stefan Zweig",
+            "label": "Wikidata: Q78491",
+            "url": "https://www.wikidata.org/wiki/Q78491",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Stefan Zweig",
+            "label": "VIAF: 19685936",
+            "url": "https://viaf.org/en/viaf/19685936",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Stefan Zweig",
+            "label": "NLI: 987007299289005171",
+            "url": "https://www.nli.org.il/en/authorities/987007299289005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Zweig%20Setzer%201927.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007299289005171.jsonld",
+        "hebrew_aliases": [
+          "שטפן צווייג"
+        ]
+      },
+      {
+        "canonical_name": "Thomas Mann",
+        "variants": [],
+        "birth_year": 1875,
+        "death_year": 1955,
+        "occupations": [
+          "autobiographer",
+          "diarist",
+          "social critic",
+          "essayist",
+          "screenwriter"
+        ],
+        "description": "German novelist and Nobel Prize laureate (1875–1955)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Thomas Mann",
+            "label": "Wikipedia: Thomas Mann",
+            "url": "https://en.wikipedia.org/wiki/Thomas_Mann",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Thomas Mann",
+            "label": "Wikidata: Q37030",
+            "url": "https://www.wikidata.org/wiki/Q37030",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Thomas Mann",
+            "label": "VIAF: 54151065",
+            "url": "https://viaf.org/en/viaf/54151065",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Thomas Mann",
+            "label": "NLI: 987007264927805171",
+            "url": "https://www.nli.org.il/en/authorities/987007264927805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Thomas%20Mann%201929.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264927805171.jsonld",
+        "hebrew_aliases": [
+          "תומאס מאן"
+        ]
+      },
+      {
+        "canonical_name": "Klabund",
+        "variants": [],
+        "birth_year": 1890,
+        "death_year": 1928,
+        "occupations": [
+          "poet",
+          "writer",
+          "playwright"
+        ],
+        "description": "German writer (1890-1928)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Klabund",
+            "label": "Wikipedia: Klabund",
+            "url": "https://en.wikipedia.org/wiki/Klabund",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Klabund",
+            "label": "Wikidata: Q61263",
+            "url": "https://www.wikidata.org/wiki/Q61263",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Klabund",
+            "label": "VIAF: 39385620",
+            "url": "https://viaf.org/en/viaf/39385620",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Klabund",
+            "label": "NLI: 987007263911505171",
+            "url": "https://www.nli.org.il/en/authorities/987007263911505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Orlik%20Klabund.JPG",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007263911505171.jsonld",
+        "hebrew_aliases": [
+          "אלפרד הנשקה"
+        ]
+      },
+      {
+        "canonical_name": "Li Bai",
+        "variants": [],
+        "birth_year": 701,
+        "death_year": 762,
+        "occupations": [
+          "poet",
+          "writer",
+          "calligrapher",
+          "lyricist"
+        ],
+        "description": "Classical Chinese poet of the Tang dynasty (701–762)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Li Bai",
+            "label": "Wikipedia: Li Bai",
+            "url": "https://en.wikipedia.org/wiki/Li_Bai",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Li Bai",
+            "label": "Wikidata: Q7071",
+            "url": "https://www.wikidata.org/wiki/Q7071",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Li Bai",
+            "label": "VIAF: 108726426",
+            "url": "https://viaf.org/en/viaf/108726426",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Li Bai",
+            "label": "NLI: 987007264407505171",
+            "url": "https://www.nli.org.il/en/authorities/987007264407505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/%E5%94%90%E5%90%8D%E8%87%A3%E5%83%8F-14-%E5%94%90%E7%BF%B0%E6%9E%97%E4%BE%9B%E5%A5%89%E6%9D%8E%E7%99%BD.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264407505171.jsonld",
+        "hebrew_aliases": [
+          "לי באי"
+        ]
+      },
+      {
+        "canonical_name": "Martin Luther",
+        "variants": [],
+        "birth_year": 1483,
+        "death_year": 1546,
+        "occupations": [
+          "preacher",
+          "reformer",
+          "pastor",
+          "composer",
+          "Bible translator"
+        ],
+        "description": "German priest and theologian (1483–1546)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Martin Luther",
+            "label": "Wikipedia: Martin Luther",
+            "url": "https://en.wikipedia.org/wiki/Martin_Luther",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Martin Luther",
+            "label": "Wikidata: Q9554",
+            "url": "https://www.wikidata.org/wiki/Q9554",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Martin Luther",
+            "label": "VIAF: 14773105",
+            "url": "https://viaf.org/en/viaf/14773105",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Martin Luther",
+            "label": "NLI: 987007307912905171",
+            "url": "https://www.nli.org.il/en/authorities/987007307912905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Lucas%20Cranach%20d.%C3%84.%20-%20Martin%20Luther%2C%201528%20%28Veste%20Coburg%29.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007307912905171.jsonld",
+        "hebrew_aliases": [
+          "מרטין לותר"
+        ]
+      }
+    ],
+    "aggregations": {},
+    "aggregation_meta": {},
+    "links": [
+      {
+        "entity_type": "record",
+        "entity_id": "990009683760204146",
+        "label": "Primo: Impressionismus und Expressionismus : eine Einfuhr",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990009683760204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010144430204146",
+        "label": "Primo: Briefe an eine junge Frau / Rainer Maria Rilke",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010144430204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010144470204146",
+        "label": "Primo: Es war einmal / ein Bilderbuch von Ludwig Richter",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010144470204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990010282930204146",
+        "label": "Primo: Alte und neue Lieder : mit Weisen und mit Bildern ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990010282930204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011573210204146",
+        "label": "Primo: Der Fuchs / D. H. Lawrence ; ubertragen von E. Jaf",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011573210204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011632100204146",
+        "label": "Primo: Die Augen des ewigen Bruders : eine Legende / Stef",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632100204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011632180204146",
+        "label": "Primo: Die Weise von Liebe und Tod des Cornets Christoph ",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632180204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011632240204146",
+        "label": "Primo: Bekentnisse des Hochstaplers Felix Krull. Buch der",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632240204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011632410204146",
+        "label": "Primo: Li-tai-pe / Nachdichtungen von Klabund",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632410204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011632650204146",
+        "label": "Primo: Ruth",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011632650204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Franz Landsberger",
+        "label": "Wikipedia: Franz Landsberger",
+        "url": "https://en.wikipedia.org/wiki/Franz_Landsberger",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Franz Landsberger",
+        "label": "Wikidata: Q121898",
+        "url": "https://www.wikidata.org/wiki/Q121898",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Franz Landsberger",
+        "label": "VIAF: 59216108",
+        "url": "https://viaf.org/en/viaf/59216108",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Franz Landsberger",
+        "label": "NLI: 987007297384305171",
+        "url": "https://www.nli.org.il/en/authorities/987007297384305171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ludwig Schwerin",
+        "label": "Wikipedia: Ludwig Schwerin",
+        "url": "https://www.wikidata.org/wiki/Q1875003",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ludwig Schwerin",
+        "label": "Wikidata: Q1875003",
+        "url": "https://www.wikidata.org/wiki/Q1875003",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ludwig Schwerin",
+        "label": "VIAF: 40175727",
+        "url": "https://viaf.org/en/viaf/40175727",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ludwig Schwerin",
+        "label": "NLI: 987007267842605171",
+        "url": "https://www.nli.org.il/en/authorities/987007267842605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Rainer Maria Rilke",
+        "label": "Wikipedia: Rainer Maria Rilke",
+        "url": "https://en.wikipedia.org/wiki/Rainer_Maria_Rilke",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Rainer Maria Rilke",
+        "label": "Wikidata: Q76483",
+        "url": "https://www.wikidata.org/wiki/Q76483",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Rainer Maria Rilke",
+        "label": "VIAF: 46897170",
+        "url": "https://viaf.org/en/viaf/46897170",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Rainer Maria Rilke",
+        "label": "NLI: 987007267187805171",
+        "url": "https://www.nli.org.il/en/authorities/987007267187805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ludwig Richter",
+        "label": "Wikipedia: Ludwig Richter",
+        "url": "https://en.wikipedia.org/wiki/Ludwig_Richter",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ludwig Richter",
+        "label": "Wikidata: Q551896",
+        "url": "https://www.wikidata.org/wiki/Q551896",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ludwig Richter",
+        "label": "VIAF: 100213038",
+        "url": "https://viaf.org/en/viaf/100213038",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Ludwig Richter",
+        "label": "NLI: 987007266896005171",
+        "url": "https://www.nli.org.il/en/authorities/987007266896005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Q1203019",
+        "label": "Wikipedia: Q1203019",
+        "url": "https://www.wikidata.org/wiki/Q1203019",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Q1203019",
+        "label": "Wikidata: Q1203019",
+        "url": "https://www.wikidata.org/wiki/Q1203019",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Q1203019",
+        "label": "VIAF: 148341909",
+        "url": "https://viaf.org/en/viaf/148341909",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Q1203019",
+        "label": "NLI: 987009348977205171",
+        "url": "https://www.nli.org.il/en/authorities/987009348977205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "D. H. Lawrence",
+        "label": "Wikipedia: D. H. Lawrence",
+        "url": "https://en.wikipedia.org/wiki/D._H._Lawrence",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "D. H. Lawrence",
+        "label": "Wikidata: Q34970",
+        "url": "https://www.wikidata.org/wiki/Q34970",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "D. H. Lawrence",
+        "label": "VIAF: 95150359",
+        "url": "https://viaf.org/en/viaf/95150359",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "D. H. Lawrence",
+        "label": "NLI: 987007294196205171",
+        "url": "https://www.nli.org.il/en/authorities/987007294196205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Stefan Zweig",
+        "label": "Wikipedia: Stefan Zweig",
+        "url": "https://en.wikipedia.org/wiki/Stefan_Zweig",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Stefan Zweig",
+        "label": "Wikidata: Q78491",
+        "url": "https://www.wikidata.org/wiki/Q78491",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Stefan Zweig",
+        "label": "VIAF: 19685936",
+        "url": "https://viaf.org/en/viaf/19685936",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Stefan Zweig",
+        "label": "NLI: 987007299289005171",
+        "url": "https://www.nli.org.il/en/authorities/987007299289005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Thomas Mann",
+        "label": "Wikipedia: Thomas Mann",
+        "url": "https://en.wikipedia.org/wiki/Thomas_Mann",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Thomas Mann",
+        "label": "Wikidata: Q37030",
+        "url": "https://www.wikidata.org/wiki/Q37030",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Thomas Mann",
+        "label": "VIAF: 54151065",
+        "url": "https://viaf.org/en/viaf/54151065",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Thomas Mann",
+        "label": "NLI: 987007264927805171",
+        "url": "https://www.nli.org.il/en/authorities/987007264927805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Klabund",
+        "label": "Wikipedia: Klabund",
+        "url": "https://en.wikipedia.org/wiki/Klabund",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Klabund",
+        "label": "Wikidata: Q61263",
+        "url": "https://www.wikidata.org/wiki/Q61263",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Klabund",
+        "label": "VIAF: 39385620",
+        "url": "https://viaf.org/en/viaf/39385620",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Klabund",
+        "label": "NLI: 987007263911505171",
+        "url": "https://www.nli.org.il/en/authorities/987007263911505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Li Bai",
+        "label": "Wikipedia: Li Bai",
+        "url": "https://en.wikipedia.org/wiki/Li_Bai",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Li Bai",
+        "label": "Wikidata: Q7071",
+        "url": "https://www.wikidata.org/wiki/Q7071",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Li Bai",
+        "label": "VIAF: 108726426",
+        "url": "https://viaf.org/en/viaf/108726426",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Li Bai",
+        "label": "NLI: 987007264407505171",
+        "url": "https://www.nli.org.il/en/authorities/987007264407505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Martin Luther",
+        "label": "Wikipedia: Martin Luther",
+        "url": "https://en.wikipedia.org/wiki/Martin_Luther",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Martin Luther",
+        "label": "Wikidata: Q9554",
+        "url": "https://www.wikidata.org/wiki/Q9554",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Martin Luther",
+        "label": "VIAF: 14773105",
+        "url": "https://viaf.org/en/viaf/14773105",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Martin Luther",
+        "label": "NLI: 987007307912905171",
+        "url": "https://www.nli.org.il/en/authorities/987007307912905171",
+        "source": "nli"
+      }
+    ],
+    "publishers": [
+      {
+        "canonical_name": "Insel Verlag",
+        "type": "modern_publisher",
+        "dates_active": "1901-present",
+        "location": "Leipzig/Berlin, Germany",
+        "wikidata_id": null,
+        "cerl_id": null
+      }
+    ],
+    "connections": [],
+    "broadening_notes": []
+  },
+  "original_query": "Books illustrated by Ludwig Schwerin",
+  "session_context": null,
+  "truncated": false,
+  "total_record_count": 10
+}

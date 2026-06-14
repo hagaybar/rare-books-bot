@@ -1,0 +1,7 @@
+Venice is one of the collection's deepest centres of printing: **164 books** in the holdings were published there. The set reflects Venice's long career as a crossroads of print, spanning Italian humanist and bibliographical works alongside an important strand of Hebrew printing.
+
+On the Italian side, the records include Anton Francesco Doni's *La libraria del Doni fiorentino* (1558), a foundational work of vernacular bibliography; the *Biblioteca italiana, o sia Notizia de' libri rari* (1741); a *Compendio del gran volume dell'arte del bene* (1588); the writing manual of Vespasiano Amphiareo da Ferrara (1566); and an early treatise on the "vera arte" of fine hands (1531). The Hebrew imprints are represented here by Moses Almosnino's *Sefer Yedei Moshe* (ספר ידי משה), a commentary on the Five Scrolls printed in Venice in 1597 — a reminder that the city's presses served Jewish as well as Italian readerships.
+
+Several of the figures behind these works — Doni, Almosnino, the calligrapher Giambattista Palatino, Giusto Fontanini, Nicola Francesco Haym — are linked in the catalogue to their Wikipedia, Wikidata, VIAF and NLI authority records, and each title carries a direct link to its TAU Primo entry.
+
+The six works named above are only a sample of the 164 Venetian imprints held; the full set rewards browsing by period, language, or printer. If you would like, I can narrow it — for instance to the Hebrew imprints, to a particular century, or to a specific press.

@@ -1,0 +1,28 @@
+{
+  "intents": ["retrieval", "entity_exploration"],
+  "reasoning": "Entity exploration of Josephus Flavius. Resolve the agent (with multilingual variants), retrieve his works, and enrich the entity with biography and external links (Wikipedia/Wikidata) for scholarly context.",
+  "execution_steps": [
+    {
+      "action": "resolve_agent",
+      "params": {"name": "Josephus Flavius", "variants": ["Flavius Josephus", "Josephus, Flavius", "Yosef ben Matityahu"]},
+      "label": "Resolve Josephus Flavius",
+      "depends_on": []
+    },
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "agent_norm", "op": "EQUALS", "value": "$step_0"}], "scope": "full_collection"},
+      "label": "Works by Josephus Flavius",
+      "depends_on": [0]
+    },
+    {
+      "action": "enrich",
+      "params": {"targets": "$step_0", "fields": ["bio", "links"]},
+      "label": "Enrich Josephus with biography and external links",
+      "depends_on": [0]
+    }
+  ],
+  "directives": [{"directive": "expand", "params": {"focus": "Josephus Flavius", "aspect": "his life and the works held in the collection"}, "label": "Expand on Josephus Flavius"}],
+  "confidence": 0.93,
+  "clarification": null,
+  "dropped_steps": []
+}
