@@ -717,8 +717,8 @@ Expected: FAIL with `ImportError: cannot import name 'build_narration_request'`
 # append to scripts/eval/narrator_gold.py
 import json
 
-from scripts.chat.narrator import NARRATOR_SYSTEM_PROMPT, build_lean_narrator_prompt
-from scripts.chat.plan_models import NarratorResponseLLM
+from scripts.chat.narrator import (
+    NARRATOR_SYSTEM_PROMPT, build_lean_narrator_prompt, NarratorResponseLLM)
 from scripts.models.llm_client import pydantic_to_response_format
 from scripts.eval.judge import (
     NarratorGoldJudgment, build_gold_judge_prompt)
