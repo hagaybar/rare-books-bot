@@ -1252,8 +1252,10 @@ from scripts.eval.author_gold_grounding import grounding_from_plan_file
 
 def test_grounding_from_plan_file_runs_executor(tmp_path: Path):
     # Minimal empty plan (no steps) -> executor returns an empty-but-valid result.
-    plan_json = '{"intent": "retrieval", "confidence": 0.9, "execution_steps": [], '\
-                '"directives": [], "clarification": null}'
+    # InterpretationPlan requires: intents (list), reasoning, execution_steps,
+    # directives, confidence (verified against scripts/chat/plan_models.py).
+    plan_json = '{"intents": ["retrieval"], "reasoning": "test", '\
+                '"execution_steps": [], "directives": [], "confidence": 0.9}'
     plan_path = tmp_path / "c01.plan.json"
     plan_path.write_text(plan_json, encoding="utf-8")
     result = grounding_from_plan_file(plan_path, query="books in Mantua",
