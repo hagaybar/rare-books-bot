@@ -126,8 +126,11 @@ Separate SQLite database, isolated from the production `bibliographic.db`.
     --cost-ceiling 2.00 --output-dir data/eval/runs/<date>-narrator-gold --dry-run
   ```
   Drop `--dry-run` for the real (batched) run; output is `results.json` + ranked `REPORT.md`.
-- **Status (2026-06-14)**: Phase-1 harness landed and unit-tested (`tests/scripts/eval/`,
-  no live LLM). Gold-set authoring and the paid run are gated on user approval.
+- **Status (2026-06-14)**: Complete. Harness built + unit-tested; 11-case gold set authored;
+  eval run selected `gpt-5-mini` for the narrator (2.56/3, zero fabrications, ~75% cheaper than
+  gpt-4.1) — now live in production.
+- **Practical runbook for the next eval (e.g. the interpreter stage): `docs/testing/model-eval-cookbook.md`**
+  — step-by-step recipe plus the hard-won batch-API / judge-calibration / live-validation gotchas.
 
 ## FTS Parity Gate
 
