@@ -895,10 +895,13 @@ export default function Chat() {
             </div>
           ) : (
             <>
-              {/* Token usage badge */}
+              {/* Monthly usage badge (cumulative for the user this month — NOT per-query cost) */}
               {user && user.tokens_used_this_month != null && user.tokens_used_this_month > 0 && (
-                <div className="text-xs text-gray-400 text-center mb-1">
-                  {user.input_tokens_this_month?.toLocaleString() ?? 0} in / {user.output_tokens_this_month?.toLocaleString() ?? 0} out
+                <div
+                  className="text-xs text-gray-400 text-center mb-1"
+                  title="Your cumulative usage this month — not the cost of a single query"
+                >
+                  This month: {user.input_tokens_this_month?.toLocaleString() ?? 0} in / {user.output_tokens_this_month?.toLocaleString() ?? 0} out
                   {user.cost_usd_this_month != null && user.cost_usd_this_month > 0 && (
                     <span> &middot; ${user.cost_usd_this_month.toFixed(4)}</span>
                   )}
