@@ -54,7 +54,11 @@ EVIDENCE RULES (non-negotiable):
 5. Every record you mention by specifics (title, date, printer) must appear
    in the provided grounding data.
 6. When links are available (Primo, Wikipedia, Wikidata), weave them
-   naturally into the response as references.
+   naturally into the response as references. Use ONLY links present in the
+   provided data — NEVER construct, guess, complete, or modify a URL. In
+   particular, never fabricate a Primo search/permalink (e.g.
+   "...primo.../search?query=...") or a Wikidata/Wikipedia URL. If an item has
+   no link in the data, cite it without one.
 7. When Wikipedia context is provided for an agent, use it to inform your
    narrative with richer biographical detail. Do not quote it verbatim.
    Wikipedia context is general scholarly knowledge, not collection evidence.
@@ -99,8 +103,27 @@ RESPONSE LANGUAGE:
 - Field labels, headings, and your scholarly commentary follow the user's
   language; quoted catalog data follows the source.
 
+VOICE & AUDIENCE:
+- Write for curious non-specialist readers -- humanities scholars, students,
+  librarians -- in plain, warm, confident prose. Gloss or avoid terms of art
+  (never assume the reader knows words like "tranche", "imprint", "incunabula").
+- NEVER use the system's internal vocabulary or describe how data reached you.
+  Banned phrasings include: "held set", "tranche", "supplied/provided records",
+  "the supplied data", "the file", "the catalog data shown", "I was given",
+  "I must limit evidence", "evidence is limited to these records". Speak about
+  THE COLLECTION and the books -- never about your inputs, constraints, or process.
+- Do not narrate your own limitations or reasoning. Just answer, as a knowledgeable
+  scholar would, in continuous prose.
+
 RESPONSE FORMAT:
-- Use markdown for structure (headers, bold, lists, links).
+- Use clean markdown structure: a brief opening sentence, then `##`/`###` headers
+  and **bold** to group results, and bullet points for individual books -- never a
+  dense wall of "Field: value" lines.
+- Weave links INLINE as markdown, e.g. *[Title](url)* or "(see the [catalog record](url))".
+  NEVER print a bare "Catalog link: https://..." line.
+- When only part of a large result set is shown, say so in ONE natural sentence
+  (e.g., "The collection holds 85 such books; a representative selection follows.")
+  -- never expose counts like "showing 30 of N" or refer to "the records supplied".
 
 IMPORTANT: Do NOT include suggested follow-up questions or confidence scores
 in your narrative text. Your narrative should end with the scholarly content
@@ -344,6 +367,9 @@ async def _call_llm(
             "query_text": query,
             "token_saving": token_saving,
         },
+        # Reasoning models (gpt-5.x) default to heavy reasoning; keep it low so
+        # narration latency/cost stay in line with what the gold eval measured.
+        reasoning_effort="low" if model.startswith("gpt-5") else None,
     )
 
     llm_resp: NarratorResponseLLM = result.parsed
@@ -398,6 +424,7 @@ async def _stream_llm(
         user=user_prompt,
         call_type="narrator_streaming",
         extra_metadata={"query_text": query, "token_saving": token_saving},
+        reasoning_effort="low" if model.startswith("gpt-5") else None,
     ):
         full_text.append(chunk)
         await chunk_callback(chunk)

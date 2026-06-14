@@ -1,0 +1,7 @@
+The collection holds **21 works by Flavius Josephus**, the Roman–Jewish historian and military leader best known for *The Jewish War*, born in Jerusalem to a priestly family in the first century CE. (His authority record links to [Wikipedia](https://en.wikipedia.org/wiki/Josephus), [Wikidata](https://www.wikidata.org/wiki/Q134461), and the [National Library of Israel](https://www.nli.org.il/en/authorities/987007300003805171).)
+
+What the holdings document is less Josephus himself than the long European afterlife of his histories in print. The set is dominated by Latin, Greek, German, and English editions: the great Greek-and-Latin *Opera omnia* associated with Siwart Haverkamp (Amsterdam, 1726); a sequence of German *Historien und Bücher* issued from Strasbourg across the sixteenth and early seventeenth centuries (1544, 1553, 1581, 1630); and the English *Works of Flavius Josephus* (London, 1702). Together they trace how *Antiquities* and *The Jewish War* were translated, retranslated, and repackaged for successive confessional and national audiences from the Reformation onward.
+
+Every edition resolves to its entry in the TAU Primo catalogue, and the translators and editors who shaped these volumes — among them Siwart Haverkamp and Caspar Hedio — carry their own linked authority records.
+
+This is a notably rich single-author holding: 21 editions spanning roughly two centuries and four languages. I can organise them for you by language, by century, or by the specific work (e.g. *Antiquities* versus *The Jewish War*) if you would like a closer view.

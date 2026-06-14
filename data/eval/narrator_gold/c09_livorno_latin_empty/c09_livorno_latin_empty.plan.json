@@ -1,0 +1,16 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "Two valid but non-overlapping constraints: Livorno imprint place and Latin language. The collection holds Livorno imprints and Latin books, but none that are both, so this should return an empty set in scope.",
+  "execution_steps": [
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "imprint_place", "op": "EQUALS", "value": "livorno"}, {"field": "language", "op": "EQUALS", "value": "lat"}], "scope": "full_collection"},
+      "label": "Latin books printed in Livorno",
+      "depends_on": []
+    }
+  ],
+  "directives": [],
+  "confidence": 0.9,
+  "clarification": null,
+  "dropped_steps": []
+}

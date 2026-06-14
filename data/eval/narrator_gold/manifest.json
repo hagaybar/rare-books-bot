@@ -1,0 +1,20 @@
+{
+  "suite_name": "narrator_gold_v1",
+  "created": "2026-06-14",
+  "author": "Opus 4.8 (in-session, $0; grounding frozen via pure-DB executor)",
+  "db": "data/index/bibliographic.db",
+  "notes": "Gold standard for narrator model-vs-cost evaluation. Each case: hand-authored InterpretationPlan (simulated interpreter) -> frozen ExecutionResult grounding -> Opus-authored gold narrative. Large sets are truncated to 30 records in grounding; gold cites only grounded records but states the true total_record_count.",
+  "cases": [
+    {"case_id": "c01_aldine_publisher", "query": "Books published by the Aldine Press", "case_type": "publisher_resolve", "query_language": "en", "content_language": "lat/gre/ita", "total_record_count": 15, "set_size_bucket": "small"},
+    {"case_id": "c02_venice_place", "query": "What was printed in Venice?", "case_type": "place_retrieve", "query_language": "en", "content_language": "ita/heb", "total_record_count": 164, "set_size_bucket": "large"},
+    {"case_id": "c03_schwerin_agent_role", "query": "Books illustrated by Ludwig Schwerin", "case_type": "agent_role", "query_language": "en", "content_language": "ger", "total_record_count": 10, "set_size_bucket": "small"},
+    {"case_id": "c04_hebrew_amsterdam_multifilter", "query": "ספרים עבריים שנדפסו באמשטרדם בין השנים 1600 ל-1700", "case_type": "multi_filter", "query_language": "he", "content_language": "heb", "total_record_count": 47, "set_size_bucket": "medium", "notes": "Hebrew query -> Hebrew gold"},
+    {"case_id": "c05_jewish_philosophy_subject", "query": "Books about Jewish philosophy", "case_type": "semantic_subject_concept", "query_language": "en", "content_language": "mixed", "total_record_count": 86, "set_size_bucket": "medium", "notes": "Tests #63 semantic subject search; matched headings surfaced as evidence"},
+    {"case_id": "c06_cities_aggregate", "query": "Which cities printed the most books?", "case_type": "aggregation", "query_language": "en", "content_language": "n/a", "total_record_count": 0, "set_size_bucket": "aggregate", "notes": "Aggregate facets (place), not records"},
+    {"case_id": "c07_josephus_entity_enrich", "query": "Tell me about Josephus Flavius and his works in the collection", "case_type": "entity_exploration_enrich", "query_language": "en", "content_language": "lat/gre/ger/eng", "total_record_count": 21, "set_size_bucket": "medium", "notes": "Tests enrichment link-weaving (Wikipedia/Wikidata/NLI)"},
+    {"case_id": "c08_hebrew_large_set", "query": "אילו ספרים בעברית נמצאים באוסף?", "case_type": "large_set", "query_language": "he", "content_language": "heb", "total_record_count": 806, "set_size_bucket": "large", "notes": "Hebrew query -> Hebrew gold; summarize-at-scale stressor"},
+    {"case_id": "c09_livorno_latin_empty", "query": "Latin books printed in Livorno", "case_type": "empty_in_scope", "query_language": "en", "content_language": "n/a", "total_record_count": 0, "set_size_bucket": "empty", "notes": "Tests empty-set honesty, no fabrication"},
+    {"case_id": "c10_hebrew_query_jerusalem", "query": "ספרים עבריים שנדפסו בירושלים", "case_type": "hebrew_query", "query_language": "he", "content_language": "heb", "total_record_count": 102, "set_size_bucket": "large", "notes": "Hebrew-script query; BiDi narration"},
+    {"case_id": "c11_ambiguous_old_books", "query": "Do you have any really old books?", "case_type": "ambiguous", "query_language": "en", "content_language": "lat/ita", "total_record_count": 98, "set_size_bucket": "medium", "notes": "Default 1450-1550; acknowledge ambiguity, invite refinement"}
+  ]
+}

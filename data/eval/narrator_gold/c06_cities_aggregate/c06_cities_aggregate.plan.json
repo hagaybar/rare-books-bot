@@ -1,0 +1,16 @@
+{
+  "intents": ["analytical"],
+  "reasoning": "Analytical query about the distribution of printing across cities. Aggregate the full collection by imprint place and report the top cities by record count.",
+  "execution_steps": [
+    {
+      "action": "aggregate",
+      "params": {"field": "place", "scope": "full_collection", "limit": 20},
+      "label": "Cities ranked by number of books printed",
+      "depends_on": []
+    }
+  ],
+  "directives": [],
+  "confidence": 0.95,
+  "clarification": null,
+  "dropped_steps": []
+}

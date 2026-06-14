@@ -289,6 +289,8 @@ The interpreter includes dedicated handling for Hebrew queries:
 - Hebrew terms are used directly in SUBJECT and TITLE filters
 - Collection/provenance queries use corporate agents (e.g., "the Faitlovitch collection" → `agent_norm CONTAINS` + `agent_type EQUALS corporate`)
 - The narrator answers in the language of the user's query (Hebrew question → Hebrew answer, both REST and streaming paths); bibliographic titles, imprints, and names stay in their original language/script
+- The narrator uses ONLY links present in the grounding data and never constructs, guesses, or completes a URL (e.g. Primo search links, Wikidata/Wikipedia URLs). This guardrail was added 2026-06-14 after the narrator gold eval found URL fabrication to be the dominant fabrication mode (see `qa-framework.md`).
+- **Active narrator model: `gpt-5-mini`** (since 2026-06-14, selected via the narrator gold-standard eval — highest grounded quality at ~75% lower cost than gpt-4.1). It is a reasoning model, called with `reasoning_effort="low"`.
 
 ### Enriched Narrator Context
 

@@ -1,0 +1,16 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "Broad single-filter retrieval of every Hebrew-language book in the collection. This returns a large set, so the narrator must summarize at scale rather than enumerate every record.",
+  "execution_steps": [
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "language", "op": "EQUALS", "value": "heb"}], "scope": "full_collection"},
+      "label": "All Hebrew-language books",
+      "depends_on": []
+    }
+  ],
+  "directives": [],
+  "confidence": 0.95,
+  "clarification": null,
+  "dropped_steps": []
+}

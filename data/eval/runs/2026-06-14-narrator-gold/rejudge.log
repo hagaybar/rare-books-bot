@@ -1,0 +1,5 @@
+reused 42 narrations; re-narrating [('c04_hebrew_amsterdam_multifilter', 'gpt-5-mini'), ('c11_ambiguous_old_books', 'gpt-5.4-mini')] at cap 8000
+  re-narrated c04_hebrew_amsterdam_multifilter::gpt-5-mini out=1924 cost=$0.00265
+  re-narrated c11_ambiguous_old_books::gpt-5.4-mini out=1491 cost=$0.00526
+[judge] completed BatchRequestCounts(completed=44, failed=0, total=44)
+Done. 44 cells. Report at data/eval/runs/2026-06-14-narrator-gold/REPORT.md

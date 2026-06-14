@@ -1,0 +1,16 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "Three constraints: Hebrew language (heb), Amsterdam imprint place, and a 17th-century date range. Combine all three in one retrieve.",
+  "execution_steps": [
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "language", "op": "EQUALS", "value": "heb"}, {"field": "imprint_place", "op": "EQUALS", "value": "amsterdam"}, {"field": "year", "op": "RANGE", "start": 1600, "end": 1700}], "scope": "full_collection"},
+      "label": "Hebrew books printed in Amsterdam, 1600-1700",
+      "depends_on": []
+    }
+  ],
+  "directives": [],
+  "confidence": 0.95,
+  "clarification": null,
+  "dropped_steps": []
+}

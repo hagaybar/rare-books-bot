@@ -1,0 +1,16 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "Straightforward place-of-publication retrieval: books printed in Venice. Single normalized imprint_place filter, no further constraints.",
+  "execution_steps": [
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "imprint_place", "op": "EQUALS", "value": "venice"}], "scope": "full_collection"},
+      "label": "Books printed in Venice",
+      "depends_on": []
+    }
+  ],
+  "directives": [],
+  "confidence": 0.96,
+  "clarification": null,
+  "dropped_steps": []
+}

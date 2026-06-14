@@ -1,0 +1,11 @@
+[narration] submitted 11 reqs for gpt-4.1: batch_6a2e654279f08190a4d328ec6ac43b09
+[narration] submitted 11 reqs for gpt-5.4-mini: batch_6a2e6543b968819096c7769cf27df013
+[narration] submitted 11 reqs for gpt-5-mini: batch_6a2e6544d4048190a0c0851cb2370208
+[narration] submitted 11 reqs for gpt-4.1-mini: batch_6a2e65459b148190934cf437bf514565
+[narration] gpt-4.1 batch -> completed
+[narration] gpt-5.4-mini batch -> completed
+[narration] gpt-5-mini batch -> completed
+[narration] gpt-4.1-mini batch -> completed
+WARNING: unusable narration c04_hebrew_amsterdam_multifilter::gpt-5-mini (finish=length); scoring as failure
+WARNING: unusable narration c11_ambiguous_old_books::gpt-5.4-mini (finish=length); scoring as failure
+Done. Report at data/eval/runs/2026-06-14-narrator-gold/REPORT.md

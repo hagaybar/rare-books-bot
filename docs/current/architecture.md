@@ -282,6 +282,8 @@ The model config system decouples LLM model selection from pipeline code, allowi
 
 The evaluation framework (`scripts/eval/`) supports batch comparison of models across pipeline stages using benchmark queries from `data/eval/queries.json`.
 
+**Active assignments (2026-06-14):** narrator = `gpt-5-mini` (reasoning model, `reasoning_effort="low"`), interpreter = `gpt-4.1`, meta_extraction = `gpt-4.1-nano`. The narrator model was chosen via the narrator gold-standard eval (`docs/current/qa-framework.md`) — `gpt-5-mini` scored highest with zero fabrications at ~75% lower cost than the previous `gpt-4.1`. The interpreter has not yet been re-evaluated and remains a future cost-reduction opportunity.
+
 ---
 
 ## Key Architectural Decisions

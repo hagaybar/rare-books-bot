@@ -1,0 +1,203 @@
+{
+  "steps_completed": [
+    {
+      "step_index": 0,
+      "action": "aggregate",
+      "label": "Cities ranked by number of books printed",
+      "status": "ok",
+      "data": {
+        "field": "place",
+        "facets": [
+          {
+            "value": "paris",
+            "count": 356
+          },
+          {
+            "value": "london",
+            "count": 230
+          },
+          {
+            "value": "amsterdam",
+            "count": 196
+          },
+          {
+            "value": "venice",
+            "count": 164
+          },
+          {
+            "value": "berlin",
+            "count": 123
+          },
+          {
+            "value": "leipzig",
+            "count": 111
+          },
+          {
+            "value": "jerusalem",
+            "count": 109
+          },
+          {
+            "value": "leiden",
+            "count": 53
+          },
+          {
+            "value": "frankfurt",
+            "count": 48
+          },
+          {
+            "value": "basel",
+            "count": 45
+          },
+          {
+            "value": "tel aviv",
+            "count": 43
+          },
+          {
+            "value": "[sine loco]",
+            "count": 41
+          },
+          {
+            "value": "vienna",
+            "count": 41
+          },
+          {
+            "value": "hamburg",
+            "count": 36
+          },
+          {
+            "value": "frankfurt am main",
+            "count": 30
+          },
+          {
+            "value": "munich",
+            "count": 27
+          },
+          {
+            "value": "rome",
+            "count": 27
+          },
+          {
+            "value": "halle",
+            "count": 26
+          },
+          {
+            "value": "mantua",
+            "count": 24
+          },
+          {
+            "value": "new york",
+            "count": 23
+          }
+        ],
+        "total_records": 2796,
+        "distinct_values": 366,
+        "facets_truncated": true
+      },
+      "record_count": 2796,
+      "error_message": null
+    }
+  ],
+  "directives": [],
+  "grounding": {
+    "records": [],
+    "agents": [],
+    "aggregations": {
+      "place": [
+        {
+          "value": "paris",
+          "count": 356
+        },
+        {
+          "value": "london",
+          "count": 230
+        },
+        {
+          "value": "amsterdam",
+          "count": 196
+        },
+        {
+          "value": "venice",
+          "count": 164
+        },
+        {
+          "value": "berlin",
+          "count": 123
+        },
+        {
+          "value": "leipzig",
+          "count": 111
+        },
+        {
+          "value": "jerusalem",
+          "count": 109
+        },
+        {
+          "value": "leiden",
+          "count": 53
+        },
+        {
+          "value": "frankfurt",
+          "count": 48
+        },
+        {
+          "value": "basel",
+          "count": 45
+        },
+        {
+          "value": "tel aviv",
+          "count": 43
+        },
+        {
+          "value": "[sine loco]",
+          "count": 41
+        },
+        {
+          "value": "vienna",
+          "count": 41
+        },
+        {
+          "value": "hamburg",
+          "count": 36
+        },
+        {
+          "value": "frankfurt am main",
+          "count": 30
+        },
+        {
+          "value": "munich",
+          "count": 27
+        },
+        {
+          "value": "rome",
+          "count": 27
+        },
+        {
+          "value": "halle",
+          "count": 26
+        },
+        {
+          "value": "mantua",
+          "count": 24
+        },
+        {
+          "value": "new york",
+          "count": 23
+        }
+      ]
+    },
+    "aggregation_meta": {
+      "place": {
+        "distinct_values": 366,
+        "facets_truncated": true
+      }
+    },
+    "links": [],
+    "publishers": [],
+    "connections": [],
+    "broadening_notes": []
+  },
+  "original_query": "Which cities printed the most books?",
+  "session_context": null,
+  "truncated": false,
+  "total_record_count": 0
+}

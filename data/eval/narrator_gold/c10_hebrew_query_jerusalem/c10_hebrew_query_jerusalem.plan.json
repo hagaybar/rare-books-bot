@@ -1,0 +1,16 @@
+{
+  "intents": ["retrieval"],
+  "reasoning": "The query is phrased in Hebrew and asks for Hebrew-language books printed in Jerusalem. Combine language (heb) and imprint_place (jerusalem) filters.",
+  "execution_steps": [
+    {
+      "action": "retrieve",
+      "params": {"filters": [{"field": "language", "op": "EQUALS", "value": "heb"}, {"field": "imprint_place", "op": "EQUALS", "value": "jerusalem"}], "scope": "full_collection"},
+      "label": "Hebrew books printed in Jerusalem",
+      "depends_on": []
+    }
+  ],
+  "directives": [],
+  "confidence": 0.95,
+  "clarification": null,
+  "dropped_steps": []
+}

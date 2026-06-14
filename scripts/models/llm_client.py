@@ -96,6 +96,7 @@ async def structured_completion(
     response_schema: Type[T],
     call_type: str = "unknown",
     extra_metadata: Optional[dict] = None,
+    reasoning_effort: Optional[str] = None,
 ) -> LLMResult:
     """Run a structured completion via litellm, returning a parsed Pydantic model.
 
@@ -116,10 +117,12 @@ async def structured_completion(
     ]
 
     start = time.monotonic()
+    extra: dict = {"reasoning_effort": reasoning_effort} if reasoning_effort else {}
     resp = await litellm.acompletion(
         model=model,
         messages=messages,
         response_format=pydantic_to_response_format(response_schema),
+        **extra,
     )
     latency_ms = (time.monotonic() - start) * 1000
 
@@ -218,6 +221,7 @@ async def streaming_completion(
     user: str,
     call_type: str = "unknown",
     extra_metadata: Optional[dict] = None,
+    reasoning_effort: Optional[str] = None,
 ) -> AsyncIterator[str]:
     """Stream a plain-text completion via litellm.
 
@@ -233,6 +237,7 @@ async def streaming_completion(
         {"role": "user", "content": user},
     ]
 
+    extra: dict = {"reasoning_effort": reasoning_effort} if reasoning_effort else {}
     response = await litellm.acompletion(
         model=model,
         messages=messages,
@@ -241,6 +246,7 @@ async def streaming_completion(
         # chunk with empty choices) so streamed calls are cost-logged and
         # count against per-user quotas like every other call.
         stream_options={"include_usage": True},
+        **extra,
     )
 
     usage = None

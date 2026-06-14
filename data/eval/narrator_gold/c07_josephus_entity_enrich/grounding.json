@@ -1,0 +1,3319 @@
+{
+  "steps_completed": [
+    {
+      "step_index": 0,
+      "action": "resolve_agent",
+      "label": "Resolve Josephus Flavius",
+      "status": "ok",
+      "data": {
+        "query_name": "Josephus Flavius",
+        "matched_values": [
+          "josephus, flavius"
+        ],
+        "match_method": "alias_exact",
+        "confidence": 0.95,
+        "query_variants": [
+          "Flavius Josephus",
+          "Josephus, Flavius",
+          "Yosef ben Matityahu"
+        ]
+      },
+      "record_count": null,
+      "error_message": null
+    },
+    {
+      "step_index": 1,
+      "action": "retrieve",
+      "label": "Works by Josephus Flavius",
+      "status": "ok",
+      "data": {
+        "mms_ids": [
+          "990011949480204146",
+          "990011996570204146",
+          "990012163230204146",
+          "990012164910204146",
+          "990012790180204146",
+          "990013964380204146",
+          "990020593730204146",
+          "990032645690204146",
+          "9933411014404146",
+          "9933512509304146",
+          "9933512510504146",
+          "9933513117204146",
+          "9933514202204146",
+          "9933519118704146",
+          "9933523219804146",
+          "9933526812404146",
+          "9933649216504146",
+          "9933734319104146",
+          "9933737419804146",
+          "9933749416604146",
+          "9933788840404146"
+        ],
+        "total_count": 21,
+        "filters_applied": [
+          {
+            "field": "agent_norm",
+            "op": "EQUALS",
+            "value": "josephus, flavius",
+            "start": null,
+            "end": null,
+            "negate": false,
+            "confidence": null,
+            "notes": null
+          }
+        ],
+        "relaxations": []
+      },
+      "record_count": 21,
+      "error_message": null
+    },
+    {
+      "step_index": 2,
+      "action": "enrich",
+      "label": "Enrich Josephus with biography and external links",
+      "status": "ok",
+      "data": {
+        "agents": [
+          {
+            "canonical_name": "josephus",
+            "variants": [],
+            "birth_year": null,
+            "death_year": null,
+            "occupations": [
+              "writer",
+              "historian"
+            ],
+            "description": "Flavius Josephus was a Roman–Jewish historian and military leader. Best known for writing The Jewish War, he was born in Jerusalem—then part of the Roman province of Judea—to a father of priestly descent and a mother who claimed Hasmonean royal ancestry.",
+            "record_count": 21,
+            "links": [
+              {
+                "entity_type": "agent",
+                "entity_id": "josephus, flavius",
+                "label": "Wikipedia: josephus, flavius",
+                "url": "https://en.wikipedia.org/wiki/Josephus",
+                "source": "wikipedia"
+              },
+              {
+                "entity_type": "agent",
+                "entity_id": "josephus, flavius",
+                "label": "Wikidata: Q134461",
+                "url": "https://www.wikidata.org/wiki/Q134461",
+                "source": "wikidata"
+              },
+              {
+                "entity_type": "agent",
+                "entity_id": "josephus, flavius",
+                "label": "NLI: 987007300003805171",
+                "url": "https://www.nli.org.il/en/authorities/987007300003805171",
+                "source": "nli"
+              }
+            ],
+            "wikipedia_context": "Flavius Josephus was a Roman–Jewish historian and military leader. Best known for writing The Jewish War, he was born in Jerusalem—then part of the Roman province of Judea—to a father of priestly descent and a mother who claimed Hasmonean royal ancestry.",
+            "image_url": null,
+            "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007300003805171.jsonld",
+            "hebrew_aliases": []
+          }
+        ]
+      },
+      "record_count": null,
+      "error_message": null
+    }
+  ],
+  "directives": [
+    {
+      "directive": "expand",
+      "params": {
+        "focus": "Josephus Flavius",
+        "aspect": "his life and the works held in the collection"
+      },
+      "label": "Expand on Josephus Flavius"
+    }
+  ],
+  "grounding": {
+    "records": [
+      {
+        "mms_id": "990011949480204146",
+        "title": "Flavii Josephi quae reperiri potuerunt, opera omnia Graece et Latine : cum notis & nova versione Joannis Hudsoni ... / omnia collegit, disposuit & post Jo. Hudsonum ad codices fere omnes, cum impressos, tum manuscriptos, preacipue Lugundo-Batavos, diligenter recensuit, notasque passim suas & quinque in fine indices adjecit Siegebertus Havercampus",
+        "date_display": "1726",
+        "place": "Amstelaedami",
+        "publisher": "Apud R. & G. Westenios, S. Luchtmans, J. Broedelet",
+        "language": "gre",
+        "agents": [
+          "josephus, flavius",
+          "haverkamp, siwart"
+        ],
+        "subjects": [
+          "Jews -- History -- Sources."
+        ],
+        "physical_description": "2 v. : ill.",
+        "notes": [
+          "Added engraved t.-p. to tomus I. T.-p. in red and black. Initials",
+          "\"Edition la plus complete et la plus recherchee, bien que l'impression n'en sois pas fort correcte.\"--cf.Note: Le Manuel du libraire / J.-C. Brunet, T.3"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011949480204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה מקורות"
+        ]
+      },
+      {
+        "mms_id": "990011996570204146",
+        "title": "Flavij Josephe Historien und Bucher ... / Alles auss dem Griechischen exemplar von Newm Verteuscht und Zugerichtet von Conrad Lautenbach",
+        "date_display": "1630",
+        "place": "Strassburg",
+        "publisher": "Gedruckt und verlegt durch C. Dietzel und C. von der Heyden",
+        "language": "ger",
+        "agents": [
+          "josephus, flavius",
+          "lautenbach, conrad"
+        ],
+        "subjects": [
+          "Jews -- History -- Sources.",
+          "Jerusalem (Israel) -- History -- Siege, 70 A.D. -- Sources."
+        ],
+        "physical_description": "[10], 960, [36] p. : ill.",
+        "notes": [
+          "T.-p. missing. Data from colophon und NUC v.285",
+          "Printer's engraved device on last leaf. Wood engravings. Initials. Hard cover, wood and leather, with metal ornaments and locks",
+          "Marginal notes"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011996570204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה מקורות",
+          "ירושלים היסטוריה תולדות מקורות"
+        ]
+      },
+      {
+        "mms_id": "990012163230204146",
+        "title": "Flauij Josephi ... alle Bucher. Namlich Zwentzig von den alten Geschichten der Juden : Syben vom judischen Krieg ... Zwey wider Appionem ... Eins von Meysterschafft der Vernunfft und der Machabeer Martyrung. Item Beschreibung des Lebens Flauij Josephi, so vormals in teutscher Spraach nicht aussgangen ist / Alles durch D. Caspar Hedion verteutscht ... von neuwem auffs Fleyssigst nach den alten griechischen Exemplaren restituiert und an Vilen Orten trefflich gebessert und gemehret ...",
+        "date_display": "1553",
+        "place": "Strassburg",
+        "publisher": "Gedruckt [bey Samuel Emmel]",
+        "language": "ger",
+        "agents": [
+          "josephus, flavius",
+          "hedio, kaspar"
+        ],
+        "subjects": [
+          "Jews -- History -- Sources.",
+          "Jerusalem (Israel) -- History -- Siege, 70 A.D. -- Sources."
+        ],
+        "physical_description": "[12], cclxxxvj [i.e. ccclxxxvj], [30], clxxxiij, [8] leaves",
+        "notes": [
+          "Preface dated 1535",
+          "\"... von Krieg der Juden ...\" has special t.-p.",
+          "\"Das Leben Flauij Josephi\".--pp.ccclxviij-ccclxxxv"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012163230204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה מקורות",
+          "ירושלים היסטוריה תולדות מקורות"
+        ]
+      },
+      {
+        "mms_id": "990012164910204146",
+        "title": "Josephi des Hochberumpten ... histori Beschreibers ...",
+        "date_display": "1544",
+        "place": "Strassburg",
+        "publisher": "Gedruckt bey Balthassar Beck",
+        "language": "ger",
+        "agents": [
+          "josephus, flavius",
+          "hedio, kaspar",
+          "erasmus, desiderius"
+        ],
+        "subjects": [
+          "Jews -- History -- Sources.",
+          "Jerusalem (Israel) -- History -- Siege, 70 A.D. -- Sources."
+        ],
+        "physical_description": "[13], cccxliiij, [32], clxxxiij, [9] leaves",
+        "notes": [
+          "Preface signed: Caspar Hedio, 1535",
+          "\"Von Krieg der Juden ...\" has special t.-p."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012164910204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה מקורות",
+          "ירושלים היסטוריה תולדות מקורות"
+        ]
+      },
+      {
+        "mms_id": "990012790180204146",
+        "title": "The works of Flavius Josephus / translated into English by Sir Roger L'Estrange, Knight",
+        "date_display": "1702",
+        "place": "London",
+        "publisher": "Printed for R. Sare at Grays-Inn-Gate in Holborn",
+        "language": "eng",
+        "agents": [
+          "josephus, flavius",
+          "l'estrange, roger"
+        ],
+        "subjects": [
+          "Josephus, Flavius.",
+          "Jews -- History -- Sources."
+        ],
+        "physical_description": "1130 p. : map (folded), plan (folded)",
+        "notes": [
+          "First edition of this translation.--Cf.Note-NUC v.285",
+          "\"All carefully revis'd, and compar'd with the original Greek, to which are added two discourses and several remarks and observations upon Josephus ... with ... accurate indexes.\"--On t.-p.",
+          "Added engraved t.-p. Marginalia"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012790180204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יוסף בן מתתיהו יוסיפוס",
+          "יהודים היסטוריה מקורות"
+        ]
+      },
+      {
+        "mms_id": "990013964380204146",
+        "title": "Flavij Josephi ... Historien und Bucher ... / Alles auss dem Griechischen exemplar ... [verteuscht und zugerichtet von Conrad Lautenbach]",
+        "date_display": "1581",
+        "place": "Gedruck zu Strassburg",
+        "publisher": "Durch T. Rihel",
+        "language": "ger",
+        "agents": [
+          "josephus, flavius",
+          "lautenbach, conrad"
+        ],
+        "subjects": [
+          "Jews -- History -- Sources."
+        ],
+        "physical_description": "[10], 524, [36] p. : ill.",
+        "notes": [
+          "Imprint missing. Data from colophon und NUC v.285",
+          "Printer's engraved device on last leaf. Wood engravings. Initials. Hard cover, wood and leather, with metal locks (damaged)",
+          "Marginal notes"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990013964380204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה מקורות"
+        ]
+      },
+      {
+        "mms_id": "990020593730204146",
+        "title": "Gioseffo Flavio Historico : Delle antichità, et gverre givdaiche / Gioseffo Flavio",
+        "date_display": "1589",
+        "place": "Venetia",
+        "publisher": "Appresso Giouanni Griffio",
+        "language": "ita",
+        "agents": [
+          "josephus, flavius"
+        ],
+        "subjects": [
+          "Jews -- History",
+          "Jewish War, 66-73",
+          "Judaism -- History"
+        ],
+        "physical_description": "3 v. in 1",
+        "notes": [
+          "Vol. [2] has title: I dieci vltimi libri di Gioseffo Flavio ... della antichità giudaiche. Seconda parte ...",
+          "[Vol. 3] has title: Gverre givdaiche di Flavio Gioseffo ... Dal greco nell' idioma toscano tradote, e ... corrette ..."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990020593730204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.99,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה תולדות",
+          "יהדות היסטוריה תולדות"
+        ]
+      },
+      {
+        "mms_id": "990032645690204146",
+        "title": "Vervolg op Flavius Josephus of Algemene historie der Joodsche naatsie, : behelzende ene uitvoerige beschryving van derzelver regerings-vorm, Godtsdienst, gezinten en plegtigheden, nevens de veranderingen, daar in voorgevallen ; mitsgaders een verhaal van alle oorlogen, weergaloze rampen, wiffelvalligheden, verstrooing door de gehele waerelt, die naatsie in Asia, Afrika en Europa overgekomen, de zeltzame wetten en reglementen, in ieder Koningryk in haren opzichte van tydt tot tydt gemaakt : waar in men vindt de levens en bedryven der Joodsche regeerders, hogepriesters, opperveltheren, valsche messiassen, beroemde mannen en geleerde schryvers, met een berecht van derzelver werken : alles van de geboorte van Christus, of Josephus tydt af, door alle eeuwen, tot dezen tydt toe, historie- en staatkundig beschreven, en met echte bewyzen uit oude en hedendaagsche schryvers gestaat / door Jakob Basnage",
+        "date_display": "1726-1727",
+        "place": "Te Amsterdam",
+        "publisher": "By Gerard onder de Linden",
+        "language": "dut",
+        "agents": [
+          "basnage, jacques",
+          "josephus, flavius"
+        ],
+        "subjects": [
+          "Jews -- History",
+          "Judaism",
+          "Josephus, Flavius. -- Antiquitates Judaicae."
+        ],
+        "physical_description": "2 volumes : illustrations",
+        "notes": [
+          "Cuts: title vignettes, initials, tail pieces",
+          "Title page of v. 1 printed in red and black"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990032645690204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה תולדות",
+          "יהדות",
+          "יוסף בן מתתיהו יוסיפוס"
+        ]
+      },
+      {
+        "mms_id": "9933411014404146",
+        "title": "Histoire des Juifs / écrite par Flavius Ioseph ... traduite sur l'original grec revû sur divers manuscrits par Mr. Arnauld d'Andilly.",
+        "date_display": "1735-1736",
+        "place": "A Paris",
+        "publisher": "Chez Caillau ... Chardon ... Gissey ... Bordelet ... Henry ...",
+        "language": "fre",
+        "agents": [
+          "josephus, flavius",
+          "arnauld, d'andilly, robert"
+        ],
+        "subjects": [
+          "Jews -- History.",
+          "Jews -- Antiquities."
+        ],
+        "physical_description": "5 volumes : illustrations.",
+        "notes": [
+          "Vols. 4-5 have title: Histoire de la guerre des Juifs contre les Romains ..."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933411014404146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה תולדות",
+          "יהודים עתיקות"
+        ]
+      },
+      {
+        "mms_id": "9933512509304146",
+        "title": "Opera Iosephi Ivdaeorvm doctissimi ac disertissimi, qvae ad nostram aetatem pervenerunt omnia, nimirum : De antiqvitatibvs ivdaicis libri XX, qvibus vita Iosephi per ipsum conscripta, est adiecta De bello iudaico VII, Contra Apionem II De imperio rationis, siue De Machabais I antehac in latinum sermonem translata, & ad exemplum graci codicis accurate distincta. / Nvnc vero chronologia ad capvt vnivseuiusque folii ... Cvm indice locvpletissimo.",
+        "date_display": null,
+        "place": null,
+        "publisher": null,
+        "language": "eng",
+        "agents": [
+          "josephus, flavius",
+          "feyerabend, sigmund"
+        ],
+        "subjects": [
+          "Jews -- History.",
+          "Jews -- Antiquities."
+        ],
+        "physical_description": "481 [34] leaves.",
+        "notes": [],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933512509304146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": null,
+        "place_confidence": null,
+        "publisher_confidence": null,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה תולדות",
+          "יהודים עתיקות"
+        ]
+      },
+      {
+        "mms_id": "9933512510504146",
+        "title": "Josepho De bello judaico in lingua Toscana.",
+        "date_display": "1512",
+        "place": "Florentiae",
+        "publisher": "Sumptibus Philippi Iuntae",
+        "language": "ita",
+        "agents": [
+          "josephus, flavius",
+          "giunta, filippo"
+        ],
+        "subjects": [
+          "Jews -- History -- Early works to 1800"
+        ],
+        "physical_description": "146 leaves.",
+        "notes": [
+          "This version is from the Latin of Rufinus."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933512510504146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה תולדות כתבים מוקדמים עד 1800"
+        ]
+      },
+      {
+        "mms_id": "9933513117204146",
+        "title": "Iosephi Iudei historiographi viri clarissimi prologus in libros antiquitatum viginti incipit foeiciter : et de Graeco in Latinum traductos / per venerabilem presbyterum Ruffinum Aquileiensem virum doctissimum.",
+        "date_display": "1486",
+        "place": "Venice",
+        "publisher": "Impressum Veneciis per Ioannem Uercelensem",
+        "language": "lat",
+        "agents": [
+          "josephus, flavius",
+          "rufinus",
+          "squarciafico, girolamo",
+          "rosso, giovanni"
+        ],
+        "subjects": [
+          "Josephus, Flavius",
+          "Jews -- History -- To 70 A.D.",
+          "Jews -- Antiquities",
+          "Jews -- Early works to 1800",
+          "Incunabula -- Italy -- Venice -- Specimens."
+        ],
+        "physical_description": "[368] pages",
+        "notes": [
+          "Josephus completed his twenty-one volume \"Antiquities of the Jews\"during the last year of the reign of the Emperor Flavius Domitian, around 93 or 94 AD. In expounding Jewish history, law and custom, h",
+          "Title from incipit",
+          "According to Ludwig Hain, this volume was originally bound with \"Iosephi Mathathiae Filii Haebrei genere sacerdotis ex Hierosolymis de bello Ivdaico in libros septem prologus per Ruffinvm Aqvilensem t"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933513117204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יוסף בן מתתיהו יוסיפוס",
+          "יהודים היסטוריה תולדות עד 70 לספירה",
+          "יהודים עתיקות",
+          "יהודים כתבים מוקדמים עד 1800",
+          "אינקונבולה דפוסי ערש איטליה ונציה דוגמאות"
+        ]
+      },
+      {
+        "mms_id": "9933514202204146",
+        "title": "Phlabiou Iōsēpou Hierosolymitou hiereōs Ta euriskomena = Flavii Josephi Hierosolymitani sacerdotis Opera quae extant omnia : nempe, Antiquitatum Judaicarum libri XX Sigismundo Gelenio interprete, De bello Judaico libri VII interprete Rufino Aquilejensi, Liber de vita sua cum interpretatione Gelenii, Adversus Apionem libri II cum versione antiqua à Gelenio emendata, & De Maccabaeis seu de imperio rationis liber cum paraphrasi Erasmi Roterodami : accedit index locupletissimus : juxta editionem Graeco-Latinam Genevensem ad manuscriptos Palatinae bibliothecae codices castigatam quae nunc à pluribus mendis expurgata & praeterea prolegomenis & appendice auctior redditur.",
+        "date_display": "1691",
+        "place": "Coloniae",
+        "publisher": "Sumptibus Mauritii Georgii Weidmanni",
+        "language": "lat",
+        "agents": [
+          "josephus, flavius",
+          "gelen, sigmund",
+          "rufinus",
+          "rovière, pierre de la",
+          "weidmann, moritz georg",
+          "le moyne, stephanus",
+          "hoeschel, david",
+          "combefis, françois"
+        ],
+        "subjects": [
+          "Jews -- History -- To 70 A.D. -- Early works to 1800.",
+          "Jews -- History -- Rebellion, 66-73 -- Early works to 1800."
+        ],
+        "physical_description": "[72], 1102, [8], 68, [28] pages.",
+        "notes": [
+          "Title in red and black with engraved printer's device.",
+          "Ornamental initials; head and tailpieces.",
+          "Two copies in the library (year of publication, publisher, paging, and typography are identical). Covers differ."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933514202204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה תולדות עד 70 לספירה כתבים מוקדמים עד 1800",
+          "יהודים היסטוריה תולדות המרד הגדול כתבים מוקדמים עד 1800"
+        ]
+      },
+      {
+        "mms_id": "9933519118704146",
+        "title": "Flavii Josephi operum.",
+        "date_display": "1726",
+        "place": "Amstelaedami?",
+        "publisher": "Apud R. & G. Wetstenios?",
+        "language": "lat",
+        "agents": [
+          "josephus, flavius"
+        ],
+        "subjects": [
+          "Josephus, Flavius -- Translations into Latin.",
+          "Jews -- Historiography -- Early works to 1800.",
+          "Greek literature -- Translations into Italian.",
+          "Eretz Israel -- Historiography -- Early works to 1800.",
+          "Jews -- History -- Sources.",
+          "Jews -- History -- To 70 A.D. -- Early works to 1800."
+        ],
+        "physical_description": "2 volumes.",
+        "notes": [
+          "Volume 1. (982 pages). Volume 2. Flavii Josephi Operum tomus II (520, 481 pages, 63 unnumbered pages)."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933519118704146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יוסף בן מתתיהו יוסיפוס תרגומים ללטינית",
+          "יהודים היסטוריוגרפיה כתבים מוקדמים עד 1800",
+          "ספרות יוונית תרגומים לאיטלקית",
+          "ארץ ישראל היסטוריוגרפיה כתבים מוקדמים עד 1800",
+          "יהודים היסטוריה מקורות",
+          "יהודים היסטוריה תולדות עד 70 לספירה כתבים מוקדמים עד 1800"
+        ]
+      },
+      {
+        "mms_id": "9933523219804146",
+        "title": "Des hochberühmten Jüdischen Geschicht-Schreibers Flavii Josephi Historien und Bücher : als zwanzig von alten Jüdischen Geschichten : Sieben vom Jüdischen Krieg : der Stadt Jerusalem und des ganzen Landes zerstörung : zwey von der Juden altem herkommen wider Apionem Grammaticum : eins von Meisterschafft der Vernunfft und der Maccabeer Marter auch von Josephi Leben / alles aus dem Griechischen Exemplar ... verteutscht und zugerichtet ...",
+        "date_display": "1687",
+        "place": "Franckfurt am Mäyn",
+        "publisher": "Verlegung Johann David Zunners",
+        "language": "ger",
+        "agents": [
+          "josephus, flavius",
+          "lautenbach, conrad"
+        ],
+        "subjects": [
+          "Josephus, Flavius -- Translations into German.",
+          "Jews -- History -- Sources.",
+          "Jews -- Antiquities -- Early works to 1800.",
+          "Judaism -- Apologetic works -- Early works to 1800.",
+          "Greek literature -- Jewish authors -- Translations into English."
+        ],
+        "physical_description": "[10], 488, 284 [i.e. 270], [8], 168, [48] pages (last p. blank).",
+        "notes": [
+          "Preface signed: Conrad Lautenbach.",
+          "Added engraved title page.",
+          "Signatures: pi² [symbol]-2[symbol]² ( -2[symbol]2) A-3P⁴ a-2l⁴ ( -2l4))(⁴ (a)-(r)⁴)( -3)(⁴ ²2)(⁴ ²3)(⁶."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933523219804146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יוסף בן מתתיהו יוסיפוס תרגומים לגרמנית",
+          "יהודים היסטוריה מקורות",
+          "יהודים עתיקות כתבים מוקדמים עד 1800",
+          "יהדות כתבים אפולוגטיים כתבים מוקדמים עד 1800",
+          "ספרות יוונית מחברים יהודים תרגומים לאנגלית"
+        ]
+      },
+      {
+        "mms_id": "9933526812404146",
+        "title": "Alle de werken van Flavius Josephus, behelzende twintig boeken van de Joodsche oudheden, het verhaal van zyn eygen leeven, de histori van den oorlóg der Jooden tegen de Romeynen, de twee boeken tegen Apion, en de beschryvinge van den marteldoodt der Machabeen. Waarby komt het gezantschap van Philo aan den keyzer Kaligula. / Voor deezen vólgens de overzettinge van den heere d'Andilly in 't Nederduytsch overgebragt door W. Séwel; maar nu naar het oorsprongkelyk Grieks overzien, en op zeer veele plaatsen verbeeterd, en vermeerderd met het voorheen onvertaalde geschrift van Philo tegen Flakkus, onder 't opzigt en door Sigebert Haverkamp ... ; Nóg zyn daarby gevoegd de vyf boeken van Egesippus van de Joodsche oorlogen, en de verwoestinge van Jerusalem. Verciert met konstplaaten, van Jan en Kaspar Luiken.",
+        "date_display": "1732",
+        "place": "Amsterdam",
+        "publisher": "Marten Schagen, boekverkooper",
+        "language": "dut",
+        "agents": [
+          "josephus, flavius",
+          "philo",
+          "haverkamp, siwart",
+          "sewel, william",
+          "luiken, caspar",
+          "luiken, jan"
+        ],
+        "subjects": [
+          "Josephus, Flavius -- Translations into Dutch.",
+          "Jews -- Antiquities -- Early works to 1800.",
+          "Jews -- History -- To 70 A.D. -- Early works to 1800.",
+          "Jews -- History -- Sources.",
+          "Jews -- Egypt -- Alexandria -- History -- Sources."
+        ],
+        "physical_description": "[46], 790, [26], 112, [11] pages : illustrations, folded maps, portrait.",
+        "notes": [
+          "Title page in red and black, with with vignette (engraved portrait of Josephus).",
+          "Added engraved title page also has half title page: Alle de werken van Flavius Josephus.",
+          "\"Met privilegie van de Ed. Gr. Mog. Heeren Staaten van Holland en Westvriesland.\" -- Title page."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933526812404146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יוסף בן מתתיהו יוסיפוס תרגומים להולנדית",
+          "יהודים עתיקות כתבים מוקדמים עד 1800",
+          "יהודים היסטוריה תולדות עד 70 לספירה כתבים מוקדמים עד 1800",
+          "יהודים היסטוריה מקורות",
+          "יהודים מצרים היסטוריה תולדות מקורות"
+        ]
+      },
+      {
+        "mms_id": "9933649216504146",
+        "title": "Des hochberühmten jüdischen Geschicht-Schreibers Flavii Josephi Historien und Bücher ... / Alles aus dem griechischen Exemplar ... von neuem verteutscht und zugerichtet.",
+        "date_display": "1711",
+        "place": "Franckfurt am Mayn",
+        "publisher": "Verlegt von Joh. David Zunners seel. Erben und Joh. Adam Jung",
+        "language": "ger",
+        "agents": [
+          "josephus, flavius",
+          "lautenbach, conrad",
+          "hegesippus"
+        ],
+        "subjects": [
+          "Jews -- Antiquities.",
+          "Jews -- History -- To 70 A.D."
+        ],
+        "physical_description": "[20], 488, 284, 168, [47] pages.",
+        "notes": [
+          "Half title: Flavii Josephi jüdische Historien.",
+          "Preface signed: Conrad Lautenbach.",
+          "Lautenbach's translation originally published as: Flauij Josephi dess hochberümpten jüdischen Geschichtschreibers Historien vnd Bücher. Franckfurt am Mayn : [s. n.], 1571."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933649216504146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים עתיקות",
+          "יהודים היסטוריה תולדות עד 70 לספירה"
+        ]
+      },
+      {
+        "mms_id": "9933734319104146",
+        "title": "Flavii Iosephi Hebraei Opera Omnia Graece Et Latine : Excvsa Ad Editionem Lvgdvno-Batavam Sigeberti Havercampii Cvm Oxoniensi Ioannis Hvdsonii Collatam / Cvravit Franciscvs Oberthür S.S. Theol. Et V.I. Doctor Insignis Ecclesiae Havgensis Canonicvs Capitvlaris S.S. Dogmatvm In Vniversitate Wircebvrgensi Professor Pvbl. Ord.",
+        "date_display": "[1782-1785]",
+        "place": "Lipsiae",
+        "publisher": "Sumtu E.B. Schwickerti",
+        "language": "lat",
+        "agents": [
+          "josephus, flavius",
+          "haverkamp, siwart",
+          "hudson, john",
+          "oberthür, franz"
+        ],
+        "subjects": [
+          "Jews -- Antiquities",
+          "Jews -- History"
+        ],
+        "physical_description": "3 volumes.",
+        "notes": [
+          "\"Josephus's most important works are \"The Jewish War\" (c. 75 CE) and \"Antiquities of the Jews\" (c. 94 CE). \"The Jewish War\" recounts the Jewish revolt against Roman occupation. \"Antiquities of the Jew",
+          "These books were looted by the Nazis during the Holocaust and reached the TAU's central Library as part of the 'Diaspora Treasures project'",
+          "Paging: volume 1: XXIV, [2], 1189, [1] pages; volume 2: [4], 1149, [1] pages, (1st leaf blank); volume 3: [4], 1355, [3] pages, (1st leaf blank)."
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933734319104146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים עתיקות",
+          "יהודים היסטוריה תולדות"
+        ]
+      },
+      {
+        "mms_id": "9933737419804146",
+        "title": "Gioseffo Flauio historico Delle antichità, e Guerre Giudaiche : diuiso in ventisette libri. Nel 1 Si tratta della creatione del cielo, e della terra: e dell'opera de' sei dì ; e del riposo del settimo. 2 Descriuesi la partitione di Giacob da Esaù, e perche Esaù è detto Edom, & la felicità di Giacob. 3 Moisè conduce il popolo fuori di Egitto al monte Sinai. 4 Gli Hebrei contro Cananei felicemente combattono. 5 Giesu rouina Gierico conseruando solamente Raab, Achar è vcciso, & Aim pigliata si saccheggia. 6 Castigo de i Palestini per hauere pigliata l'Arca. 7 Dauid primieramente è creato re sopra vna tribu, lasciato l'altro prencipato à i figliuoli di Saul ; della guerra di Gioab con Abner, & Isboseth ; e come Abner fu da Gioab à tradimento vcciso. 8 Salomone punisce i seditiosi. 9 Della religione di Giosafat, e la sua vittoria contro Moabiti. 10 La guerra di Sennacherib contro Gierusalemme, e la bestemmia di Raspace. Al Molto Illust. et Eccell. Sig. il Signor Thadeo Tirabosco / [tradotto in Italiano per M. Pietro Lauro Modonese]",
+        "date_display": "[1611-1612]",
+        "place": "In Venetia",
+        "publisher": "Appresso Alessandro Vecchi.",
+        "language": "ita",
+        "agents": [
+          "josephus, flavius",
+          "vecchi, alessandro de'",
+          "lauro, pietro"
+        ],
+        "subjects": [
+          "Jews -- History -- To 70 A.D. -- Early works to 1800.",
+          "Jews -- History -- Rebellion, 66-73 -- Early works to 1800",
+          "Jews -- Antiquities -- Early works to 1800"
+        ],
+        "physical_description": "[24], 366, [2]; 296 ; 175, [1] pages : illustrations.",
+        "notes": [
+          "\"Josephus's most important works are \"The Jewish War\" (c. 75 CE) and \"Antiquities of the Jews\" (c. 94 CE). \"The Jewish War\" recounts the Jewish revolt against Roman occupation. \"Antiquities of the Jew",
+          "3 volumes in 1",
+          "Title varies. Volume 2 has title \"I dieci vltimi libri di Flauio Gioseffo historico huomo clarissimo delle antichità Giudaiche ... In Venetia, Presso Alessandro Vecchi. MDCXI\"; volume 3 has title \"Gu"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933737419804146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים היסטוריה תולדות עד 70 לספירה כתבים מוקדמים עד 1800",
+          "יהודים היסטוריה תולדות המרד הגדול כתבים מוקדמים עד 1800",
+          "יהודים עתיקות כתבים מוקדמים עד 1800"
+        ]
+      },
+      {
+        "mms_id": "9933749416604146",
+        "title": "Kanaän En D' Omleggende Landen, Vertoont In Een Woordenboek Uit De H. Schrift en Josephus, van alle Steden, Vlekken, Dorpen, Gehuchten, Bergen, Stroomen, enz. van't Joodtsche Landt, en de Landtstreeken der aangrenzende volken; met de aaloude geschiedenissen dier tyden verknocht. Eerst in't Grieksch ontworpen door Eusebius Pamphilus, Bisschop van Cæsareën ; vervolgens in't Latyn overgebragt en verder met d'Aantekeningen voorzien van Jakobus Bonfrerius Jesuit; en Johannes de Klerk, Professor onder de Remonstrantsgezinden t' Amsterdam. Hier is volkomen tusschen beiden ingevoegt De Plaatswyzer des H. Landts, van den grooten Wereldtbeschryver Nicolaus Sanson, ookmet d'Aanmerkingen van den Heere Johannes de Klerk, en verscheide Voorberechten,tot nader verstandt der H. Landtbeschryvinge, en dezer Schryveren. Nauwkeurig uit het Latyn vertaalt door W.v.R. voort in 't geheel tegens de Nederduitsche Overzettinge des Bybels vergeleken, en d'oneindige veranderingen der Naamen, met zommide nodige Byvoegzelen en verklaringen, vervolgens in't werk gebragt door F. Halma. Hier komt op veele plaatzen, tot nader ophelderinge, by, de breeder beschryvinge van den heere O. Dapper, van zommige voornaame deelen van Syriën en Palestyn; als mede de Reize naar en door het H. Landt, van den predikmonnik Brochardus; nevens die van den heere Henr. Maundrell; en verder, een Kort begryp der H. Tydtrekeninge, van den heere Arnaud d'Andilly. Met nodige Landtkaarten en Printverbeeldingen verrykt.",
+        "date_display": "1717",
+        "place": "Te Leeuwarden",
+        "publisher": "Gedrukt by Franc̜ois Halma, Landtschapsdrukker der Ed: Mog: Heeren Staaten van Frieslandt",
+        "language": "dut",
+        "agents": [
+          "eusebius",
+          "josephus, flavius",
+          "bonfrère, jacques",
+          "sanson, nicolas",
+          "halma, françois",
+          "maundrell, henry"
+        ],
+        "subjects": [
+          "Eusebius, -- of Caesarea, Bishop of Caesarea, -- approximately 260-approximately 340. -- Onomasticon.",
+          "Eusebius, -- of Caesarea, Bishop of Caesarea, -- approximately 260-approximately 340. -- Onomasticon. -- Latin -- (Jerome)",
+          "Bible -- Geography",
+          "Bible -- Geography -- Early works to 1800",
+          "Names, Geographical -- Eretz Israel -- Early works to 1800."
+        ],
+        "physical_description": "[14], 64, [2], 559 pages : plates (some folded, including illustrations, facsimile, maps, plans).",
+        "notes": [
+          "\"The Onomasticon\" by Eusebius, bishop of Caesarea, translated from the Latin ; with commentaries and additional materials, provided by various contributors (XVII-XVIII centuries)",
+          "Added title page, engraved, initials.",
+          "\"Reize van Aleppo naar Jeruzalem door Henr. Maundrell\": pages [455]-516"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933749416604146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.92,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "אונומסטיקון שמות",
+          "אונומסטיקון שמות לטינית",
+          "תנ\"ך מקרא כתבי הקודש גיאוגרפיה",
+          "תנ\"ך מקרא כתבי הקודש גיאוגרפיה כתבים מוקדמים עד 1800",
+          "שמות מקומות ארץ ישראל כתבים מוקדמים עד 1800"
+        ]
+      },
+      {
+        "mms_id": "9933788840404146",
+        "title": "Histoire des Juifs / écrite par Flavius Joseph sous le titre de Antiquitez Judaiques ; traduite par Mr. Arnauld D’Andilly",
+        "date_display": "1744",
+        "place": "A Paris",
+        "publisher": "Chez Ganeau",
+        "language": "fre",
+        "agents": [
+          "josephus, flavius",
+          "arnauld, d'andilly, robert"
+        ],
+        "subjects": [
+          "Jews -- Antiquities",
+          "Jews -- History"
+        ],
+        "physical_description": "6 volumes : illustrations, plates.",
+        "notes": [
+          "These books were looted by the Nazis during the Holocaust and reached the TAU's central Library as part of the 'Diaspora Treasures project'"
+        ],
+        "primo_url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933788840404146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source_steps": [
+          1
+        ],
+        "date_confidence": 0.9,
+        "place_confidence": 0.95,
+        "publisher_confidence": 0.95,
+        "title_variants": [],
+        "notes_structured": {},
+        "subjects_he": [
+          "יהודים עתיקות",
+          "יהודים היסטוריה תולדות"
+        ]
+      }
+    ],
+    "agents": [
+      {
+        "canonical_name": "josephus",
+        "variants": [],
+        "birth_year": null,
+        "death_year": null,
+        "occupations": [
+          "writer",
+          "historian"
+        ],
+        "description": "Flavius Josephus was a Roman–Jewish historian and military leader. Best known for writing The Jewish War, he was born in Jerusalem—then part of the Roman province of Judea—to a father of priestly descent and a mother who claimed Hasmonean royal ancestry.",
+        "record_count": 21,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "josephus, flavius",
+            "label": "Wikipedia: josephus, flavius",
+            "url": "https://en.wikipedia.org/wiki/Josephus",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "josephus, flavius",
+            "label": "Wikidata: Q134461",
+            "url": "https://www.wikidata.org/wiki/Q134461",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "josephus, flavius",
+            "label": "NLI: 987007300003805171",
+            "url": "https://www.nli.org.il/en/authorities/987007300003805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": "Flavius Josephus was a Roman–Jewish historian and military leader. Best known for writing The Jewish War, he was born in Jerusalem—then part of the Roman province of Judea—to a father of priestly descent and a mother who claimed Hasmonean royal ancestry.",
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007300003805171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "josephus",
+        "variants": [],
+        "birth_year": null,
+        "death_year": null,
+        "occupations": [
+          "writer",
+          "historian"
+        ],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "josephus",
+            "label": "Wikipedia: josephus",
+            "url": "https://en.wikipedia.org/wiki/Josephus",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "josephus",
+            "label": "Wikidata: Q134461",
+            "url": "https://www.wikidata.org/wiki/Q134461",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "josephus",
+            "label": "NLI: 987007300003805171",
+            "url": "https://www.nli.org.il/en/authorities/987007300003805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007300003805171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Siwart Haverkamp",
+        "variants": [],
+        "birth_year": 1684,
+        "death_year": 1742,
+        "occupations": [
+          "philologist",
+          "university teacher",
+          "historian",
+          "classical scholar"
+        ],
+        "description": "Dutch classical scholar",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Siwart Haverkamp",
+            "label": "Wikipedia: Siwart Haverkamp",
+            "url": "https://en.wikipedia.org/wiki/Siwart_Haverkamp",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Siwart Haverkamp",
+            "label": "Wikidata: Q3483509",
+            "url": "https://www.wikidata.org/wiki/Q3483509",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Siwart Haverkamp",
+            "label": "VIAF: 39399735",
+            "url": "https://viaf.org/en/viaf/39399735",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Siwart Haverkamp",
+            "label": "NLI: 987007262447405171",
+            "url": "https://www.nli.org.il/en/authorities/987007262447405171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Portret%20van%20Sigebertus%20Havercamp%2C%20hoogleraar%20Grieks%2C%20Historie%20en%20Welsprekendheid%20te%20Leiden%20Icones%20139.tiff",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007262447405171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Q1126870",
+        "variants": [],
+        "birth_year": 1534,
+        "death_year": 1595,
+        "occupations": [
+          "Q137178806",
+          "librarian",
+          "poet",
+          "philosopher",
+          "translator"
+        ],
+        "description": "German theologian and philosopher",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Q1126870",
+            "label": "Wikipedia: Q1126870",
+            "url": "https://www.wikidata.org/wiki/Q1126870",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Q1126870",
+            "label": "Wikidata: Q1126870",
+            "url": "https://www.wikidata.org/wiki/Q1126870",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Q1126870",
+            "label": "VIAF: 8408159478152227990003",
+            "url": "https://viaf.org/en/viaf/8408159478152227990003",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Q1126870",
+            "label": "NLI: 987007264337705171",
+            "url": "https://www.nli.org.il/en/authorities/987007264337705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Conrad%20lautenbach.png",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264337705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Caspar Hedio",
+        "variants": [],
+        "birth_year": 1494,
+        "death_year": 1552,
+        "occupations": [
+          "theologian",
+          "historian"
+        ],
+        "description": "German academic",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Caspar Hedio",
+            "label": "Wikipedia: Caspar Hedio",
+            "url": "https://en.wikipedia.org/wiki/Caspar_Hedio",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Caspar Hedio",
+            "label": "Wikidata: Q76065",
+            "url": "https://www.wikidata.org/wiki/Q76065",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Caspar Hedio",
+            "label": "VIAF: 37708208",
+            "url": "https://viaf.org/en/viaf/37708208",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Caspar Hedio",
+            "label": "NLI: 987007262552605171",
+            "url": "https://www.nli.org.il/en/authorities/987007262552605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Caspar-Hedio-1.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007262552605171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Erasmus",
+        "variants": [],
+        "birth_year": 1466,
+        "death_year": 1536,
+        "occupations": [
+          "Bible translator",
+          "essayist",
+          "philosopher",
+          "translator",
+          "Latin Catholic priest"
+        ],
+        "description": "Dutch Renaissance humanist, Catholic priest, and theologian (1466-1536)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Erasmus",
+            "label": "Wikipedia: Erasmus",
+            "url": "https://en.wikipedia.org/wiki/Erasmus",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Erasmus",
+            "label": "Wikidata: Q43499",
+            "url": "https://www.wikidata.org/wiki/Q43499",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Erasmus",
+            "label": "VIAF: 87673996",
+            "url": "https://viaf.org/en/viaf/87673996",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Erasmus",
+            "label": "NLI: 987007260834705171",
+            "url": "https://www.nli.org.il/en/authorities/987007260834705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Holbein-erasmus.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007260834705171.jsonld",
+        "hebrew_aliases": [
+          "ארסמוס מרוטרדם"
+        ]
+      },
+      {
+        "canonical_name": "Roger L'Estrange",
+        "variants": [],
+        "birth_year": 1616,
+        "death_year": 1704,
+        "occupations": [
+          "politician",
+          "translator",
+          "publisher",
+          "writer",
+          "journalist"
+        ],
+        "description": "English pamphleteer and author, and staunch defender of royalist claims (1616-1704)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Roger L'Estrange",
+            "label": "Wikipedia: Roger L'Estrange",
+            "url": "https://en.wikipedia.org/wiki/Roger_L'Estrange",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Roger L'Estrange",
+            "label": "Wikidata: Q334268",
+            "url": "https://www.wikidata.org/wiki/Q334268",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Roger L'Estrange",
+            "label": "VIAF: 79065152",
+            "url": "https://viaf.org/en/viaf/79065152",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Roger L'Estrange",
+            "label": "NLI: 987007279076005171",
+            "url": "https://www.nli.org.il/en/authorities/987007279076005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Sir%20Roger%20L%27Estrange%20by%20John%20Michael%20Wright.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007279076005171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Jacques Basnage",
+        "variants": [],
+        "birth_year": 1653,
+        "death_year": 1723,
+        "occupations": [
+          "Protestant theologian",
+          "historian",
+          "pastor"
+        ],
+        "description": "Protestant divine, preacher, linguist, writer and man of affairs",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacques Basnage",
+            "label": "Wikipedia: Jacques Basnage",
+            "url": "https://en.wikipedia.org/wiki/Jacques_Basnage",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacques Basnage",
+            "label": "Wikidata: Q1225958",
+            "url": "https://www.wikidata.org/wiki/Q1225958",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacques Basnage",
+            "label": "VIAF: 56765783",
+            "url": "https://viaf.org/en/viaf/56765783",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacques Basnage",
+            "label": "NLI: 987007258356605171",
+            "url": "https://www.nli.org.il/en/authorities/987007258356605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/JacquesBasnage.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007258356605171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Robert Arnauld d'Andilly",
+        "variants": [],
+        "birth_year": 1589,
+        "death_year": 1674,
+        "occupations": [
+          "politician",
+          "classical scholar",
+          "poet",
+          "translator",
+          "linguist"
+        ],
+        "description": "French writer (1589-1674)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Robert Arnauld d'Andilly",
+            "label": "Wikipedia: Robert Arnauld d'Andilly",
+            "url": "https://en.wikipedia.org/wiki/Robert_Arnauld_d'Andilly",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Robert Arnauld d'Andilly",
+            "label": "Wikidata: Q1407571",
+            "url": "https://www.wikidata.org/wiki/Q1407571",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Robert Arnauld d'Andilly",
+            "label": "VIAF: 6645",
+            "url": "https://viaf.org/en/viaf/6645",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Robert Arnauld d'Andilly",
+            "label": "NLI: 987007257840705171",
+            "url": "https://www.nli.org.il/en/authorities/987007257840705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Robert%20Arnauld%20d%27Andilly%20Champaigne.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007257840705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Sigmund Feyerabend",
+        "variants": [],
+        "birth_year": 1528,
+        "death_year": 1590,
+        "occupations": [
+          "printer",
+          "xylographer",
+          "bookseller",
+          "publisher",
+          "illustrator"
+        ],
+        "description": "Bookseller and illustrator (1528–1590)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Sigmund Feyerabend",
+            "label": "Wikipedia: Sigmund Feyerabend",
+            "url": "https://en.wikipedia.org/wiki/Sigmund_Feyerabend",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Sigmund Feyerabend",
+            "label": "Wikidata: Q98074",
+            "url": "https://www.wikidata.org/wiki/Q98074",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Sigmund Feyerabend",
+            "label": "VIAF: 88647630",
+            "url": "https://viaf.org/en/viaf/88647630",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Sigmund Feyerabend",
+            "label": "NLI: 987007261177205171",
+            "url": "https://www.nli.org.il/en/authorities/987007261177205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Sigmund%20Feyerabend.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007261177205171.jsonld",
+        "hebrew_aliases": [
+          "זיגמונד פייראבנד"
+        ]
+      },
+      {
+        "canonical_name": "Filippo Giunti the elder",
+        "variants": [],
+        "birth_year": 1450,
+        "death_year": 1517,
+        "occupations": [
+          "printer",
+          "bookseller"
+        ],
+        "description": "Italian printer and bookseller (1450-1517)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Filippo Giunti the elder",
+            "label": "Wikipedia: Filippo Giunti the elder",
+            "url": "https://en.wikipedia.org/wiki/Filippo_Giunti",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Filippo Giunti the elder",
+            "label": "Wikidata: Q55228351",
+            "url": "https://www.wikidata.org/wiki/Q55228351",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Filippo Giunti the elder",
+            "label": "VIAF: 79080779",
+            "url": "https://viaf.org/en/viaf/79080779",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Filippo Giunti the elder",
+            "label": "NLI: 987007277834605171",
+            "url": "https://www.nli.org.il/en/authorities/987007277834605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007277834605171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Tyrannius Rufinus",
+        "variants": [],
+        "birth_year": 345,
+        "death_year": 411,
+        "occupations": [
+          "historian",
+          "translator",
+          "writer",
+          "theologian",
+          "monk"
+        ],
+        "description": "monk, historian, and theologian",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Tyrannius Rufinus",
+            "label": "Wikipedia: Tyrannius Rufinus",
+            "url": "https://en.wikipedia.org/wiki/Tyrannius_Rufinus",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Tyrannius Rufinus",
+            "label": "Wikidata: Q365835",
+            "url": "https://www.wikidata.org/wiki/Q365835",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Tyrannius Rufinus",
+            "label": "VIAF: 595158790752538852912",
+            "url": "https://viaf.org/en/viaf/595158790752538852912",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Tyrannius Rufinus",
+            "label": "NLI: 987007522322905171",
+            "url": "https://www.nli.org.il/en/authorities/987007522322905171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Rufinus%20Aquileiensis.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007522322905171.jsonld",
+        "hebrew_aliases": [
+          "טירנוס רופינוס"
+        ]
+      },
+      {
+        "canonical_name": "Hieronimo Squarciafico",
+        "variants": [],
+        "birth_year": 1401,
+        "death_year": 1600,
+        "occupations": [
+          "editor",
+          "literary scholar"
+        ],
+        "description": "Italian publisher",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Hieronimo Squarciafico",
+            "label": "Wikipedia: Hieronimo Squarciafico",
+            "url": "https://en.wikipedia.org/wiki/Hieronimo_Squarciafico",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hieronimo Squarciafico",
+            "label": "Wikidata: Q5753280",
+            "url": "https://www.wikidata.org/wiki/Q5753280",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hieronimo Squarciafico",
+            "label": "VIAF: 3474150033035111180008",
+            "url": "https://viaf.org/en/viaf/3474150033035111180008",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Hieronimo Squarciafico",
+            "label": "NLI: 987007268431705171",
+            "url": "https://www.nli.org.il/en/authorities/987007268431705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007268431705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Giovanni Rosso",
+        "variants": [],
+        "birth_year": 1401,
+        "death_year": 1501,
+        "occupations": [
+          "book printer"
+        ],
+        "description": null,
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Giovanni Rosso",
+            "label": "Wikipedia: Giovanni Rosso",
+            "url": "https://www.wikidata.org/wiki/Q111742349",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Giovanni Rosso",
+            "label": "Wikidata: Q111742349",
+            "url": "https://www.wikidata.org/wiki/Q111742349",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Giovanni Rosso",
+            "label": "VIAF: 107078337",
+            "url": "https://viaf.org/en/viaf/107078337",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Giovanni Rosso",
+            "label": "NLI: 987007267192105171",
+            "url": "https://www.nli.org.il/en/authorities/987007267192105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007267192105171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Sigismund Gelenius",
+        "variants": [],
+        "birth_year": 1497,
+        "death_year": 1554,
+        "occupations": [
+          "classical scholar",
+          "philosopher",
+          "translator",
+          "writer",
+          "linguist"
+        ],
+        "description": "Bohemian humanist and scholar (1497–1554)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Sigismund Gelenius",
+            "label": "Wikipedia: Sigismund Gelenius",
+            "url": "https://en.wikipedia.org/wiki/Sigismund_Gelenius",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Sigismund Gelenius",
+            "label": "Wikidata: Q1232944",
+            "url": "https://www.wikidata.org/wiki/Q1232944",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Sigismund Gelenius",
+            "label": "VIAF: 12407531",
+            "url": "https://viaf.org/en/viaf/12407531",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Sigismund Gelenius",
+            "label": "NLI: 987007261652005171",
+            "url": "https://www.nli.org.il/en/authorities/987007261652005171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Zikmund%20Hruby%20z%20Jeleni%201861.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007261652005171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Pierre de la Rovière",
+        "variants": [],
+        "birth_year": 1599,
+        "death_year": 1623,
+        "occupations": [
+          "publisher",
+          "book printer"
+        ],
+        "description": "Swiss printer and librarian (fl. 1599-1623)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Pierre de la Rovière",
+            "label": "Wikipedia: Pierre de la Rovière",
+            "url": "https://www.wikidata.org/wiki/Q93386378",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pierre de la Rovière",
+            "label": "Wikidata: Q93386378",
+            "url": "https://www.wikidata.org/wiki/Q93386378",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pierre de la Rovière",
+            "label": "VIAF: 25151897222424072714",
+            "url": "https://viaf.org/en/viaf/25151897222424072714",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pierre de la Rovière",
+            "label": "NLI: 987007263997105171",
+            "url": "https://www.nli.org.il/en/authorities/987007263997105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007263997105171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Moritz Georg Weidmann",
+        "variants": [],
+        "birth_year": 1686,
+        "death_year": 1743,
+        "occupations": [
+          "publisher"
+        ],
+        "description": "German bookseller and publisher (1686-1743)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Moritz Georg Weidmann",
+            "label": "Wikipedia: Moritz Georg Weidmann",
+            "url": "https://en.wikipedia.org/wiki/Moritz_Georg_Weidmann",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moritz Georg Weidmann",
+            "label": "Wikidata: Q97303",
+            "url": "https://www.wikidata.org/wiki/Q97303",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moritz Georg Weidmann",
+            "label": "VIAF: 44084527",
+            "url": "https://viaf.org/en/viaf/44084527",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Moritz Georg Weidmann",
+            "label": "NLI: 987007576780305171",
+            "url": "https://www.nli.org.il/en/authorities/987007576780305171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/MoritzGeorgWeidmannJohannFriedrichRosbach.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007576780305171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "David Hoeschel",
+        "variants": [],
+        "birth_year": 1556,
+        "death_year": 1617,
+        "occupations": [
+          "librarian",
+          "classical scholar",
+          "philologist",
+          "pedagogue",
+          "publisher"
+        ],
+        "description": "librarian (1556-1617)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "David Hoeschel",
+            "label": "Wikipedia: David Hoeschel",
+            "url": "https://en.wikipedia.org/wiki/David_Hoeschel",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Hoeschel",
+            "label": "Wikidata: Q98331",
+            "url": "https://www.wikidata.org/wiki/Q98331",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Hoeschel",
+            "label": "VIAF: 27089021",
+            "url": "https://viaf.org/en/viaf/27089021",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "David Hoeschel",
+            "label": "NLI: 987007262726105171",
+            "url": "https://www.nli.org.il/en/authorities/987007262726105171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/David%20Hoschelius%20-%20Johan%20Jacob%20Haid%20um%201747.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007262726105171.jsonld",
+        "hebrew_aliases": [
+          "דויד השל"
+        ]
+      },
+      {
+        "canonical_name": "François Combefis",
+        "variants": [],
+        "birth_year": 1605,
+        "death_year": 1679,
+        "occupations": [
+          "historian"
+        ],
+        "description": "French patrologist",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "François Combefis",
+            "label": "Wikipedia: François Combefis",
+            "url": "https://en.wikipedia.org/wiki/François_Combefis",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "François Combefis",
+            "label": "Wikidata: Q1960506",
+            "url": "https://www.wikidata.org/wiki/Q1960506",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "François Combefis",
+            "label": "VIAF: 7522175",
+            "url": "https://viaf.org/en/viaf/7522175",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "François Combefis",
+            "label": "NLI: 987007583377505171",
+            "url": "https://www.nli.org.il/en/authorities/987007583377505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Fran%C3%A7ois%20Combefis.jpeg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007583377505171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "William Sewel",
+        "variants": [],
+        "birth_year": 1653,
+        "death_year": 1720,
+        "occupations": [
+          "linguist",
+          "writer",
+          "translator",
+          "editing staff",
+          "historian"
+        ],
+        "description": "Dutch historian",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "William Sewel",
+            "label": "Wikipedia: William Sewel",
+            "url": "https://en.wikipedia.org/wiki/Willem_Sewel",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "William Sewel",
+            "label": "Wikidata: Q2741574",
+            "url": "https://www.wikidata.org/wiki/Q2741574",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "William Sewel",
+            "label": "VIAF: 71458237",
+            "url": "https://viaf.org/en/viaf/71458237",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "William Sewel",
+            "label": "NLI: 987007267971505171",
+            "url": "https://www.nli.org.il/en/authorities/987007267971505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Portret%20van%20Willem%20Sewel%2C%20RP-P-1906-1062.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007267971505171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Caspar Luyken",
+        "variants": [],
+        "birth_year": 1672,
+        "death_year": 1708,
+        "occupations": [
+          "graphic artist",
+          "publisher",
+          "draftsperson",
+          "engraver",
+          "copper engraver"
+        ],
+        "description": "Dutch illustrator and engraver (1672–1708)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Caspar Luyken",
+            "label": "Wikipedia: Caspar Luyken",
+            "url": "https://en.wikipedia.org/wiki/Caspar_Luyken",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Caspar Luyken",
+            "label": "Wikidata: Q18508002",
+            "url": "https://www.wikidata.org/wiki/Q18508002",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Caspar Luyken",
+            "label": "VIAF: 5163097",
+            "url": "https://viaf.org/en/viaf/5163097",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Caspar Luyken",
+            "label": "NLI: 987009348872705171",
+            "url": "https://www.nli.org.il/en/authorities/987009348872705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987009348872705171.jsonld",
+        "hebrew_aliases": [
+          "קספר לאוקן"
+        ]
+      },
+      {
+        "canonical_name": "Jan Luyken",
+        "variants": [],
+        "birth_year": 1649,
+        "death_year": 1712,
+        "occupations": [
+          "printmaker",
+          "etcher",
+          "graphic artist",
+          "poet",
+          "publisher"
+        ],
+        "description": "Dutch engraver (1649–1712)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Jan Luyken",
+            "label": "Wikipedia: Jan Luyken",
+            "url": "https://en.wikipedia.org/wiki/Jan_Luyken",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jan Luyken",
+            "label": "Wikidata: Q87466",
+            "url": "https://www.wikidata.org/wiki/Q87466",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jan Luyken",
+            "label": "VIAF: 9885051",
+            "url": "https://viaf.org/en/viaf/9885051",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jan Luyken",
+            "label": "NLI: 987007273500605171",
+            "url": "https://www.nli.org.il/en/authorities/987007273500605171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Portret%20van%20Jan%20Luyken%2C%20RP-P-OB-59.517.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007273500605171.jsonld",
+        "hebrew_aliases": [
+          "יאן לאוקן"
+        ]
+      },
+      {
+        "canonical_name": "John Hudson",
+        "variants": [],
+        "birth_year": 1662,
+        "death_year": 1719,
+        "occupations": [
+          "librarian",
+          "writer",
+          "classical scholar",
+          "translator"
+        ],
+        "description": "English classical scholar (1662-1719)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "John Hudson",
+            "label": "Wikipedia: John Hudson",
+            "url": "https://en.wikipedia.org/wiki/John_Hudson_(classicist)",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "John Hudson",
+            "label": "Wikidata: Q13522431",
+            "url": "https://www.wikidata.org/wiki/Q13522431",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "John Hudson",
+            "label": "VIAF: 100222314",
+            "url": "https://viaf.org/en/viaf/100222314",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "John Hudson",
+            "label": "NLI: 987007262955705171",
+            "url": "https://www.nli.org.il/en/authorities/987007262955705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Wilhelm%20Sonmans%20%281650-1708%29%20-%20John%20Hudson%20%281662%E2%80%931719%29%20-%20LP%20214%20-%20Bodleian%20Libraries.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007262955705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Franz Oberthür",
+        "variants": [],
+        "birth_year": 1745,
+        "death_year": 1831,
+        "occupations": [
+          "Catholic theologian",
+          "university teacher",
+          "cultural historian"
+        ],
+        "description": "German theologian",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Franz Oberthür",
+            "label": "Wikipedia: Franz Oberthür",
+            "url": "https://en.wikipedia.org/wiki/Franz_Oberthür",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Franz Oberthür",
+            "label": "Wikidata: Q108547",
+            "url": "https://www.wikidata.org/wiki/Q108547",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Franz Oberthür",
+            "label": "VIAF: 79150290",
+            "url": "https://viaf.org/en/viaf/79150290",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Franz Oberthür",
+            "label": "NLI: 987007266165205171",
+            "url": "https://www.nli.org.il/en/authorities/987007266165205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/FranzOberth%C3%BCrL1050503%20%282%29.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007266165205171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Pietro Lauro",
+        "variants": [],
+        "birth_year": 1550,
+        "death_year": 1568,
+        "occupations": [
+          "physician",
+          "translator",
+          "science communicator"
+        ],
+        "description": "Italian writer and translator",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Pietro Lauro",
+            "label": "Wikipedia: Pietro Lauro",
+            "url": "https://en.wikipedia.org/wiki/Pietro_Lauro",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pietro Lauro",
+            "label": "Wikidata: Q61476977",
+            "url": "https://www.wikidata.org/wiki/Q61476977",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pietro Lauro",
+            "label": "VIAF: 89102278",
+            "url": "https://viaf.org/en/viaf/89102278",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Pietro Lauro",
+            "label": "NLI: 987007264341205171",
+            "url": "https://www.nli.org.il/en/authorities/987007264341205171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Master%20I.A.V.F.%2C%20Pietro%20Lauro%2C%20born%201508%2C%20Modenese%20Poet%20and%20Scholar%20%28obverse%29%2C%201555%2C%20NGA%2045072.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007264341205171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Eusebius of Caesarea",
+        "variants": [],
+        "birth_year": 265,
+        "death_year": 340,
+        "occupations": [
+          "theologian",
+          "writer",
+          "historian",
+          "Eastern Orthodox priest"
+        ],
+        "description": "Greek Christian scholar, c.260-c.340",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Eusebius of Caesarea",
+            "label": "Wikipedia: Eusebius of Caesarea",
+            "url": "https://en.wikipedia.org/wiki/Eusebius",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eusebius of Caesarea",
+            "label": "Wikidata: Q142999",
+            "url": "https://www.wikidata.org/wiki/Q142999",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eusebius of Caesarea",
+            "label": "VIAF: 4929593",
+            "url": "https://viaf.org/en/viaf/4929593",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Eusebius of Caesarea",
+            "label": "NLI: 987007260951805171",
+            "url": "https://www.nli.org.il/en/authorities/987007260951805171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Eusebius%20of%20Caesarea%20Rabbula%20Gospels%20Icon.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007260951805171.jsonld",
+        "hebrew_aliases": [
+          "אוסביוס מקיסריה"
+        ]
+      },
+      {
+        "canonical_name": "Jacques Bonfrère",
+        "variants": [],
+        "birth_year": 1573,
+        "death_year": 1642,
+        "occupations": [
+          "theologian",
+          "university teacher",
+          "religious",
+          "Hebraist"
+        ],
+        "description": "Jesuit priest, biblical scholar",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacques Bonfrère",
+            "label": "Wikipedia: Jacques Bonfrère",
+            "url": "https://en.wikipedia.org/wiki/Jacques_Bonfrère",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacques Bonfrère",
+            "label": "Wikidata: Q15486917",
+            "url": "https://www.wikidata.org/wiki/Q15486917",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacques Bonfrère",
+            "label": "VIAF: 100553172",
+            "url": "https://viaf.org/en/viaf/100553172",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Jacques Bonfrère",
+            "label": "NLI: 987007258943705171",
+            "url": "https://www.nli.org.il/en/authorities/987007258943705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Titelpagina%20voor%20Jacobus%20Bonfrerius%2C%20Pentateuchus%20Moysis%20commentario%20illustratus%20Pentatevchvs%20Moysis%20commentario%20illustratvs%20%28titel%20op%20object%29%2C%20RP-P-OB-6892.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007258943705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Nicolas Sanson",
+        "variants": [],
+        "birth_year": 1600,
+        "death_year": 1667,
+        "occupations": [
+          "cartographer",
+          "historian",
+          "scientific illustrator"
+        ],
+        "description": "French cartographer (1600–1667)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Nicolas Sanson",
+            "label": "Wikipedia: Nicolas Sanson",
+            "url": "https://en.wikipedia.org/wiki/Nicolas_Sanson",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Nicolas Sanson",
+            "label": "Wikidata: Q502162",
+            "url": "https://www.wikidata.org/wiki/Q502162",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Nicolas Sanson",
+            "label": "VIAF: 66550637",
+            "url": "https://viaf.org/en/viaf/66550637",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Nicolas Sanson",
+            "label": "NLI: 987007267670705171",
+            "url": "https://www.nli.org.il/en/authorities/987007267670705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Nicolas%20Sanson%20AGE%20V09%201802.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007267670705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "François Halma",
+        "variants": [],
+        "birth_year": 1653,
+        "death_year": 1722,
+        "occupations": [
+          "publisher",
+          "University printer"
+        ],
+        "description": "Dutch printer, editor and bookseller (1653-1722)",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "François Halma",
+            "label": "Wikipedia: François Halma",
+            "url": "https://www.wikidata.org/wiki/Q13135665",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "François Halma",
+            "label": "Wikidata: Q13135665",
+            "url": "https://www.wikidata.org/wiki/Q13135665",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "François Halma",
+            "label": "VIAF: 14953611",
+            "url": "https://viaf.org/en/viaf/14953611",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "François Halma",
+            "label": "NLI: 987007296374705171",
+            "url": "https://www.nli.org.il/en/authorities/987007296374705171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Portret%20van%20Fran%C3%A7ois%20Halma%2C%20RP-P-1906-3336.jpg",
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007296374705171.jsonld",
+        "hebrew_aliases": []
+      },
+      {
+        "canonical_name": "Henry Maundrell",
+        "variants": [],
+        "birth_year": 1665,
+        "death_year": 1701,
+        "occupations": [
+          "preacher",
+          "traveler",
+          "Christian minister",
+          "Anglican priest",
+          "writer"
+        ],
+        "description": "English writer and academic",
+        "record_count": 0,
+        "links": [
+          {
+            "entity_type": "agent",
+            "entity_id": "Henry Maundrell",
+            "label": "Wikipedia: Henry Maundrell",
+            "url": "https://en.wikipedia.org/wiki/Henry_Maundrell",
+            "source": "wikipedia"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Henry Maundrell",
+            "label": "Wikidata: Q3557871",
+            "url": "https://www.wikidata.org/wiki/Q3557871",
+            "source": "wikidata"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Henry Maundrell",
+            "label": "VIAF: 42993252",
+            "url": "https://viaf.org/en/viaf/42993252",
+            "source": "viaf"
+          },
+          {
+            "entity_type": "agent",
+            "entity_id": "Henry Maundrell",
+            "label": "NLI: 987007265145505171",
+            "url": "https://www.nli.org.il/en/authorities/987007265145505171",
+            "source": "nli"
+          }
+        ],
+        "wikipedia_context": null,
+        "image_url": null,
+        "authority_uri": "https://open-eu.hosted.exlibrisgroup.com/alma/972NNL_INST/authorities/987007265145505171.jsonld",
+        "hebrew_aliases": [
+          "הנרי מונדרל"
+        ]
+      }
+    ],
+    "aggregations": {},
+    "aggregation_meta": {},
+    "links": [
+      {
+        "entity_type": "record",
+        "entity_id": "990011949480204146",
+        "label": "Primo: Flavii Josephi quae reperiri potuerunt, opera omni",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011949480204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990011996570204146",
+        "label": "Primo: Flavij Josephe Historien und Bucher ... / Alles au",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990011996570204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012163230204146",
+        "label": "Primo: Flauij Josephi ... alle Bucher. Namlich Zwentzig v",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012163230204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012164910204146",
+        "label": "Primo: Josephi des Hochberumpten ... histori Beschreibers",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012164910204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990012790180204146",
+        "label": "Primo: The works of Flavius Josephus / translated into En",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990012790180204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990013964380204146",
+        "label": "Primo: Flavij Josephi ... Historien und Bucher ... / Alle",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990013964380204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990020593730204146",
+        "label": "Primo: Gioseffo Flavio Historico : Delle antichità, et gv",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990020593730204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "990032645690204146",
+        "label": "Primo: Vervolg op Flavius Josephus of Algemene historie d",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=990032645690204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933411014404146",
+        "label": "Primo: Histoire des Juifs / écrite par Flavius Ioseph ..",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933411014404146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933512509304146",
+        "label": "Primo: Opera Iosephi Ivdaeorvm doctissimi ac disertissimi",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933512509304146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933512510504146",
+        "label": "Primo: Josepho De bello judaico in lingua Toscana.",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933512510504146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933513117204146",
+        "label": "Primo: Iosephi Iudei historiographi viri clarissimi prolo",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933513117204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933514202204146",
+        "label": "Primo: Phlabiou Iōsēpou Hierosolymitou hiereōs Ta eurisko",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933514202204146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933519118704146",
+        "label": "Primo: Flavii Josephi operum.",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933519118704146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933523219804146",
+        "label": "Primo: Des hochberühmten Jüdischen Geschicht-Schreibers F",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933523219804146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933526812404146",
+        "label": "Primo: Alle de werken van Flavius Josephus, behelzende tw",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933526812404146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933649216504146",
+        "label": "Primo: Des hochberühmten jüdischen Geschicht-Schreibers",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933649216504146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933734319104146",
+        "label": "Primo: Flavii Iosephi Hebraei Opera Omnia Graece Et Latin",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933734319104146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933737419804146",
+        "label": "Primo: Gioseffo Flauio historico Delle antichità, e Guer",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933737419804146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933749416604146",
+        "label": "Primo: Kanaän En D' Omleggende Landen, Vertoont In Een W",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933749416604146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "record",
+        "entity_id": "9933788840404146",
+        "label": "Primo: Histoire des Juifs / écrite par Flavius Joseph sou",
+        "url": "https://tau.primo.exlibrisgroup.com/nde/search?query=9933788840404146&tab=TAU&search_scope=TAU&vid=972TAU_INST%3ANDE",
+        "source": "primo"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "josephus, flavius",
+        "label": "Wikipedia: josephus, flavius",
+        "url": "https://en.wikipedia.org/wiki/Josephus",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "josephus, flavius",
+        "label": "Wikidata: Q134461",
+        "url": "https://www.wikidata.org/wiki/Q134461",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "josephus, flavius",
+        "label": "NLI: 987007300003805171",
+        "url": "https://www.nli.org.il/en/authorities/987007300003805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "josephus",
+        "label": "Wikipedia: josephus",
+        "url": "https://en.wikipedia.org/wiki/Josephus",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "josephus",
+        "label": "Wikidata: Q134461",
+        "url": "https://www.wikidata.org/wiki/Q134461",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "josephus",
+        "label": "NLI: 987007300003805171",
+        "url": "https://www.nli.org.il/en/authorities/987007300003805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Siwart Haverkamp",
+        "label": "Wikipedia: Siwart Haverkamp",
+        "url": "https://en.wikipedia.org/wiki/Siwart_Haverkamp",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Siwart Haverkamp",
+        "label": "Wikidata: Q3483509",
+        "url": "https://www.wikidata.org/wiki/Q3483509",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Siwart Haverkamp",
+        "label": "VIAF: 39399735",
+        "url": "https://viaf.org/en/viaf/39399735",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Siwart Haverkamp",
+        "label": "NLI: 987007262447405171",
+        "url": "https://www.nli.org.il/en/authorities/987007262447405171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Q1126870",
+        "label": "Wikipedia: Q1126870",
+        "url": "https://www.wikidata.org/wiki/Q1126870",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Q1126870",
+        "label": "Wikidata: Q1126870",
+        "url": "https://www.wikidata.org/wiki/Q1126870",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Q1126870",
+        "label": "VIAF: 8408159478152227990003",
+        "url": "https://viaf.org/en/viaf/8408159478152227990003",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Q1126870",
+        "label": "NLI: 987007264337705171",
+        "url": "https://www.nli.org.il/en/authorities/987007264337705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Caspar Hedio",
+        "label": "Wikipedia: Caspar Hedio",
+        "url": "https://en.wikipedia.org/wiki/Caspar_Hedio",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Caspar Hedio",
+        "label": "Wikidata: Q76065",
+        "url": "https://www.wikidata.org/wiki/Q76065",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Caspar Hedio",
+        "label": "VIAF: 37708208",
+        "url": "https://viaf.org/en/viaf/37708208",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Caspar Hedio",
+        "label": "NLI: 987007262552605171",
+        "url": "https://www.nli.org.il/en/authorities/987007262552605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Erasmus",
+        "label": "Wikipedia: Erasmus",
+        "url": "https://en.wikipedia.org/wiki/Erasmus",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Erasmus",
+        "label": "Wikidata: Q43499",
+        "url": "https://www.wikidata.org/wiki/Q43499",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Erasmus",
+        "label": "VIAF: 87673996",
+        "url": "https://viaf.org/en/viaf/87673996",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Erasmus",
+        "label": "NLI: 987007260834705171",
+        "url": "https://www.nli.org.il/en/authorities/987007260834705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Roger L'Estrange",
+        "label": "Wikipedia: Roger L'Estrange",
+        "url": "https://en.wikipedia.org/wiki/Roger_L'Estrange",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Roger L'Estrange",
+        "label": "Wikidata: Q334268",
+        "url": "https://www.wikidata.org/wiki/Q334268",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Roger L'Estrange",
+        "label": "VIAF: 79065152",
+        "url": "https://viaf.org/en/viaf/79065152",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Roger L'Estrange",
+        "label": "NLI: 987007279076005171",
+        "url": "https://www.nli.org.il/en/authorities/987007279076005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacques Basnage",
+        "label": "Wikipedia: Jacques Basnage",
+        "url": "https://en.wikipedia.org/wiki/Jacques_Basnage",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacques Basnage",
+        "label": "Wikidata: Q1225958",
+        "url": "https://www.wikidata.org/wiki/Q1225958",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacques Basnage",
+        "label": "VIAF: 56765783",
+        "url": "https://viaf.org/en/viaf/56765783",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacques Basnage",
+        "label": "NLI: 987007258356605171",
+        "url": "https://www.nli.org.il/en/authorities/987007258356605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Robert Arnauld d'Andilly",
+        "label": "Wikipedia: Robert Arnauld d'Andilly",
+        "url": "https://en.wikipedia.org/wiki/Robert_Arnauld_d'Andilly",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Robert Arnauld d'Andilly",
+        "label": "Wikidata: Q1407571",
+        "url": "https://www.wikidata.org/wiki/Q1407571",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Robert Arnauld d'Andilly",
+        "label": "VIAF: 6645",
+        "url": "https://viaf.org/en/viaf/6645",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Robert Arnauld d'Andilly",
+        "label": "NLI: 987007257840705171",
+        "url": "https://www.nli.org.il/en/authorities/987007257840705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Sigmund Feyerabend",
+        "label": "Wikipedia: Sigmund Feyerabend",
+        "url": "https://en.wikipedia.org/wiki/Sigmund_Feyerabend",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Sigmund Feyerabend",
+        "label": "Wikidata: Q98074",
+        "url": "https://www.wikidata.org/wiki/Q98074",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Sigmund Feyerabend",
+        "label": "VIAF: 88647630",
+        "url": "https://viaf.org/en/viaf/88647630",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Sigmund Feyerabend",
+        "label": "NLI: 987007261177205171",
+        "url": "https://www.nli.org.il/en/authorities/987007261177205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Filippo Giunti the elder",
+        "label": "Wikipedia: Filippo Giunti the elder",
+        "url": "https://en.wikipedia.org/wiki/Filippo_Giunti",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Filippo Giunti the elder",
+        "label": "Wikidata: Q55228351",
+        "url": "https://www.wikidata.org/wiki/Q55228351",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Filippo Giunti the elder",
+        "label": "VIAF: 79080779",
+        "url": "https://viaf.org/en/viaf/79080779",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Filippo Giunti the elder",
+        "label": "NLI: 987007277834605171",
+        "url": "https://www.nli.org.il/en/authorities/987007277834605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Tyrannius Rufinus",
+        "label": "Wikipedia: Tyrannius Rufinus",
+        "url": "https://en.wikipedia.org/wiki/Tyrannius_Rufinus",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Tyrannius Rufinus",
+        "label": "Wikidata: Q365835",
+        "url": "https://www.wikidata.org/wiki/Q365835",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Tyrannius Rufinus",
+        "label": "VIAF: 595158790752538852912",
+        "url": "https://viaf.org/en/viaf/595158790752538852912",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Tyrannius Rufinus",
+        "label": "NLI: 987007522322905171",
+        "url": "https://www.nli.org.il/en/authorities/987007522322905171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hieronimo Squarciafico",
+        "label": "Wikipedia: Hieronimo Squarciafico",
+        "url": "https://en.wikipedia.org/wiki/Hieronimo_Squarciafico",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hieronimo Squarciafico",
+        "label": "Wikidata: Q5753280",
+        "url": "https://www.wikidata.org/wiki/Q5753280",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hieronimo Squarciafico",
+        "label": "VIAF: 3474150033035111180008",
+        "url": "https://viaf.org/en/viaf/3474150033035111180008",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Hieronimo Squarciafico",
+        "label": "NLI: 987007268431705171",
+        "url": "https://www.nli.org.il/en/authorities/987007268431705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Giovanni Rosso",
+        "label": "Wikipedia: Giovanni Rosso",
+        "url": "https://www.wikidata.org/wiki/Q111742349",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Giovanni Rosso",
+        "label": "Wikidata: Q111742349",
+        "url": "https://www.wikidata.org/wiki/Q111742349",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Giovanni Rosso",
+        "label": "VIAF: 107078337",
+        "url": "https://viaf.org/en/viaf/107078337",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Giovanni Rosso",
+        "label": "NLI: 987007267192105171",
+        "url": "https://www.nli.org.il/en/authorities/987007267192105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Sigismund Gelenius",
+        "label": "Wikipedia: Sigismund Gelenius",
+        "url": "https://en.wikipedia.org/wiki/Sigismund_Gelenius",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Sigismund Gelenius",
+        "label": "Wikidata: Q1232944",
+        "url": "https://www.wikidata.org/wiki/Q1232944",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Sigismund Gelenius",
+        "label": "VIAF: 12407531",
+        "url": "https://viaf.org/en/viaf/12407531",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Sigismund Gelenius",
+        "label": "NLI: 987007261652005171",
+        "url": "https://www.nli.org.il/en/authorities/987007261652005171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pierre de la Rovière",
+        "label": "Wikipedia: Pierre de la Rovière",
+        "url": "https://www.wikidata.org/wiki/Q93386378",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pierre de la Rovière",
+        "label": "Wikidata: Q93386378",
+        "url": "https://www.wikidata.org/wiki/Q93386378",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pierre de la Rovière",
+        "label": "VIAF: 25151897222424072714",
+        "url": "https://viaf.org/en/viaf/25151897222424072714",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pierre de la Rovière",
+        "label": "NLI: 987007263997105171",
+        "url": "https://www.nli.org.il/en/authorities/987007263997105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moritz Georg Weidmann",
+        "label": "Wikipedia: Moritz Georg Weidmann",
+        "url": "https://en.wikipedia.org/wiki/Moritz_Georg_Weidmann",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moritz Georg Weidmann",
+        "label": "Wikidata: Q97303",
+        "url": "https://www.wikidata.org/wiki/Q97303",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moritz Georg Weidmann",
+        "label": "VIAF: 44084527",
+        "url": "https://viaf.org/en/viaf/44084527",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Moritz Georg Weidmann",
+        "label": "NLI: 987007576780305171",
+        "url": "https://www.nli.org.il/en/authorities/987007576780305171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Hoeschel",
+        "label": "Wikipedia: David Hoeschel",
+        "url": "https://en.wikipedia.org/wiki/David_Hoeschel",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Hoeschel",
+        "label": "Wikidata: Q98331",
+        "url": "https://www.wikidata.org/wiki/Q98331",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Hoeschel",
+        "label": "VIAF: 27089021",
+        "url": "https://viaf.org/en/viaf/27089021",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "David Hoeschel",
+        "label": "NLI: 987007262726105171",
+        "url": "https://www.nli.org.il/en/authorities/987007262726105171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "François Combefis",
+        "label": "Wikipedia: François Combefis",
+        "url": "https://en.wikipedia.org/wiki/François_Combefis",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "François Combefis",
+        "label": "Wikidata: Q1960506",
+        "url": "https://www.wikidata.org/wiki/Q1960506",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "François Combefis",
+        "label": "VIAF: 7522175",
+        "url": "https://viaf.org/en/viaf/7522175",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "François Combefis",
+        "label": "NLI: 987007583377505171",
+        "url": "https://www.nli.org.il/en/authorities/987007583377505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "William Sewel",
+        "label": "Wikipedia: William Sewel",
+        "url": "https://en.wikipedia.org/wiki/Willem_Sewel",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "William Sewel",
+        "label": "Wikidata: Q2741574",
+        "url": "https://www.wikidata.org/wiki/Q2741574",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "William Sewel",
+        "label": "VIAF: 71458237",
+        "url": "https://viaf.org/en/viaf/71458237",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "William Sewel",
+        "label": "NLI: 987007267971505171",
+        "url": "https://www.nli.org.il/en/authorities/987007267971505171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Caspar Luyken",
+        "label": "Wikipedia: Caspar Luyken",
+        "url": "https://en.wikipedia.org/wiki/Caspar_Luyken",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Caspar Luyken",
+        "label": "Wikidata: Q18508002",
+        "url": "https://www.wikidata.org/wiki/Q18508002",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Caspar Luyken",
+        "label": "VIAF: 5163097",
+        "url": "https://viaf.org/en/viaf/5163097",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Caspar Luyken",
+        "label": "NLI: 987009348872705171",
+        "url": "https://www.nli.org.il/en/authorities/987009348872705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jan Luyken",
+        "label": "Wikipedia: Jan Luyken",
+        "url": "https://en.wikipedia.org/wiki/Jan_Luyken",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jan Luyken",
+        "label": "Wikidata: Q87466",
+        "url": "https://www.wikidata.org/wiki/Q87466",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jan Luyken",
+        "label": "VIAF: 9885051",
+        "url": "https://viaf.org/en/viaf/9885051",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jan Luyken",
+        "label": "NLI: 987007273500605171",
+        "url": "https://www.nli.org.il/en/authorities/987007273500605171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "John Hudson",
+        "label": "Wikipedia: John Hudson",
+        "url": "https://en.wikipedia.org/wiki/John_Hudson_(classicist)",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "John Hudson",
+        "label": "Wikidata: Q13522431",
+        "url": "https://www.wikidata.org/wiki/Q13522431",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "John Hudson",
+        "label": "VIAF: 100222314",
+        "url": "https://viaf.org/en/viaf/100222314",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "John Hudson",
+        "label": "NLI: 987007262955705171",
+        "url": "https://www.nli.org.il/en/authorities/987007262955705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Franz Oberthür",
+        "label": "Wikipedia: Franz Oberthür",
+        "url": "https://en.wikipedia.org/wiki/Franz_Oberthür",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Franz Oberthür",
+        "label": "Wikidata: Q108547",
+        "url": "https://www.wikidata.org/wiki/Q108547",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Franz Oberthür",
+        "label": "VIAF: 79150290",
+        "url": "https://viaf.org/en/viaf/79150290",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Franz Oberthür",
+        "label": "NLI: 987007266165205171",
+        "url": "https://www.nli.org.il/en/authorities/987007266165205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pietro Lauro",
+        "label": "Wikipedia: Pietro Lauro",
+        "url": "https://en.wikipedia.org/wiki/Pietro_Lauro",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pietro Lauro",
+        "label": "Wikidata: Q61476977",
+        "url": "https://www.wikidata.org/wiki/Q61476977",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pietro Lauro",
+        "label": "VIAF: 89102278",
+        "url": "https://viaf.org/en/viaf/89102278",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Pietro Lauro",
+        "label": "NLI: 987007264341205171",
+        "url": "https://www.nli.org.il/en/authorities/987007264341205171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eusebius of Caesarea",
+        "label": "Wikipedia: Eusebius of Caesarea",
+        "url": "https://en.wikipedia.org/wiki/Eusebius",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eusebius of Caesarea",
+        "label": "Wikidata: Q142999",
+        "url": "https://www.wikidata.org/wiki/Q142999",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eusebius of Caesarea",
+        "label": "VIAF: 4929593",
+        "url": "https://viaf.org/en/viaf/4929593",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Eusebius of Caesarea",
+        "label": "NLI: 987007260951805171",
+        "url": "https://www.nli.org.il/en/authorities/987007260951805171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacques Bonfrère",
+        "label": "Wikipedia: Jacques Bonfrère",
+        "url": "https://en.wikipedia.org/wiki/Jacques_Bonfrère",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacques Bonfrère",
+        "label": "Wikidata: Q15486917",
+        "url": "https://www.wikidata.org/wiki/Q15486917",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacques Bonfrère",
+        "label": "VIAF: 100553172",
+        "url": "https://viaf.org/en/viaf/100553172",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Jacques Bonfrère",
+        "label": "NLI: 987007258943705171",
+        "url": "https://www.nli.org.il/en/authorities/987007258943705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Nicolas Sanson",
+        "label": "Wikipedia: Nicolas Sanson",
+        "url": "https://en.wikipedia.org/wiki/Nicolas_Sanson",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Nicolas Sanson",
+        "label": "Wikidata: Q502162",
+        "url": "https://www.wikidata.org/wiki/Q502162",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Nicolas Sanson",
+        "label": "VIAF: 66550637",
+        "url": "https://viaf.org/en/viaf/66550637",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Nicolas Sanson",
+        "label": "NLI: 987007267670705171",
+        "url": "https://www.nli.org.il/en/authorities/987007267670705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "François Halma",
+        "label": "Wikipedia: François Halma",
+        "url": "https://www.wikidata.org/wiki/Q13135665",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "François Halma",
+        "label": "Wikidata: Q13135665",
+        "url": "https://www.wikidata.org/wiki/Q13135665",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "François Halma",
+        "label": "VIAF: 14953611",
+        "url": "https://viaf.org/en/viaf/14953611",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "François Halma",
+        "label": "NLI: 987007296374705171",
+        "url": "https://www.nli.org.il/en/authorities/987007296374705171",
+        "source": "nli"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Henry Maundrell",
+        "label": "Wikipedia: Henry Maundrell",
+        "url": "https://en.wikipedia.org/wiki/Henry_Maundrell",
+        "source": "wikipedia"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Henry Maundrell",
+        "label": "Wikidata: Q3557871",
+        "url": "https://www.wikidata.org/wiki/Q3557871",
+        "source": "wikidata"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Henry Maundrell",
+        "label": "VIAF: 42993252",
+        "url": "https://viaf.org/en/viaf/42993252",
+        "source": "viaf"
+      },
+      {
+        "entity_type": "agent",
+        "entity_id": "Henry Maundrell",
+        "label": "NLI: 987007265145505171",
+        "url": "https://www.nli.org.il/en/authorities/987007265145505171",
+        "source": "nli"
+      }
+    ],
+    "publishers": [],
+    "connections": [],
+    "broadening_notes": []
+  },
+  "original_query": "Tell me about Josephus Flavius and his works in the collection",
+  "session_context": null,
+  "truncated": false,
+  "total_record_count": 21
+}
