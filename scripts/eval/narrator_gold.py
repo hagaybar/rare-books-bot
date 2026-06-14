@@ -97,3 +97,35 @@ def load_gold_case(case_dir: Path) -> GoldCase:
         grounding=ExecutionResult.model_validate_json((case_dir / "grounding.json").read_text(encoding="utf-8")),
         gold_markdown=(case_dir / "gold.md").read_text(encoding="utf-8"),
     )
+
+
+def bounded_grounding_summary(result: ExecutionResult, max_rows: int = 40) -> str:
+    """Compact, capped canonical view of grounding for the judge prompt.
+
+    Renders exact counts + up to max_rows record rows + agents + links, so the
+    judge can verify no-fabrication without receiving the full ExecutionResult.
+    """
+    g = result.grounding
+    lines: list[str] = []
+    lines.append(f"TOTAL_RECORDS: {result.total_record_count}")
+    lines.append(f"RECORDS_SHOWN: {min(len(g.records), max_rows)} of {len(g.records)}")
+    for r in g.records[:max_rows]:
+        agents = ", ".join(r.agents) if r.agents else "-"
+        lines.append(
+            f"- mms_id={r.mms_id} | title={r.title} | date={r.date_display or '-'} "
+            f"| place={r.place or '-'} | publisher={r.publisher or '-'} "
+            f"| lang={r.language or '-'} | agents=[{agents}] | url={r.primo_url or '-'}"
+        )
+    if g.agents:
+        lines.append(f"AGENTS: {len(g.agents)}")
+        for a in g.agents[:max_rows]:
+            lines.append(f"  * {a.canonical_name} (records={a.record_count}, links={len(a.links)})")
+    if g.links:
+        lines.append(f"LINKS: {len(g.links)}")
+        for ln in g.links[:max_rows]:
+            lines.append(f"  ~ {ln.label}: {ln.url} ({ln.source})")
+    if g.aggregations:
+        lines.append(f"AGGREGATIONS: {list(g.aggregations.keys())}")
+    if g.broadening_notes:
+        lines.append(f"BROADENING_NOTES: {g.broadening_notes}")
+    return "\n".join(lines)

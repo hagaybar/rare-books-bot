@@ -10,6 +10,7 @@ from scripts.eval.narrator_gold import (
     GoldCase,
     load_gold_case,
     save_gold_case,
+    bounded_grounding_summary,
 )
 from scripts.chat.plan_models import ExecutionResult, GroundingData, RecordSummary
 
@@ -89,3 +90,25 @@ def test_gold_case_round_trip(tmp_path: Path):
     assert loaded.query == case.query
     assert loaded.gold_markdown == case.gold_markdown
     assert loaded.grounding.model_dump() == case.grounding.model_dump()
+
+
+def test_bounded_summary_caps_rows_and_states_total():
+    recs = [RecordSummary(mms_id=str(i), title=f"T{i}", date_display="1500", place="Venice") for i in range(100)]
+    result = ExecutionResult(
+        steps_completed=[],
+        directives=[],
+        grounding=GroundingData(records=recs),
+        original_query="q",
+        total_record_count=100,
+    )
+    summary = bounded_grounding_summary(result, max_rows=40)
+    assert "100" in summary
+    assert sum(1 for line in summary.splitlines() if line.startswith("- mms_id=")) <= 40
+
+
+def test_bounded_summary_empty_set():
+    result = ExecutionResult(
+        steps_completed=[], directives=[], grounding=GroundingData(records=[]), original_query="q", total_record_count=0
+    )
+    summary = bounded_grounding_summary(result)
+    assert "0" in summary
