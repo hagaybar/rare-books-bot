@@ -348,6 +348,9 @@ async def _call_llm(
             "query_text": query,
             "token_saving": token_saving,
         },
+        # Reasoning models (gpt-5.x) default to heavy reasoning; keep it low so
+        # narration latency/cost stay in line with what the gold eval measured.
+        reasoning_effort="low" if model.startswith("gpt-5") else None,
     )
 
     llm_resp: NarratorResponseLLM = result.parsed
@@ -402,6 +405,7 @@ async def _stream_llm(
         user=user_prompt,
         call_type="narrator_streaming",
         extra_metadata={"query_text": query, "token_saving": token_saving},
+        reasoning_effort="low" if model.startswith("gpt-5") else None,
     ):
         full_text.append(chunk)
         await chunk_callback(chunk)
