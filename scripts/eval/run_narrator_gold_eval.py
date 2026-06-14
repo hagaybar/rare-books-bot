@@ -135,7 +135,7 @@ def run(
                 judge_model=judge_model,
                 candidate_model=model,
                 max_output_tokens=max_judge_tokens,
-                reasoning_effort="low",
+                reasoning_effort=reasoning_effort,
             )
         )
     jpath = batch_client.write_batch_jsonl(judge_reqs, output_dir / "judge_batch.jsonl")

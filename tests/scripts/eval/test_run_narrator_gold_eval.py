@@ -1,6 +1,7 @@
+import pytest
 from pathlib import Path
 from scripts.chat.plan_models import ExecutionResult, GroundingData, RecordSummary
-from scripts.eval.narrator_gold import GoldCase, save_gold_case
+from scripts.eval.narrator_gold import CostCeilingExceeded, GoldCase, save_gold_case
 from scripts.eval.run_narrator_gold_eval import build_all_narration_requests, dry_run
 
 
@@ -39,3 +40,18 @@ def test_dry_run_projects_cost_and_writes_jsonl(tmp_path: Path):
     )
     assert projected > 0 and projected <= 2.00
     assert (out / "narration_batch.jsonl").exists()
+
+
+def test_dry_run_aborts_when_over_ceiling(tmp_path: Path):
+    save_gold_case(tmp_path, _case("c01"))
+    with pytest.raises(CostCeilingExceeded):
+        dry_run(
+            gold_dir=tmp_path,
+            models=["gpt-5.4"],
+            judge_model="gpt-5.4",
+            output_dir=tmp_path / "run",
+            ceiling=0.0000001,
+            max_narration_tokens=2000,
+            max_judge_tokens=1200,
+            reasoning_effort="low",
+        )
