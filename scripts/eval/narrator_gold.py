@@ -195,10 +195,15 @@ def build_judge_request(
     max_output_tokens: int,
     reasoning_effort: str | None = "low",
 ) -> dict:
-    """One Batch API line for judging a candidate narration against the gold."""
+    """One Batch API line for judging a candidate narration against the gold.
+
+    The judge's ground truth is the SAME lean prompt the narrator received, so any
+    record / agent-bio / aggregation-facet / link the narrator could legitimately use
+    is visible to the judge (parity prevents false 'fabrication' flags).
+    """
     system, user = build_gold_judge_prompt(
         query=case.query,
-        bounded_grounding=bounded_grounding_summary(case.grounding),
+        bounded_grounding=build_lean_narrator_prompt(case.query, case.grounding),
         gold_text=case.gold_markdown,
         candidate_text=candidate_text,
     )

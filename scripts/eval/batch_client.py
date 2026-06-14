@@ -46,9 +46,14 @@ def reconcile(requests: list[dict], results: dict[str, Any]) -> tuple[dict[str, 
 
 
 def submit_batch(client: Any, jsonl_path: Path, description: str) -> str:
-    """Upload the JSONL and create a batch; return the batch id."""
-    with jsonl_path.open("rb") as fh:
-        uploaded = client.files.create(file=fh, purpose="batch")
+    """Upload the JSONL and create a batch; return the batch id.
+
+    Uploads via an explicit (filename, bytes) tuple so the Batch API always sees
+    a clean ``.jsonl`` filename regardless of the on-disk relative path.
+    """
+    uploaded = client.files.create(
+        file=(jsonl_path.name, jsonl_path.read_bytes()), purpose="batch"
+    )
     batch = client.batches.create(
         input_file_id=uploaded.id,
         endpoint="/v1/chat/completions",

@@ -302,21 +302,35 @@ def parse_gold_judgment(raw_json: str) -> GoldScore:
 
 
 GOLD_JUDGE_SYSTEM = """\
-You are an exacting evaluator of scholarly bibliographic narratives for a rare
-books discovery system. You score a CANDIDATE narrative against a GOLD reference,
-using only the provided GROUNDING data as ground truth.
+You are an exacting evaluator of scholarly bibliographic narratives for a rare books
+discovery system. You score a CANDIDATE narrative against a GOLD reference. The GROUNDING
+block is the EXACT data the narrator was given; it is the source of truth for COLLECTION
+facts only.
+
+CRITICAL — what is and is NOT fabrication:
+- The narrator is EXPLICITLY ALLOWED to use general scholarly, historical, and biographical
+  knowledge for context and interpretation — e.g. the significance of a press, an author's
+  life and dates, the printing history of a city, why an empty result is unsurprising. This
+  is NOT fabrication. Do NOT flag it, even though it does not appear in the GROUNDING.
+- Fabrication = a COLLECTION claim the GROUNDING does not support: inventing a record, title,
+  date, printer, place, or count attributed to the collection; stating a count that
+  contradicts the exact count in the GROUNDING; mischaracterizing the holdings (e.g. calling
+  printed books "manuscripts"); or presenting a Primo/Wikipedia/Wikidata link as collection
+  evidence when that link is not in the GROUNDING.
+- When unsure whether a statement is general knowledge or a collection claim, treat it as
+  general knowledge and do NOT flag it. Aggregation facets, agent bios, and links that ARE in
+  the GROUNDING are supported — do not flag them.
 
 Score each dimension 0-3 (0 = broken, 1 = poor, 2 = good with issues, 3 = excellent):
-- grounding: every specific claim (count, title, date, printer, place, link) appears
-  in the GROUNDING. Invented specifics are fabrication.
-- coverage: covers the holdings/facts the GOLD covers.
-- evidence_fidelity: exact counts, titles, and links are correct.
-- scholarly_quality: clarity, structure, scholarly framing; general knowledge clearly
-  labeled as not-from-collection.
+- grounding: collection claims are supported by the GROUNDING; no fabricated holdings.
+- coverage: covers the holdings/facts the GOLD covers (records, matched headings, counts).
+- evidence_fidelity: exact counts, titles, and grounded links are correct.
+- scholarly_quality: clarity, structure, scholarly framing; general knowledge framed as
+  context rather than presented as collection data.
 - scope_handling: empty-set honesty, clarification when ambiguous, no overreach.
 
-Set fabrication_detected=true and list fabricated_claims if ANY specific claim is not
-supported by the GROUNDING. Do NOT penalize valid prose that differs in wording or
+Set fabrication_detected=true and list fabricated_claims ONLY for genuine COLLECTION-claim
+fabrications per the definition above. Do NOT penalize valid prose that differs in wording or
 structure from the GOLD — only missing or wrong substance.
 Return ONLY the structured fields."""
 
@@ -330,7 +344,8 @@ def build_gold_judge_prompt(
     """Build (system, user) messages for the reference-anchored judge."""
     user = (
         f"QUERY:\n{query}\n\n"
-        f"GROUNDING (ground truth — bounded):\n{bounded_grounding}\n\n"
+        f"GROUNDING (the EXACT data the narrator was given — source of truth for "
+        f"collection facts):\n{bounded_grounding}\n\n"
         f"GOLD REFERENCE NARRATIVE:\n{gold_text}\n\n"
         f"CANDIDATE NARRATIVE (score this):\n{candidate_text}\n"
     )
