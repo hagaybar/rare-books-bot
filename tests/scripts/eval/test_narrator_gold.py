@@ -11,6 +11,10 @@ from scripts.eval.narrator_gold import (
     load_gold_case,
     save_gold_case,
     bounded_grounding_summary,
+    build_narration_request,
+    build_judge_request,
+    extract_narrative,
+    is_reasoning_model,
 )
 from scripts.chat.plan_models import ExecutionResult, GroundingData, RecordSummary
 
@@ -112,3 +116,55 @@ def test_bounded_summary_empty_set():
     )
     summary = bounded_grounding_summary(result)
     assert "0" in summary
+
+
+def test_is_reasoning_model():
+    assert is_reasoning_model("gpt-5-mini")
+    assert is_reasoning_model("gpt-5.4")
+    assert not is_reasoning_model("gpt-4.1")
+    assert not is_reasoning_model("gpt-4.1-mini")
+
+
+def test_narration_request_shape_non_reasoning():
+    case = GoldCase("c01", "books in Mantua", _sample_result(), "gold")
+    req = build_narration_request(case, model="gpt-4.1", max_output_tokens=2000)
+    assert req["custom_id"] == "c01::gpt-4.1"
+    assert req["method"] == "POST" and req["url"] == "/v1/chat/completions"
+    b = req["body"]
+    assert b["model"] == "gpt-4.1"
+    assert b["max_completion_tokens"] == 2000
+    assert "reasoning_effort" not in b
+    assert b["messages"][0]["role"] == "system"
+    assert b["response_format"]["type"] == "json_schema"
+
+
+def test_narration_request_reasoning_model_sets_effort():
+    case = GoldCase("c01", "q", _sample_result(), "gold")
+    req = build_narration_request(case, model="gpt-5-mini", max_output_tokens=2000, reasoning_effort="low")
+    assert req["body"]["reasoning_effort"] == "low"
+
+
+def test_judge_request_shape():
+    case = GoldCase("c01", "q", _sample_result(), "gold narrative")
+    req = build_judge_request(
+        case,
+        candidate_text="cand",
+        judge_model="gpt-5.4",
+        candidate_model="gpt-4.1",
+        max_output_tokens=1200,
+        reasoning_effort="low",
+    )
+    assert req["custom_id"] == "c01::gpt-4.1::judge"
+    assert req["body"]["model"] == "gpt-5.4"
+    assert req["body"]["reasoning_effort"] == "low"
+    assert req["body"]["max_completion_tokens"] == 1200
+
+
+def test_extract_narrative_parses_structured_output():
+    body = {
+        "choices": [{"message": {"content": '{"narrative": "Hello", "confidence": 0.9}'}}],
+        "usage": {"prompt_tokens": 100, "completion_tokens": 20},
+    }
+    text, usage = extract_narrative(body)
+    assert text == "Hello"
+    assert usage["completion_tokens"] == 20

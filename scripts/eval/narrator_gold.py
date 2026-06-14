@@ -10,7 +10,14 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
+from scripts.chat.narrator import (
+    NARRATOR_SYSTEM_PROMPT,
+    NarratorResponseLLM,
+    build_lean_narrator_prompt,
+)
 from scripts.chat.plan_models import ExecutionResult
+from scripts.eval.judge import NarratorGoldJudgment, build_gold_judge_prompt
+from scripts.models.llm_client import pydantic_to_response_format
 
 # Prices in USD per 1M tokens (input, output). Source: OpenAI price list 2026-06.
 # Batch API applies a flat 50% discount to both input and output.
@@ -129,3 +136,83 @@ def bounded_grounding_summary(result: ExecutionResult, max_rows: int = 40) -> st
     if g.broadening_notes:
         lines.append(f"BROADENING_NOTES: {g.broadening_notes}")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Task 7: Batch request builders
+# ---------------------------------------------------------------------------
+
+
+def is_reasoning_model(model: str) -> bool:
+    """gpt-5.x are reasoning models (reasoning tokens bill as output)."""
+    return model.startswith("gpt-5")
+
+
+def _chat_body(
+    model: str,
+    system: str,
+    user: str,
+    response_schema,
+    max_output_tokens: int,
+    reasoning_effort: str | None,
+) -> dict:
+    body: dict = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        "response_format": pydantic_to_response_format(response_schema),
+        "max_completion_tokens": max_output_tokens,
+    }
+    if is_reasoning_model(model) and reasoning_effort:
+        body["reasoning_effort"] = reasoning_effort
+    return body
+
+
+def build_narration_request(
+    case: GoldCase,
+    model: str,
+    max_output_tokens: int,
+    reasoning_effort: str | None = None,
+) -> dict:
+    """One Batch API line for a candidate narration over a frozen gold case."""
+    user = build_lean_narrator_prompt(case.query, case.grounding)
+    body = _chat_body(model, NARRATOR_SYSTEM_PROMPT, user, NarratorResponseLLM, max_output_tokens, reasoning_effort)
+    return {
+        "custom_id": f"{case.case_id}::{model}",
+        "method": "POST",
+        "url": "/v1/chat/completions",
+        "body": body,
+    }
+
+
+def build_judge_request(
+    case: GoldCase,
+    candidate_text: str,
+    judge_model: str,
+    candidate_model: str,
+    max_output_tokens: int,
+    reasoning_effort: str | None = "low",
+) -> dict:
+    """One Batch API line for judging a candidate narration against the gold."""
+    system, user = build_gold_judge_prompt(
+        query=case.query,
+        bounded_grounding=bounded_grounding_summary(case.grounding),
+        gold_text=case.gold_markdown,
+        candidate_text=candidate_text,
+    )
+    body = _chat_body(judge_model, system, user, NarratorGoldJudgment, max_output_tokens, reasoning_effort)
+    return {
+        "custom_id": f"{case.case_id}::{candidate_model}::judge",
+        "method": "POST",
+        "url": "/v1/chat/completions",
+        "body": body,
+    }
+
+
+def extract_narrative(response_body: dict) -> tuple[str, dict]:
+    """Pull narrative text + usage from a batch /v1/chat/completions response body."""
+    content = response_body["choices"][0]["message"]["content"]
+    parsed = NarratorResponseLLM.model_validate_json(content)
+    return parsed.narrative, response_body.get("usage", {})
